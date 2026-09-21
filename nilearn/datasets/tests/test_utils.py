@@ -22,7 +22,6 @@ datadir = _utils.PACKAGE_DIRECTORY / "data"
 DATASET_NAMES = {
     "ABIDE_pcp",
     "adhd",
-    "bids_langloc",
     "brainomics_localizer",
     "development_fmri",
     "dosenbach_2010",
@@ -148,6 +147,7 @@ def test_get_dataset_dir_write_access(tmp_path):
 
     no_write = tmp_path / "no_write"
     no_write.mkdir(parents=True)
+    no_write.touch("dummy_data.txt")
     no_write.chmod(0o400)
 
     expected_base_dir = tmp_path / "nilearn_shared_data"
@@ -169,7 +169,8 @@ def test_get_dataset_dir_symlink(tmp_path):
     expected_linked_dir = tmp_path / "linked"
     expected_linked_dir.mkdir(parents=True)
     expected_base_dir = tmp_path / "env_data"
-    expected_base_dir.mkdir()
+    expected_base_dir.mkdir(parents=True)
+    expected_base_dir.touch("dummy_data.txt")
     symlink_dir = expected_base_dir / "test"
     symlink_dir.symlink_to(expected_linked_dir)
 
@@ -211,6 +212,7 @@ def test_read_md5_sum_file(tmp_path):
 
 @pytest.fixture
 def dir1(tmp_path) -> Path:
+    """Return a temporary 'dir1' directory."""
     dir1 = tmp_path / "dir1"
     dir1.mkdir()
     return dir1
@@ -218,6 +220,7 @@ def dir1(tmp_path) -> Path:
 
 @pytest.fixture
 def dir2(tmp_path) -> Path:
+    """Return a temporary 'dir2' directory."""
     dir2 = tmp_path / "dir2"
     dir2.mkdir()
     return dir2

@@ -5,11 +5,9 @@ from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.group_sparse_cov import (
     group_sparse_covariance,
@@ -18,41 +16,16 @@ from nilearn.connectome.group_sparse_cov import (
 
 ESTIMATORS_TO_CHECK = [GroupSparseCovarianceCV(), GroupSparseCovariance()]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        (check_estimator(estimators=ESTIMATORS_TO_CHECK)),
-    )
-    def test_check_estimator_group_sparse_covariance(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_invalid_group_sparse_covariance(
-        estimator,
-        check,
-        name,  # noqa: ARG001
-    ):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -63,16 +36,17 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 
 
 def test_group_sparse_covariance(rng):
-    # run in debug mode. Should not fail
-    # without debug mode: cost must decrease.
+    """Test that group_sparse_covariance's cost decreases without debug.
 
+    In debug mode, it should not fail.
+    """
     signals, _, _ = generate_group_sparse_gaussian_graphs(
         density=0.1,
         n_subjects=5,
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=rng,
+        rand_gen=rng,
     )
 
     alpha = 0.1
@@ -91,13 +65,14 @@ def test_group_sparse_covariance(rng):
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("duality_gap", [True, False])
 def test_group_sparse_covariance_with_probe_function(rng, duality_gap):
+    """Test that the probe records a decreasing objective over iterations."""
     signals, _, _ = generate_group_sparse_gaussian_graphs(
         density=0.1,
         n_subjects=5,
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=rng,
+        rand_gen=rng,
     )
 
     alpha = 0.1
@@ -152,13 +127,14 @@ def test_group_sparse_covariance_with_probe_function(rng, duality_gap):
 
 
 def test_group_sparse_covariance_check_consistency_between_classes(rng):
+    """Test that GroupSparseCovarianceCV and GroupSparseCovariance agree."""
     signals, _, _ = generate_group_sparse_gaussian_graphs(
         density=0.1,
         n_subjects=5,
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=rng,
+        rand_gen=rng,
     )
 
     # Check consistency between classes
@@ -174,13 +150,14 @@ def test_group_sparse_covariance_check_consistency_between_classes(rng):
 
 
 def test_group_sparse_covariance_errors(rng):
+    """Test that group_sparse_covariance validates its input arguments."""
     signals, _, _ = generate_group_sparse_gaussian_graphs(
         density=0.1,
         n_subjects=5,
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=rng,
+        rand_gen=rng,
     )
 
     alpha = 0.1
@@ -205,13 +182,14 @@ def test_group_sparse_covariance_errors(rng):
 def test_group_sparse_covariance_cross_validation(
     rng, cv, alphas, n_refinements
 ):
+    """Test GroupSparseCovarianceCV with various cross-validation setups."""
     signals, _, _ = generate_group_sparse_gaussian_graphs(
         density=0.1,
         n_subjects=5,
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=rng,
+        rand_gen=rng,
     )
 
     gsc = GroupSparseCovarianceCV(

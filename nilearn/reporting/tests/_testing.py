@@ -30,7 +30,7 @@ def generate_and_check_report(
     model : any estimator with a generate_report method
         Model that generated the report
 
-    title : str | None
+    title : :obj:`str` | None
         Title to include in report.
         If None is passed the estimator name should be in report instead.
 
@@ -60,7 +60,7 @@ def generate_and_check_report(
         Allows extra warnings to be thrown during report generation
         without being included in the HTML of the report.
 
-    duplicate_warnings_allowed : bool
+    duplicate_warnings_allowed : :obj:`bool`
         In general we want to avoid throwing the same warnings
         too many times when generating a report.
 
@@ -74,14 +74,12 @@ def generate_and_check_report(
     excludes = []
 
     if is_matplotlib_installed():
-        excludes.extend(
-            [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
-        )
+        excludes.extend([MISSING_ENGINE_MSG, "No plotting engine found"])
     else:
         includes.extend(
             [
                 MISSING_ENGINE_MSG,
-                'grey">No plotting engine found</p>',
+                "No plotting engine found",
             ]
         )
         warnings_msg_to_check.append(MISSING_ENGINE_MSG)

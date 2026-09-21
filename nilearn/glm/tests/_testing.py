@@ -6,19 +6,19 @@ import pandas as pd
 from nilearn.conftest import _rng
 
 
-def _conditions():
+def _conditions() -> list[str]:
     return ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
 
 
-def _onsets():
+def _onsets() -> list[int]:
     return [0, 70, 100, 10, 30, 90, 30, 40, 60]
 
 
-def _durations():
+def _durations() -> np.ndarray:
     return np.ones(len(_onsets()))
 
 
-def modulated_event_paradigm():
+def modulated_event_paradigm() -> pd.DataFrame:
     events = pd.DataFrame(
         {
             "trial_type": _conditions(),
@@ -30,7 +30,7 @@ def modulated_event_paradigm():
     return events
 
 
-def block_paradigm():
+def block_paradigm() -> pd.DataFrame:
     events = pd.DataFrame(
         {
             "trial_type": _conditions(),
@@ -41,7 +41,7 @@ def block_paradigm():
     return events
 
 
-def modulated_block_paradigm():
+def modulated_block_paradigm() -> pd.DataFrame:
     durations = 5 + 5 * _rng().uniform(size=len(_onsets()))
     modulation = 1 + _rng().uniform(size=len(_onsets()))
     events = pd.DataFrame(
@@ -55,7 +55,7 @@ def modulated_block_paradigm():
     return events
 
 
-def spm_paradigm(block_duration):
+def spm_paradigm(block_duration) -> tuple[pd.DataFrame, np.ndarray]:
     frame_times = np.linspace(0, 99, 100)
     conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
     onsets = [30, 50, 70, 10, 30, 80, 30, 40, 60]
@@ -66,7 +66,7 @@ def spm_paradigm(block_duration):
     return events, frame_times
 
 
-def design_with_null_durations():
+def design_with_null_durations() -> pd.DataFrame:
     durations = _durations()
     durations[2] = 0
     durations[5] = 0
@@ -81,7 +81,7 @@ def design_with_null_durations():
     return events
 
 
-def design_with_nan_durations():
+def design_with_nan_durations() -> pd.DataFrame:
     durations = _durations()
     durations[2] = np.nan
     durations[5] = np.nan
@@ -111,7 +111,7 @@ def design_with_nan_onsets():
     return events
 
 
-def design_with_negative_onsets():
+def design_with_negative_onsets() -> pd.DataFrame:
     onsets = _onsets()
     onsets[0] = -32
     events = pd.DataFrame(
@@ -124,7 +124,7 @@ def design_with_negative_onsets():
     return events
 
 
-def duplicate_events_paradigm():
+def duplicate_events_paradigm() -> pd.DataFrame:
     conditions = ["c0", "c0", "c0", "c0", "c1", "c1"]
     onsets = [10, 30, 70, 70, 10, 30]
     durations = [1.0, 1.0, 1.0, 1.0, 1.0, 1]

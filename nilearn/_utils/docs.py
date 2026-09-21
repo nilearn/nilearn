@@ -165,18 +165,6 @@ logistic = "Logistic regression"
 rc = "Ridge classifier"
 dc = "Dummy classifier with stratified strategy"
 
-sk_compatible_admonition = """
-
-    .. admonition:: Important
-
-        Besides the strings,
-        it is also possible to pass
-        a scikit-learn compatible estimator object.
-        See `scikit-learn's guide on developing your own estimator
-        <https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator>`_
-        for more details.
-
-"""
 
 docdict["classifier_options"] = f"""
 
@@ -204,7 +192,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        logistic = LogisticRegressionCV(penalty="l2", solver="liblinear")
+        logistic = LogisticRegressionCV(l1_ratios=(0,), solver="liblinear")
 
     - ``"logistic_l1"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -212,7 +200,7 @@ docdict["classifier_options"] = f"""
 
     .. code-block:: python
 
-        logistic_l1 = LogisticRegressionCV(penalty="l1", solver="liblinear")
+        logistic_l1 = LogisticRegressionCV(l1_ratios=(1,), solver="liblinear")
 
     - ``"logistic_l2"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -235,8 +223,6 @@ docdict["classifier_options"] = f"""
 
         dummy = DummyClassifier(strategy="stratified", random_state=0)
 
-    {sk_compatible_admonition}
-
 """
 
 # clean_args
@@ -256,10 +242,10 @@ docdict["clean_args_"] = docdict["clean_args"].replace(
 
 # cluster_threshold
 docdict["cluster_threshold"] = """
-    cluster_threshold : :obj:`int`, default=0
-        Cluster size threshold.
-        Sets of connected voxels / vertices (`clusters`)
-        with size smaller than this number will be removed.
+cluster_threshold : :obj:`int`, default=0
+    Cluster size threshold.
+    Sets of connected voxels / vertices (`clusters`)
+    with size smaller than this number will be removed.
 """
 
 # cmap
@@ -393,7 +379,7 @@ docdict["cv8_5"] = cv.format(8, 5)
 docdict["cvNone_3"] = cv.format("None", 3)
 
 
-# data_dir
+# debias
 docdict["debias"] = """
 debias : :obj:`bool`, default=False
     If set, then the estimated weights maps will be debiased.
@@ -443,40 +429,42 @@ display_mode : {"ortho", "tiled", "mosaic", "x", \
 """
 
 # displayed_maps
-docdict["displayed_maps"] = """
-displayed_maps : :obj:`int`, \
+docdict["displayed_maps"] = """displayed_maps : :obj:`int`, \
                   :class:`~numpy.ndarray` or :obj:`list` of :obj:`int`, \
                   or "all", default=10
+
     Indicates which maps will be displayed in the HTML report.
 
-    - If ``"all"``: All maps will be displayed in the report.
+        -   If ``"all"``: All maps will be displayed in the report.
 
-    .. code-block:: python
+            .. code-block:: python
 
-        masker.generate_report("all")
+                masker.generate_report("all")
 
-    .. warning:
-        If there are too many maps, this might be time and
-        memory consuming, and will result in very heavy
-        reports.
+            .. warning:
+                If there are too many maps, this might be time and
+                memory consuming, and will result in very heavy
+                reports.
 
-    - If a :obj:`list` or :class:`~numpy.ndarray`:
-        This indicates the indices of the maps to be displayed in the report.
-        For example, the following code will generate a report with maps
-        6, 3, and 12, displayed in this specific order:
+        -   If a :obj:`list` or :class:`~numpy.ndarray`:
+            This indicates the indices of the maps
+            to be displayed in the report.
+            For example, the following code will generate a report with maps
+            6, 3, and 12, displayed in this specific order:
 
-    .. code-block:: python
+            .. code-block:: python
 
-        masker.generate_report([6, 3, 12])
+                masker.generate_report([6, 3, 12])
 
-    - If an :obj:`int`: This will only display the first n maps,
-        n being the value of the parameter. By default, the report
-        will only contain the first 10 maps. Example to display the
-        first 16 maps:
+        -   If an :obj:`int`:
+            This will only display the first n maps,
+            n being the value of the parameter. By default, the report
+            will only contain the first 10 maps. Example to display the
+            first 16 maps:
 
-    .. code-block:: python
+            .. code-block:: python
 
-        masker.generate_report(16)
+                masker.generate_report(16)
 """
 docdict["displayed_spheres"] = docdict["displayed_maps"].replace(
     "maps", "spheres"
@@ -493,9 +481,11 @@ draw_cross : :obj:`bool`, default=True
 docdict["dtype"] = """
 dtype : dtype like, "auto" or None, default=None
     Data type toward which the data should be converted.
-    If "auto", the data will be converted to int32
-    if dtype is discrete and float32 if it is continuous.
+    If "auto", the data will be converted
+    to int32 if dtype is discrete
+    and to float32 if it is continuous.
     If None, data will not be converted to a new data type.
+    ``dtype=bool`` will raise an Exception.
 """
 
 # estimator_args
@@ -503,7 +493,7 @@ docdict["estimator_args"] = """
 estimator_args : dict[str, Any] or None, default=None
     Extra parameters to pass to the scikit-learn estimators.
 
-    .. nilearn_versionadded:: 0.14.0dev
+    .. nilearn_versionadded:: 0.14.0
 """
 
 # extractor / extract_type
@@ -694,40 +684,9 @@ imgs : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
 """
 
-# keep_masked_labels
-docdict["keep_masked_labels"] = """
-keep_masked_labels : :obj:`bool`, default=False
-    When a mask is supplied through the "mask_img" parameter, some
-    atlas regions may lie entirely outside of the brain mask, resulting
-    in empty time series for those regions.
-    If True, the masked atlas with these empty labels will be retained
-    in the output, resulting in corresponding time series containing
-    zeros only. If False, the empty labels will be removed from the
-    output, ensuring no empty time series are present.
-
-    .. nilearn_deprecated:: 0.10.2
-
-    .. nilearn_versionchanged:: 0.13.0
-
-        The ``keep_masked_labels`` parameter will be removed in 0.15.
-
-"""
-
-# keep_masked_maps
-docdict["keep_masked_maps"] = """
-keep_masked_maps : :obj:`bool`, optional
-    If True, masked atlas with invalid maps (maps that contain only
-    zeros after applying the mask) will be retained in the output, resulting
-    in corresponding time series containing zeros only. If False, the
-    invalid maps will be removed from the trimmed atlas, resulting in
-    no empty time series in the output.
-
-    .. nilearn_deprecated:: 0.10.2
-
-    .. nilearn_versionchanged:: 0.13.0
-
-        The ``keep_masked_maps`` parameter will be removed in 0.15.
-
+docdict["imgs_list"] = """
+imgs_list : :obj:`list` of Niimg-like objects
+    See :ref:`extracting_data`.
 """
 
 # linewidth
@@ -932,55 +891,54 @@ radiological : :obj:`bool`, default=False
 
 # random_state
 docdict["random_state"] = """
-random_state : :obj:`int` or np.random.RandomState, optional
+random_state : :obj:`int` or :obj:`numpy.random.RandomState`, optional
     Pseudo-random number generator state used for random sampling.
 """
 
 # regressor_options
-docdict["regressor_options"] = f"""
+docdict["regressor_options"] = """
 
-    - ``ridge``: \
+    - ``"ridge"``: \
         :class:`Ridge regression <sklearn.linear_model.RidgeCV>`.
 
     .. code-block:: python
 
         ridge = RidgeCV()
 
-    - ``ridge_regressor``: \
+    - ``"ridge_regressor"``: \
         :class:`Ridge regression <sklearn.linear_model.RidgeCV>`.
 
     .. note::
 
         Same option as `ridge`.
 
-    - ``svr``: :class:`Support vector regression <sklearn.svm.SVR>`.
+    - ``"svr"``: :class:`Support vector regression <sklearn.svm.SVR>`.
 
     .. code-block:: python
 
         svr = SVR(kernel="linear", max_iter=1e4)
 
-    - ``lasso``: \
+    - ``"lasso"``: \
         :class:`Lasso regression <sklearn.linear_model.LassoCV>`.
 
     .. code-block:: python
 
         lasso = LassoCV()
 
-    - ``lasso_regressor``: \
+    - ``"lasso_regressor"``: \
         :class:`Lasso regression <sklearn.linear_model.LassoCV>`.
 
     .. note::
 
         Same option as `lasso`.
 
-    - ``dummy_regressor``: \
+    - ``"dummy_regressor"``: \
         :class:`Dummy regressor <sklearn.dummy.DummyRegressor>`.
 
     .. code-block:: python
 
         dummy = DummyRegressor(strategy="mean")
 
-    {sk_compatible_admonition}
 """
 
 # resampling_interpolation
@@ -1125,35 +1083,36 @@ design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
 # second_level_input
 docdict["second_level_input"] = """
 second_level_input : :obj:`list` of \
-    :class:`~nilearn.glm.first_level.FirstLevelModel` objects or \
-    :class:`pandas.DataFrame` or \
-    :obj:`list` of 3D Niimg-like objects or \
-    4D Niimg-like objects or \
-    :obj:`list` of :class:`~nilearn.surface.SurfaceImage` objects or \
+    :class:`~nilearn.glm.first_level.FirstLevelModel` objects, or \
+    :class:`pandas.DataFrame`, or \
+    :obj:`list` of 3D Niimg-like objects, or \
+    a 4D Niimg-like object, or \
+    :obj:`list` of 1D :class:`~nilearn.surface.SurfaceImage` objects, or \
+    a 2D :class:`~nilearn.surface.SurfaceImage` object, or \
     :obj:`pandas.Series` of Niimg-like objects.
 
     - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
       will allow to easily compute the second level contrast of arbitrary first
-      level contrasts thanks to the `first_level_contrast` argument of
+      level contrasts thanks to the ``first_level_contrast`` argument of
       :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
       Effect size images will be computed for each model
       to contrast at the second level.
 
     - If a :class:`~pandas.DataFrame`, then it has to contain
-      `subject_label`, `map_name` and `effects_map_path`.
+      ``subject_label``, ``map_name`` and ``effects_map_path``.
       It can contain multiple maps that would be selected
-      during contrast estimation with the argument `first_level_contrast`
+      during contrast estimation with the argument ``first_level_contrast``
       of :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
       The :class:`~pandas.DataFrame` will be sorted
-      based on the `subject_label` column to avoid order inconsistencies
+      based on the ``subject_label`` column to avoid order inconsistencies
       when extracting the maps.
       So the rows of the automatically computed design matrix,
-      if not provided, will correspond to the sorted `subject_label` column.
+      if not provided, will correspond to the sorted ``subject_label`` column.
 
     - If a :obj:`list` of Niimg-like objects
       or :class:`~nilearn.surface.SurfaceImage` objects
       then this is taken literally as Y for the model fit
-      and `design_matrix` must be provided.
+      and ``design_matrix`` must be provided.
 
 """
 
@@ -1181,15 +1140,33 @@ docdict["second_level_mask"] = docdict["second_level_mask_img"].replace(
 
 # signals for inverse transform
 docdict["signals_inv_transform"] = """
-signals : 1D/2D :obj:`numpy.ndarray`
+signals : 1D/2D :obj:`numpy.ndarray` or :class:`pandas.DataFrame` \
+          or polars.DataFrame
     Extracted signal.
     If a 1D array is provided,
     then the shape should be (number of elements,).
     If a 2D array is provided,
     then the shape should be (number of scans, number of elements).
 """
-docdict["region_signals_inv_transform"] = docdict["signals_inv_transform"]
-docdict["x_inv_transform"] = docdict["signals_inv_transform"]
+docdict["region_signals_inv_transform"] = docdict[
+    "signals_inv_transform"
+].replace("signals : ", "region_signals : ")
+docdict["x_inv_transform"] = docdict["signals_inv_transform"].replace(
+    "signals : ", "X : "
+)
+
+sk_compatible_admonition = """
+
+    .. admonition:: Important
+
+        Besides the strings,
+        it is also possible to pass
+        a scikit-learn compatible estimator object.
+        See `scikit-learn's guide on developing your own estimator
+        <https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator>`_
+        for more details.
+
+"""
 
 docdict["sk_compatible_admonition"] = sk_compatible_admonition
 
@@ -1203,7 +1180,7 @@ smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
 
 # standardize
 standardize = """
-standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
+standardize : any of: 'zscore_sample', 'psc' or None; \
               default={}
     Strategy to standardize the signal:
 
@@ -1214,53 +1191,9 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
     - ``'psc'``:  Timeseries are shifted to zero mean value and scaled
       to percent signal change (as compared to original mean signal).
 
-    - ``True``: The signal is z-scored (same as option `zscore`).
-      Timeseries are shifted to zero mean and scaled to unit variance.
-
-      .. nilearn_deprecated:: 0.13.0
-
-        In nilearn version 0.15.0,
-        ``True`` will be replaced by  ``'zscore_sample'``.
-
-    - ``False``: Do not standardize the data.
-
-      .. nilearn_deprecated:: 0.13.0
-
-        In nilearn version 0.15.0,
-        ``False`` will be replaced by ``None``.
-
-
 """
-
-# TODO (nilearn >= 0.15.0) update to ..versionchanged
-deprecation_notice_false_to_none = """
-
-    .. nilearn_deprecated:: 0.13.0
-
-        The default will be changed to ``None``
-        in version 0.15.0.
-
-"""
-
-# TODO (nilearn >= 0.15.0) update to ..versionchanged
-deprecation_notice_true_to_zscore_sample = """
-
-    .. nilearn_deprecated:: 0.13.0
-
-        The default will be changed to ``'zscore_sample'``
-        in version 0.15.0.
-
-"""
-
-docdict["standardize_false"] = (
-    standardize.format("False") + deprecation_notice_false_to_none
-)
-# TODO (nilearn >= 0.15.0)
-# adapt the deprecation notices
-docdict["standardize_true"] = (
-    standardize.format("True") + deprecation_notice_true_to_zscore_sample
-)
 docdict["standardize_zscore"] = standardize.format("zscore_sample")
+docdict["standardize_none"] = standardize.format("None")
 
 
 # standardize_confounds
@@ -1331,7 +1264,7 @@ target_shape : :obj:`tuple` or :obj:`list` or None, default=None
 
 """
 
-# threshold
+# tfce
 docdict["tfce"] = """
 tfce : :obj:`bool`, default=False
     Whether to calculate :term:`TFCE`
@@ -1358,7 +1291,7 @@ tfce : :obj:`bool`, default=False
 
 # threshold
 docdict["threshold"] = """
-threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
+threshold : :obj:`int` or :obj:`float`, :obj:`str`, None, or 'auto', optional
     If `None` is given, the image is not thresholded.
     If number is given, it must be non-negative. The specified value is used to
     threshold the image: values below the threshold (in absolute value) are
@@ -1681,7 +1614,7 @@ coef_ : ndarray, shape\
 coef_img_ : nifti image
     Masked model coefficients
 
-cv_ : list of pairs of lists
+cv_ : :obj:`list` of pairs of lists
     Each pair is the list of indices for the train and test samples
     for the corresponding fold.
 
@@ -1713,7 +1646,7 @@ n_elements_ : :obj:`int`
 
     .. nilearn_versionadded:: 0.12.1
 
-screening_percentile_ : float
+screening_percentile_ : :obj:`float`
     Screening percentile corrected according to volume of mask,
     relative to the volume of standard brain.
 
@@ -1836,8 +1769,7 @@ docdict["lut"] = """lut : :obj:`pandas.DataFrame`
 
 
 signals_transform = """signals : :obj:`numpy.ndarray`, \
-            :obj:`pandas.DataFrame` or \
-            `polars.DataFrame`
+            :obj:`pandas.DataFrame` or polars.DataFrame
 
         Signal for each element.
 

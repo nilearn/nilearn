@@ -81,10 +81,10 @@ SurfaceMapsMasker
    :file: SurfaceMapsMasker_unfitted.html
 
 .. raw:: html
-   :file: SurfaceMapsMasker_fitted_plotly.html
+   :file: SurfaceMapsMasker_plotly_fitted.html
 
 .. raw:: html
-   :file: SurfaceMapsMasker_fitted_matplotlib.html
+   :file: SurfaceMapsMasker_matplotlib_fitted.html
 
 
 Masker reports in notebooks

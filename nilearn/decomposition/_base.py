@@ -10,6 +10,7 @@ import warnings
 from math import ceil
 from pathlib import Path
 from string import Template
+from typing import Literal, Self, get_args
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -33,7 +34,7 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.tags import InputTags
 from nilearn.image import check_niimg
 from nilearn.maskers import (
     MultiNiftiMasker,
@@ -44,9 +45,9 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
-from nilearn.typing import NiimgLike
 
 
 def _warn_ignored_surface_masker_params(estimator) -> None:
@@ -88,6 +89,7 @@ def _warn_ignored_surface_masker_params(estimator) -> None:
         )
 
 
+@fill_doc
 def _fast_svd(X, n_components, random_state=None):
     """Automatically switch between randomized and lapack SVD (heuristic \
     of scikit-learn).
@@ -148,6 +150,7 @@ def _fast_svd(X, n_components, random_state=None):
     return U, S, V
 
 
+@fill_doc
 def _mask_and_reduce(
     masker,
     imgs,
@@ -171,7 +174,7 @@ def _mask_and_reduce(
         :obj:`~nilearn.maskers.SurfaceMasker`
         Instance used to mask provided data.
 
-    imgs : list of 4D Niimg-like objects or list of \
+    imgs : :obj:`list` of 4D Niimg-like objects or list of \
         :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
         List of subject data to mask, reduce and stack.
@@ -320,13 +323,13 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
-    standardize_confounds : boolean, default=True
+    standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend : boolean, default=True
+    detrend : :obj:`bool`, default=True
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
@@ -344,6 +347,10 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
 
     %(target_affine)s
 
@@ -395,12 +402,13 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         random_state=None,
         mask=None,
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         standardize_confounds=True,
         detrend=True,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -421,6 +429,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.mask_strategy = mask_strategy
@@ -436,14 +445,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(surf_img=True, niimg_like=True)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=True, niimg_like=True)
         return tags
@@ -456,18 +457,18 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
                     SurfaceMasker,
                     SurfaceImage,
                     NiftiMasker,
-                    *NiimgLike,
+                    *get_args(NiimgLike),
                 ),
                 "mask",
             )
 
     @fill_doc
-    def fit(self, imgs, y=None, confounds=None):
+    def fit(self, imgs, y=None, confounds=None) -> Self:
         """Compute the mask and the components across subjects.
 
         Parameters
         ----------
-        imgs : list of Niimg-like objects or \
+        imgs : :obj:`list` of Niimg-like objects or \
                list of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data on which the mask is calculated. If this is a list,
@@ -476,7 +477,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         %(y_dummy)s
 
-        confounds : list of CSV file paths, numpy.ndarrays \
+        confounds : :obj:`list` of CSV file paths, numpy.ndarrays \
                 or pandas DataFrames or None, default=None.
             This parameter is passed to nilearn.signal.clean.
             Please see the related documentation for details.
@@ -504,9 +505,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             # these classes are meant for list of 4D images
             # (multi-subject), we want it to work also on a single
             # subject, so we hack it.
-            imgs = [
-                imgs,
-            ]
+            imgs = [imgs]
 
         if len(imgs) == 0:
             # Common error that arises from a null glob. Capture
@@ -527,11 +526,12 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         self._validate_mask()
 
+        masker_type: Literal["nii", "surface", "multi_nii", "multi_surface"]
         masker_type = "multi_nii"
         if self.mask is not None:
             if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)):
                 masker_type = "multi_surface"
-            if isinstance(self.mask, (MultiNiftiMasker, *NiimgLike)):
+            if isinstance(self.mask, (MultiNiftiMasker, *get_args(NiimgLike))):
                 masker_type = "multi_nii"
             elif isinstance(self.mask, SurfaceMasker):
                 masker_type = "surface"
@@ -545,6 +545,17 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         self.masker_.memory_level = self.memory_level
+        # Only propagate float dtypes to masker_ (used for fitting/SVD).
+        # Integer dtypes would collapse float data to uniform integers,
+        # zeroing out PCA components after centering.
+        # The transform output dtype is handled by maps_masker_ instead.
+        _dtype_is_int = (
+            self.dtype is not None
+            and self.dtype != "auto"
+            and np.dtype(self.dtype).kind != "f"
+        )
+        self.masker_.dtype = None if _dtype_is_int else self.dtype
+
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
         if self.masker_.mask_img is None:
@@ -577,6 +588,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             self.maps_masker_ = SurfaceMapsMasker(
                 self.components_img_,
                 self.masker_.mask_img_,
+                dtype=self.dtype,
                 **maps_masker_kwargs,
             )
         else:
@@ -584,9 +596,17 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
                 self.components_img_,
                 self.masker_.mask_img_,
                 resampling_target="maps",
+                dtype=self.dtype,
                 **maps_masker_kwargs,
             )
-        self.maps_masker_.fit()
+
+        try:
+            self.maps_masker_.fit()
+        except ValueError as e:
+            if "maps_img contains no map" in str(e):
+                raise ValueError("No component found in data.") from e
+            else:
+                raise e
 
         return self
 
@@ -614,7 +634,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         Returns
         -------
-        loadings : list of 2D ndarray,
+        loadings : :obj:`list` of 2D ndarray,
             For each subject, each sample, loadings for each decomposition
             components
             shape: number of subjects * (number of scans, number of regions)
@@ -648,12 +668,12 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         Parameters
         ----------
-        loadings : list of numpy array (n_samples x n_components)
+        loadings : :obj:`list` of numpy array (n_samples x n_components)
             Component signals to transform back into voxel signals
 
         Returns
         -------
-        reconstructed_imgs : list of nibabel.Nifti1Image or \
+        reconstructed_imgs : :obj:`list` of nibabel.Nifti1Image or \
             :class:`~nilearn.surface.SurfaceImage`
 
         For each loading, reconstructed Nifti1Image or SurfaceImage.
@@ -687,6 +707,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             data, self.components_, per_component=per_component
         )
 
+    @fill_doc
     def score(self, imgs, y=None, confounds=None, per_component=False):
         """Score function based on explained variance on imgs.
 
@@ -706,13 +727,13 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 
-        per_component : bool, default=False
+        per_component : :obj:`bool`, default=False
             Specify whether the explained variance ratio is desired for each
             map or for the global set of components.
 
         Returns
         -------
-        score : float
+        score : :obj:`float`
             Holds the score for each subjects. Score is two dimensional
             if per_component is True. First dimension
             is squeezed if the number of subjects is one
@@ -751,7 +772,7 @@ def _explained_variance(X, components, per_component=True):
     components : array-like
         Represents the components estimated by the decomposition algorithm.
 
-    per_component : bool, default=True
+    per_component : :obj:`bool`, default=True
         Specify whether the explained variance ratio is desired for each
         map or for the global set of components_.
 

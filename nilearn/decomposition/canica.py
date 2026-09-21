@@ -2,6 +2,7 @@
 
 import warnings as _warnings
 from operator import itemgetter
+from typing import get_args
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -14,8 +15,8 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.maskers import MultiNiftiMasker, MultiSurfaceMasker
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface import SurfaceImage
-from nilearn.typing import NiimgLike
 
 
 @fill_doc
@@ -52,7 +53,7 @@ class CanICA(_MultiPCA):
 
     %(random_state)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(standardize_confounds)s
 
@@ -73,6 +74,9 @@ class CanICA(_MultiPCA):
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
 
     %(target_affine)s
 
@@ -130,12 +134,13 @@ class CanICA(_MultiPCA):
         threshold="auto",
         n_init=10,
         random_state=None,
-        standardize=True,
+        standardize="zscore_sample",
         standardize_confounds=True,
         detrend=True,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -157,6 +162,7 @@ class CanICA(_MultiPCA):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             target_affine=target_affine,
             target_shape=target_shape,
             mask_strategy=mask_strategy,
@@ -271,7 +277,7 @@ class CanICA(_MultiPCA):
                     MultiSurfaceMasker,
                     SurfaceImage,
                     MultiNiftiMasker,
-                    *NiimgLike,
+                    *get_args(NiimgLike),
                 ),
                 "mask",
             )

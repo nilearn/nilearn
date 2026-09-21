@@ -97,7 +97,7 @@ def all_functions(
 
     Returns
     -------
-    all_functions : List of Tuples (:obj:`str`, callable)
+    all_functions : :obj:`list` of Tuples (:obj:`str`, callable)
         List of functions. Each element is a length 2 tuple
         where the first element is the function name as a string,
         and the second element is the function itself.
@@ -156,7 +156,7 @@ def all_classes(
 
     Returns
     -------
-    all_classes : List of Tuples (:obj:`str`, callable)
+    all_classes : :obj:`list` of Tuples (:obj:`str`, callable)
         List of classes.
         Each element is a length 2 tuple
         where the first element is the class name as a string,

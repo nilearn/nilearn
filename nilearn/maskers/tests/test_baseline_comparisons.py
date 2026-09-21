@@ -8,6 +8,8 @@ https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-f
 import numpy as np
 import pytest
 
+pytest.importorskip("matplotlib")
+
 from nilearn.datasets import (
     load_fsaverage_data,
     load_mni152_gm_mask,
@@ -27,7 +29,11 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
-from nilearn.surface.surface import at_least_2d, find_surface_clusters
+from nilearn.surface.surface import (
+    SurfaceImage,
+    at_least_2d,
+    find_surface_clusters,
+)
 
 
 def loaded_motor_activation_image():
@@ -144,12 +150,12 @@ def test_nifti_spheres_masker_create_summary_figure_for_report():
     return masker._create_figure_for_report()[0]
 
 
-def _fs_inflated_sulcal():
+def _fs_inflated_sulcal() -> SurfaceImage:
     """Load fs average sulcal data on inflated surface."""
     return load_fsaverage_data(mesh_type="inflated")
 
 
-def _surface_mask_img():
+def _surface_mask_img() -> SurfaceImage:
     """Generate surface mask including only high curvature regions."""
     return threshold_img(
         _fs_inflated_sulcal(), 0.5, cluster_threshold=50, two_sided=False

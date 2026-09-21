@@ -17,17 +17,28 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     sanitize_verbose,
 )
 from nilearn.decomposition._multi_pca import _MultiPCA
-from nilearn.image.image import iter_check_niimg
+from nilearn.image.image import iter_check_niimg, new_img_like
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
 from nilearn.maskers.surface_labels_masker import signals_to_surf_img_labels
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
 from nilearn.regions.rena_clustering import ReNA, make_edges_surface
 from nilearn.surface import SurfaceImage
+
+
+def _apply_img_dtype(img, signals, dtype):
+    """Convert img data and header to target dtype derived from signals."""
+    target_dtype = get_target_dtype(signals.dtype, dtype)
+    if target_dtype is None:
+        target_dtype = signals.dtype
+    img = new_img_like(img, img.get_fdata().astype(target_dtype))
+    img.set_data_dtype(target_dtype)
+    return img
 
 
 def _connectivity_surface(mask_img):
@@ -102,9 +113,10 @@ def _estimator_fit(data, estimator, method=None):
     estimator : instance of estimator from sklearn
         MiniBatchKMeans or AgglomerativeClustering.
 
-    method : str,
-    {'kmeans', 'ward', 'complete', 'average', 'rena', 'hierarchical_kmeans'},
-    default=None
+    method : :obj:`str`,
+        {'kmeans', 'ward', 'complete', 'average', 'rena',
+        'hierarchical_kmeans'},
+        default=None
 
         A method to choose between for brain parcellations.
 
@@ -245,9 +257,9 @@ class Parcellations(_MultiPCA):
     %(smoothing_fwhm)s
         default=4.0.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
-    standardize_confounds : boolean, default=True
+    standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
@@ -380,7 +392,7 @@ class Parcellations(_MultiPCA):
         random_state=0,
         mask=None,
         smoothing_fwhm=4.0,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         low_pass=None,
@@ -556,7 +568,7 @@ class Parcellations(_MultiPCA):
         return self
 
     @property
-    def n_elements_(self):
+    def n_elements_(self) -> int:
         """Return number of regions."""
         return self._n_elements_
 
@@ -601,21 +613,13 @@ class Parcellations(_MultiPCA):
         # Required for special cases like extracting signals on list of
         # 3D images or SurfaceImages.
 
-        # TODO (nilearn > 0.15.0)
-        # remove casting to None or "zscore_sample"
-        standardize = self.standardize
-        if standardize is False:
-            standardize = None
-        elif standardize is True:
-            standardize = "zscore_sample"
-
         if isinstance(self.masker_.mask_img_, SurfaceImage):
             imgs_list = imgs.copy()
             masker = SurfaceLabelsMasker(
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
                 smoothing_fwhm=self.smoothing_fwhm,
-                standardize=standardize,
+                standardize=self.standardize,
                 detrend=self.detrend,
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,
@@ -623,6 +627,7 @@ class Parcellations(_MultiPCA):
                 memory=self.memory_,
                 memory_level=self.memory_level,
                 verbose=self.verbose,
+                dtype=self.dtype,
             )
         else:
             imgs_list = iter_check_niimg(imgs, atleast_4d=True)
@@ -630,7 +635,7 @@ class Parcellations(_MultiPCA):
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
                 smoothing_fwhm=self.smoothing_fwhm,
-                standardize=standardize,
+                standardize=self.standardize,
                 detrend=self.detrend,
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,
@@ -639,6 +644,7 @@ class Parcellations(_MultiPCA):
                 memory=self.memory_,
                 memory_level=self.memory_level,
                 verbose=self.verbose,
+                dtype=self.dtype,
             )
 
         region_signals = Parallel(n_jobs=self.n_jobs)(
@@ -706,7 +712,7 @@ class Parcellations(_MultiPCA):
             Brain image(s).
 
         """
-        from .signal_extraction import signals_to_img_labels
+        from nilearn.regions.signal_extraction import signals_to_img_labels
 
         check_is_fitted(self)
 
@@ -739,6 +745,10 @@ class Parcellations(_MultiPCA):
                 )(each_signal, self.labels_img_, self.mask_img_)
                 for each_signal in signals
             )
+            imgs = [
+                _apply_img_dtype(img, each_signal, self.dtype)
+                for img, each_signal in zip(imgs, signals, strict=False)
+            ]
 
         return imgs[0] if single_subject else imgs
 
@@ -781,5 +791,11 @@ class Parcellations(_MultiPCA):
                     f"Expected {expected_shape}.\n"
                     f"Got {signals.shape}."
                 )
+
+        if signals.dtype == bool:
+            warnings.warn(
+                "Casting boolean input to int32", stacklevel=find_stack_level()
+            )
+            signals = signals.astype(np.int32)
 
         return signals

@@ -8,7 +8,9 @@ import pandas as pd
 __all__ = ["get_design_from_fslmat"]
 
 
-def get_design_from_fslmat(fsl_design_matrix_path, column_names=None):
+def get_design_from_fslmat(
+    fsl_design_matrix_path, column_names=None
+) -> pd.DataFrame:
     """Extract design matrix dataframe from FSL mat file.
 
     Parameters
@@ -32,12 +34,12 @@ def get_design_from_fslmat(fsl_design_matrix_path, column_names=None):
             if "/Matrix" in line:
                 break
 
-        design_matrix = np.array(
+        design_matrix_data = np.array(
             [
                 [float(val) for val in line.replace("\t\n", "").split("\t")]
                 for line in design_matrix_file
             ]
         )
-        design_matrix = pd.DataFrame(design_matrix, columns=column_names)
+        design_matrix = pd.DataFrame(design_matrix_data, columns=column_names)
 
     return design_matrix

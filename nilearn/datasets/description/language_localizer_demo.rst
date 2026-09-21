@@ -19,7 +19,7 @@ have been preprocessed (spatially realigned and normalized into the :term:`MNI` 
 Initially acquired with a :term:`voxel` size of 1.5x1.5x1.5mm,
 they have been resampled to 4.5x4.5x4.5mm to save disk space.
 
-https://osf.io/k4jp8/
+Direct download link from OSF:  https://osf.io/k4jp8/
 
 Content
 -------

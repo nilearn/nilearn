@@ -3,48 +3,28 @@ import pytest
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _surf_maps_img
 from nilearn.maskers import SurfaceMapsMasker
 from nilearn.surface import SurfaceImage
 
-ESTIMATORS_TO_CHECK = [SurfaceMapsMasker(_surf_maps_img())]
-
-if SKLEARN_LT_1_6:
-
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+ESTIMATORS_TO_CHECK = [
+    SurfaceMapsMasker(_surf_maps_img()),
+    SurfaceMapsMasker(_surf_maps_img(n_regions=1)),
+]
 
 
-@pytest.mark.slow
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -60,12 +40,10 @@ def test_fit_transform_mask_vs_no_mask(
     """Test that fit_transform returns the different results when a mask is
     used vs. when no mask is used.
     """
-    masker_with_mask = SurfaceMapsMasker(
-        surf_maps_img, surf_mask_1d, standardize=None
-    ).fit()
+    masker_with_mask = SurfaceMapsMasker(surf_maps_img, surf_mask_1d).fit()
     region_signals_with_mask = masker_with_mask.transform(surf_img_2d(50))
 
-    masker_no_mask = SurfaceMapsMasker(surf_maps_img, standardize=None).fit()
+    masker_no_mask = SurfaceMapsMasker(surf_maps_img).fit()
     region_signals_no_mask = masker_no_mask.transform(surf_img_2d(50))
 
     assert not (region_signals_with_mask == region_signals_no_mask).all()
@@ -90,9 +68,7 @@ def test_fit_transform_actual_output(surf_mesh, rng):
     surf_img = SurfaceImage(surf_mesh, img_data)
 
     # get the region signals x using the SurfaceMapsMasker
-    region_signals = SurfaceMapsMasker(
-        surf_maps_img, standardize=None
-    ).fit_transform(surf_img)
+    region_signals = SurfaceMapsMasker(surf_maps_img).fit_transform(surf_img)
 
     assert region_signals.shape == expected_region_signals.shape
     assert np.allclose(region_signals, expected_region_signals)
@@ -114,7 +90,7 @@ def test_inverse_transform_actual_output(surf_mesh, rng):
     surf_img = SurfaceImage(surf_mesh, img_data)
 
     # get the region signals x using the SurfaceMapsMasker
-    masker = SurfaceMapsMasker(surf_maps_img, standardize=None).fit()
+    masker = SurfaceMapsMasker(surf_maps_img).fit()
     region_signals = masker.fit_transform(surf_img)
     X_inverse_transformed = masker.inverse_transform(region_signals)
 
@@ -128,10 +104,7 @@ def test_inverse_transform_actual_output(surf_mesh, rng):
 
 def test_1d_maps_img(surf_img_1d):
     """Test that an error is raised when maps_img has 1D data."""
-    with pytest.raises(
-        ValueError,
-        match="maps_img should be 2D",
-    ):
+    with pytest.raises(ValueError, match="maps_img should be 2D"):
         SurfaceMapsMasker(maps_img=surf_img_1d).fit()
 
 
@@ -142,3 +115,130 @@ def test_labels_img_none():
         match="provide a maps_img during initialization",
     ):
         SurfaceMapsMasker(maps_img=None).fit()
+
+
+def test_empty_map_img_error(surf_mesh):
+    """Raise error if map_img is empty."""
+    maps_img = SurfaceImage(
+        mesh=surf_mesh,
+        data={
+            "left": np.asarray([[0, 0, 0, 0]]).T,
+            "right": np.asarray([[0, 0, 0, 0, 0]]).T,
+        },
+    )
+    with pytest.raises(
+        ValueError,
+        match="maps_img contains no map",
+    ):
+        SurfaceMapsMasker(maps_img=maps_img).fit()
+
+
+def test_mask_img_masks_all_maps_error(surf_mesh):
+    """Raise error if mask_img excludes all vertices with map value."""
+    maps_img = SurfaceImage(
+        mesh=surf_mesh,
+        data={
+            "left": np.asarray([[0.5, 0.3, 0, 0]]).T,
+            "right": np.asarray([[0.6, 0.3, 0.7, 0, 0]]).T,
+        },
+    )
+    mask_img = SurfaceImage(
+        mesh=surf_mesh,
+        data={
+            "left": np.asarray([0, 0, 1, 1]),
+            "right": np.asarray([0, 0, 0, 1, 1]),
+        },
+    )
+    with pytest.raises(
+        ValueError,
+        match="No map left after applying mask to the maps image",
+    ):
+        SurfaceMapsMasker(maps_img=maps_img, mask_img=mask_img).fit()
+
+
+@pytest.fixture
+def non_overlapping_maps(surf_mesh) -> SurfaceImage:
+    """Generate maps with non-overlapping regions.
+
+    Each vertex belongs to only 1 region.
+    """
+    data = {
+        "left": np.asarray(
+            [
+                [0, 0],
+                [0, 0],
+                [0, 0.1],
+                [0.7, 0],
+            ]
+        ),
+        "right": np.asarray(
+            [
+                [0, 0.6],
+                [0.3, 0],
+                [0, 0],
+                [0, 0],
+                [0, 0],
+            ]
+        ),
+    }
+    return SurfaceImage(surf_mesh, data)
+
+
+@pytest.fixture
+def overlapping_maps(surf_mesh) -> SurfaceImage:
+    """Generate maps with overlapping regions.
+
+    Some vertices have non null value for 2 different regions.
+    """
+    data = {
+        "left": np.asarray(
+            [
+                [0, 0],
+                [0, 0],
+                [0, 0],
+                [0.7, 0.1],  # overlap
+            ]
+        ),
+        "right": np.asarray(
+            [
+                [0, 0],
+                [0.3, 0.6],  # overlap
+                [0, 0],
+                [0, 0],
+                [0, 0],
+            ]
+        ),
+    }
+    return SurfaceImage(surf_mesh, data)
+
+
+@pytest.mark.parametrize("allow_overlap", [True, False])
+def test_non_overlapping_maps(
+    allow_overlap, non_overlapping_maps, surf_img_ones_1d
+):
+    """Test allow_overlap in SurfaceMapsMasker with non overlapping maps."""
+    masker = SurfaceMapsMasker(
+        non_overlapping_maps, allow_overlap=allow_overlap
+    )
+    region_signals = masker.fit_transform(surf_img_ones_1d)
+    assert np.allclose(
+        region_signals,
+        np.array([[1.72, 1.89]]),
+        atol=1e-02,
+    )
+
+
+@pytest.mark.parametrize("allow_overlap", [True, False])
+def test_overlapping_maps(allow_overlap, overlapping_maps, surf_img_ones_1d):
+    """Test allow_overlap in SurfaceMapsMasker with overlapping maps."""
+    masker = SurfaceMapsMasker(overlapping_maps, allow_overlap=allow_overlap)
+    if allow_overlap is False:
+        with pytest.raises(ValueError, match="Overlap detected"):
+            masker.fit_transform(surf_img_ones_1d)
+    else:
+        region_signals = masker.fit_transform(surf_img_ones_1d)
+        assert np.allclose(
+            region_signals,
+            np.array([[1.28, 1.02]]),
+            atol=1e-02,
+        )

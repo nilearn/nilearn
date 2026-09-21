@@ -6,7 +6,7 @@ from warnings import warn
 import numpy as np
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.helpers import is_plotly_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
@@ -42,9 +42,9 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
 
     Parameters
     ----------
-    engine: :obj:`str`, default='matplotlib'
+    engine : :obj:`str`, default='matplotlib'
         Name of the required backend engine. Can be ``matplotlib`` or
-    ``plotly``.
+        ``plotly``.
 
     Returns
     -------
@@ -56,13 +56,7 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
         engine, ["matplotlib", "plotly", "niivue"], "engine"
     )
     if engine == "matplotlib":
-        if is_matplotlib_installed():
-            import nilearn.plotting.surface._matplotlib_backend as backend
-        else:
-            raise ImportError(
-                "Using engine='matplotlib' requires that ``matplotlib`` is "
-                "installed."
-            )
+        import nilearn.plotting.surface._matplotlib_backend as backend
     elif engine == "plotly":
         if is_plotly_installed():
             import nilearn.plotting.surface._plotly_backend as backend
@@ -83,10 +77,12 @@ def check_engine_params(params, engine: str) -> None:
 
     Parameters
     ----------
-    params: :obj:`dict`
+    params : :obj:`dict`
         A dictionary where keys are the unimplemented parameter names for a
-    specific engine and values are the assigned value for corresponding
-    parameter.
+        specific engine and values are the assigned value for corresponding
+        parameter.
+
+    engine : :obj:`str`
     """
     for parameter, value in params.items():
         if value is not None:
@@ -231,10 +227,10 @@ def _get_hemi(surf_mesh, hemi):
 
     Parameters
     ----------
-    surf_mesh: :obj:`~nilearn.surface.PolyMesh`
+    surf_mesh : :obj:`~nilearn.surface.PolyMesh`
         The surface mesh object containing the left and/or right hemisphere
         meshes.
-    hemi: {'left', 'right', 'both'}
+    hemi : {'left', 'right', 'both'}
 
     Returns
     -------
@@ -286,7 +282,7 @@ def check_surface_plotting_inputs(
 
     Parameters
     ----------
-    surf_map: :obj:`~nilearn.surface.SurfaceImage` | :obj:`numpy.ndarray`
+    surf_map : :obj:`~nilearn.surface.SurfaceImage` | :obj:`numpy.ndarray`
               | None
 
     %(surf_mesh)s
@@ -297,6 +293,10 @@ def check_surface_plotting_inputs(
     %(hemi)s
 
     %(bg_map)s
+
+    map_var_name : :obj:`str`, default="surf_map"
+
+    mesh_var_name : :obj:`str`, default="surf_mesh"
 
     Returns
     -------
@@ -390,7 +390,7 @@ def get_faces_on_edge(faces, parc_idx):
     faces : :obj:`numpy.ndarray` of shape (n, 3), indices of the mesh faces
 
     parc_idx : :obj:`numpy.ndarray`, indices of the vertices of the region to
-    be plotted
+               be plotted
 
     """
     # count how many vertices belong to the given parcellation in each face

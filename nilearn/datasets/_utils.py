@@ -21,19 +21,20 @@ import requests
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level, readable_time
+from nilearn._utils.logger import _has_rich, find_stack_level, readable_time
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-
-from .utils import get_data_dirs
+from nilearn.datasets.utils import get_data_dirs
+from nilearn.nilearn_typing import Verbose
 
 _REQUESTS_TIMEOUT = (15.1, 61)
 PACKAGE_DIRECTORY = Path(__file__).absolute().parent
 
 
 ALLOWED_DATA_TYPES = (
+    "area",
     "curvature",
     "sulcal",
     "thickness",
@@ -81,6 +82,7 @@ def read_md5_sum_file(path):
     return hashes
 
 
+@fill_doc
 def _chunk_report_(
     bytes_so_far, total_size, initial_size, t0, verbose
 ) -> None:
@@ -101,6 +103,8 @@ def _chunk_report_(
     initial_size : int
         If resuming, indicate the initial size of the file.
         If not resuming, set to zero.
+
+    %(verbose)s
 
     """
     if not total_size:
@@ -131,12 +135,16 @@ def _chunk_read_(
     response,
     local_file,
     chunk_size=8192,
-    report_hook=None,
+    report_hook: bool = False,
     initial_size=0,
     total_size=None,
-    verbose=1,
+    verbose: Verbose = 1,
 ) -> None:
     """Download a file chunk by chunk and show advancement.
+
+    If ``rich`` is installed, a :class:`rich.progress.Progress` bar is
+    used to display advancement. Otherwise, a fallback text-based report
+    is printed instead (see :func:`_chunk_report_`).
 
     Parameters
     ----------
@@ -149,8 +157,8 @@ def _chunk_read_(
     chunk_size : int, default=8192
         Size of downloaded chunks.
 
-    report_hook : bool or None, default=None
-        Whether or not to show downloading advancement. default=None
+    report_hook : :obj:`bool`, default=False
+        Whether or not to show downloading advancement.
 
     initial_size : int, default=0
         If resuming, indicate the initial size of the file.
@@ -162,7 +170,7 @@ def _chunk_read_(
 
     Returns
     -------
-    data : string
+    data : :obj:`str`
         The downloaded file.
 
     """
@@ -182,25 +190,62 @@ def _chunk_read_(
             msg_level=3,
         )
         total_size = None
+
+    use_rich = report_hook and _has_rich()
+    if use_rich:
+        from rich.progress import (
+            BarColumn,
+            DownloadColumn,
+            Progress,
+            TextColumn,
+            TimeRemainingColumn,
+            TransferSpeedColumn,
+        )
+
+        description = Path(getattr(local_file, "name", "")).name
+        description = description.removesuffix(".part") or "file"
+        progress = Progress(
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            DownloadColumn(),
+            TransferSpeedColumn(),
+            TimeRemainingColumn(),
+        )
+        task_id = progress.add_task(
+            f"Downloading {description}",
+            total=total_size,
+            completed=initial_size,
+        )
+        progress.start()
+
     bytes_so_far = initial_size
 
     t0 = time_last_display = time.time()
-    for chunk in response.iter_content(chunk_size):
-        bytes_so_far += len(chunk)
-        time_last_read = time.time()
-        if (
-            report_hook
-            and
-            # Refresh report every second or when download is
-            # finished.
-            (time_last_read > time_last_display + 1.0 or not chunk)
-        ):
-            _chunk_report_(bytes_so_far, total_size, initial_size, t0, verbose)
-            time_last_display = time_last_read
-        if chunk:
-            local_file.write(chunk)
-        else:
-            break
+
+    try:
+        for chunk in response.iter_content(chunk_size):
+            bytes_so_far += len(chunk)
+
+            if use_rich:
+                progress.update(task_id, completed=bytes_so_far)
+
+            elif report_hook:
+                time_last_read = time.time()
+                # Refresh report every second or when download is finished.
+                if time_last_read > time_last_display + 1.0 or not chunk:
+                    _chunk_report_(
+                        bytes_so_far, total_size, initial_size, t0, verbose
+                    )
+                    time_last_display = time_last_read
+
+            if chunk:
+                local_file.write(chunk)
+            else:
+                break
+
+    finally:
+        if use_rich:
+            progress.stop()
 
 
 @fill_doc
@@ -211,12 +256,12 @@ def get_dataset_dir(
 
     Parameters
     ----------
-    dataset_name : string
+    dataset_name : :obj:`str`
         The unique name of the dataset.
 
     %(data_dir)s
 
-    default_paths : list of string or None, default=None
+    default_paths : :obj:`list` of string or None, default=None
         Default system paths in which the dataset may already have been
         installed by a third party software. They will be checked first.
 
@@ -260,8 +305,22 @@ def get_dataset_dir(
             path = path.resolve()
         if path.exists() and path.is_dir():
             logger.log(
-                f"Dataset found in {path}", verbose=verbose, msg_level=1
+                f"Dataset directory found: {path}",
+                verbose=verbose,
+                msg_level=1,
             )
+            if len(list(path.iterdir())) == 0:
+                logger.log(
+                    " Dataset directory is empty",
+                    verbose=verbose,
+                    msg_level=1,
+                )
+            else:
+                logger.log(
+                    " Note that some files still may be missing.",
+                    verbose=verbose,
+                    msg_level=2,
+                )
             return path
 
     # If not, create a folder in the first writable directory
@@ -344,10 +403,10 @@ def uncompress_file(file_, delete_archive=True, verbose=1) -> None:
 
     Parameters
     ----------
-    file_ : string
+    file_ : :obj:`str`
         Path of file to be uncompressed.
 
-    delete_archive : bool, default=True
+    delete_archive : :obj:`bool`, default=True
         Whether or not to delete archive once it is uncompressed.
     %(verbose)s
 
@@ -414,7 +473,7 @@ def _filter_column(array, col: str, criteria):
     array : array-like with columns
         Array in which data will be filtered.
 
-    col : string
+    col : :obj:`str`
         Name of the column.
 
     criteria : integer (or float), pair of integers, string or list of these
@@ -471,10 +530,10 @@ def filter_columns(array, filters, combination="and"):
     array : numpy array with columns
         Array in which data will be filtered.
 
-    filters : list of criteria
+    filters : :obj:`list` of criteria
         See _filter_column.
 
-    combination : string {'and', 'or'}, default='and'
+    combination : :obj:`str` {'and', 'or'}, default='and'
         String describing the combination operator. Possible values are "and"
         and "or".
 
@@ -520,13 +579,13 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
 @fill_doc
 def fetch_single_file(
     url,
-    data_dir,
-    resume=True,
-    overwrite=False,
+    data_dir: Path,
+    resume: bool = True,
+    overwrite: bool = False,
     md5sum=None,
     username=None,
     password=None,
-    verbose=1,
+    verbose: Verbose = 1,
     session=None,
 ):
     """Load requested file, downloading it if needed or requested.
@@ -534,18 +593,21 @@ def fetch_single_file(
     Parameters
     ----------
     %(url)s
+
     %(data_dir)s
+
     %(resume)s
-    overwrite : bool, default=False
+
+    overwrite : :obj:`bool`, default=False
         If true and file already exists, delete it.
 
-    md5sum : string or None, default=None
+    md5sum : :obj:`str` or None, default=None
         MD5 sum of the file. Checked if download of the file is required.
 
-    username : string or None, default=None
+    username : :obj:`str` or None, default=None
         Username used for basic HTTP authentication.
 
-    password : string or None, default=None
+    password : :obj:`str` or None, default=None
         Password used for basic HTTP authentication.
 
     %(verbose)s
@@ -641,7 +703,7 @@ def fetch_single_file(
                         _chunk_read_(
                             resp,
                             fh,
-                            report_hook=(verbose > 0),
+                            report_hook=bool(verbose > 0),
                             initial_size=initial_size,
                             verbose=verbose,
                         )
@@ -673,7 +735,7 @@ def fetch_single_file(
                     _chunk_read_(
                         resp,
                         fh,
-                        report_hook=(verbose > 0),
+                        report_hook=bool(verbose > 0),
                         initial_size=initial_size,
                         verbose=verbose,
                     )
@@ -700,13 +762,13 @@ def fetch_single_file(
     return full_name
 
 
-def get_dataset_descr(ds_name):
+def get_dataset_descr(ds_name: str) -> str:
     """Return the description of a dataset."""
     try:
         with (PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst").open(
             "rb"
         ) as rst_file:
-            descr = rst_file.read()
+            descr = rst_file.read().decode("utf-8")
     except OSError:
         descr = ""
 
@@ -716,10 +778,7 @@ def get_dataset_descr(ds_name):
             stacklevel=find_stack_level(),
         )
 
-    if isinstance(descr, bytes):
-        descr = descr.decode("utf-8")
-
-    return descr
+    return str(descr)
 
 
 def movetree(src, dst) -> None:
@@ -773,7 +832,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     ----------
     %(data_dir)s
 
-    files : list of (string, string, dict)
+    files : :obj:`list` of (string, string, dict)
         List of files and their corresponding url with dictionary that contains
         options regarding the files. Eg. (file_path, url, opt). If a file_path
         is not found in data_dir, as in data_dir/file_path the download will
@@ -793,7 +852,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 
     Returns
     -------
-    files : list of string
+    files : :obj:`list` of string
         Absolute paths of downloaded files on disk.
 
     """
@@ -845,6 +904,12 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             overwrite
             or (not target_file.exists() and not temp_target_file.exists())
         ):
+            logger.log(
+                f"Downloading missing file: {target_file}",
+                verbose=verbose,
+                msg_level=2,
+            )
+
             # We may be in a global read-only repository. If so, we cannot
             # download files.
             if not os.access(data_dir, os.W_OK):
@@ -914,13 +979,13 @@ def tree(path, pattern=None, dictionary=False):
 
     Parameters
     ----------
-    path : string or pathlib.Path
+    path : :obj:`str` or pathlib.Path
         Path browsed.
 
-    pattern : string or None, default=None
+    pattern : :obj:`str` or None, default=None
         Pattern used to filter files (see fnmatch).
 
-    dictionary : boolean, default=False
+    dictionary : :obj:`bool`, default=False
         If True, the function will return a dict instead of a list.
 
     """

@@ -46,6 +46,10 @@ def test_generate_atlas_look_up_table_errors():
 
 
 def test_check_look_up_table_errors(shape_3d_default):
+    """Test that check_look_up_table can detect
+    if there are mismatches between the number of ROIs in a look up table
+    and the number of unique ROIs in the associated image.
+    """
     mock_regions = data_gen.generate_labeled_regions(
         shape_3d_default, n_regions=10
     )
@@ -64,4 +68,25 @@ def test_check_look_up_table_errors(shape_3d_default):
     with pytest.raises(ValueError, match="missing from the atlas image"):
         check_look_up_table(
             lut=lut, atlas=mock_regions_with_missing_labels, strict=True
+        )
+
+
+def test_check_look_up_table_empty_image_error(img_3d_zeros_eye):
+    """Test that check_look_up_table throws a specific error / warning
+    for label images that are empty or have a single label.
+    """
+    with pytest.raises(ValueError, match="The image contains no label"):
+        generate_atlas_look_up_table(
+            function="unknown", index=img_3d_zeros_eye, background_label=0
+        )
+
+    with pytest.warns(
+        UserWarning,
+        match=(
+            "The image either contains no label "
+            "or a single label covering the whole image"
+        ),
+    ):
+        generate_atlas_look_up_table(
+            function="unknown", index=img_3d_zeros_eye
         )

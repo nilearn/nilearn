@@ -26,12 +26,11 @@ from nilearn._utils.data_gen import (
     write_fake_fmri_data_and_design,
 )
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.helpers import is_windows_platform
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.helpers import is_matplotlib_installed, is_windows_platform
+from nilearn.exceptions import MeshDimensionError
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import FirstLevelModel, mean_scaling, run_glm
 from nilearn.glm.first_level.design_matrix import (
@@ -47,44 +46,24 @@ from nilearn.glm.first_level.first_level import (
 )
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
-from nilearn.image import get_data
+from nilearn.image import get_data, iter_img, new_img_like
 from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.masking import intersect_masks
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_polymesh_equal
 
 ESTIMATORS_TO_CHECK = [FirstLevelModel()]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -136,7 +115,6 @@ def test_glm_override_masker_param(shape_4d_default):
         )
 
 
-@pytest.mark.slow
 def test_glm_fit_valid_mask_img(shape_4d_default):
     """Run fit on FLM with different valid masks."""
     rk = 3
@@ -164,7 +142,6 @@ def test_glm_fit_valid_mask_img(shape_4d_default):
     assert isinstance(z1, Nifti1Image)
 
 
-@pytest.mark.slow
 def test_explicit_fixed_effects(shape_3d_default):
     """Test the fixed effects performed manually/explicitly."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3
@@ -224,7 +201,6 @@ def test_explicit_fixed_effects(shape_3d_default):
         compute_fixed_effects(contrasts, variance, mask, dofs=[100])
 
 
-@pytest.mark.slow
 def test_explicit_fixed_effects_without_mask(shape_3d_default):
     """Test the fixed effects performed manually/explicitly with no mask."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3
@@ -284,7 +260,6 @@ def test_high_level_glm_with_data(shape_3d_default):
     assert get_data(z_image).std() < 3.0
 
 
-@pytest.mark.slow
 def test_glm_target_shape_affine(shape_3d_default, affine_eye):
     """Check that target shape and affine are applied."""
     shapes, rk = [(*shape_3d_default, 5)], 3
@@ -314,7 +289,6 @@ def test_glm_target_shape_affine(shape_3d_default, affine_eye):
     assert z_image.shape == (10, 11, 12)
 
 
-@pytest.mark.slow
 def test_high_level_glm_with_data_with_mask(shape_3d_default):
     """Test GLM can be run with mask."""
     shapes, rk = [(*shape_3d_default, 5)], 3
@@ -376,7 +350,6 @@ def test_fmri_inputs_type_data_smoke(tmp_path, shape_4d_default):
     )
 
 
-@pytest.mark.slow
 def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
     """Test processing of FMRI inputs with path, str for design matrix."""
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
@@ -429,7 +402,6 @@ def test_high_level_glm_null_contrasts(shape_3d_default):
     np.testing.assert_almost_equal(get_data(z1), get_data(z2))
 
 
-@pytest.mark.slow
 def test_high_level_glm_different_design_matrices():
     """Test can estimate a contrast when design matrices are different."""
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
@@ -462,7 +434,6 @@ def test_high_level_glm_different_design_matrices():
     assert_almost_equal(get_data(z1) + get_data(z2), 2 * get_data(z_joint))
 
 
-@pytest.mark.slow
 def test_high_level_glm_different_design_matrices_formulas():
     """Test can estimate a contrast when design matrices are different."""
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
@@ -490,7 +461,6 @@ def test_high_level_glm_different_design_matrices_formulas():
         multi_run_model.compute_contrast(formula, output_type="effect_size")
 
 
-@pytest.mark.slow
 def test_compute_contrast_num_contrasts(shape_4d_default):
     """Check error when computing contrast with invalid contrast matrix."""
     shapes, rk = [shape_4d_default, shape_4d_default, shape_4d_default], 3
@@ -640,9 +610,8 @@ def test_glm_ar_estimates_errors(rng):
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("random_state", [3, np.random.RandomState(42)])
-def test_glm_random_state(random_state):
+def test_glm_random_state(rng, random_state):
     """Test that the random state is passed to the run_glm."""
-    rng = np.random.RandomState(42)
     n, p, q = 33, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
@@ -674,7 +643,6 @@ def test_scaling(rng):
     assert Y.std() > 1
 
 
-@pytest.mark.slow
 def test_fmri_inputs_shape(shape_4d_default):
     """Test different types of fit inputs.
 
@@ -722,7 +690,6 @@ def test_fmri_inputs_design_matrices_csv(tmp_path, shape_4d_default):
     )
 
 
-@pytest.mark.slow
 def test_fmri_inputs_events_type(tmp_path):
     """Check events can be dataframe or pathlike to CSV / TSV."""
     n_timepoints = 10
@@ -743,7 +710,6 @@ def test_fmri_inputs_events_type(tmp_path):
     )
 
 
-@pytest.mark.slow
 def test_fmri_inputs_with_confounds(tmp_path):
     """Test with confounds and, events."""
     n_timepoints = 10
@@ -904,7 +870,6 @@ def test_fmri_inputs_errors(shape_4d_default):
         FirstLevelModel(mask_img=None, t_r=1.0).fit(fmri_data, design_matrices)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "to_ignore",
     [{"slice_time_ref": 0.5}, {"t_r": 2}, {"hrf_model": "fir"}],
@@ -925,9 +890,7 @@ def test_parameter_attributes_ignored_with_design_matrix(
     design_matrices = design_matrices[0]
 
     with warnings.catch_warnings(record=True) as warning_list:
-        FirstLevelModel(standardize=None).fit(
-            [fmri_data], design_matrices=[design_matrices]
-        )
+        FirstLevelModel().fit([fmri_data], design_matrices=[design_matrices])
     assert not warning_list, [str(x) for x in warning_list]
 
     with pytest.warns(UserWarning, match="If design matrices are supplied"):
@@ -943,7 +906,6 @@ def test_parameter_attributes_ignored_with_design_matrix(
         )
 
 
-@pytest.mark.slow
 def test_fmri_inputs_errors_confounds(shape_4d_default):
     """Raise errors when incompatible inputs and confounds are passed."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -982,7 +944,6 @@ def test_fmri_inputs_errors_confounds(shape_4d_default):
         )
 
 
-@pytest.mark.slow
 def test_first_level_design_creation(shape_4d_default):
     """Check that design matrices equals one built 'manually'."""
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(
@@ -1034,7 +995,6 @@ def test_first_level_glm_computation(shape_4d_default):
         mask_img=mask,
         drift_model="polynomial",
         drift_order=3,
-        minimize_memory=False,
     )
     events = basic_paradigm()
     model.fit(fmri_data[0], events)
@@ -1060,7 +1020,6 @@ def test_first_level_glm_computation_with_memory_caching(shape_4d_default):
     model.fit(fmri_data[0], events)
 
 
-@pytest.mark.slow
 def test_first_level_contrast_computation():
     """Check contrast_computation."""
     shapes = ((7, 8, 9, 10),)
@@ -1073,7 +1032,6 @@ def test_first_level_contrast_computation():
         mask_img=mask,
         drift_model="polynomial",
         drift_order=3,
-        minimize_memory=False,
     )
     c1, c2, cnull = np.eye(7)[0], np.eye(7)[1], np.zeros(7)
 
@@ -1089,18 +1047,20 @@ def test_first_level_contrast_computation():
     model.compute_contrast([c2, c2])
 
     # smoke test for contrast that will be repeated
-    model.compute_contrast(c2)
-    model.compute_contrast(c2, "F")
-    model.compute_contrast(c2, "t", "z_score")
-    model.compute_contrast(c2, "t", "stat")
-    model.compute_contrast(c2, "t", "p_value")
-    model.compute_contrast(c2, None, "effect_size")
-    model.compute_contrast(c2, None, "effect_variance")
+    for kwargs in [
+        {},
+        {"stat_type": "F"},
+        {"stat_type": "t", "output_type": "z_score"},
+        {"stat_type": "t", "output_type": "stat"},
+        {"stat_type": "t", "output_type": "p_value"},
+        {"output_type": "effect_size"},
+        {"output_type": "effect_variance"},
+    ]:
+        model.compute_contrast(c2, **kwargs)
 
     # formula should work (passing variable name directly)
-    model.compute_contrast("c0")
-    model.compute_contrast("c1")
-    model.compute_contrast("c2")
+    for cn in ["c0", "c1", "c2"]:
+        model.compute_contrast(cn)
 
     # smoke test for one null contrast in group
     model.compute_contrast([c2, cnull])
@@ -1119,7 +1079,6 @@ def test_first_level_contrast_computation_errors(shape_4d_default):
         mask_img=mask,
         drift_model="polynomial",
         drift_order=3,
-        minimize_memory=False,
     )
     c1, cnull = np.eye(7)[0], np.zeros(7)
 
@@ -1250,13 +1209,12 @@ def test_first_level_residuals(shape_4d_default):
 
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    residuals = model.residuals[0]
+    residuals = model.residuals_[0]
     mean_residuals = model.masker_.transform(residuals).mean(0)
 
     assert_array_almost_equal(mean_residuals, 0)
 
 
-@pytest.mark.slow
 def test_first_level_residuals_errors(shape_4d_default):
     """Access residuals needs fit and minimize_memory set to True."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -1273,8 +1231,8 @@ def test_first_level_residuals_errors(shape_4d_default):
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    with pytest.raises(ValueError, match="To access voxelwise attributes"):
-        model.residuals[0]
+    with pytest.raises(AttributeError, match="To access voxelwise attributes"):
+        model.residuals_[0]
 
     # Check that trying to access residuals without fitting
     # raises an error
@@ -1284,12 +1242,10 @@ def test_first_level_residuals_errors(shape_4d_default):
 
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    # For coverage
-    with pytest.raises(ValueError, match="must be one of"):
+    with pytest.raises(ValueError, match="'attribute' must be one of"):
         model._get_element_wise_model_attribute("foo", True)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "shapes",
     [
@@ -1318,7 +1274,6 @@ def test_get_element_wise_attributes_should_return_as_many_as_design_matrices(
     ) == len(shapes)
 
 
-@pytest.mark.slow
 def test_first_level_predictions_r_square(shape_4d_default):
     """Check r_square gives sensible values."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -1336,9 +1291,9 @@ def test_first_level_predictions_r_square(shape_4d_default):
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    pred = model.predicted[0]
+    pred = model.predicted_[0]
     data = fmri_data[0]
-    r_square_3d = model.r_square[0]
+    r_square_3d = model.r_square_[0]
 
     y_predicted = model.masker_.transform(pred)
     y_measured = model.masker_.transform(data)
@@ -1401,7 +1356,7 @@ def test_glm_sample_mask(shape_4d_default):
     )
 
     assert model.design_matrices_[0].shape[0] == shape_4d_default[3] - 3
-    assert model.predicted[0].shape[-1] == shape_4d_default[3] - 3
+    assert model.predicted_[0].shape[-1] == shape_4d_default[3] - 3
 
 
 def test_check_trial_type_warning(tmp_path):
@@ -1446,6 +1401,60 @@ def test_img_table_checks():
     """Check matching lengths."""
     with pytest.raises(ValueError, match=r"len.* does not match len.*"):
         _check_length_match([""] * 2, [""], "", "")
+
+
+def test_error_runs_different_fov():
+    """Check runs have same FOV: raise an error if not."""
+    _, imgs, des_mat = generate_fake_fmri_data_and_design(
+        shapes=[(10, 11, 12, 50), (20, 21, 22, 55)]
+    )
+
+    with pytest.raises(
+        ValueError, match="Following field of view errors were detected"
+    ):
+        FirstLevelModel().fit(imgs, design_matrices=des_mat)
+
+
+def test_mask_computed_on_all_runs():
+    """Ensure mask of a GLM with several run is computed on all runs.
+
+    - generate 2 runs with their design matrices
+    - set data in different part of each run to 0
+    - run GLM for each run separately or together
+      and compare their mask (and their intersection)
+
+    Regression test for https://github.com/nilearn/nilearn/issues/6253
+    """
+    mask, imgs, des_mat = generate_fake_fmri_data_and_design(
+        shapes=[(10, 11, 12, 50), (10, 11, 12, 55)]
+    )
+
+    data1 = get_data(imgs[0])
+    data1[6:, 6:, 6:, ...] = 0
+    imgs[0] = new_img_like(imgs[0], data1)
+
+    data2 = get_data(imgs[1])
+    data2[:5, :5, :5, ...] = 0
+    imgs[1] = new_img_like(imgs[1], data2)
+
+    flm = FirstLevelModel().fit(imgs, design_matrices=des_mat)
+    mask = flm.masker_.mask_img_
+    n_voxel_both_run = np.sum(get_data(mask) > 0)
+
+    flm1 = FirstLevelModel().fit(imgs[0], design_matrices=des_mat[0])
+    mask1 = flm1.masker_.mask_img_
+    n_voxel_run_1 = np.sum(get_data(mask1) > 0)
+
+    flm2 = FirstLevelModel().fit(imgs[1], design_matrices=des_mat[1])
+    mask2 = flm2.masker_.mask_img_
+    n_voxel_run_2 = np.sum(get_data(mask2) > 0)
+
+    new_mask = intersect_masks([mask1, mask2], threshold=1)
+    n_voxel_intersection = np.sum(get_data(new_mask) > 0)
+
+    assert n_voxel_both_run <= n_voxel_run_1
+    assert n_voxel_both_run <= n_voxel_run_2
+    assert n_voxel_intersection == n_voxel_both_run
 
 
 # -----------------------surface tests--------------------------------------- #
@@ -1526,6 +1535,21 @@ def test_error_flm_surface_mask_volume_image(
         model.fit(img_4d_rand_eye, design_matrices=des)
 
 
+def test_error_flm_surface_different_mesh(surface_glm_data, flip_surf_img):
+    """Test error is raised when surface images have different meshes."""
+    img, des = surface_glm_data(5)
+
+    img = list(iter_img(img))
+    img[1] = flip_surf_img(img[1])
+
+    model = FirstLevelModel()
+    with pytest.raises(
+        MeshDimensionError,
+        match="Number of vertices do not match for between meshes",
+    ):
+        model.fit(img, design_matrices=des)
+
+
 def test_error_flm_volume_mask_surface_image(surface_glm_data):
     """Test error is raised when mask is a volume and data is in surface."""
     shapes, rk = [(7, 8, 9, 15)], 3
@@ -1565,7 +1589,7 @@ def test_flm_with_surface_masker_with_mask(
     """Test FirstLevelModel with SurfaceMasker and mask image."""
     surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
     img, des = surface_glm_data(5)
-    masker = SurfaceMasker(mask_img=surf_mask).fit(img)
+    masker = SurfaceMasker(mask_img=surf_mask).fit()
     model = FirstLevelModel(mask_img=masker)
     model.fit(img, design_matrices=des)
 
@@ -1605,15 +1629,12 @@ def test_flm_get_element_wise_model_attribute_with_surface_data(
     events = basic_paradigm()
     model.fit([img, img], events=[events, events])
 
-    assert len(model.residuals) == 2
-    assert model.residuals[0].shape == img.shape
-    assert len(model.predicted) == 2
-    assert model.predicted[0].shape == img.shape
-    assert len(model.r_square) == 2
-    assert model.r_square[0].shape == (img.mesh.n_vertices, 1)
-
-
-# -----------------------bids tests----------------------- #
+    assert len(model.residuals_) == 2
+    assert model.residuals_[0].shape == img.shape
+    assert len(model.predicted_) == 2
+    assert model.predicted_[0].shape == img.shape
+    assert len(model.r_square_) == 2
+    assert model.r_square_[0].shape == (img.mesh.n_vertices, 1)
 
 
 def test_fixed_effect_contrast_surface(surface_glm_data):
@@ -1632,7 +1653,7 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
     variance = result["effect_variance"]
     surf_mask_ = masker.mask_img_
     for mask in [
-        SurfaceMasker(mask_img=masker.mask_img_, standardize=None),
+        SurfaceMasker(mask_img=masker.mask_img_),
         surf_mask_,
         None,
     ]:
@@ -1644,7 +1665,9 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
             assert isinstance(output, SurfaceImage)
 
 
-@pytest.mark.slow
+# -----------------------report tests----------------------- #
+
+
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs",
@@ -1661,7 +1684,7 @@ def test_generate_report_default(kwargs):
         shapes=[(30, 31, 32, 33)], rk=3
     )
 
-    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
+    flm = FirstLevelModel(mask_img=mask).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
 
@@ -1673,39 +1696,9 @@ def test_generate_report_default(kwargs):
 
     with warnings.catch_warnings(record=True) as warning_list:
         flm.generate_report(contrasts=contrasts, **kwargs)
-        assert len(warning_list) == 0
+        assert len(warning_list) == 0 if is_matplotlib_installed() else 2
 
 
-@pytest.mark.slow
-@pytest.mark.thread_unsafe
-def test_generate_report_height_none_future_default():
-    """Make sure generate_report raises a single FutureWarning
-    about the deprecation of the default threshold.
-
-    TODO (nilearn >= 0.15)
-    Remove this test
-    """
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[(30, 31, 32, 33)], rk=3
-    )
-
-    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
-        fmri_data[0], design_matrices=design_matrices[0]
-    )
-
-    contrasts = [
-        np.asarray([1, 0, 0]),
-        np.asarray([1, 1, 0]),
-        np.asarray([1, 1, 1]),
-    ]
-
-    with pytest.warns(
-        FutureWarning, match="the default 'threshold' will be set to"
-    ):
-        flm.generate_report(contrasts=contrasts, height_control=None)
-
-
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", [4, DEFAULT_Z_THRESHOLD])
 def test_generate_report_threshold_unused(threshold):
@@ -1716,7 +1709,7 @@ def test_generate_report_threshold_unused(threshold):
         shapes=[(30, 31, 32, 33)], rk=3
     )
 
-    flm = FirstLevelModel(mask_img=mask, minimize_memory=False).fit(
+    flm = FirstLevelModel(mask_img=mask).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
 

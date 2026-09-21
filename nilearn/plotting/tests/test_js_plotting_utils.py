@@ -71,7 +71,7 @@ def check_html_surface_plots(
         with tmpfile.open() as f:
             saved = f.read()
         saved = saved.replace("\r\n", "\n")
-        standalone = html.get_standalone().replace("\r\n", "\n")
+        standalone = html.get_iframe().replace("\r\n", "\n")
         assert saved == standalone
 
     resized = html.resize(3, 17)
@@ -103,14 +103,14 @@ def _check_lxml(html, check_selects, plot_div_id):
     head = root.find("head")
     assert len(head.findall("script")) == 5
 
-    main = root.find("body").find("main")
-    div = main.find("div")
+    body = root.find("body")
+    div = body.find("div")
     assert ("id", plot_div_id) in div.items()
 
     if not check_selects:
         return
 
-    selects = main.findall("select")
+    selects = body.findall("select")
     assert len(selects) == 3
 
     for idx, selector, expected_n in zip(

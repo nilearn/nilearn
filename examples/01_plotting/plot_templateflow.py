@@ -66,11 +66,11 @@ print(fetched_files)
 # for the 3k and 10k densities.
 
 used_densities = ["3k", "10k"]
-# uncomment the following line in case you want to see all densities
+# uncomment the following line to use all densities
 # used_densities = ["3k", "10k", "41k", "164k"]
 
 desikan_dict = {}
-for density in ["3k", "10k"]:
+for density in used_densities:
     mesh = {}
     data = {}
     for hemi in ["left", "right"]:
@@ -133,7 +133,7 @@ lut = tflow.get(
     extension="tsv",
 )
 
-for ax, density in zip(axes, ["3k", "10k"], strict=True):
+for ax, density in zip(axes, used_densities, strict=True):
     desikan = desikan_dict[density]
     sulcal_depth_map = load_fsaverage_data(
         mesh=fs_density[density], data_type="sulcal"
@@ -190,12 +190,11 @@ print(f"Harvard-Oxford atlas template: {harvard_oxford_sub.template}")
 # %%
 # Getting a template
 # ------------------
-# If you want to visualize the Harvard-Oxford atlas
-# on the template it was originally defined,
-# you can get it from TemplateFlow.
+# The Harvard-Oxford atlas can be visualized on its original
+# template by fetching it from TemplateFlow.
 # This template is the default template used by FSL,
 # and its unique identifier within TemplateFlow
-# is`MNI152NLin6Asym`.
+# is `MNI152NLin6Asym`.
 
 template = "MNI152NLin6Asym"
 resolution = "01"

@@ -7,28 +7,80 @@ in the neighborhood of each location of a domain.
 import time
 import warnings
 from copy import deepcopy
+from typing import Any, Self
 
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
-from sklearn import svm
-from sklearn.base import TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
-from sklearn.utils import check_array
+from sklearn.utils import ClassifierTags, RegressorTags, check_array
 from sklearn.utils.estimator_checks import check_is_fitted
+from sklearn.utils.validation import has_fit_parameter
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import readable_time
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.tags import InputTags
+from nilearn.decoding._utils import SUPPORTED_ESTIMATORS, validate_estimator
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 from nilearn.masking import load_mask_img
+from nilearn.nilearn_typing import SupportedClassifiers, SupportedRegressors
 
-ESTIMATOR_CATALOG = {"svc": svm.LinearSVC, "svr": svm.SVR}
+
+def _check_searchlight_estimator(estimator, *, scoring, y):
+    """Validate estimator for nilearn.decoding.SearchLight."""
+    uses_cv = getattr(estimator, "nilearn_searchlight_uses_cv", True)
+
+    # Must be an instance, not a class
+    if isinstance(estimator, type):
+        raise TypeError(
+            "SearchLight estimator must be an *instance*, "
+            f"got class {estimator.__name__}."
+        )
+
+    # Must look like a sklearn estimator
+    if not isinstance(estimator, BaseEstimator):
+        raise TypeError(
+            "estimator must derive from sklearn.base.BaseEstimator."
+        )
+
+    # If y is None, current implementation uses decision_function
+    if y is None and not hasattr(estimator, "decision_function"):
+        raise TypeError(
+            "When y=None, SearchLight expects the estimator to implement "
+            "'decision_function(X)'."
+        )
+
+    # If scoring is None, sklearn falls back to estimator.score
+    if scoring is None and not hasattr(estimator, "score"):
+        raise TypeError(
+            "SearchLight with scoring=None requires the estimator to "
+            "implement 'score(X, y)'."
+        )
+
+    # If not uses_cv, we call score(X, y) directly in the searchlight loop,
+    # so it must be implemented
+    if not uses_cv and not hasattr(estimator, "score"):
+        raise TypeError(
+            "SearchLight estimator must implement 'score(X, y)' method when "
+            "nilearn_searchlight_uses_cv is False."
+        )
+
+    # If not uses_cv, we call fit(X, y, groups=groups) in the searchlight loop,
+    # so it must accept a groups parameter, even if unused
+    if not uses_cv and not has_fit_parameter(estimator, "groups"):
+        raise TypeError(
+            "SearchLight estimator with nilearn_searchlight_uses_cv=False "
+            "must accept a 'groups' parameter in fit, because SearchLight "
+            "calls fit(X, y, groups=groups) in this case. Even if the "
+            "estimator does not use it, it must be accepted for "
+            "compatibility."
+        )
 
 
 @fill_doc
@@ -168,7 +220,7 @@ def _group_iter_search_light(
     groups : array-like
         group label for each sample for cross validation.
 
-    scoring : string or callable
+    scoring : :obj:`str` or callable
         Scoring strategy to use. See the scikit-learn documentation.
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
@@ -207,11 +259,22 @@ def _group_iter_search_light(
                 )  # Ensure the size matches X
                 par_scores[i] = np.mean(estimator.decision_function(X[:, row]))
             else:
-                par_scores[i] = np.mean(
-                    cross_val_score(
-                        estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs
-                    )
+                use_cv = getattr(
+                    estimator, "nilearn_searchlight_uses_cv", True
                 )
+
+                if not use_cv:
+                    estimator.fit(X[:, row], y, groups=groups)
+                    # either estimator.score(...) OR estimator.score_ attribute
+                    par_scores[i] = estimator.score(
+                        X[:, row], y, groups=groups
+                    )
+                else:
+                    par_scores[i] = np.mean(
+                        cross_val_score(
+                            estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs
+                        )
+                    )
 
         if verbose > 0:
             # One can't print less than each 10 iterations
@@ -254,8 +317,16 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
     radius : :obj:`float`, default=2.
         radius of the searchlight ball, in millimeters.
 
-    estimator : :obj:`str` or estimator object, default='svc'
-        The object to use to fit the data.
+    estimator : one of {"svc_l1", "svc_l2", "svc", \
+        "logistic_l1", "logistic_l2", "logistic", "ridge_classifier", \
+        "dummy_classifier", "ridge", "ridge_regressor", \
+        "lasso", "lasso_regressor", "svr", "dummy_regressor"}, \
+        or a scikit-learn compatible estimator object, \
+        default='svc'
+        The estimator to choose among:
+        %(classifier_options)s
+
+        %(regressor_options)s
 
         %(sk_compatible_admonition)s
 
@@ -298,15 +369,15 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
 
     process_mask_ : numpy.ndarray
         Boolean mask array representing the voxels included in the
-         searchlight computation.
+        searchlight computation.
 
-         .. nilearn_versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     scores_ : numpy.ndarray
         3D array containing searchlight scores for each voxel, aligned
-         with the mask.
+        with the mask.
 
-         .. nilearn_versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     Notes
     -----
@@ -332,7 +403,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         mask_img=None,
         process_mask_img=None,
         radius=2.0,
-        estimator="svc",
+        estimator: SupportedRegressors | SupportedClassifiers | Any = "svc",
         n_jobs=1,
         scoring=None,
         cv=None,
@@ -357,61 +428,37 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags()
-
-        from sklearn.utils import ClassifierTags, RegressorTags
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=False)
 
-        if self.estimator == "svr":
-            if SKLEARN_LT_1_6:
-                tags["multioutput"] = True
-                return tags
+        if self._estimator_type == "regressor":
             tags.estimator_type = "regressor"
             tags.regressor_tags = RegressorTags()
 
-        elif self.estimator == "svc":
-            if SKLEARN_LT_1_6:
-                return tags
+        elif self._estimator_type == "classifier":
             tags.estimator_type = "classifier"
             tags.classifier_tags = ClassifierTags()
 
         return tags
 
     @property
-    def _estimator_type(self):
-        # TODO (sklearn >= 1.8.0) remove
-        if self.estimator == "svr":
-            return "regressor"
-        elif self.estimator == "svc":
-            return "classifier"
+    def _estimator_type(self) -> str:
+        if isinstance(self.estimator, str):
+            if self.estimator in SUPPORTED_ESTIMATORS["regressor"]:
+                return "regressor"
+            elif self.estimator in SUPPORTED_ESTIMATORS["classifier"]:
+                return "classifier"
+        else:
+            if hasattr(self.estimator, "__sklearn_tags__"):
+                return getattr(
+                    self.estimator.__sklearn_tags__(), "estimator_type", ""
+                )
+            # TODO (sklearn >= 1.8.0) remove
+            if hasattr(self.estimator, "_estimator_type"):
+                return self.estimator._estimator_type
         return ""
 
-    def _get_estimator(self):
-        if not isinstance(self.estimator, str):
-            return self.estimator
-
-        estimator_args = (
-            {} if self.estimator_args is None else self.estimator_args
-        )
-        if "verbose" not in estimator_args:
-            estimator_args["verbose"] = (self.verbose - 1) > 0
-        if self.estimator == "svc" and "random_state" not in estimator_args:
-            estimator_args["random_state"] = self.random_state
-
-        estimator = ESTIMATOR_CATALOG[self.estimator](**estimator_args)
-
-        return estimator
-
-    def fit(self, imgs, y, groups=None):
+    def fit(self, imgs, y, groups=None) -> Self:
         """Fit the searchlight.
 
         Parameters
@@ -446,7 +493,9 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         process_mask_img = self.process_mask_img or self.mask_img_
 
         # Compute world coordinates of the seeds
-        process_mask, process_mask_affine = load_mask_img(process_mask_img)
+        process_mask, process_mask_affine = load_mask_img(
+            process_mask_img  # type: ignore[arg-type]
+        )
 
         self.process_mask_ = process_mask
 
@@ -459,7 +508,9 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             process_mask_coords[2],
             process_mask_affine,
         )
-        process_mask_coords = np.asarray(process_mask_coords).T
+        process_mask_coords = np.asarray(  # type: ignore[assignment]
+            process_mask_coords
+        ).T
 
         X, A = apply_mask_and_get_affinity(
             process_mask_coords,
@@ -469,7 +520,20 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             mask_img=self.mask_img_,
         )
 
-        estimator = self._get_estimator()
+        # TODO (sklearn >= 1.8) _estimator_type will be removed
+        owning_class_type = getattr(self, "_estimator_type", None)
+
+        if owning_class_type is None:
+            owning_class_type = self.__sklearn_tags__().estimator_type
+
+        estimator = validate_estimator(
+            estimator=self.estimator,
+            owning_class_type=owning_class_type,
+            estimator_args=self.estimator_args,
+            verbose=self.verbose,
+        )
+
+        _check_searchlight_estimator(estimator, scoring=self.scoring, y=y)
 
         scores = search_light(
             X,
@@ -492,7 +556,6 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             hasattr(self, "scores_")
             and hasattr(self, "process_mask_")
             and hasattr(self, "mask_img_")
-            and self.scores_ is not None
             and self.process_mask_ is not None
         )
 
@@ -527,7 +590,18 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             mask_img=self.mask_img_,
         )
 
-        estimator = self._get_estimator()
+        # TODO (sklearn >= 1.8) _estimator_type will be removed
+        owning_class_type = getattr(self, "_estimator_type", None)
+
+        if owning_class_type is None:
+            owning_class_type = self.__sklearn_tags__().estimator_type
+
+        estimator = validate_estimator(
+            estimator=self.estimator,
+            owning_class_type=owning_class_type,
+            estimator_args=self.estimator_args,
+            verbose=self.verbose,
+        )
 
         # Use the modified `_group_iter_search_light` logic to avoid `y` issues
         result = search_light(

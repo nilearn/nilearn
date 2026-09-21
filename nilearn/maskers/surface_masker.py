@@ -1,7 +1,7 @@
 """Masker for surface objects."""
 
 from copy import deepcopy
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Self
 from warnings import warn
 
 import numpy as np
@@ -35,7 +35,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -51,6 +51,10 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     %(high_pass)s
 
     %(t_r)s
+
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
 
     %(memory)s
 
@@ -101,13 +105,14 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         high_variance_confounds=False,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         verbose=0,
@@ -124,6 +129,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
@@ -154,11 +160,11 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             if img is not None:
                 warn(
                     f"[{self.__class__.__name__}.fit] "
-                    "Generation of a mask has been"
-                    " requested (img != None) while a mask was"
-                    " given at masker creation. Given mask"
-                    " will be used.",
+                    "Generation of a mask has been requested (imgs != None) "
+                    "while a mask was given at masker creation. "
+                    "Given mask will be used.",
                     stacklevel=find_stack_level(),
+                    category=RuntimeWarning,
                 )
             return
 
@@ -169,7 +175,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 "if no mask is passed to mask_img."
             )
 
-        mask_logger("compute_mask", verbose=self.verbose)
+        mask_logger("compute_mask", img=img, verbose=self.verbose)
 
         img = deepcopy(img)
         if not isinstance(img, list):
@@ -193,7 +199,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -212,12 +218,14 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
         # Reset report
         # in case where the masker was previously fitted
         self._reset_report()
 
         if imgs is not None:
+            mask_logger("load_data", imgs, self.verbose)
             self._check_imgs(imgs)
 
             if isinstance(imgs, SurfaceImage) and any(
@@ -323,10 +331,18 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
-        return self._clean(output, confounds, sample_mask)
+        target_dtype = self._get_target_dtype(imgs)
+
+        output = self._clean(output, confounds, sample_mask)
+
+        # target_dtype is None: no explicit dtype was requested,
+        # so keep the dtype produced by the extraction/cleaning pipeline
+        # (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return output if target_dtype is None else output.astype(target_dtype)
 
     @fill_doc
-    def inverse_transform(self, signals):
+    def inverse_transform(self, signals) -> SurfaceImage:
         """Transform extracted signal back to surface object.
 
         Parameters
@@ -339,7 +355,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        return_1D = signals.ndim < 2
+        return_1D = hasattr(signals, "ndim") and signals.ndim < 2
 
         # do not run sklearn_check as they may cause some failure
         # with some GLM inputs
@@ -349,18 +365,15 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
-            data[part_name] = np.zeros(
-                (mask.shape[0], signals.shape[0]),
-                dtype=signals.dtype,
-            )
+            data[part_name] = np.zeros((mask.shape[0], signals.shape[0]))
             start, stop = self._slices[part_name]
             data[part_name][mask.ravel()] = signals[:, start:stop].T
-            if return_1D:
-                data[part_name] = data[part_name].squeeze()
 
-        return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
+        imgs = SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
-    def _load_report_displays(self) -> None | str:
+        return self._post_process_inverse_transform(signals, imgs, return_1D)
+
+    def _load_report_displays(self) -> str | None:
         """Load displays needed for report.
 
         Returns

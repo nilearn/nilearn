@@ -3,7 +3,7 @@ brain regions.
 """
 
 import warnings
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Self
 
 import numpy as np
 from scipy import linalg
@@ -66,7 +66,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -82,6 +82,10 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     %(high_pass)s
 
     %(t_r)s
+
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
 
     %(memory)s
 
@@ -144,13 +148,14 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         mask_img=None,
         allow_overlap=True,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         high_variance_confounds=False,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         verbose=0,
@@ -169,6 +174,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
@@ -179,7 +185,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._reset_report()
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -195,12 +201,15 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
         # Reset report
         # in case where the masker was previously fitted
         self._reset_report()
 
         if imgs is not None:
+            mask_logger("load_data", img=imgs, verbose=self.verbose)
+
             self._check_imgs(imgs)
 
             if isinstance(imgs, SurfaceImage) and any(
@@ -231,6 +240,11 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         # check maps_img data is 2D
         self.maps_img.data._check_ndims(2, "maps_img")
+
+        maps_data = get_data(self.maps_img)
+        if np.all(maps_data == 0):
+            raise ValueError("maps_img contains no map.")
+
         self.maps_img_ = self.maps_img
 
         self.n_elements_ = self.maps_img.shape[1]
@@ -238,6 +252,13 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.mask_img_ = self._load_mask(imgs)
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
+
+            mask_data = get_data(self.mask_img_).astype(bool)
+            masked_map_data = maps_data[mask_data, ...]
+            if np.all(masked_map_data == 0):
+                raise ValueError(
+                    "No map left after applying mask to the maps image."
+                )
 
         self._report_content["reports_at_fit_time"] = self.reports
         # initialize reporting content and data
@@ -304,6 +325,19 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
+
+        if not self.allow_overlap:
+            # Create mask depending on dtype
+            if np.issubdtype(maps_data.dtype, np.floating):
+                eps = np.finfo(maps_data.dtype).eps
+                mask = (maps_data > eps) | (maps_data < -eps)
+            else:
+                mask = maps_data != 0
+
+            # check overlap
+            if np.any(np.all(mask, axis=1)):
+                raise ValueError("Overlap detected in the maps.")
+
         mask_data = (
             get_data(self.mask_img_) if self.mask_img_ is not None else None
         )
@@ -322,10 +356,22 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 maps_data, img_data
             )[0].T
 
-        return self._clean(region_signals, confounds, sample_mask)
+        target_dtype = self._get_target_dtype(imgs)
+
+        region_signals = self._clean(region_signals, confounds, sample_mask)
+
+        # target_dtype is None: no explicit dtype was requested,
+        # so keep the dtype produced by the extraction/cleaning pipeline
+        # (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return (
+            region_signals
+            if target_dtype is None
+            else region_signals.astype(target_dtype)
+        )
 
     @fill_doc
-    def inverse_transform(self, region_signals):
+    def inverse_transform(self, region_signals) -> SurfaceImage:
         """Compute :term:`vertex` signals from region signals.
 
         Parameters
@@ -338,7 +384,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        return_1D = region_signals.ndim < 2
+        return_1D = hasattr(region_signals, "ndim") and region_signals.ndim < 2
 
         region_signals = self._check_array(region_signals)
 
@@ -376,7 +422,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         vertex_signals = vertex_signals.T
 
         # split the signal into hemispheres
-        vertex_signals = {
+        data = {
             "left": vertex_signals[
                 : self.maps_img.data.parts["left"].shape[0], :
             ],
@@ -384,14 +430,11 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 self.maps_img.data.parts["left"].shape[0] :, :
             ],
         }
+        imgs = SurfaceImage(mesh=self.maps_img.mesh, data=data)
 
-        imgs = SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
-
-        if return_1D:
-            for k, v in imgs.data.parts.items():
-                imgs.data.parts[k] = v.squeeze()
-
-        return imgs
+        return self._post_process_inverse_transform(
+            region_signals, imgs, return_1D
+        )
 
     def _run_report_checks(self, **kwargs):
         super()._run_report_checks(**kwargs)
@@ -448,7 +491,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         Returns
         -------
-        displays : list
+        displays : :obj:`list`
             A list of all displays to be rendered.
         """
         # Handle the edge case where this function is called
@@ -465,17 +508,17 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         maps_image = self._reporting_data["maps_image"]
 
-        embeded_images = []
+        embedded_images = []
 
         for roi in self._report_content["displayed_maps"]:
             roi = index_img(maps_image, roi)
             fig = self._create_figure_for_report(roi=roi, bg_img=img)[0]
             if self._report_content["engine"] == "plotly":
-                embeded_images.append(fig)
+                embedded_images.append(fig)
             elif self._report_content["engine"] == "matplotlib":
-                embeded_images.append(figure_to_png_base64(fig))
+                embedded_images.append(figure_to_png_base64(fig))
 
-        return embeded_images
+        return embedded_images
 
     def _create_figure_for_report(self, roi, bg_img) -> list:
         """Create a figure of maps image, one region at a time.

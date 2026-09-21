@@ -14,6 +14,7 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn.image import check_niimg_3d
+from nilearn.nilearn_typing import ColorBar, Title
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import mesh_to_plotly
 from nilearn.plotting.surface._utils import (
@@ -156,7 +157,7 @@ def _full_brain_info(
 def _fill_html_template(
     info,
     engine: Literal["niivue", "plotly"] = "plotly",
-):
+) -> SurfaceView:
     backend = get_surface_backend(engine)
     view_img_tpl = get_template(backend.HTML_TEMPLATE_PATH)
 
@@ -177,19 +178,19 @@ def view_img_on_surf(
     surf_mesh="fsaverage5",
     threshold=None,
     cmap=DEFAULT_DIVERGING_CMAP,
-    black_bg=False,
+    black_bg: bool = False,
     vmax=None,
     vmin=None,
     symmetric_cmap=True,
-    bg_on_data=False,
-    colorbar=True,
+    bg_on_data: bool = False,
+    colorbar: ColorBar = True,
     colorbar_height=0.5,
     colorbar_fontsize=25,
-    title=None,
+    title: Title = None,
     title_fontsize=25,
-    view="left",
+    view: Literal["left", "right", "front", "back", "top", "bottom"] = "left",
     vol_to_surf_kwargs=None,
-):
+) -> SurfaceView:
     """Insert a surface plot of a statistical map into an HTML page.
 
     Parameters
@@ -316,19 +317,19 @@ def view_surf(
     hemi=DEFAULT_HEMI,
     threshold=None,
     cmap=DEFAULT_DIVERGING_CMAP,
-    black_bg=False,
+    black_bg: bool = False,
     vmax=None,
     vmin=None,
-    bg_on_data=False,
-    symmetric_cmap=True,
-    colorbar=True,
+    bg_on_data: bool = False,
+    symmetric_cmap: bool = True,
+    colorbar: ColorBar = True,
     colorbar_height=0.5,
     colorbar_fontsize=25,
-    title=None,
+    title: Title = None,
     title_fontsize=25,
-    engine="plotly",
-    view="left",
-):
+    engine: Literal["plotly", "niivue"] = "plotly",
+    view: Literal["left", "right", "front", "back", "top", "bottom"] = "left",
+) -> SurfaceView:
     """Insert a surface plot of a surface map into an HTML page.
 
     Parameters

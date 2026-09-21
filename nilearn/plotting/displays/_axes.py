@@ -377,6 +377,7 @@ class GlassBrainAxes(BaseAxes):
     Parameters
     ----------
     %(ax)s
+
     direction : {'x', 'y', 'z'}
         The directions of the view.
 
@@ -385,6 +386,8 @@ class GlassBrainAxes(BaseAxes):
 
     plot_abs : :obj:`bool`, default=True
         If set to ``True`` the absolute value of the data will be considered.
+
+    %(radiological)s
 
     """
 
@@ -499,6 +502,7 @@ class GlassBrainAxes(BaseAxes):
 
         self.ax.scatter(xdata, ydata, s=marker_size, c=marker_color, **kwargs)
 
+    @fill_doc
     def _add_lines(
         self,
         line_coords,
@@ -508,7 +512,7 @@ class GlassBrainAxes(BaseAxes):
         vmax=None,
         directed=False,
         **kwargs,
-    ):
+    ) -> None:
         """Plot lines.
 
         Parameters

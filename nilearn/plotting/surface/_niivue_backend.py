@@ -13,7 +13,7 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
 from nilearn.plotting import cm
-from nilearn.surface.surface import _data_to_gifti, _mesh_to_gifti
+from nilearn.surface.surface import data_to_gifti, mesh_to_gifti
 
 HTML_TEMPLATE_PATH = "html/plotting/surface_plot_niivue.jinja"
 
@@ -33,12 +33,12 @@ def colorscale_niivue(values, vmax, threshold=None):
 
 def matplotlib_cm_to_niivue_cm(
     cmap: str | mpl.colors.Colormap | Any,
-) -> None | dict[str, dict[str, list[int]]]:
+) -> dict[str, dict[str, list[int]]] | None:
     """Convert matplotlib colormap to niivue colormap.
 
     Parameters
     ----------
-    cmap_name : str or Colormap
+    cmap : :obj:`str` or Colormap
         Name of the colormap to convert.
 
     Returns
@@ -54,20 +54,7 @@ def matplotlib_cm_to_niivue_cm(
         )
         return None
 
-    name = None
-    spec = None
-    reverse = False
-
-    if isinstance(cmap, str):
-        name = cmap
-        spec = plt.get_cmap(name)
-    else:
-        spec = cmap
-        name = cmap.name
-
-    if name.endswith("_r"):
-        name = name[:-2]
-        reverse = True
+    spec = plt.get_cmap(cmap) if isinstance(cmap, str) else cmap
 
     n_nodes = 255
     colors = spec(np.linspace(0, 1, 2 * n_nodes))
@@ -77,10 +64,6 @@ def matplotlib_cm_to_niivue_cm(
     js["G"] = (255 * colors[..., 1]).astype(int).tolist()
     js["B"] = (255 * colors[..., 2]).astype(int).tolist()
     js["A"] = [64 for _ in range(2 * n_nodes)]
-
-    if reverse:
-        for k in js:
-            js[k] = js[k][::-1]
 
     js_pos = {k: v[n_nodes:] for k, v in js.items()}
     js_neg = {k: v[:n_nodes][::-1] for k, v in js.items()}
@@ -112,13 +95,13 @@ def _one_mesh_info(
     info: dict[str, Any] = {}
 
     # Handle mesh
-    surf_mesh_gifti = _mesh_to_gifti(surf_mesh.coordinates, surf_mesh.faces)
+    surf_mesh_gifti = mesh_to_gifti(surf_mesh.coordinates, surf_mesh.faces)
     info["surf_mesh"] = base64.b64encode(surf_mesh_gifti.to_bytes()).decode(
         "UTF-8"
     )
 
     # Handle surface data
-    gii = _data_to_gifti(surf_map)
+    gii = data_to_gifti(surf_map)
     info["surf_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
 
     info["cmap"] = matplotlib_cm_to_niivue_cm(cmap)
@@ -129,13 +112,12 @@ def _one_mesh_info(
 
     # Handle background map
     if bg_map is not None:
-        gii = _data_to_gifti(bg_map)
+        gii = data_to_gifti(bg_map)
         info["bg_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
     else:
         info["bg_map"] = "null"
 
     info["bg_color"] = "[0, 0, 0, 1]" if black_bg else "[1, 1, 1, 1]"
-    info["bg_theme"] = "black" if black_bg else "white"
 
     info["colorbar"] = str(colorbar_kwargs.get("colorbar", True)).lower()
     info["font_size"] = str(title_fontsize) + "px"
