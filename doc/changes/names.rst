@@ -383,6 +383,8 @@
 
 .. _Vasco Diogo: https://github.com/vascosa
 
+.. _Venish Paneliya: https://github.com/VenishPaneliya
+
 .. _Victoria Shevchenko: https://github.com/victoris93
 
 .. _Victoria McCray: https://github.com/victoriamccray
