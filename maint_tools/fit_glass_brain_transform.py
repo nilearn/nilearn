@@ -26,12 +26,16 @@ which is then used by ``plot_brain_schematics``.
 
 USAGE::
 
-  python maint_tools/fit_glass_brain_transform.py \
-    examples/07_advanced/glass_brain_files --template WHS
+  python maint_tools/fit_glass_brain_transform.py path/to/json --template WHS
+
+The folder must contain the brain_schematics_<view>.json files:
+they can be generated from SVG files
+with ``maint_tools/svg_to_json_converter.py``.
 
 Add ``--write`` to update the JSON files (otherwise it only reports the fit).
-The "front" view is not used by any direction of the glass brain,
-so it gets the transform of the "back" view.
+
+The same can be done from python
+with :func:`fit_transforms` and :func:`write_transforms`.
 
 To check the result visually,
 see ``maint_tools/plot_align_glass_brain_svg.py``.
@@ -47,31 +51,28 @@ import numpy as np
 from matplotlib.path import Path as MplPath
 from scipy.optimize import minimize
 
+from nilearn.image import load_img
+
 # Axes of the template (x, y, z) displayed
 # horizontally and vertically for each view.
 VIEW_AXES = {"side": (1, 2), "back": (0, 2), "top": (0, 1)}
 
-# Resolution (in template units) of the grid used to compute the overlap.
+# Resolution (in template units) of the grid used to compute the overlap:
+# coarser grids are faster but give less stable fits.
 STEP = 0.1
 
+# Number of points sampled on each curve of the outline.
+N_SAMPLES = 4
 
-def _get_brain_mask_coordinates(template, resolution):
+
+def _get_brain_mask_coordinates(brain_mask):
     """Return the (x, y, z) coordinates of the voxels of the brain mask."""
-    import templateflow.api as tflow
-
-    mask_file = tflow.get(
-        template,
-        resolution=resolution,
-        desc="brain",
-        suffix="mask",
-        atlas=None,
-    )
-    img = nib.load(mask_file)
+    img = load_img(brain_mask)
     ijk = np.argwhere(np.asanyarray(img.dataobj) > 0)
     return nib.affines.apply_affine(img.affine, ijk)
 
 
-def _sample_outline(json_file, n_samples=25):
+def _sample_outline(json_file, n_samples=N_SAMPLES):
     """Return points densely sampled along all the paths of a schematic."""
     with json_file.open() as f:
         paths = json.load(f)["paths"]
@@ -151,8 +152,62 @@ def _write_transform(json_file, transform):
     )
 
 
+def fit_transforms(json_folder, brain_mask, verbose=False):
+    """Fit the transform of each view of a set of glass brain schematics.
+
+    Parameters
+    ----------
+    json_folder : :obj:`str` or :obj:`pathlib.Path`
+        Folder with the ``brain_schematics_<view>.json`` files
+        for the side, back and top views.
+
+    brain_mask : Niimg-like object
+        Brain mask of the template on which to align the schematics.
+
+    verbose : :obj:`bool`, default=False
+        If ``True``, report the overlap obtained for each view.
+
+    Returns
+    -------
+    transforms : :obj:`dict` of :obj:`list`
+        For each view, the 6 parameters ``(a, b, c, d, e, f)``
+        passed to :class:`matplotlib.transforms.Affine2D`.
+    """
+    mask_xyz = _get_brain_mask_coordinates(brain_mask)
+
+    transforms = {}
+    for view, axes in VIEW_AXES.items():
+        outline = _sample_outline(
+            Path(json_folder) / f"brain_schematics_{view}.json"
+        )
+        transforms[view], overlap = _fit_view(outline, mask_xyz, list(axes))
+        if verbose:
+            print(f"{view}: {transforms[view]} (overlap: {overlap:.3f})")
+
+    return transforms
+
+
+def write_transforms(json_folder, transforms):
+    """Store transforms in the metadata of the glass brain JSON files.
+
+    Parameters
+    ----------
+    json_folder : :obj:`str` or :obj:`pathlib.Path`
+        Folder with the ``brain_schematics_<view>.json`` files.
+
+    transforms : :obj:`dict` of :obj:`list`
+        Transform of each view, as returned by :func:`fit_transforms`.
+    """
+    for view, transform in transforms.items():
+        _write_transform(
+            Path(json_folder) / f"brain_schematics_{view}.json", transform
+        )
+
+
 def main():
     """Fit the transforms and optionally store them in the JSON files."""
+    import templateflow.api as tflow
+
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument(
         "assets",
@@ -170,22 +225,17 @@ def main():
     )
     args = parser.parse_args()
 
-    mask_xyz = _get_brain_mask_coordinates(args.template, args.resolution)
-
-    transforms = {}
-    for view, axes in VIEW_AXES.items():
-        json_file = args.assets / f"brain_schematics_{view}.json"
-        outline = _sample_outline(json_file)
-        transforms[view], overlap = _fit_view(outline, mask_xyz, list(axes))
-        print(f"{view}: {transforms[view]} (overlap: {overlap:.3f})")
-
-    transforms["front"] = transforms["back"]
+    brain_mask = tflow.get(
+        args.template,
+        resolution=args.resolution,
+        desc="brain",
+        suffix="mask",
+        atlas=None,
+    )
+    transforms = fit_transforms(args.assets, brain_mask, verbose=True)
 
     if args.write:
-        for view, transform in transforms.items():
-            _write_transform(
-                args.assets / f"brain_schematics_{view}.json", transform
-            )
+        write_transforms(args.assets, transforms)
 
 
 if __name__ == "__main__":
