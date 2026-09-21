@@ -1024,10 +1024,10 @@ def create_fake_bids_dataset(
 
     Parameters
     ----------
-    base_dir : :obj:`str` or :obj:`pathlib.Path` (Absolute path). \
-        default=pathlib.Path()
+    base_dir : :obj:`str` or :obj:`pathlib.Path` (Absolute path), default=None
         Absolute directory path in which to create the fake :term:`BIDS`
         dataset dir.
+        If ``None`` is passed, the current working directory is used.
 
     n_sub : :obj:`int`, default=10
         Number of subjects to be simulated in the dataset.
@@ -1038,16 +1038,18 @@ def create_fake_bids_dataset(
         Specifying n_ses=0 will only produce runs and files without the
         optional session field.
 
-    tasks : :obj:`list` of :obj:`str`, default=["localizer", "main"]
+    tasks : :obj:`list` of :obj:`str`, default=None
         List of tasks to be simulated in the dataset.
+        If ``None`` is passed, ``["localizer", "main"]`` is used.
 
-    n_runs : :obj:`list` of :obj:`int`, default=[1, 3]
+    n_runs : :obj:`list` of :obj:`int`, default=None
         Number of runs to create, where each element indicates the
         number of runs for the corresponding task.
         The length of this list must match the number of items in ``tasks``.
         Each run creates 100 volumes.
         Files will be generated without run entity
         if a value is equal to 0 or less.
+        If ``None`` is passed, ``[1, 3]`` is used.
 
     with_derivatives : :obj:`bool`, default=True
         In the case derivatives are included, they come with two spaces and
