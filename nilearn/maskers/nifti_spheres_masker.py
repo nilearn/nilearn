@@ -8,6 +8,7 @@ import warnings
 from typing import Any, ClassVar
 
 import numpy as np
+from nibabel import Nifti1Image
 from scipy import sparse
 from sklearn import neighbors
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
@@ -659,7 +660,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             return np.atleast_1d(signals)
 
     @fill_doc
-    def inverse_transform(self, region_signals):
+    def inverse_transform(self, region_signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from spheres signals.
 
         Any mask given at initialization is taken into account. Throws an error

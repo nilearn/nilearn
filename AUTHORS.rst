@@ -238,6 +238,7 @@ Some other past or present contributors are:
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_
+* `Venish Paneliya`_
 * `Victoria Shevchenko`_: Inria Saclay, Université Paris Cité, France
 * `Victoria McCray`_: Northeastern University, USA
 * `Vincent Michel`_: https://www.logilab.fr/
