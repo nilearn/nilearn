@@ -12,7 +12,7 @@ and visualization, built on top of scikit-learn.
 
 Never commit directly to `main`. Always work on a feature branch.
 
-Fix any remaining issues flagged by pre-commit before committing again.
+Fix any remaining issues flagged by prek before committing again.
 
 ## Commands
 
@@ -25,8 +25,8 @@ uv sync
 ```
 
 ```bash
-pip install -e ".[plotting]" --group dev  # Dev install with plotting dependencies
-pre-commit install              # Install git hooks
+pip install -e ".[plotting,plotly]" --group dev  # Dev install with plotting dependencies
+prek install              # Install git hooks
 ```
 
 ### Testing
@@ -44,7 +44,7 @@ tox -e min                              # Minimum supported dependencies
 ### Linting, formatting & architecture validation
 
 ```bash
-pre-commit run --all-files # Run all pre-commit hooks
+prek run --all-files # Run all pre-commit hooks
 ```
 
 ### Documentation
@@ -146,7 +146,18 @@ Each PR must add an entry to `doc/changes/latest.rst` with a badge, PR link, and
 - :bdg-danger:`Deprecation`
 - :bdg-dark:`Code`
 
+If this is a first contribution, add authors details ONLY in the CITATION.CFF file
+in the root of the repository.
+
 ## GitHub
+
+## Issues
+
+When reporting a bug,
+rely on the .github/ISSUE_TEMPLATE/bug.yml template.
+When reporting the steps and code to reproduce bug
+rely only the 'user facing' part of the public API
+(mentioned only in `__init__.py` files).
 
 ### Pull requests
 

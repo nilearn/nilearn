@@ -3,23 +3,289 @@ obtain fixed effect results.
 """
 
 import warnings
+from collections.abc import Sequence
+from typing import overload
 
 import numpy as np
 import pandas as pd
 import scipy.stats as sps
+from nibabel import Nifti1Image
 
 from nilearn._utils import logger
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface import SurfaceImage
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
 
 
-def expression_to_contrast_vector(expression, design_columns):
+class Contrast:
+    """The contrast class handles the estimation \
+    of statistical :term:`contrasts<contrast>` \
+    on a given model: student (t) or Fisher (F).
+
+    The important feature is that it supports addition,
+    thus opening the possibility of fixed-effects models.
+
+    The current implementation is meant to be simple,
+    and could be enhanced in the future on the computational side
+    (high-dimensional F :term:`contrasts<contrast>`
+    may lead to memory breakage).
+
+    Parameters
+    ----------
+    effect : array of shape (contrast_dim, n_voxels)
+        The effects related to the :term:`contrast`.
+
+    variance : array of shape (n_voxels)
+        The associated variance estimate.
+
+    dim : :obj:`int` or None, default=None
+        The dimension of the :term:`contrast`.
+
+    dof : scalar, default=DEF_DOFMAX
+        The degrees of freedom of the residuals.
+
+    stat_type : {'t', 'F'}, default='t'
+        Specification of the :term:`contrast` type.
+
+    tiny : :obj:`float`, default=DEF_TINY
+        Small quantity used to avoid numerical underflows.
+
+    dofmax : scalar, default=DEF_DOFMAX
+        The maximum degrees of freedom of the residuals.
+    """
+
+    def __init__(
+        self,
+        effect,
+        variance,
+        dim=None,
+        dof=DEF_DOFMAX,
+        stat_type="t",
+        tiny=DEF_TINY,
+        dofmax=DEF_DOFMAX,
+    ):
+        if variance.ndim != 1:
+            raise ValueError("Variance array should have 1 dimension")
+        if effect.ndim > 2:
+            raise ValueError("Effect array should have 1 or 2 dimensions")
+
+        self.effect = effect
+        self.variance = variance
+        self.dof = float(dof)
+        if dim is None:
+            self.dim = effect.shape[0] if effect.ndim == 2 else 1
+        else:
+            self.dim = dim
+
+        if self.dim > 1 and stat_type == "t":
+            logger.log(
+                "Automatically converted multi-dimensional t to F contrast",
+                verbose=1,
+            )
+            stat_type = "F"
+
+        check_parameter_in_allowed(stat_type, ["t", "F"], "stat_type")
+
+        self.stat_type = stat_type
+        self.stat_ = None
+        self.p_value_ = None
+        self.one_minus_pvalue_ = None
+        self.baseline = 0
+        self.tiny = tiny
+        self.dofmax = dofmax
+
+    def effect_size(self) -> np.ndarray:
+        """Make access to summary statistics more straightforward \
+        when computing contrasts.
+        """
+        return self.effect
+
+    def effect_variance(self) -> np.ndarray:
+        """Make access to summary statistics more straightforward \
+        when computing contrasts.
+        """
+        return self.variance
+
+    def stat(self, baseline: float = 0.0) -> np.ndarray:
+        """Return the decision statistic associated with the test of the \
+        null hypothesis: (H0) 'contrast equals baseline'.
+
+        Parameters
+        ----------
+        baseline : :obj:`float`, default=0.0
+            Baseline value for the test statistic.
+
+        Returns
+        -------
+        stat : 1-d array, shape=(n_voxels,)
+            statistical values, one per voxel.
+
+        """
+        self.baseline = baseline
+
+        # Case: one-dimensional contrast ==> t or t**2
+        check_parameter_in_allowed(self.stat_type, ["F", "t"], "stat_type")
+        if self.stat_type == "F":
+            stat = (
+                np.sum((self.effect - baseline) ** 2, 0)
+                / self.dim
+                / np.maximum(self.variance, self.tiny)
+            )
+        elif self.stat_type == "t":
+            # avoids division by zero
+            stat = (self.effect - baseline) / np.sqrt(
+                np.maximum(self.variance, self.tiny)
+            )
+
+        self.stat_ = stat.ravel()
+        return self.stat_
+
+    def p_value(self, baseline=0.0) -> np.ndarray:
+        """Return a parametric estimate of the p-value associated with \
+        the null hypothesis (H0): 'contrast equals baseline', \
+        using the survival function.
+
+        Parameters
+        ----------
+        baseline : :obj:`float`, default=0.0
+            Baseline value for the test statistic.
+
+
+        Returns
+        -------
+        p_values : 1-d array, shape=(n_voxels,)
+            p-values, one per voxel
+
+        """
+        if self.stat_ is None or self.baseline != baseline:
+            self.stat_ = self.stat(baseline)
+        # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
+        if self.stat_type == "t":
+            p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
+        elif self.stat_type == "F":
+            p_values = sps.f.sf(
+                self.stat_, self.dim, np.minimum(self.dof, self.dofmax)
+            )
+        else:
+            raise ValueError("Unknown statistic type")
+        self.p_value_ = p_values
+        return p_values
+
+    def one_minus_pvalue(self, baseline: float = 0.0) -> np.ndarray:
+        """Return a parametric estimate of the 1 - p-value associated \
+        with the null hypothesis (H0): 'contrast equals baseline', \
+        using the cumulative distribution function, \
+        to ensure numerical stability.
+
+        Parameters
+        ----------
+        baseline : :obj:`float`, default=0.0
+            Baseline value for the test statistic.
+
+        Returns
+        -------
+        one_minus_pvalues : 1-d array, shape=(n_voxels,)
+            one_minus_pvalues, one per voxel
+
+        """
+        if self.stat_ is None or self.baseline != baseline:
+            self.stat_ = self.stat(baseline)
+        # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
+        if self.stat_type == "t":
+            one_minus_pvalues = sps.t.cdf(
+                self.stat_, np.minimum(self.dof, self.dofmax)
+            )
+        else:
+            assert self.stat_type == "F"
+            one_minus_pvalues = sps.f.cdf(
+                self.stat_, self.dim, np.minimum(self.dof, self.dofmax)
+            )
+        self.one_minus_pvalue_ = one_minus_pvalues
+        return one_minus_pvalues
+
+    def z_score(self, baseline: float = 0.0) -> np.ndarray:
+        """Return a parametric estimation of the z-score associated \
+        with the null hypothesis: (H0) 'contrast equals baseline'.
+
+        Parameters
+        ----------
+        baseline : :obj:`float`, default=0.0
+            Baseline value for the test statistic.
+
+
+        Returns
+        -------
+        z_score : 1-d array, shape=(n_voxels,)
+            statistical values, one per voxel
+
+        """
+        if self.p_value_ is None or self.baseline != baseline:
+            self.p_value_ = self.p_value(baseline)
+        if self.one_minus_pvalue_ is None:
+            self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
+
+        # Avoid inf values kindly supplied by scipy.
+        self.z_score_ = z_score(
+            self.p_value_, one_minus_pvalue=self.one_minus_pvalue_
+        )
+        return self.z_score_
+
+    def __add__(self, other):
+        """Add two contrast, Yields an new Contrast instance.
+
+        This should be used only on independent contrasts.
+        """
+        if self.stat_type != other.stat_type:
+            raise ValueError(
+                "The two contrasts do not have consistent type dimensions"
+            )
+        if self.dim != other.dim:
+            raise ValueError(
+                "The two contrasts do not have compatible dimensions"
+            )
+        dof_ = self.dof + other.dof
+        if self.stat_type == "F":
+            warnings.warn(
+                "Running approximate fixed effects on F statistics.",
+                category=UserWarning,
+                stacklevel=find_stack_level(),
+            )
+        effect_ = self.effect + other.effect
+        variance_ = self.variance + other.variance
+        return Contrast(
+            effect=effect_,
+            variance=variance_,
+            dim=self.dim,
+            dof=dof_,
+            stat_type=self.stat_type,
+        )
+
+    def __rmul__(self, scalar):
+        """Multiply a contrast by a scalar."""
+        scalar = float(scalar)
+        effect_ = self.effect * scalar
+        variance_ = self.variance * scalar**2
+        dof_ = self.dof
+        return Contrast(
+            effect=effect_,
+            variance=variance_,
+            dof=dof_,
+            stat_type=self.stat_type,
+        )
+
+    __mul__ = __rmul__
+
+    def __div__(self, scalar):
+        return self.__rmul__(1 / float(scalar))
+
+
+def expression_to_contrast_vector(expression, design_columns) -> np.ndarray:
     """Convert a string describing a :term:`contrast` \
        to a :term:`contrast` vector.
 
@@ -31,6 +297,19 @@ def expression_to_contrast_vector(expression, design_columns):
     design_columns : :obj:`list` or array of :obj:`str`
         The column names of the design matrix.
 
+    Returns
+    -------
+    contrast_vector : numpy.ndarray
+        1D array with one entry per design column.
+
+    Examples
+    --------
+    >>> from nilearn.glm.contrasts import expression_to_contrast_vector
+    >>> expression_to_contrast_vector("task", ["task", "rest"])
+    array([1., 0.])
+    >>> expression_to_contrast_vector("task - rest", ["task", "rest"])
+    array([ 1., -1.])
+
     """
     if expression in design_columns:
         contrast_vector = np.zeros(len(design_columns))
@@ -41,7 +320,7 @@ def expression_to_contrast_vector(expression, design_columns):
         np.eye(len(design_columns)), columns=design_columns
     )
     try:
-        contrast_vector = eye_design.eval(
+        contrast_vector = eye_design.eval(  # type: ignore[union-attr, assignment]
             expression, engine="python"
         ).to_numpy()
     except pd.errors.UndefinedVariableError as e:
@@ -62,7 +341,9 @@ def expression_to_contrast_vector(expression, design_columns):
     return contrast_vector
 
 
-def compute_contrast(labels, regression_result, con_val, stat_type=None):
+def compute_contrast(
+    labels, regression_result, con_val, stat_type=None
+) -> Contrast:
     """Compute the specified :term:`contrast` given an estimated glm.
 
     Parameters
@@ -169,276 +450,38 @@ def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
     return contrast * (1.0 / n_contrasts)
 
 
-class Contrast:
-    """The contrast class handles the estimation \
-    of statistical :term:`contrasts<contrast>` \
-    on a given model: student (t) or Fisher (F).
-
-    The important feature is that it supports addition,
-    thus opening the possibility of fixed-effects models.
-
-    The current implementation is meant to be simple,
-    and could be enhanced in the future on the computational side
-    (high-dimensional F :term:`contrasts<contrast>`
-    may lead to memory breakage).
-
-    Parameters
-    ----------
-    effect : array of shape (contrast_dim, n_voxels)
-        The effects related to the :term:`contrast`.
-
-    variance : array of shape (n_voxels)
-        The associated variance estimate.
-
-    dim : :obj:`int` or None, default=None
-        The dimension of the :term:`contrast`.
-
-    dof : scalar, default=DEF_DOFMAX
-        The degrees of freedom of the residuals.
-
-    stat_type : {'t', 'F'}, default='t'
-        Specification of the :term:`contrast` type.
-
-    tiny : :obj:`float`, default=DEF_TINY
-        Small quantity used to avoid numerical underflows.
-
-    dofmax : scalar, default=DEF_DOFMAX
-        The maximum degrees of freedom of the residuals.
-    """
-
-    def __init__(
-        self,
-        effect,
-        variance,
-        dim=None,
-        dof=DEF_DOFMAX,
-        stat_type="t",
-        tiny=DEF_TINY,
-        dofmax=DEF_DOFMAX,
-    ):
-        if variance.ndim != 1:
-            raise ValueError("Variance array should have 1 dimension")
-        if effect.ndim > 2:
-            raise ValueError("Effect array should have 1 or 2 dimensions")
-
-        self.effect = effect
-        self.variance = variance
-        self.dof = float(dof)
-        if dim is None:
-            self.dim = effect.shape[0] if effect.ndim == 2 else 1
-        else:
-            self.dim = dim
-
-        if self.dim > 1 and stat_type == "t":
-            logger.log(
-                "Automatically converted multi-dimensional t to F contrast",
-                verbose=1,
-            )
-            stat_type = "F"
-
-        check_parameter_in_allowed(stat_type, ["t", "F"], "stat_type")
-
-        self.stat_type = stat_type
-        self.stat_ = None
-        self.p_value_ = None
-        self.one_minus_pvalue_ = None
-        self.baseline = 0
-        self.tiny = tiny
-        self.dofmax = dofmax
-
-    def effect_size(self):
-        """Make access to summary statistics more straightforward \
-        when computing contrasts.
-        """
-        return self.effect
-
-    def effect_variance(self):
-        """Make access to summary statistics more straightforward \
-        when computing contrasts.
-        """
-        return self.variance
-
-    def stat(self, baseline=0.0):
-        """Return the decision statistic associated with the test of the \
-        null hypothesis: (H0) 'contrast equals baseline'.
-
-        Parameters
-        ----------
-        baseline : :obj:`float`, default=0.0
-            Baseline value for the test statistic.
-
-        Returns
-        -------
-        stat : 1-d array, shape=(n_voxels,)
-            statistical values, one per voxel.
-
-        """
-        self.baseline = baseline
-
-        # Case: one-dimensional contrast ==> t or t**2
-        check_parameter_in_allowed(self.stat_type, ["F", "t"], "stat_type")
-        if self.stat_type == "F":
-            stat = (
-                np.sum((self.effect - baseline) ** 2, 0)
-                / self.dim
-                / np.maximum(self.variance, self.tiny)
-            )
-        elif self.stat_type == "t":
-            # avoids division by zero
-            stat = (self.effect - baseline) / np.sqrt(
-                np.maximum(self.variance, self.tiny)
-            )
-
-        self.stat_ = stat.ravel()
-        return self.stat_
-
-    def p_value(self, baseline=0.0):
-        """Return a parametric estimate of the p-value associated with \
-        the null hypothesis (H0): 'contrast equals baseline', \
-        using the survival function.
-
-        Parameters
-        ----------
-        baseline : :obj:`float`, default=0.0
-            Baseline value for the test statistic.
+@overload
+def compute_fixed_effects(
+    contrast_imgs: list[SurfaceImage],
+    variance_imgs: list[SurfaceImage],
+    mask: SurfaceImage | SurfaceMasker | None = ...,
+    precision_weighted: bool = ...,
+    dofs: Sequence[float] | np.ndarray | None = ...,
+) -> tuple[SurfaceImage, SurfaceImage, SurfaceImage, SurfaceImage]: ...
 
 
-        Returns
-        -------
-        p_values : 1-d array, shape=(n_voxels,)
-            p-values, one per voxel
-
-        """
-        if self.stat_ is None or self.baseline != baseline:
-            self.stat_ = self.stat(baseline)
-        # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
-        if self.stat_type == "t":
-            p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
-        elif self.stat_type == "F":
-            p_values = sps.f.sf(
-                self.stat_, self.dim, np.minimum(self.dof, self.dofmax)
-            )
-        else:
-            raise ValueError("Unknown statistic type")
-        self.p_value_ = p_values
-        return p_values
-
-    def one_minus_pvalue(self, baseline=0.0):
-        """Return a parametric estimate of the 1 - p-value associated \
-        with the null hypothesis (H0): 'contrast equals baseline', \
-        using the cumulative distribution function, \
-        to ensure numerical stability.
-
-        Parameters
-        ----------
-        baseline : :obj:`float`, default=0.0
-            Baseline value for the test statistic.
-
-
-        Returns
-        -------
-        one_minus_pvalues : 1-d array, shape=(n_voxels,)
-            one_minus_pvalues, one per voxel
-
-        """
-        if self.stat_ is None or self.baseline != baseline:
-            self.stat_ = self.stat(baseline)
-        # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
-        if self.stat_type == "t":
-            one_minus_pvalues = sps.t.cdf(
-                self.stat_, np.minimum(self.dof, self.dofmax)
-            )
-        else:
-            assert self.stat_type == "F"
-            one_minus_pvalues = sps.f.cdf(
-                self.stat_, self.dim, np.minimum(self.dof, self.dofmax)
-            )
-        self.one_minus_pvalue_ = one_minus_pvalues
-        return one_minus_pvalues
-
-    def z_score(self, baseline=0.0):
-        """Return a parametric estimation of the z-score associated \
-        with the null hypothesis: (H0) 'contrast equals baseline'.
-
-        Parameters
-        ----------
-        baseline : :obj:`float`, default=0.0
-            Baseline value for the test statistic.
-
-
-        Returns
-        -------
-        z_score : 1-d array, shape=(n_voxels,)
-            statistical values, one per voxel
-
-        """
-        if self.p_value_ is None or self.baseline != baseline:
-            self.p_value_ = self.p_value(baseline)
-        if self.one_minus_pvalue_ is None:
-            self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
-
-        # Avoid inf values kindly supplied by scipy.
-        self.z_score_ = z_score(
-            self.p_value_, one_minus_pvalue=self.one_minus_pvalue_
-        )
-        return self.z_score_
-
-    def __add__(self, other):
-        """Add two contrast, Yields an new Contrast instance.
-
-        This should be used only on independent contrasts.
-        """
-        if self.stat_type != other.stat_type:
-            raise ValueError(
-                "The two contrasts do not have consistent type dimensions"
-            )
-        if self.dim != other.dim:
-            raise ValueError(
-                "The two contrasts do not have compatible dimensions"
-            )
-        dof_ = self.dof + other.dof
-        if self.stat_type == "F":
-            warnings.warn(
-                "Running approximate fixed effects on F statistics.",
-                category=UserWarning,
-                stacklevel=find_stack_level(),
-            )
-        effect_ = self.effect + other.effect
-        variance_ = self.variance + other.variance
-        return Contrast(
-            effect=effect_,
-            variance=variance_,
-            dim=self.dim,
-            dof=dof_,
-            stat_type=self.stat_type,
-        )
-
-    def __rmul__(self, scalar):
-        """Multiply a contrast by a scalar."""
-        scalar = float(scalar)
-        effect_ = self.effect * scalar
-        variance_ = self.variance * scalar**2
-        dof_ = self.dof
-        return Contrast(
-            effect=effect_,
-            variance=variance_,
-            dof=dof_,
-            stat_type=self.stat_type,
-        )
-
-    __mul__ = __rmul__
-
-    def __div__(self, scalar):
-        return self.__rmul__(1 / float(scalar))
+@overload
+def compute_fixed_effects(
+    contrast_imgs: list[NiimgLike],
+    variance_imgs: list[NiimgLike],
+    mask: NiimgLike | NiftiMasker | None = ...,
+    precision_weighted: bool = ...,
+    dofs: Sequence[float] | np.ndarray | None = ...,
+) -> tuple[Nifti1Image, Nifti1Image, Nifti1Image, Nifti1Image]: ...
 
 
 def compute_fixed_effects(
-    contrast_imgs,
-    variance_imgs,
-    mask=None,
+    contrast_imgs: list[SurfaceImage] | list[NiimgLike],
+    variance_imgs: list[SurfaceImage] | list[NiimgLike],
+    mask: SurfaceImage | SurfaceMasker | NiimgLike | NiftiMasker | None = None,
     precision_weighted=False,
-    dofs=None,
-):
+    dofs: Sequence[float] | np.ndarray | None = None,
+) -> tuple[
+    Nifti1Image | SurfaceImage,
+    Nifti1Image | SurfaceImage,
+    Nifti1Image | SurfaceImage,
+    Nifti1Image | SurfaceImage,
+]:
     """Compute the fixed effects, given images of effects and variance.
 
     Parameters
@@ -487,15 +530,17 @@ def compute_fixed_effects(
             f"from the number of variance images ({len(variance_imgs)})."
         )
 
-    # ignore warning in case the masker
-    # was initialized with a mask image
-    warnings.filterwarnings(
-        "ignore",
-        message=r".*Generation of a mask.*",
-    )
-    # TODO (nilearn >=0.15) remove ALL standardize=None below
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):
-        masker = mask.fit()
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            masker = mask.fit()
+
+    # TODO (nilearn >=0.15) remove ALL standardize=None below
     elif mask is None:
         if isinstance(contrast_imgs[0], SurfaceImage):
             masker = SurfaceMasker(standardize=None).fit(contrast_imgs[0])

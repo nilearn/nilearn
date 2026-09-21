@@ -1,9 +1,7 @@
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.9.2
-=========
+Version 0.9.2
+=============
 
 **Released August 2022**
 
@@ -42,7 +40,7 @@ Fixes
 
 - :bdg-dark:`Code` Fix usage of ``scipy.stats.gamma.pdf`` in ``_gamma_difference_hrf`` function under ``nilearn/glm/first_level/hemodynamic_models.py``, which resulted in slight distortion of HRF (:gh:`3297` by `Kun CHEN`_).
 
-- :bdg-dark:`Code` Fix bug introduced due to a fix in the pre-release version of scipy (``1.9.0rc1``) which now enforces that elements of a band-pass filter must meet condition ``Wn[0] < Wn[1]``. Now if band-pass elements are equal :func:`~nilearn.signal.butterworth` returns an unfiltered signal with a warning (:gh:`3293` by `Yasmin Mzayek`_).
+- :bdg-dark:`Code` Fix bug introduced due to a fix in the pre-release version of scipy (``1.9.0rc1``) which now enforces that elements of a band-pass filter must meet condition ``Wn[0] < Wn[1]``. Now if band-pass elements are equal :func:`~signal.butterworth` returns an unfiltered signal with a warning (:gh:`3293` by `Yasmin Mzayek`_).
 
 - :bdg-primary:`Doc` Fix the typographic error on the page :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_adhd_dmn.py` (:gh:`3337` by `Sachin Patalasingh`_).
 
@@ -58,7 +56,7 @@ Fixes
 
 - :bdg-info:`Plotting` The parameter ``alpha`` is now correctly passed to :func:`~plotting.plot_glass_brain` in :func:`~plotting.plot_connectome` (:gh:`3306` by `Koen Helwegen`_).
 
-- :bdg-info:`Plotting` Fix plotting of background image in :func:`~nilearn.plotting.view_img` when the background is not the MNI template (:gh:`3312` by `Jerome Dockes`_).
+- :bdg-info:`Plotting` Fix plotting of background image in :func:`~plotting.view_img` when the background is not the MNI template (:gh:`3312` by `Jerome Dockes`_).
 
 Enhancements
 ------------

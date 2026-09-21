@@ -4,13 +4,13 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from scipy.ndimage import label
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
+    return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.conftest import _affine_eye, _img_4d_zeros, _shape_3d_large
 from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, threshold_img
@@ -26,12 +26,12 @@ from nilearn.regions.region_extractor import (
 
 
 @pytest.fixture
-def negative_regions():
+def negative_regions() -> bool:
     return False
 
 
 @pytest.fixture
-def dummy_map(shape_3d_default, n_regions):
+def dummy_map(shape_3d_default, n_regions) -> Nifti1Image:
     """Generate a small dummy map.
 
     Use for error testing
@@ -40,7 +40,7 @@ def dummy_map(shape_3d_default, n_regions):
 
 
 @pytest.fixture
-def map_img_3d(rng, affine_eye, shape_3d_default):
+def map_img_3d(rng, affine_eye, shape_3d_default) -> Nifti1Image:
     map_img = np.zeros(shape_3d_default) + 0.1 * rng.standard_normal(
         size=shape_3d_default
     )
@@ -51,58 +51,35 @@ N_REGIONS = 3
 
 
 @pytest.fixture
-def maps(negative_regions, n_regions, shape_3d_large):
+def maps(negative_regions, n_regions, shape_3d_large) -> Nifti1Image:
     return generate_maps(
         shape=shape_3d_large,
         n_regions=n_regions,
-        random_state=42,
+        rand_gen=42,
         negative_regions=negative_regions,
     )[0]
 
 
 @pytest.fixture
-def maps_and_mask(n_regions, shape_3d_large):
+def maps_and_mask(
+    n_regions, shape_3d_large
+) -> tuple[Nifti1Image, Nifti1Image]:
     return generate_maps(
-        shape=shape_3d_large, n_regions=n_regions, random_state=42
+        shape=shape_3d_large, n_regions=n_regions, rand_gen=42
     )
 
 
 ESTIMATORS_TO_CHECK = [RegionExtractor()]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-    from sklearn.utils.estimator_checks import parametrize_with_checks
-
-    from nilearn._utils.estimator_checks import (
-        return_expected_failed_checks,
-    )
-
-    @pytest.mark.slow
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+@pytest.mark.slow
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.slow
@@ -114,7 +91,7 @@ else:
                 maps_img=generate_maps(
                     shape=_shape_3d_large(),
                     n_regions=2,
-                    random_state=42,
+                    rand_gen=42,
                     affine=_affine_eye(),
                 )[0]
             )
@@ -355,7 +332,6 @@ def test_two_sided(maps):
     )
 
 
-@pytest.mark.slow
 def test_strategy_percentile(maps_and_mask):
     maps, mask_img = maps_and_mask
 
@@ -365,7 +341,6 @@ def test_strategy_percentile(maps_and_mask):
         thresholding_strategy="percentile",
         mask_img=mask_img,
         two_sided=True,
-        standardize=None,
     )
     extractor.fit()
 
@@ -406,7 +381,10 @@ def test_zeros_affine_diagonal(affine_eye, n_regions):
     affine = affine_eye
     affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines
     maps, _ = generate_maps(
-        shape=[40, 40, 40], n_regions=n_regions, affine=affine, random_state=42
+        shape=[40, 40, 40],
+        n_regions=n_regions,
+        affine=affine,
+        rand_gen=42,
     )
 
     extract_ratio = RegionExtractor(
@@ -521,6 +499,38 @@ def test_connected_label_regions_check_labels(img_labels):
     assert len(new_labels) <= len(labels)
 
 
+@pytest.mark.parametrize(
+    "label_values",
+    [
+        [1, 2, 3, 4],  # contiguous, as the other fixtures use
+        [17, 34, 51, 68],  # sparse, as real atlases are
+    ],
+)
+def test_connected_label_regions_names_follow_label_order(
+    affine_eye, label_values
+):
+    """Names must be assigned in the order of the unique labels.
+
+    The docstring asks callers to order names to match the unique labels, and
+    np.unique returns them sorted, so iteration must stay sorted too.
+    """
+    data = np.zeros((12, 12, 12), dtype=np.int32)
+    for i, label_value in enumerate(label_values):
+        data[i, 0, 0] = label_value
+    labels_img = Nifti1Image(data, affine_eye)
+
+    names = [f"n{label_value}" for label_value in sorted(label_values)]
+
+    extracted, new_names = connected_label_regions(labels_img, labels=names)
+
+    extracted_data = get_data(extracted)
+    for new_label, name in enumerate(new_names, start=1):
+        position = np.argwhere(extracted_data == new_label)[0]
+        original_label = data[tuple(position)]
+
+        assert name == f"n{original_label}"
+
+
 @pytest.mark.thread_unsafe
 def test_connected_label_regions_check_labels_as_numpy_array(img_labels):
     """Test the names of the brain regions given in labels."""
@@ -551,7 +561,7 @@ def test_connected_label_regions_check_labels_as_numpy_array(img_labels):
 
 
 @pytest.mark.thread_unsafe
-def test_connected_label_regions_unknonw_labels(
+def test_connected_label_regions_unknown_labels(
     img_labels, affine_eye, shape_3d_default
 ):
     """If unknown/negative integers are provided as labels in img_labels, \

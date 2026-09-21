@@ -22,11 +22,12 @@ from nilearn._utils.niimg import repr_niimgs
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn.image import high_variance_confounds
 from nilearn.image.image import get_indices_from_image, iter_check_niimg
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
-from nilearn.typing import NiimgLike
 
 
+@fill_doc
 class _MultiMixin:
     """Mixin class to add common MultiMasker functionalities."""
 
@@ -57,20 +58,21 @@ class _MultiMixin:
         -------
         %(signals_transform_multi_nifti)s
         """
-        # ignore warning in case the masker
-        # was initialized with a mask image
-        # (only for MultiNiftiMasker)
-        warnings.filterwarnings(
-            "ignore",
-            message=r".*Generation of a mask.*",
-        )
-        # although the implementation is
-        # the same as in the BaseMasker
-        # a specific method is required
-        # to allow for a slightly different doc string
-        return self.fit(imgs, y=y, **fit_params).transform(
-            imgs, confounds=confounds, sample_mask=sample_mask
-        )
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            # (only for MultiNiftiMasker)
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            # although the implementation is
+            # the same as in the BaseMasker
+            # a specific method is required
+            # to allow for a slightly different doc string
+            return self.fit(imgs, y=y, **fit_params).transform(
+                imgs, confounds=confounds, sample_mask=sample_mask
+            )
 
     @fill_doc
     def transform_imgs(
@@ -80,7 +82,7 @@ class _MultiMixin:
 
         Parameters
         ----------
-        %(imgs)s
+        %(imgs_list)s
             Images to process.
 
         %(confounds_multi)s
@@ -130,7 +132,7 @@ class _MultiMixin:
 
         Parameters
         ----------
-        imgs :Image object, or a :obj:`list` of Image objects
+        imgs : Image object, or a :obj:`list` of Image objects
             See :ref:`extracting_data`.
             Data to be preprocessed
 
@@ -223,15 +225,6 @@ class _MultiMixin:
 
         return sample_mask
 
-    def set_output(self, *, transform=None):
-        """Set the output container when ``"transform"`` is called.
-
-        .. warning::
-
-            This has not been implemented yet.
-        """
-        raise NotImplementedError()
-
 
 class _LabelMaskerMixin:
     lut_: pd.DataFrame
@@ -315,7 +308,7 @@ class _LabelMaskerMixin:
 
         Parameters
         ----------
-        input_features :default=None
+        input_features : default=None
             Only for sklearn API compatibility.
         """
         del input_features
@@ -393,6 +386,7 @@ class _LabelMaskerMixin:
         )
 
 
+@fill_doc
 class MaskerReportMixin(ReportMixin):
     """A mixin class that adapts ``ReportMixin`` to masker classes for
     reporting functionality.
@@ -514,12 +508,10 @@ class MaskerReportMixin(ReportMixin):
 
             - For NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker,
               MultiSurfaceMapsMasker :
-
-                  %(displayed_maps)s
+              %(displayed_maps)s
 
             - For NiftiSpheresMasker :
-
-                  %(displayed_spheres)s
+              %(displayed_spheres)s
 
         Returns
         -------
@@ -537,42 +529,33 @@ class MaskerReportMixin(ReportMixin):
 
     def _generate_report_htmls(self):
         """Generate report figure htmls and summary htmls."""
-        report_content = self._report_content
+        self._report_content["figures"] = self._embed_all_images()
 
-        figure, embeded_images = self._generate_figure_htmls()
-        report_content["figure"] = figure
-        report_content["content"] = embeded_images
-
-        # _generate_figure_htmls should be called before setting summary_html
+        # _embed_all_images should be called before setting summary_html
         summary = self._report_content.get("summary", None)
         if summary is not None:
-            report_content["summary_html"] = self._get_summary_html(summary)
+            self._report_content["summary_html"] = self._get_summary_html(
+                summary
+            )
 
-    def _generate_figure_htmls(self):
-        """Generate image htmls using partial template for masker figures."""
-        embeded_images = None
+        # for Niftimasker
+        if overlay := self._report_content.get("overlay", None):
+            self._report_content["overlay_html"] = self._embed_img(overlay)
+
+    def _embed_all_images(self) -> list[str | None]:
+        """Embed all images."""
+        embedded_images: list[str | None] = [None]
         image = self._load_report_displays()
         if image is None:
-            embeded_images = None
+            embedded_images = [None]
         elif not isinstance(image, list):
-            embeded_images = self._embed_img(image)
+            embedded_images = [self._embed_img(image)]
         elif all(x is None for x in image):
-            embeded_images = None
+            embedded_images = [None]
         else:
-            embeded_images = [self._embed_img(i) for i in image]
+            embedded_images = [self._embed_img(i) for i in image]
 
-        content = embeded_images
-        if not isinstance(content, list):
-            content = [content]
-
-        tpl = self._get_partial_template(self._estimator_type, "figure")
-        tpl_rendered = tpl.render(
-            engine=self._report_content["engine"],
-            content=content,
-            displayed_maps=self._report_content["displayed_maps"],
-            unique_id=self._report_content["unique_id"],
-        )
-        return tpl_rendered, embeded_images
+        return embedded_images
 
     @abc.abstractmethod
     def _load_report_displays(self):

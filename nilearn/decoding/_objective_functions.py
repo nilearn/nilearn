@@ -21,7 +21,7 @@ def spectral_norm_squared(X):
 
     Returns
     -------
-    lipschitz_constant : float
+    lipschitz_constant : :obj:`float`
       The square of the spectral norm of X.
 
     """
@@ -64,15 +64,15 @@ def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    compute_energy : bool, default=True
+    compute_energy : :obj:`bool`, default=True
         If set then energy is computed, otherwise only gradient is computed.
 
-    compute_grad : bool, default=False
+    compute_grad : :obj:`bool`, default=False
         If set then gradient is computed, otherwise only energy is computed.
 
     Returns
     -------
-    energy : float
+    energy : :obj:`float`
         Energy (returned if `compute_energy` is set).
 
     gradient : ndarray, shape (n_features,)
@@ -107,7 +107,7 @@ def tv_l1_from_gradient(spatial_grad):
 
     Returns
     -------
-    out : float
+    out : :obj:`float`
         Energy contribution due to penalized gradient.
     """
     tv_term = np.sum(
@@ -126,7 +126,7 @@ def divergence_id(grad, l1_ratio=0.5):
         where `img_shape` is the shape of the brain bounding box, and
         n_axes = len(img_shape).
 
-    l1_ratio : float in the interval [0, 1]; default=0.5
+    l1_ratio : :obj:`float` in the interval [0, 1]; default=0.5
         Constant that mixes L1 and spatial prior terms in the penalization.
 
     Returns
@@ -171,7 +171,7 @@ def gradient_id(img, l1_ratio=0.5):
     img : ndarray, shape (nx, ny, nz, ...)
         N-dimensional image
 
-    l1_ratio : float in the interval [0, 1]; default=0.5
+    l1_ratio : :obj:`float` in the interval [0, 1]; default=0.5
         Constant that mixes L1 and spatial prior terms in the penalization.
 
     Returns
@@ -236,7 +236,7 @@ def logistic_loss(X, y, w):
 
     Returns
     -------
-    energy : float
+    energy : :obj:`float`
         Energy contribution due to logistic data-fit term.
     """
     z = np.dot(X, w[:-1]) + w[-1]

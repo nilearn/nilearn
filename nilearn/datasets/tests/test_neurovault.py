@@ -246,7 +246,7 @@ def _neurovault(match, request):  # noqa: ARG001
 
 
 @pytest.fixture(autouse=True)
-def neurovault_mocker(request_mocker):
+def neurovault_mocker(request_mocker) -> None:
     """Mock neurovault fetcher."""
     request_mocker.url_mapping["*neurovault.org*"] = _neurovault
 

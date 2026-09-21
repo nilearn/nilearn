@@ -8,6 +8,7 @@ import warnings
 from typing import Any, ClassVar
 
 import numpy as np
+from nibabel import Nifti1Image
 from scipy import sparse
 from sklearn import neighbors
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
@@ -18,7 +19,7 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn.datasets import load_mni152_template
-from nilearn.image import resample_img
+from nilearn.image import load_img, resample_img
 from nilearn.image.image import (
     check_niimg_3d,
     check_niimg_4d,
@@ -56,10 +57,10 @@ def apply_mask_and_get_affinity(
         If a 3D niimg is provided, a singleton dimension will be added to
         the output to represent the single scan in the niimg.
 
-    radius : float
+    radius : :obj:`float`
         Indicates, in millimeters, the radius for the sphere around the seed.
 
-    allow_overlap : boolean
+    allow_overlap : :obj:`bool`
         If False, a ValueError is raised if VOIs overlap
 
     mask_img : Niimg-like object or None, default=None
@@ -175,10 +176,10 @@ def _iter_signals_from_spheres(
         If a 3D niimg is provided, a singleton dimension will be added to
         the output to represent the single scan in the niimg.
 
-    radius : float
+    radius : :obj:`float`
         Indicates, in millimeters, the radius for the sphere around the seed.
 
-    allow_overlap : boolean
+    allow_overlap : :obj:`bool`
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
 
@@ -256,7 +257,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         maps have a non-zero value for the same voxel).
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
     high_variance_confounds : :obj:`bool`, default=False
@@ -322,7 +323,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_img=None,
         allow_overlap=False,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         high_variance_confounds=False,
         detrend=False,
@@ -401,7 +402,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        displays : list
+        displays : :obj:`list`
             A list of all displays to be rendered.
         """
         if not self._has_report_data():
@@ -416,8 +417,10 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             positions = [
                 np.round(
                     coord_transform(
-                        *seed,
-                        np.linalg.inv(img.affine),  # type: ignore[call-arg]
+                        seed[0],
+                        seed[1],
+                        seed[2],
+                        np.linalg.inv(img.affine),
                     )
                 ).astype(int)
                 for seed in seeds
@@ -510,6 +513,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     )
                 else:
                     resampl_imgs = imgs
+
                 # Store 1 timepoint to pass to reporter
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
         elif self.reports:  # imgs not provided to fit
@@ -638,13 +642,25 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             verbose=self.verbose,
         )
 
+        imgs = load_img(imgs)
+
+        target_dtype = self._get_target_dtype(imgs)
+
+        if target_dtype is not None:
+            # if target_dtype is None here, self.dtype is None: no
+            # explicit dtype was requested, so keep the dtype produced by
+            # the extraction/cleaning pipeline (e.g. float after
+            # standardize) instead of forcing it back to the source
+            # image's dtype.
+            signals = signals.astype(target_dtype)
+
         if self.n_elements_ == 1:
             return signals
         else:
             return np.atleast_1d(signals)
 
     @fill_doc
-    def inverse_transform(self, region_signals):
+    def inverse_transform(self, region_signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from spheres signals.
 
         Any mask given at initialization is taken into account. Throws an error
@@ -684,4 +700,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             adjacency = adjacency.dot(sparse.diags(scale))
 
         img = adjacency.T.dot(region_signals.T).T
-        return unmask(img, self.mask_img_)
+
+        img = unmask(img, self.mask_img_)
+
+        img = self._post_process_inverse_transform(region_signals, img)
+
+        return img

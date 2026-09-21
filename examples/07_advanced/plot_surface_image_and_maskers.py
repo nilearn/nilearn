@@ -15,8 +15,10 @@ This shows:
 
 -   how to use run some decoding directly on surface data.
 
-See the :ref:`dataset description <nki_dataset>`
-for more information on the data used in this example.
+.. seealso::
+
+    See the :ref:`dataset description <nki_dataset>`
+    for more information on the data used in this example.
 """
 
 from nilearn._utils.helpers import check_matplotlib
@@ -30,7 +32,7 @@ check_matplotlib()
 # as a list of :class:`~nilearn.surface.SurfaceImage`.
 # Then we extract data with a masker and
 # compute the mean image across time points for the first subject.
-# We then plot the the mean image.
+# We then plot the mean image.
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -203,6 +205,7 @@ decoder = Decoder(
     param_grid={"C": [0.01, 0.1]},
     cv=3,
     screening_percentile=1,
+    standardize=None,
 )
 decoder.fit(surf_img_nki, y)
 print("CV scores:", decoder.cv_scores_)

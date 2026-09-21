@@ -7,7 +7,8 @@ from typing import Any, Literal, get_args, get_origin
 
 import numpy as np
 
-import nilearn.typing as nilearn_typing
+from nilearn import nilearn_typing
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 
 
@@ -185,8 +186,6 @@ TYPE_MAPS = {
     "force_resample": nilearn_typing.ForceResample,
     "high_pass": nilearn_typing.HighPass,
     "hrf_model": nilearn_typing.HrfModel,
-    "keep_masked_labels": nilearn_typing.KeepMaskedLabels,
-    "keep_masked_maps": nilearn_typing.KeepMaskedMaps,
     "low_pass": nilearn_typing.LowPass,
     "lower_cutoff": nilearn_typing.LowerCutoff,
     "memory": nilearn_typing.MemoryLike,
@@ -305,6 +304,7 @@ def check_is_of_allowed_type(
         raise TypeError(error_msg)
 
 
+@fill_doc
 def check_reduction_strategy(strategy: str) -> None:
     """Check that the provided strategy is supported.
 

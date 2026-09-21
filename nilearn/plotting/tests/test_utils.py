@@ -75,7 +75,7 @@ def test_should_raise_import_error_for_version_check(matplotlib_pyplot):  # noqa
 
 
 @pytest.fixture
-def data_pos_neg():
+def data_pos_neg() -> np.ndarray:
     """Fixture for data with both positive and negative values."""
     # min: -0.5, max: 3.0
     return np.array(
@@ -84,21 +84,21 @@ def data_pos_neg():
 
 
 @pytest.fixture
-def data_pos(data_pos_neg):
+def data_pos(data_pos_neg) -> np.ndarray:
     """Fixture for data with only positive values."""
     # min: 0.5, max: 3.0
     return np.abs(data_pos_neg)
 
 
 @pytest.fixture
-def data_neg(data_pos_neg):
+def data_neg(data_pos_neg) -> np.ndarray:
     """Fixture for data with only negative values."""
     # min: -3, max: -0.5
     return -np.abs(data_pos_neg)
 
 
 @pytest.fixture
-def data_masked(data_pos_neg):
+def data_masked(data_pos_neg) -> np.ma.MaskedArray:
     """Fixture for data with masked values."""
     # min: -0.5, max: 1.5
     return np.ma.masked_greater(data_pos_neg, 2.0)

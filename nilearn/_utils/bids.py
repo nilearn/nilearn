@@ -1,18 +1,20 @@
 import warnings
 
+import numpy as np
 import pandas as pd
 
 from nilearn._utils.logger import find_stack_level
 from nilearn.image.image import get_indices_from_image
+from nilearn.nilearn_typing import Verbose
 
 
 def generate_atlas_look_up_table(
     function=None,
     name=None,
     index=None,
-    strict=False,
-    background_label=None,
-):
+    strict: bool = False,
+    background_label: int | float | None = None,
+) -> pd.DataFrame:
     """Generate a BIDS compatible look up table for an atlas.
 
     For a given deterministic atlas supported by Nilearn,
@@ -48,11 +50,11 @@ def generate_atlas_look_up_table(
         If a Niimg like or SurfaceImage is passed,
         then a LUT is generated for this image.
 
-    strict: bool, default=False
+    strict : :obj:`bool`, default=False
         If True, an error will be thrown
         if ``name`` and ``index``have different length.
 
-    background_label: int or float or None, default=None
+    background_label : int or float or None, default=None
         If not None and no 'name' was passed,
         this label is used to describe the background value in the image.
     """
@@ -140,16 +142,15 @@ def generate_atlas_look_up_table(
         )
 
     # enforce little endian of index column
-    if lut["index"].dtype.byteorder == ">":
-        lut["index"] = lut["index"].astype(
-            lut["index"].dtype.newbyteorder("=")
-        )
+    index_dtype = lut["index"].dtype
+    if isinstance(index_dtype, np.dtype) and index_dtype.byteorder == ">":
+        lut["index"] = lut["index"].astype(index_dtype.newbyteorder("="))
 
     return lut
 
 
 def check_look_up_table(
-    lut: pd.DataFrame, atlas, strict: bool = False, verbose: int = 0
+    lut: pd.DataFrame, atlas, strict: bool = False, verbose: Verbose = 0
 ) -> None:
     """Validate atlas look up table (LUT).
 
@@ -167,11 +168,11 @@ def check_look_up_table(
 
     atlas : Niimg like object or SurfaceImage or numpy array
 
-    strict : bool, default = False
+    strict : :obj:`bool`, default = False
         Errors are raised instead of warnings if strict == True.
 
-    verbose: int
-        No warning thrown if set to 0.
+    verbose : :obj:`bool` | int
+        No warning thrown if Falsy.
 
     Raises
     ------

@@ -1,5 +1,7 @@
 """Test fixtures used by nilearn.plotting.surface tests."""
 
+from types import ModuleType
+
 import numpy as np
 import pytest
 
@@ -34,13 +36,13 @@ def pytest_generate_tests(metafunc):
 
 
 @pytest.fixture
-def engine(request):
+def engine(request) -> str:
     """Return each of the engines detected by pytest_generate_tests."""
     return request.param
 
 
 @pytest.fixture
-def plt(request, engine):
+def plt(request, engine) -> ModuleType | None:
     """Return the fixture for setup and teardown of test depending on the
     engine.
     """
@@ -48,6 +50,7 @@ def plt(request, engine):
         return request.getfixturevalue("matplotlib_pyplot")
     elif engine == "plotly":
         return request.getfixturevalue("plotly")
+    return None
 
 
 @pytest.fixture

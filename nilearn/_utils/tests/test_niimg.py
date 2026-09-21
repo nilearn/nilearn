@@ -10,7 +10,6 @@ from nibabel import Nifti1Header, Nifti1Image, load
 
 from nilearn._utils.niimg import (
     _get_data,
-    _get_target_dtype,
     ensure_finite_data,
     has_non_finite,
     img_data_dtype,
@@ -18,18 +17,19 @@ from nilearn._utils.niimg import (
     load_niimg,
     repr_niimgs,
 )
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data, new_img_like
 
 
 @pytest.fixture
-def img1(affine_eye):
+def img1(affine_eye) -> Nifti1Image:
     data = np.ones((2, 2, 2, 2))
     return Nifti1Image(data, affine=affine_eye)
 
 
 @pytest.fixture
-def img_binary(affine_eye, has_inf, has_nan, non_bin):
+def img_binary(affine_eye, has_inf, has_nan, non_bin) -> Nifti1Image:
     data = np.ones((3, 3, 3, 3))
 
     if has_inf:
@@ -51,7 +51,7 @@ def test_new_img_like_side_effect(img1):
 def test_get_target_dtype(affine_eye):
     img = Nifti1Image(np.ones((2, 2, 2), dtype=np.float64), affine=affine_eye)
     assert get_data(img).dtype.kind == "f"
-    dtype_kind_float = _get_target_dtype(
+    dtype_kind_float = get_target_dtype(
         get_data(img).dtype, target_dtype="auto"
     )
     assert dtype_kind_float == np.float32
@@ -62,7 +62,7 @@ def test_get_target_dtype(affine_eye):
     data = np.ones((2, 2, 2), dtype=np.int64)
     img2 = Nifti1Image(data, affine=affine_eye, header=hdr)
     assert get_data(img2).dtype.kind == img2.get_data_dtype().kind == "i"
-    dtype_kind_int = _get_target_dtype(
+    dtype_kind_int = get_target_dtype(
         get_data(img2).dtype, target_dtype="auto"
     )
     assert dtype_kind_int == np.int32
@@ -141,7 +141,11 @@ def test_repr_niimgs():
     ]
     # Explicit shortening, all 3 names are displayed, but shortened
     shortened_rep_list_of_size_3 = (
-        "[this-is-a-very-lon..., this-is-another-ve..., this-is-again-anot...]"
+        "[\n "
+        + "this-is-a-very-lon..., "
+        + "this-is-another-ve..., "
+        + "this-is-again-anot...,"
+        + "\n]"
     )
 
     assert (
@@ -152,7 +156,9 @@ def test_repr_niimgs():
     # Lists longer than 3
     # Small names - Explicit shortening
     long_list_small_names = ["test", "retest", "reretest", "rereretest"]
-    shortened_rep_long_list_small_names = "[test,\n         ...\n rereretest]"
+    shortened_rep_long_list_small_names = (
+        "[\n test,\n         ...\n rereretest,\n]"
+    )
 
     assert (
         repr_niimgs(long_list_small_names, shorten=True)
@@ -165,7 +171,7 @@ def test_repr_niimgs():
         "this-is-again-another-super-very-long-name-for-a-nifti-file.nii",
     ]
     shortened_rep_long_list_long_names = (
-        "[this-is-a-very-lon...,\n         ...\n this-is-again-anot...]"
+        "[\n this-is-a-very-lon...,\n         ...\n this-is-again-anot...,\n]"
     )
 
     assert (
@@ -181,8 +187,11 @@ def test_repr_niimgs_force_long_names():
     assert repr_niimgs(long_name, shorten=False) == long_name
 
     # Tests with list of file paths
-    assert repr_niimgs(["test", "retest"]) == "[test, retest]"
-    assert repr_niimgs(["test", "retest"], shorten=False) == "[test, retest]"
+    assert repr_niimgs(["test", "retest"]) == "[\n test, retest,\n]"
+    assert (
+        repr_niimgs(["test", "retest"], shorten=False)
+        == "[\n test, retest,\n]"
+    )
 
     # Force display, all 3 names are displayed
     list_of_size_3 = [
@@ -191,9 +200,9 @@ def test_repr_niimgs_force_long_names():
         "this-is-again-another-very-long-name-for-a-nifti-file.nii",
     ]
     long_rep_list_of_size_3 = (
-        "[this-is-a-very-long-name-for-a-nifti-file.nii,"
+        "[\n this-is-a-very-long-name-for-a-nifti-file.nii,"
         " this-is-another-very-long-name-for-a-nifti-file.nii,"
-        " this-is-again-another-very-long-name-for-a-nifti-file.nii]"
+        " this-is-again-another-very-long-name-for-a-nifti-file.nii,\n]"
     )
     assert (
         repr_niimgs(list_of_size_3, shorten=False) == long_rep_list_of_size_3
@@ -201,7 +210,7 @@ def test_repr_niimgs_force_long_names():
 
     long_list_small_names = ["test", "retest", "reretest", "rereretest"]
     long_rep_long_list_small_names = (
-        "[test,\n retest,\n reretest,\n rereretest]"
+        "[\n test,\n retest,\n reretest,\n rereretest,\n]"
     )
 
     assert (
@@ -215,9 +224,9 @@ def test_repr_niimgs_force_long_names():
         "this-is-again-another-super-very-long-name-for-a-nifti-file.nii",
     ]
     long_rep_long_list_long_names = (
-        long_rep_list_of_size_3[:-1].replace(",", ",\n")
-        + ",\n "
-        + "this-is-again-another-super-very-long-name-for-a-nifti-file.nii]"
+        long_rep_list_of_size_3[:-2].replace(",", ",\n")
+        + " this-is-again-another-super-very-long-name-for-a-nifti-file.nii,"
+        + "\n]"
     )
 
     assert (
@@ -254,14 +263,14 @@ def test_repr_niimgs_with_niimg_pathlib():
     ]
 
     shortened_list_of_paths = (
-        f"[...{Path('/path/to/file.nii')!s},\n"
+        f"[\n ...{Path('/path/to/file.nii')!s},\n"
         f"         ...\n"
-        f" a-very-long-file-n...]"
+        f" a-very-long-file-n...,\n]"
     )
 
     assert repr_niimgs(list_of_paths, shorten=True) == shortened_list_of_paths
     long_list_of_paths = ",\n ".join([str(_) for _ in list_of_paths])
-    long_list_of_paths = f"[{long_list_of_paths}]"
+    long_list_of_paths = f"[\n {long_list_of_paths},\n]"
     assert repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
 
 
@@ -294,6 +303,52 @@ def test_repr_niimgs_with_niimg(
         repr_niimgs(img_3d_ones_eye, shorten=True)
         == f"{class_name}('{Path(filename).name[:18]}...')"
     )
+
+
+@pytest.mark.parametrize("shorten", [True, False])
+def test_repr_niimgs_with_1d_surface_image(surf_img_1d, shorten):
+    img_repr = "<SurfaceImage (9,)>"
+
+    assert repr(surf_img_1d) == img_repr
+    assert repr_niimgs(surf_img_1d, shorten=shorten) == img_repr
+
+
+@pytest.mark.parametrize("shorten", [True, False])
+def test_repr_niimgs_with_2d_surface_image(surf_img_2d, shorten):
+    img = surf_img_2d(n_samples=2)
+    img_repr = "<SurfaceImage (9, 2)>"
+
+    assert repr(img) == img_repr
+    assert repr_niimgs(img, shorten=shorten) == img_repr
+
+
+@pytest.mark.parametrize("shorten", [True, False])
+def test_repr_niimgs_with_surface_image_list(
+    surf_img_1d, surf_img_2d, shorten
+):
+    imgs = [surf_img_1d, surf_img_2d(n_samples=2)]
+
+    expected = f"[\n {imgs[0]!r}, {imgs[1]!r},\n]"
+    assert repr_niimgs(imgs, shorten=shorten) == expected
+
+
+@pytest.mark.parametrize("shorten", [True, False])
+def test_repr_niimgs_with_long_surface_image_list(
+    surf_img_1d, surf_img_2d, shorten
+):
+    imgs = [
+        surf_img_1d,
+        surf_img_2d(n_samples=2),
+        surf_img_1d,
+        surf_img_2d(n_samples=3),
+    ]
+
+    if shorten:
+        expected = f"[\n {imgs[0]!r},\n         ...\n {imgs[-1]!r},\n]"
+    else:
+        image_reprs = ",\n ".join(repr(img) for img in imgs)
+        expected = f"[\n {image_reprs},\n]"
+    assert repr_niimgs(imgs, shorten=shorten) == expected
 
 
 @pytest.mark.parametrize(

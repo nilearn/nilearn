@@ -81,7 +81,7 @@ With ``conda``:
 
 .. code-block:: bash
 
-    conda create -n nilearn python=3.10
+    conda create -n nilearn python=3.11
     conda activate nilearn
 
 **2. Install nilearn with pip**
@@ -91,7 +91,26 @@ in the proper python environment:
 
 .. code-block:: bash
 
-    python -m pip install -U nilearn
+    python -m pip install nilearn
+
+If you want to upgrade your current version:
+
+.. code-block:: bash
+
+    python -m pip install --upgrade nilearn
+
+Nilearn comes with optional plotting dependencies (matplotlib, plotly).
+If you want to install matplotlib:
+
+.. code-block:: bash
+
+    python -m pip install 'nilearn[plotting]'
+
+If you want to install matplotlib and plotly:
+
+.. code-block:: bash
+
+    python -m pip install 'nilearn[plotting, plotly]'
 
 Development version
 -------------------

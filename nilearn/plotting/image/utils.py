@@ -168,11 +168,11 @@ def _apply_dimming(
     dim : Literal["auto"] | float
         Dimming factor. If "auto", it will be set to 0.8 for black background
         and 0.6 for light background.
-    black_bg : bool
+    black_bg : :obj:`bool`
         Whether the background is black or light.
-    vmin : float
+    vmin : :obj:`float`
         Minimum value of the image data.
-    vmax : float
+    vmax : :obj:`float`
         Maximum value of the image data.
 
     Returns

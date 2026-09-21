@@ -10,6 +10,7 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, get_data
+from nilearn.nilearn_typing import ColorBar, OutputFile, Title
 from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
@@ -29,7 +30,6 @@ from nilearn.surface.surface import (
     check_extensions,
     check_mesh_is_fsaverage,
 )
-from nilearn.typing import ColorBar, OutputFile, Title
 
 # subset of data format extensions supported
 DATA_EXTENSIONS = (

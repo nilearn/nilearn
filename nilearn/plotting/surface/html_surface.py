@@ -14,6 +14,7 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn.image import check_niimg_3d
+from nilearn.nilearn_typing import ColorBar, Title
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import mesh_to_plotly
 from nilearn.plotting.surface._utils import (
@@ -32,7 +33,6 @@ from nilearn.surface.surface import (
     load_surf_data,
     load_surf_mesh,
 )
-from nilearn.typing import ColorBar, Title
 
 ALLOWED_VIEWS = {"left", "right", "front", "back", "top", "bottom"}
 

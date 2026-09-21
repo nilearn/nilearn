@@ -13,9 +13,8 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.param_validation import sanitize_verbose
-from nilearn.image import check_niimg, crop_img, resample_img
+from nilearn.image import check_niimg, crop_img, load_img, resample_img
 from nilearn.image.image import check_same_fov
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
@@ -44,7 +43,6 @@ class _ExtractionFunctor:
             apply_mask(
                 imgs,
                 self.mask_img_,
-                dtype=img_data_dtype(imgs),
             ),
             imgs.affine,
         )
@@ -82,10 +80,10 @@ def make_brain_mask_func(mask_type: str, multi: bool = False):
 
     Parameters
     ----------
-    mask_type : str
+    mask_type : :obj:`str`
         Type of masking function to return.
 
-    multi : bool
+    multi : :obj:`bool`
         Whether to return functions for multimasker or not.
     """
 
@@ -131,7 +129,6 @@ def filter_and_mask(
     confounds=None,
     sample_mask=None,
     copy=True,
-    dtype=None,
     sklearn_output_config=None,
 ):
     """Extract representative time series using given mask.
@@ -141,13 +138,17 @@ def filter_and_mask(
     imgs : 3D/4D Niimg-like object
         Images to be masked. Can be 3-dimensional or 4-dimensional.
 
-    For all other parameters refer to NiftiMasker documentation.
-
     Returns
     -------
     signals : 2D numpy array
         Signals extracted using the provided mask. It is a scikit-learn
         friendly 2D array with shape n_sample x n_features.
+
+    .. do not check for missing parameters in docstring
+
+    Notes
+    -----
+    For all other parameters refer to NiftiMasker documentation.
 
     """
     if memory is None:
@@ -188,7 +189,6 @@ def filter_and_mask(
         confounds=confounds,
         sample_mask=sample_mask,
         copy=copy,
-        dtype=dtype,
     )
     # For _later_: missing value removal or imputing of missing data
     # (i.e. we want to get rid of NaNs, if smoothing must be done
@@ -200,6 +200,7 @@ def filter_and_mask(
     # we return 1D array
     if temp_imgs.ndim == 3 and sklearn_output_config is None:
         data = data.squeeze()
+
     return data
 
 
@@ -232,7 +233,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -337,7 +338,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_img=None,
         runs=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         high_variance_confounds=False,
@@ -408,7 +409,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        displays : List of :class:`~matplotlib.figure.Figure`
+        displays : :obj:`list` of :class:`~matplotlib.figure.Figure`
             A list of all displays to be rendered.
             Returns None when masker is not fitted
         """
@@ -517,9 +518,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return hasattr(self, "mask_img_")
 
     def _fit(self, imgs):
-        # Load data (if filenames are given, load them)
-        mask_logger("load_data", img=imgs, verbose=self.verbose)
-
         # Compute the mask if not given by the user
         if self.mask_img_ is None:
             if imgs is None:
@@ -694,8 +692,20 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             confounds=confounds,
             sample_mask=sample_mask,
             copy=copy,
-            dtype=self.dtype,
             sklearn_output_config=sklearn_output_config,
         )
 
-        return data
+        if not isinstance(data, np.ndarray):
+            # in case data is a cached MemorizedResult
+            # only happens when _shelving is True
+            return data
+
+        imgs = load_img(imgs)
+
+        target_dtype = self._get_target_dtype(imgs)
+
+        # target_dtype is None: no explicit dtype was requested,
+        # so keep the dtype produced by the extraction/cleaning pipeline
+        # (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return data if target_dtype is None else data.astype(target_dtype)
