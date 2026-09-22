@@ -17,7 +17,15 @@ through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issue
 and through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_,
 usually **every Wednesday from 4pm to 5pm UTC**.
 We post on our `Bluesky account <https://bsky.app/profile/nilearn.bsky.social>`_ in advance to let you know
-if the drop-in hours are happening that week.
+There are currently three ways to interact with the Nilearn team:
+
+* through the :neurostars:`neurostars <>` forum
+ 
+* our :nilearn-gh:`github <>` issues
+
+* through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_, usually **every Wednesday from 4pm to 5pm UTC**
+
+We post on our `Bluesky account <https://bsky.app/profile/nilearn.bsky.social>`_ in advance to let you know if the drop-in hours are happening that week.
 
 If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn,
 we would appreciate it if you either ask it during the drop-in hours
@@ -168,7 +176,7 @@ As a rule of thumb:
 Adding atlases and datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Downloaders for new atlases datasets are usually discouraged.
+Downloaders for new atlases and datasets are usually discouraged.
 
 There is no intention to provide a comprehensive collection of downloaders
 for the most widely used atlases and datasets.
