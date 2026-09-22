@@ -32,8 +32,6 @@ Fixes
 
 - :bdg-primary:`Doc` Fix documented defaults that did not match the signatures in :func:`~nilearn.datasets.fetch_atlas_smith_2009`, :func:`~nilearn.datasets.fetch_atlas_difumo`, :func:`~nilearn.datasets.fetch_atlas_schaefer_2018` and in several private helpers (:gh:`6582` by `Venish Paneliya`_).
 
-- :bdg-secondary:`Maint` Bump the ``numpy``, ``scipy``, ``pandas``, ``scikit-learn`` and ``plotly`` pins in the ``asv_benchmarks/asv.conf.json`` benchmark matrix so they no longer predate the ``cp311`` wheels required by the ``benchmark.yml`` workflow's ``pythons: ["3.11"]``, and make the "Fail if any benchmark reported as failed" step also catch a non-zero exit code from ``asv run`` (:gh:`6593` by `Rémi Gau`_).
-
 
 Enhancements
 ------------
