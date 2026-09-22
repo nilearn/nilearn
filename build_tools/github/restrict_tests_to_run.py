@@ -19,6 +19,8 @@ BASE_TESTS = [
     "nilearn/tests/test_init.py",
     "nilearn/tests/test_package_import.py",
     "nilearn/_utils/tests",
+    "nilearn/tests/test_estimator_checks_nilearn.py",
+    "nilearn/tests/test_estimator_checks_sklearn.py",
 ]
 
 HIGHEST_LAYER = ["nilearn/utils"]
