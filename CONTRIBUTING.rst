@@ -869,7 +869,7 @@ Here are the key steps you need to go through to copy the repo before contributi
 
 2. (optional but highly recommended) set up a virtual environment to work
    in using whichever environment management tool you're used to and activate it.
-   See :ref:`our virtual environment setup instructiuons <virtual_env>`.
+   See :ref:`our virtual environment setup instructions <virtual_env>`.
 
 3. install the forked version of ``nilearn``
 
