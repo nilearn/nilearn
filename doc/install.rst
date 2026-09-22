@@ -165,7 +165,7 @@ Simply install rich to benefit from those.
 Check installation
 ------------------
 
-From a terminal window.
+From a terminal window:
 
 .. prompt:: bash
 
