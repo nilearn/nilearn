@@ -18,11 +18,8 @@ doc = [
     "docutils>=0.17",
     "furo>=2024.8.6",
     # See https://github.com/jupyterlite/pyodide-kernel#compatibility
-    # "jupyterlite-pyodide-kernel>=0.8.0,<=0.9.0",
-    # "jupyterlite-sphinx>=0.23.0",
-    "jupyterlite-sphinx>=0.18.0",
-    # see https://github.com/jupyterlite/pyodide-kernel#compatibility
-    "jupyterlite-pyodide-kernel==0.5.2",  # supports Pyodide 0.27.1
+    "jupyterlite-pyodide-kernel>=0.8.0,<=0.9.0",
+    "jupyterlite-sphinx>=0.23.0",
     "marimo>=0.12.0",
     "memory_profiler>=0.61",  # measuring memory during docs building
     "myst-parser>=3.0.1",
@@ -309,10 +306,7 @@ baseline-matching-mode = "concise-description"
 check-unannotated-defs = false
 infer-return-types = "never"
 preset = "legacy"
-project-excludes = [
-    "**/nilearn_cache/**/*",
-    "**/nilearn/_version.py"
-]
+project-excludes = ["**/nilearn_cache/**/*", "**/nilearn/_version.py"]
 project-includes = ["nilearn/**/*.py"]
 python-version = "3.11"
 replace-imports-with-any = [
