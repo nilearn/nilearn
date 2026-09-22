@@ -4,6 +4,7 @@ with OLS and permutation test.
 
 import time
 import warnings
+from typing import TYPE_CHECKING
 
 import joblib
 import numpy as np
@@ -16,7 +17,11 @@ from nilearn import image
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level, readable_time
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
@@ -686,9 +691,12 @@ def permuted_ols(
     tfce_original_data = None
 
     if tfce:
-
-        # check
-        assert masker is not None
+        # for type checking only
+        # TODO see if type guard can be used in _check_inputs_permuted_ols
+        if TYPE_CHECKING:
+            assert masker is not None
+        if not masker.__sklearn_is_fitted__():
+            masker.fit()
 
         scores_4d = masker.inverse_transform(
             scores_original_data.T
@@ -713,6 +721,13 @@ def permuted_ols(
         if tfce and tfce_original_data is not None:
             out["tfce"] = tfce_original_data.T
         return out
+
+    # for type checking only
+    # TODO see if type guard can be used in _check_inputs_permuted_ols
+    if TYPE_CHECKING:
+        assert masker is not None
+    if not masker.__sklearn_is_fitted__():
+        masker.fit()
 
     # Permutations
     # parallel computing units perform a reduced number of permutations each
@@ -859,6 +874,11 @@ def _check_inputs_permuted_ols(
     if (threshold is not None) and (masker is None):
         raise ValueError(
             "If 'threshold' is not None, masker must be defined as well."
+        )
+
+    if masker is not None:
+        check_is_of_allowed_type(
+            masker, (NiftiMasker, MultiNiftiMasker), "masker"
         )
 
     # make target_vars F-ordered to speed-up computation

@@ -1,6 +1,5 @@
 """Tests for the permuted_ols function."""
 
-from sklearn import clone
 import warnings
 
 import numpy as np
@@ -12,6 +11,7 @@ from numpy.testing import (
     assert_equal,
 )
 from scipy import stats
+from sklearn import clone
 
 from nilearn.conftest import _rng
 from nilearn.maskers import NiftiMasker
@@ -732,6 +732,7 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     assert out["h0_max_size"].size == n_perm
     assert out["h0_max_mass"].size == n_perm
 
+
 def test_unfitted_masker(cluster_level_design, masker):
     """Pass unfitted masker does not raise an error."""
     target_var, tested_var = cluster_level_design
@@ -748,6 +749,19 @@ def test_unfitted_masker(cluster_level_design, masker):
         threshold=0.001,
         masker=masker,
     )
+
+
+def test_invalid_masker(cluster_level_design):
+    """Test invalid masker."""
+    target_var, tested_var = cluster_level_design
+
+    with pytest.raises(TypeError, match="'masker' must be of type"):
+        permuted_ols(
+            tested_var,
+            target_var,
+            masker="foo",
+        )
+
 
 def test_sanitize_inputs_permuted_ols(design):
     """Smoke test for input sanitization."""
