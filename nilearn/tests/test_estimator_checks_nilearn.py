@@ -1,4 +1,7 @@
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 from sklearn.covariance import EmpiricalCovariance
@@ -52,15 +55,17 @@ from nilearn.regions import (
     RegionExtractor,
     ReNA,
 )
-
-# this to here
 from nilearn.utils.discovery import all_estimators
 
-ESTIMATORS_TO_CHECK = [
+CONNECTOME = [
     ConnectivityMeasure(cov_estimator=EmpiricalCovariance()),
     ConnectivityMeasure(),
     GroupSparseCovarianceCV(),
     GroupSparseCovariance(),
+]
+
+
+DECODING = [
     Decoder(
         screening_percentile=100,
         estimator_args={"random_state": 0},
@@ -78,10 +83,19 @@ ESTIMATORS_TO_CHECK = [
             np.ones((5, 5, 5), dtype=bool).astype("uint8"), np.eye(4)
         )
     ),
+]
+
+DECOMPOSITION = [
     DictLearning(),
     CanICA(),
+]
+
+GLM = [
     FirstLevelModel(),
     SecondLevelModel(),
+]
+
+MASKERS = [
     NiftiMasker(),
     NiftiLabelsMasker(labels_img=_img_labels()),
     NiftiLabelsMasker(labels_img=_img_labels(n_regions=1)),
@@ -104,6 +118,10 @@ ESTIMATORS_TO_CHECK = [
     MultiSurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
     MultiSurfaceMapsMasker(_surf_maps_img()),
     MultiSurfaceMapsMasker(_surf_maps_img(n_regions=1)),
+]
+
+
+REGIONS = [
     RegionExtractor(
         maps_img=generate_maps(
             shape=_shape_3d_large(),
@@ -120,6 +138,47 @@ ESTIMATORS_TO_CHECK = [
 ]
 
 
+ESTIMATORS_TO_CHECK = (
+    CONNECTOME + DECODING + DECOMPOSITION + GLM + MASKERS + REGIONS
+)
+
+
+def _estimators():
+    """Create list of estimators to be used for nilearn checks.
+
+    Nilearn estimator checks should be run only for the estimators whose
+    package is modified. The list of modified packages is taken from from
+    ``tests_to_run.txt`` file. This file is generated only when tests are run
+    in CI. To generate it locally,
+    `` python build_tools/github/restrict_tests_to_run.py`` command must be run
+    in command line before running tests.
+    """
+    path = Path(__file__).resolve().parent.parent.parent / "tests_to_run.txt"
+    if path.exists():
+        data = pd.read_csv(path, sep=" ")
+        packages = data.columns
+        estimator_list = []
+
+        if packages is not None:
+            for package in packages:
+                if "connectome" in package:
+                    estimator_list.extend(CONNECTOME)
+                elif "decoding" in package:
+                    estimator_list.extend(DECODING)
+                elif "decomposition" in package:
+                    estimator_list.extend(DECOMPOSITION)
+                elif "glm" in package:
+                    estimator_list.extend(GLM)
+                elif "maskers" in package:
+                    estimator_list.extend(MASKERS)
+                elif "regions" in package:
+                    estimator_list.extend(REGIONS)
+    else:
+        estimator_list = ESTIMATORS_TO_CHECK
+
+    return estimator_list
+
+
 def test_check_estimator_count():
     """Test if all estimators provided by nilearn are covered by
     ESTIMATORS_TO_CHECK.
@@ -132,7 +191,7 @@ def test_check_estimator_count():
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    nilearn_check_estimator(estimators=_estimators()),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
