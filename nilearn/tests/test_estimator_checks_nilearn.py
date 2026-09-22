@@ -86,8 +86,8 @@ DECODING = [
 ]
 
 DECOMPOSITION = [
-    DictLearning(),
-    CanICA(),
+    DictLearning(random_state=0),
+    CanICA(random_state=0),
 ]
 
 GLM = [
