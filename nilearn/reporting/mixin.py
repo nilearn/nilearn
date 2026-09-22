@@ -320,6 +320,9 @@ class ReportMixin:
         """Assemble report head and body acquiring body template corresponding
         to estimator type and populating it with report data.
         """
+        if self._report_content["engine"] == "brainsprite":
+            self._set_brainsprite_data()
+
         estimator_type = self._report_content.get("estimator_type", "")
         body_tpl = self._get_body_template(estimator_type)
 
@@ -350,6 +353,7 @@ class ReportMixin:
                     "stat_map_base64"
                 ]
             else:
+                # TODO
                 ...
 
     @abc.abstractmethod
