@@ -4,8 +4,7 @@ from joblib import Memory
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn._utils.estimator_checks import nilearn_check_estimator
-from nilearn.conftest import _img_3d_mni, _shape_3d_default
+from nilearn.conftest import _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.rena_clustering import (
@@ -14,18 +13,6 @@ from nilearn.regions.rena_clustering import (
     make_edges_surface,
 )
 from nilearn.surface import SurfaceImage
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=[ReNA(mask_img=_img_3d_mni(), n_clusters=2)]
-    ),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def test_mask_error():

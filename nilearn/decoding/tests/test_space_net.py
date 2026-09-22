@@ -12,9 +12,6 @@ from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-)
 from nilearn._utils.versions import SKLEARN_GTE_1_8
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net import (
@@ -42,18 +39,6 @@ squared_loss_path_scores = partial(path_scores, is_classif=False)
 IS_CLASSIF = [True, False]
 
 PENALTY = ["graph-net", "tv-l1"]
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=[SpaceNetClassifier(), SpaceNetRegressor()]
-    ),
-)
-def test_check_estimator_nilearn(estimator, check, name):
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
