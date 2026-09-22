@@ -10,7 +10,7 @@
 # See https://docs.zizmor.sh/audits/ for the audit list, and .github/zizmor.yml
 # for repo-specific configuration.
 #
-# Shasum of the specific version of a github action can be found
+# SHA checksum of a specific version of a GitHub action can be found
 # with git.
 #
 # For example::
