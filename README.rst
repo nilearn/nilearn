@@ -101,7 +101,7 @@ Some plotting functions in Nilearn support both matplotlib and plotly as plottin
 In order to use the plotly engine in these functions,
 you will need to install both plotly and kaleido, which can both be installed with pip and anaconda.
 
-If you want to run the tests, you need pytest and pytest-cov for coverage reporting.
+If you want to run the tests, you need ``pytest`` and ``pytest-cov`` for coverage reporting.
 
 Development
 ===========
