@@ -467,7 +467,7 @@ jobs:
                 pip install asv
 
         -   name: Download every commit's results
-            uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+            uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
             with:
                 pattern: history-results-*
                 path: ./asv_benchmarks/downloaded_results
