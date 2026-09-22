@@ -1,5 +1,6 @@
 """Tests for the permuted_ols function."""
 
+from sklearn import clone
 import warnings
 
 import numpy as np
@@ -731,6 +732,22 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     assert out["h0_max_size"].size == n_perm
     assert out["h0_max_mass"].size == n_perm
 
+def test_unfitted_masker(cluster_level_design, masker):
+    """Pass unfitted masker does not raise an error."""
+    target_var, tested_var = cluster_level_design
+
+    # cloning to pass an unfitted masker
+    masker = clone(masker)
+
+    permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        n_perm=N_PERM,
+        random_state=0,
+        threshold=0.001,
+        masker=masker,
+    )
 
 def test_sanitize_inputs_permuted_ols(design):
     """Smoke test for input sanitization."""

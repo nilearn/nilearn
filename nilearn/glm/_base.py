@@ -575,7 +575,7 @@ def _generate_mask(
     fields["entities"].pop("ses", None)
 
     if generate_bids_name:
-        fields["prefix"] = None
+        fields["prefix"] = ""
 
     return create_bids_filename(fields, entities_to_include)
 
@@ -621,7 +621,7 @@ def _generate_statistical_maps(
         }
 
         if generate_bids_name:
-            fields["prefix"] = None
+            fields["prefix"] = ""
 
         fields["entities"]["contrast"] = _clean_contrast_name(contrast_name)
 
@@ -676,7 +676,7 @@ def _generate_model_level_mapping(
     }
 
     if generate_bids_name:
-        fields["prefix"] = None
+        fields["prefix"] = ""
 
     model_level_mapping = {}
 
@@ -765,7 +765,7 @@ def _generate_contrasts_dict(
         "suffix": "design",
     }
     if generate_bids_name:
-        fields["prefix"] = None
+        fields["prefix"] = ""
 
     contrasts_dict = Bunch()
 

@@ -684,7 +684,12 @@ def permuted_ols(
     bin_struct = generate_binary_structure(3, 1)
 
     tfce_original_data = None
+
     if tfce:
+
+        # check
+        assert masker is not None
+
         scores_4d = masker.inverse_transform(
             scores_original_data.T
         ).get_fdata()

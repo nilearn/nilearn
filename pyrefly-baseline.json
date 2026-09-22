@@ -1,21 +1,6 @@
 {
   "errors": [
     {
-      "path": "nilearn/_utils/bids.py",
-      "name": "not-iterable",
-      "concise_description": "Type `None` is not iterable"
-    },
-    {
-      "path": "nilearn/_utils/bids.py",
-      "name": "bad-argument-type",
-      "concise_description": "Argument `float | int` is not assignable to parameter `value` with type `int` in function `list.index`"
-    },
-    {
-      "path": "nilearn/_utils/data_gen.py",
-      "name": "not-iterable",
-      "concise_description": "Type `None` is not iterable"
-    },
-    {
       "path": "nilearn/_utils/estimator_checks.py",
       "name": "bad-argument-type",
       "concise_description": "Argument `tuple[Unknown, Unknown]` is not assignable to parameter `object` with type `list[Unknown]` in function `list.append`"
@@ -69,26 +54,6 @@
       "path": "nilearn/decomposition/tests/conftest.py",
       "name": "not-iterable",
       "concise_description": "Expected an iterable, got `Unknown | None`"
-    },
-    {
-      "path": "nilearn/glm/_base.py",
-      "name": "bad-assignment",
-      "concise_description": "`None` is not assignable to dict key `prefix` with type `str`"
-    },
-    {
-      "path": "nilearn/glm/_base.py",
-      "name": "bad-assignment",
-      "concise_description": "`None` is not assignable to dict key `prefix` with type `str`"
-    },
-    {
-      "path": "nilearn/glm/_base.py",
-      "name": "bad-assignment",
-      "concise_description": "`None` is not assignable to dict key `prefix` with type `str`"
-    },
-    {
-      "path": "nilearn/glm/_base.py",
-      "name": "bad-assignment",
-      "concise_description": "`None` is not assignable to dict key `prefix` with type `str`"
     },
     {
       "path": "nilearn/glm/first_level/first_level.py",
@@ -174,21 +139,6 @@
       "path": "nilearn/mass_univariate/permuted_least_squares.py",
       "name": "missing-attribute",
       "concise_description": "Object of class `NoneType` has no attribute `inverse_transform`"
-    },
-    {
-      "path": "nilearn/mass_univariate/permuted_least_squares.py",
-      "name": "missing-attribute",
-      "concise_description": "Object of class `NoneType` has no attribute `mask_img_`"
-    },
-    {
-      "path": "nilearn/mass_univariate/permuted_least_squares.py",
-      "name": "missing-attribute",
-      "concise_description": "Object of class `NoneType` has no attribute `mask_img_`"
-    },
-    {
-      "path": "nilearn/mass_univariate/permuted_least_squares.py",
-      "name": "missing-attribute",
-      "concise_description": "Object of class `NoneType` has no attribute `mask_img_`"
     },
     {
       "path": "nilearn/plotting/displays/_axes.py",
