@@ -181,4 +181,4 @@ Or try importing Nilearn in a Python / IPython session.
 
     import nilearn
 
-If no error is raised, you have installed nilearn correctly.
+If no error is raised, you have installed Nilearn correctly.
