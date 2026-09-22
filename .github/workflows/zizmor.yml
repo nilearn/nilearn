@@ -1,8 +1,11 @@
 ---
 # Static analysis of GitHub Actions workflows using zizmor.
 #
-# Audits .github/ for common CI/CD security issues: credential persistence,
-# template injection, overly broad permissions, and unpinned action references.
+# Audits .github/ for common CI/CD security issues: 
+# - credential persistence,
+# - template injection, 
+# - overly broad permissions, and 
+# - unpinned action references.
 #
 # See https://docs.zizmor.sh/audits/ for the audit list, and .github/zizmor.yml
 # for repo-specific configuration.
