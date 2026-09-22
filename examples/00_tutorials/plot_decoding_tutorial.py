@@ -1,6 +1,6 @@
 """
-An introduction tutorial to fMRI decoding with the Haxby dataset
-================================================================
+An introduction tutorial to fMRI decoding
+=========================================
 
 Here is a simple tutorial on decoding with nilearn.
 
