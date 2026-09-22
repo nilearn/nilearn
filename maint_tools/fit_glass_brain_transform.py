@@ -59,10 +59,10 @@ VIEW_AXES = {"side": (1, 2), "back": (0, 2), "top": (0, 1)}
 
 # Resolution (in template units) of the grid used to compute the overlap:
 # coarser grids are faster but give less stable fits.
-STEP = 0.1
+STEP: float = 0.1
 
 # Number of points sampled on each curve of the outline.
-N_SAMPLES = 4
+N_SAMPLES: int = 4
 
 
 def _get_brain_mask_coordinates(brain_mask):
@@ -72,9 +72,9 @@ def _get_brain_mask_coordinates(brain_mask):
     return nib.affines.apply_affine(img.affine, ijk)
 
 
-def _sample_outline(json_file, n_samples=N_SAMPLES):
+def _sample_outline(json_file: Path, n_samples: int = N_SAMPLES) -> np.ndarray:
     """Return points densely sampled along all the paths of a schematic."""
-    with json_file.open() as f:
+    with json_file.open(encoding="utf8") as f:
         paths = json.load(f)["paths"]
 
     t = np.linspace(0, 1, n_samples)[:, None]
@@ -142,17 +142,7 @@ def _fit_view(outline, mask_xyz, axes):
     return transform, -float(result.fun)
 
 
-def _write_transform(json_file, transform):
-    raw = json_file.read_text()
-    content = json.loads(raw)
-    content["metadata"]["transform"] = transform
-    json_file.write_text(
-        json.dumps(content, indent=2, separators=(",", ": "))
-        + ("\n" if raw.endswith("\n") else "")
-    )
-
-
-def fit_transforms(json_folder, brain_mask, verbose=False):
+def fit_transforms(json_folder: str | Path, brain_mask, verbose: bool = False):
     """Fit the transform of each view of a set of glass brain schematics.
 
     Parameters
@@ -202,6 +192,16 @@ def write_transforms(json_folder, transforms):
         _write_transform(
             Path(json_folder) / f"brain_schematics_{view}.json", transform
         )
+
+
+def _write_transform(json_file: Path, transform) -> None:
+    raw = json_file.read_text()
+    content = json.loads(raw)
+    content["metadata"]["transform"] = transform
+    json_file.write_text(
+        json.dumps(content, indent=2, separators=(",", ": "))
+        + ("\n" if raw.endswith("\n") else "")
+    )
 
 
 def main():

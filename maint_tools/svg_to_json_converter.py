@@ -41,7 +41,7 @@ import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-SVG_NAMESPACE = "{http://www.w3.org/2000/svg}"
+SVG_NAMESPACE: str = "{http://www.w3.org/2000/svg}"
 
 IDENTITY = (1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
 
@@ -148,7 +148,7 @@ def _path_to_items(path_data, matrix):
     ]
 
 
-def svg_to_json(svg_file, json_file, transform=None):
+def svg_to_json(svg_file, json_file, transform=None) -> None:
     """Convert the stroked paths of an SVG file to a glass brain JSON file.
 
     The JSON format looks like this:
