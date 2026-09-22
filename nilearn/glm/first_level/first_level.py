@@ -654,11 +654,17 @@ class FirstLevelModel(BaseGLM):
         else:
             if events is None:
                 raise ValueError("events or design matrices must be provided")
+
             if self.t_r is None:
                 raise ValueError(
                     "t_r not given to FirstLevelModel object"
                     " to compute design from events"
                 )
+            else:
+                _check_repetition_time(self.t_r)
+
+            if self.slice_time_ref is not None:
+                _check_slice_time_ref(self.slice_time_ref)
 
             # Check that events and confounds files match number of runs
             # and can be loaded as DataFrame.
@@ -837,6 +843,9 @@ class FirstLevelModel(BaseGLM):
                 x for x in tmp["trial_type"] if x
             )
 
+        # for type narrowing
+        assert self.t_r is not None
+
         start_time = self.slice_time_ref * self.t_r
         end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
         frame_times = np.linspace(start_time, end_time, n_scans)
@@ -973,11 +982,6 @@ class FirstLevelModel(BaseGLM):
         """
         check_params(self.__dict__)
         #  check attributes passed at construction
-        if self.t_r is not None:
-            _check_repetition_time(self.t_r)
-
-        if self.slice_time_ref is not None:
-            _check_slice_time_ref(self.slice_time_ref)
 
         if self.fir_delays is None:
             self.fir_delays_ = [0]

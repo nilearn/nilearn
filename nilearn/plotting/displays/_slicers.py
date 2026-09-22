@@ -7,7 +7,9 @@ from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.colors import ListedColormap
+from matplotlib.figure import Figure
 from matplotlib.transforms import Bbox
 
 from nilearn._utils.docs import fill_doc
@@ -68,7 +70,7 @@ class BaseSlicer:
     def __init__(
         self,
         cut_coords,
-        axes=None,
+        axes: Axes | None = None,
         black_bg: BlackBg = False,
         brain_color=(0.5, 0.5, 0.5),
         **kwargs,
@@ -239,8 +241,8 @@ class BaseSlicer:
         img,
         threshold=None,
         cut_coords=None,
-        figure=None,
-        axes=None,
+        figure: Figure | None = None,
+        axes: Axes | None = None,
         black_bg: BlackBg = False,
         leave_space=False,
         colorbar: ColorBar = False,
@@ -295,10 +297,10 @@ class BaseSlicer:
 
         cut_coords = cls.find_cut_coords(img, threshold, cut_coords)
 
-        if isinstance(axes, plt.Axes) and figure is None:
+        if isinstance(axes, Axes) and figure is None:
             figure = axes.figure
 
-        if not isinstance(figure, plt.Figure):
+        if not isinstance(figure, Figure):
             # Make sure that we have a figure
             figsize = cls._default_figsize[:]
 
@@ -314,7 +316,8 @@ class BaseSlicer:
             if leave_space:
                 figsize[0] += 3.4
             figure = plt.figure(figure, figsize=figsize, facecolor=facecolor)
-        if isinstance(axes, plt.Axes):
+
+        if isinstance(axes, Axes):
             assert axes.figure is figure, (
                 "The axes passed are not in the figure"
             )
