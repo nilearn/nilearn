@@ -904,7 +904,7 @@ Here are the key steps you need to go through to copy the repo before contributi
             # check that you got all the tags
             git tag --list
 
-You can then install nilearn in editable mode:
+You can then install Nilearn in editable mode:
 
 .. code-block:: bash
 
