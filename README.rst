@@ -68,7 +68,7 @@ in the proper python environment:
 
     python -m pip install nilearn
 
-Please find all installation instructions in the
+Please find all installation instructions
 `on our install page <https://nilearn.github.io/dev/install.html>`_.
 
 Development version
