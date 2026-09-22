@@ -212,7 +212,6 @@ try:
             # ),
         ],
     )
-    @pytest.mark.ai_generated
     def test_examples_in_commit_msg(
         commit_msg,
         gitlog,  # noqa: ARG001
@@ -251,7 +250,6 @@ try:
             ),
         ],
     )
-    @pytest.mark.ai_generated
     def test_build(
         commit_msg,
         gitlog,  # noqa: ARG001

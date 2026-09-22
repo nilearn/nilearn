@@ -32,8 +32,6 @@ Fixes
 
 - :bdg-primary:`Doc` Fix documented defaults that did not match the signatures in :func:`~nilearn.datasets.fetch_atlas_smith_2009`, :func:`~nilearn.datasets.fetch_atlas_difumo`, :func:`~nilearn.datasets.fetch_atlas_schaefer_2018` and in several private helpers (:gh:`6582` by `Venish Paneliya`_).
 
-- :bdg-warning:`Test` Make ``build_tools/github/build_type.py`` tests independent of the actual local git history by mocking the ``git merge-base`` / ``git diff`` calls, so they no longer fail depending on which files happen to be changed in the branch running them (:gh:`6576` by `Rémi Gau`_).
-
 
 Enhancements
 ------------
