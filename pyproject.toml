@@ -18,8 +18,11 @@ doc = [
     "docutils>=0.17",
     "furo>=2024.8.6",
     # See https://github.com/jupyterlite/pyodide-kernel#compatibility
-    "jupyterlite-pyodide-kernel>=0.8.0,<=0.9.0",
-    "jupyterlite-sphinx>=0.23.0",
+    # "jupyterlite-pyodide-kernel>=0.8.0,<=0.9.0",
+    # "jupyterlite-sphinx>=0.23.0",
+    "jupyterlite-sphinx>=0.18.0",
+    # see https://github.com/jupyterlite/pyodide-kernel#compatibility
+    "jupyterlite-pyodide-kernel==0.5.2",  # supports Pyodide 0.27.1
     "marimo>=0.12.0",
     "memory_profiler>=0.61",  # measuring memory during docs building
     "myst-parser>=3.0.1",
@@ -133,13 +136,8 @@ requires-python = ">=3.11"
 
 [project.optional-dependencies]
 # keep plotly as a separate optional extra dependency because of its size
-plotly = [
-    "kaleido>=1.1.0",
-    "plotly>=6.1.1"
-]
-plotting = [
-    "matplotlib>=3.8.0"
-]
+plotly = ["kaleido>=1.1.0", "plotly>=6.1.1"]
+plotting = ["matplotlib>=3.8.0"]
 
 [project.urls]
 Changelog = "https://nilearn.github.io/stable/changes/whats_new.html"
@@ -278,13 +276,9 @@ source_modules = ["nilearn.connectome"]
 type = "forbidden"
 
 [[tool.importlinter.contracts]]
-forbidden_modules = [
-    "nilearn._utils.data_gen"
-]
+forbidden_modules = ["nilearn._utils.data_gen"]
 name = "fixtures from 'nilearn.conftest' should not rely on data generated in 'nilearn._utils.data_gen'"
-source_modules = [
-    "nilearn.conftest"
-]
+source_modules = ["nilearn.conftest"]
 type = "forbidden"
 
 [[tool.importlinter.contracts]]
@@ -300,18 +294,13 @@ allowed_importers = [
     "nilearn.glm"  # TODO try to avoid
 ]
 name = "assets only imported by reporting, plotting, glm"
-protected_modules = [
-    "nilearn._assets"
-]
+protected_modules = ["nilearn._assets"]
 type = "protected"
 
 [tool.mypy]
 allow_redefinition = false
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
-exclude = [
-    'nilearn_cache/.*',
-    'nilearn/_version.py'
-]
+exclude = ['nilearn_cache/.*', 'nilearn/_version.py']
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
@@ -453,9 +442,13 @@ max-complexity = 23
 "**/{doc}/*" = ["B018", "D103"]  # 17 D103 errors to fix
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]  # 13 D103 errors to fix
 "__init__.py" = ["D104", "E402"]
-"doc/conf.py" = ["I001"]  # ignore sorting because this leads to conflict when running prek locally and in CI
+"doc/conf.py" = [
+    "I001"
+]  # ignore sorting because this leads to conflict when running prek locally and in CI
 "nilearn/**/tests/test_*" = ["D100"]
-"nilearn/connectome/tests/test_connectivity_matrices.py" = ["D103"]  # 30 errors to fix
+"nilearn/connectome/tests/test_connectivity_matrices.py" = [
+    "D103"
+]  # 30 errors to fix
 "nilearn/datasets/func.py" = ["PTH211"]  # 1 error
 "nilearn/datasets/tests/conftest.py" = ["D102"]
 "nilearn/datasets/tests/test_atlas.py" = ["D103"]  # 24 errors to fix
