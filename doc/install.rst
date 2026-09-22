@@ -18,7 +18,7 @@ Setup a virtual environment
 We recommend that you install ``nilearn`` in a virtual Python environment,
 either managed with the standard library ``venv``, `uv <https://docs.astral.sh/uv/>`_
 or with ``conda`` (see `miniconda <https://docs.conda.io/en/latest/miniconda.html>`_ for instance).
-Either way, create and activate a new python environment.
+Either way, create and activate a new Python environment.
 
 .. tab-set::
 
@@ -93,8 +93,8 @@ Installing Nilearn
 
 You can then install Nilearn.
 Nilearn comes in different flavor.
-On top of the  the **base** linearn,
-you can use ``matplotlib`` as optional dependenciy for **static** visualizations,
+On top of **base** Nilearn installation,
+you can add ``matplotlib`` as optional dependency for **static** visualizations,
 and ``matplotlib`` as well as ``plotly`` as optional dependencies
 for both static and **interactive** visualizations.
 
@@ -160,7 +160,7 @@ for both static and **interactive** visualizations.
 
 Note that Nilearn also optionally supports `rich <https://rich.readthedocs.io/en/latest/introduction.html>`_
 to get prettier log output and download progress bar.
-Simply install rich to benefit from those.
+Simply install ``rich`` to benefit from those.
 
 Check installation
 ------------------
@@ -171,7 +171,7 @@ From a terminal window:
 
     python3 -c 'import nilearn; print(nilearn.__version__)'
 
-Or try importing nilearn in a python / iPython session.
+Or try importing Nilearn in a Python / IPython session.
 
 .. code-block:: python
 
