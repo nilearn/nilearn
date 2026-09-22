@@ -1029,11 +1029,6 @@ An even quicker option is:
       This may explain some differences with a local build of the doc
       if you are using different dependencies.
 
-The documentation for a pull request can be accessed on https://app.circleci.com/pipelines/github/nilearn/nilearn,
-by selecting the ``host_and_deploy_doc`` workflow for the corresponding pull-request,
-then by selecting the ``host_docs`` job,
-clicking on the ``ARTIFACTS`` tab,
-and opening the the landing page of the deployed doc by clikcing on ``index.html``.
 5. You can now open a Pull Request from Nilearn's Pull Request page.
 
 6. Request the CI builds the full documentation from your branch:
