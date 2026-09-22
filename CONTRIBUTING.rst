@@ -13,19 +13,15 @@ If you have issues when using Nilearn, or if you have questions on how to use it
 please don't hesitate to reach out!
 
 There are currently three ways to interact with the Nilearn team:
-through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues,
-and through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_,
-usually **every Wednesday from 4pm to 5pm UTC**.
-We post on our `Bluesky account <https://bsky.app/profile/nilearn.bsky.social>`_ in advance to let you know
-There are currently three ways to interact with the Nilearn team:
 
 * through the :neurostars:`neurostars <>` forum
- 
+
 * our :nilearn-gh:`github <>` issues
 
-* through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_, usually **every Wednesday from 4pm to 5pm UTC**
-
-We post on our `Bluesky account <https://bsky.app/profile/nilearn.bsky.social>`_ in advance to let you know if the drop-in hours are happening that week.
+* through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_,
+  usually **every Wednesday from 4pm to 5pm UTC**.
+  We post on our `Bluesky account <https://bsky.app/profile/nilearn.bsky.social>`_ in advance
+  to let you know if the drop-in hours are happening that week.
 
 If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn,
 we would appreciate it if you either ask it during the drop-in hours
@@ -1032,12 +1028,8 @@ An even quicker option is:
       and Nilearn's dependencies.
       This may explain some differences with a local build of the doc
       if you are using different dependencies.
-The documentation build by the CI uses the oldest supported version of Python
-and Nilearn's dependencies.
-This may explain some differences with a local build of the doc
-if you are using different dependencies.
 
-The documentation for a pull request can be accessed on https://app.circleci.com/pipelines/github/nilearn/nilearn, 
+The documentation for a pull request can be accessed on https://app.circleci.com/pipelines/github/nilearn/nilearn,
 by selecting the ``host_and_deploy_doc`` workflow for the corresponding pull-request,
 then by selecting the ``host_docs`` job,
 clicking on the ``ARTIFACTS`` tab,
