@@ -733,6 +733,28 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     assert out["h0_max_mass"].size == n_perm
 
 
+@pytest.mark.ai_generated
+def test_permuted_ols_no_masker_no_tfce_no_threshold(design):
+    """Check default call with no masker, tfce, or threshold does not error.
+
+    Regression test: masker was unconditionally fitted before running
+    permutations even when not required (masker=None, tfce=False,
+    threshold=None), raising an AttributeError.
+    """
+    target_var, tested_var, *_ = design
+
+    out = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        n_perm=N_PERM,
+        random_state=0,
+    )
+
+    assert isinstance(out, dict)
+    assert "t" in out
+
+
 def test_unfitted_masker(cluster_level_design, masker):
     """Pass unfitted masker does not raise an error."""
     target_var, tested_var = cluster_level_design
@@ -759,6 +781,7 @@ def test_invalid_masker(cluster_level_design):
         permuted_ols(
             tested_var,
             target_var,
+            tfce=True,
             masker="foo",
         )
 
@@ -937,7 +960,9 @@ def test_cluster_level_parameters_error_no_masker(cluster_level_design):
     # but masker is not defined.
     with pytest.raises(
         ValueError,
-        match=r"If 'threshold' is not None, masker must be defined as well.",
+        match=(
+            "masker must be provided if tfce is True or threshold is not None"
+        ),
     ):
         permuted_ols(
             tested_var,

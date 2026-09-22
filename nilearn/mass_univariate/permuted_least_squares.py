@@ -4,7 +4,6 @@ with OLS and permutation test.
 
 import time
 import warnings
-from typing import TYPE_CHECKING
 
 import joblib
 import numpy as np
@@ -563,7 +562,7 @@ def permuted_ols(
 
     """
     check_params(locals())
-    _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars)
+    _check_inputs_permuted_ols(n_jobs, target_vars)
 
     n_jobs, target_vars, tested_vars = _sanitize_inputs_permuted_ols(
         n_jobs, target_vars, tested_vars
@@ -691,12 +690,9 @@ def permuted_ols(
     tfce_original_data = None
 
     if tfce:
-        # for type checking only
-        # TODO see if type guard can be used in _check_inputs_permuted_ols
-        if TYPE_CHECKING:
-            assert masker is not None
-        if not masker.__sklearn_is_fitted__():
-            masker.fit()
+        masker = _ensure_masker(
+            masker, "A masker must be provided if tfce is True."
+        )
 
         scores_4d = masker.inverse_transform(
             scores_original_data.T
@@ -722,12 +718,12 @@ def permuted_ols(
             out["tfce"] = tfce_original_data.T
         return out
 
-    # for type checking only
-    # TODO see if type guard can be used in _check_inputs_permuted_ols
-    if TYPE_CHECKING:
-        assert masker is not None
-    if not masker.__sklearn_is_fitted__():
-        masker.fit()
+    if tfce or threshold is not None:
+        masker = _ensure_masker(
+            masker,
+            "A masker must be provided if tfce is True "
+            "or threshold is not None.",
+        )
 
     # Permutations
     # parallel computing units perform a reduced number of permutations each
@@ -855,9 +851,19 @@ def _compute_t_stat_threshold(
     )
 
 
-def _check_inputs_permuted_ols(
-    n_jobs, tfce, masker, threshold, target_vars
-) -> None:
+def _ensure_masker(
+    masker: NiftiMasker | MultiNiftiMasker | None, message: str
+) -> NiftiMasker | MultiNiftiMasker:
+    """Raise if ``masker`` is None, otherwise return it fitted."""
+    if masker is None:
+        raise ValueError(message)
+    check_is_of_allowed_type(masker, (NiftiMasker, MultiNiftiMasker), "masker")
+    if not masker.__sklearn_is_fitted__():
+        masker.fit()
+    return masker
+
+
+def _check_inputs_permuted_ols(n_jobs, target_vars) -> None:
     # invalid according to joblib's conventions
     if n_jobs == 0:
         raise ValueError(
@@ -866,19 +872,6 @@ def _check_inputs_permuted_ols(
             "or -1 for all CPUs, "
             "or a negative number (-i) for 'all but (i-1)' CPUs "
             "(joblib conventions)."
-        )
-    # check that masker is provided if it is needed
-    if tfce and not masker:
-        raise ValueError("A masker must be provided if tfce is True.")
-
-    if (threshold is not None) and (masker is None):
-        raise ValueError(
-            "If 'threshold' is not None, masker must be defined as well."
-        )
-
-    if masker is not None:
-        check_is_of_allowed_type(
-            masker, (NiftiMasker, MultiNiftiMasker), "masker"
         )
 
     # make target_vars F-ordered to speed-up computation
