@@ -72,21 +72,6 @@
     },
     {
       "path": "nilearn/image/image.py",
-      "name": "not-iterable",
-      "concise_description": "Type `Path` is not iterable"
-    },
-    {
-      "path": "nilearn/image/image.py",
-      "name": "bad-argument-type",
-      "concise_description": "Argument `Iterable[Unknown] | SurfaceImage | Unknown` is not assignable to parameter `imgs` with type `SurfaceImage` in function `_compute_surface_mean`"
-    },
-    {
-      "path": "nilearn/image/image.py",
-      "name": "not-iterable",
-      "concise_description": "Type `SurfaceImage` is not iterable"
-    },
-    {
-      "path": "nilearn/image/image.py",
       "name": "no-matching-overload",
       "concise_description": "No matching overload found for function `nilearn.masking.load_mask_img` called with arguments: (Nifti1Image | Path | SurfaceImage | str | None)"
     },
@@ -134,11 +119,6 @@
       "path": "nilearn/masking.py",
       "name": "unsupported-operation",
       "concise_description": "`>` is not supported between `None` and `float`"
-    },
-    {
-      "path": "nilearn/mass_univariate/permuted_least_squares.py",
-      "name": "missing-attribute",
-      "concise_description": "Object of class `NoneType` has no attribute `inverse_transform`"
     },
     {
       "path": "nilearn/plotting/displays/_axes.py",

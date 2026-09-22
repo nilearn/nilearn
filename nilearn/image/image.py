@@ -67,6 +67,12 @@ from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
 
 
+def _is_iterable_not_str(imgs: object) -> TypeGuard[Iterable[Any]]:
+    return isinstance(imgs, collections.abc.Iterable) and not isinstance(
+        imgs, str
+    )
+
+
 def is_volume_image(imgs) -> bool:
     """Return True if specified ``imgs`` is of type NiimgLike, SpatialImage, or
     an iterable of those; False otherwise.
@@ -88,7 +94,7 @@ def is_volume_image(imgs) -> bool:
     ):
         return False
 
-    if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
+    if _is_iterable_not_str(imgs):
         for x in imgs:
             if not is_volume_image(x):
                 return False
@@ -878,6 +884,15 @@ def _compute_surface_mean(imgs: SurfaceImage) -> SurfaceImage:
     return new_img_like(imgs, data=data)
 
 
+def _is_surface_img_or_iterable(
+    imgs: object,
+) -> TypeGuard[SurfaceImage | Iterable[SurfaceImage]]:
+    return isinstance(imgs, SurfaceImage) or (
+        isinstance(imgs, collections.abc.Iterable)
+        and all(isinstance(x, SurfaceImage) for x in imgs)
+    )
+
+
 @overload
 def mean_img(
     imgs: SurfaceImage | Iterable[SurfaceImage],
@@ -902,7 +917,10 @@ def mean_img(
 
 @fill_doc
 def mean_img(
-    imgs,
+    imgs: NiimgLike
+    | SurfaceImage
+    | Iterable[NiimgLike]
+    | Iterable[SurfaceImage],
     target_affine=None,
     target_shape=None,
     verbose=0,
@@ -976,23 +994,22 @@ def mean_img(
 
     """
     check_params(locals())
-    is_iterable = isinstance(imgs, collections.abc.Iterable)
-    is_surface_img = isinstance(imgs, SurfaceImage) or (
-        is_iterable and all(isinstance(x, SurfaceImage) for x in imgs)
-    )
-    if is_surface_img:
-        if not is_iterable:
-            imgs = [imgs]
-        all_means = concat_imgs([_compute_surface_mean(x) for x in imgs])
+    if _is_surface_img_or_iterable(imgs):
+        surface_imgs = (
+            imgs if isinstance(imgs, collections.abc.Iterable) else [imgs]
+        )
+        all_means = concat_imgs(
+            [_compute_surface_mean(x) for x in surface_imgs]
+        )
         return _compute_surface_mean(all_means)
 
-    imgs = stringify_path(imgs)
-    is_str = isinstance(imgs, str)
-    is_iterable = isinstance(imgs, collections.abc.Iterable)
-    if is_str or not is_iterable:
-        imgs = [imgs]
+    niimgs = stringify_path(imgs)
+    if isinstance(niimgs, str) or not isinstance(
+        niimgs, collections.abc.Iterable
+    ):
+        niimgs = [niimgs]
 
-    imgs_iter = iter(imgs)
+    imgs_iter = iter(niimgs)
     first_img = check_niimg(next(imgs_iter))
 
     # Compute the first mean to retrieve the reference
