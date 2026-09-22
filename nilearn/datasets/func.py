@@ -1352,7 +1352,7 @@ def fetch_abide_pcp(
     # field. This can be
     # done simply with pandas but we don't want such dependency ATM
     # pheno = pandas.read_csv(path_csv).to_records()
-    with path_csv.open() as pheno_f:
+    with path_csv.open(encoding="utf-8") as pheno_f:
         pheno = [f"i{pheno_f.readline()}"]
 
         # This regexp replaces commas between double quotes
@@ -2573,7 +2573,7 @@ def fetch_ds000030_urls(
         resume=True,
     )
     urls_path = downloaded_file_path[0]
-    with Path(urls_path).open() as json_file:
+    with Path(urls_path).open(encoding="utf-8") as json_file:
         urls = json.load(json_file)
 
     return urls_path, urls
