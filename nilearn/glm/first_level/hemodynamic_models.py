@@ -789,6 +789,35 @@ def compute_regressor(
     reg_names : :obj:`list` of strings
         Corresponding regressor names.
 
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>>
+        >>> from nilearn.glm.first_level import compute_regressor
+        >>> from nilearn.plotting import plot_design_matrix, show
+        >>>
+        >>> onset = [1, 20, 36.5]
+        >>> duration = [2, 2, 2]
+        >>> amplitude = [1, 1, 1]
+        >>> exp_condition = (onset, duration, amplitude)
+        >>>
+        >>> frame_times = np.linspace(0, 69, 70)
+        >>>
+        >>> hrf_model = "spm + derivative"
+        >>>
+        >>> reg, reg_names = compute_regressor(
+        ...     exp_condition, hrf_model, frame_times
+        ... )
+        >>>
+        >>> ax = plot_design_matrix(pd.DataFrame(reg, columns=reg_names))
+        >>>
+        >>> show()
+
     """
     check_params(locals())
     # fir_delays should be integers

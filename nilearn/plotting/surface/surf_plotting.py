@@ -264,6 +264,24 @@ def plot_surf(
         brain surfaces.
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_surf, show
+        >>> from nilearn.datasets import load_fsaverage_data
+        >>>
+        >>> surf_img = load_fsaverage_data(
+        ...     mesh="fsaverage5",
+        ...     mesh_type="inflated",
+        ...     data_type="thickness",
+        ... )
+        >>>
+        >>> fig = plot_surf(surf_map=surf_img, title="fsaverage thickness")
+        >>>
+        >>> show()
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -550,8 +568,8 @@ def plot_surf_stat_map(
     %(cbar_tick_format)s
         default="auto" which will select:
 
-            - '%%.2g' (scientific notation) with ``matplotlib`` engine.
-            - '.1f' (rounded floats) with ``plotly`` engine.
+        - '%%.2g' (scientific notation) with ``matplotlib`` engine.
+        - '.1f' (rounded floats) with ``plotly`` engine.
 
         .. nilearn_versionadded:: 0.7.1
 
@@ -591,6 +609,29 @@ def plot_surf_stat_map(
     nilearn.plotting.plot_surf: For brain surface visualization.
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_surf_stat_map, show
+        >>> from nilearn.datasets import load_fsaverage_data
+        >>>
+        >>> surf_img = load_fsaverage_data(
+        ...     mesh="fsaverage5",
+        ...     mesh_type="inflated",
+        ...     data_type="thickness",
+        ... )
+        >>>
+        >>> fig = plot_surf_stat_map(
+        ...     stat_map=surf_img,
+        ...     title="fsaverage thickness",
+        ...     vmin=0,
+        ...     cmap="inferno",
+        ... )
+        >>>
+        >>> show()
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -748,6 +789,20 @@ def plot_img_on_surf(
 
     nilearn.plotting.plot_surf_stat_map : For info on kwargs options
         accepted by plot_img_on_surf.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_img_on_surf, show
+        >>> from nilearn.datasets import load_sample_motor_activation_image
+        >>>
+        >>> motor_activation_image = load_sample_motor_activation_image()
+        >>>
+        >>> fig = plot_img_on_surf(motor_activation_image)
+        >>>
+        >>> show()
 
     """
     check_params(locals())
