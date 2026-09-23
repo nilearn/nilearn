@@ -55,3 +55,5 @@ Changes
 - :bdg-danger:`Deprecation` The parameter name ``output_dict`` of the :func:`~nilearn.mass_univariate.permuted_ols` has been removed and the function will only output its results as :obj:`dict` (:gh:`6550` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The function :func:`~nilearn.datasets.fetch_localizer_calculation_task` is deprecated and will be removed in version 0.17.0. Use :func:`~nilearn.datasets.fetch_localizer_contrasts` with ``contrasts=["calculation (auditory and visual cue)"]`` instead (:gh:`6538` by `Aniket Singh Yadav`_).
+
+- :bdg-success:`API` The default value of ``n_clusters`` parameter of :class:`~regions.HierarchicalKmeans` is changed from ``None`` to ``2``. (:gh:`6585` by `Hande Gözükan`_).
