@@ -156,7 +156,7 @@ def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
     checks_to_run = []
     for est in estimators:
         for e, check in nilearn_check_generator(estimator=est):
-            checks_to_run.append((e, check, check.__name__))
+            checks_to_run.append((e, e.__class__.__name__, check))
 
     return checks_to_run
 

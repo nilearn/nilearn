@@ -190,9 +190,9 @@ def test_check_estimator_count():
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "estimator, check, name",
+    "estimator, name, check",
     nilearn_check_estimator(estimators=_estimators()),
 )
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_nilearn(estimator, name, check):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
     check(estimator)
