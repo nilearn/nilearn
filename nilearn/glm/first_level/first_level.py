@@ -7,7 +7,7 @@ import csv
 import inspect
 import time
 from pathlib import Path
-from typing import Any, Literal, Self, get_args
+from typing import TYPE_CHECKING, Any, Literal, Self, get_args
 from warnings import warn
 
 import numpy as np
@@ -843,7 +843,8 @@ class FirstLevelModel(BaseGLM):
             )
 
         # for type narrowing
-        assert self.t_r is not None
+        if TYPE_CHECKING:
+            assert self.t_r is not None
 
         start_time = self.slice_time_ref * self.t_r
         end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
