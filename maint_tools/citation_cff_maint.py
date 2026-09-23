@@ -1,3 +1,9 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   ""ruamel.yaml>=0.18.6"
+# ]
+# ///
 """Update AUTHORS and names from CITATION.cff file."""
 
 import operator
@@ -17,7 +23,6 @@ CORE_DEVS = [
     "Hande Gözükan",
     "Hao-Ting Wang",
     "Himanshu Aggarwal",
-    "Jerome Dockes",
     "Michelle Wang",
     "Mohammad Torabi",
     "Pierre-Louis Barbarant",

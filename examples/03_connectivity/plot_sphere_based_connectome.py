@@ -56,6 +56,7 @@ masker = NiftiSpheresMasker(
     radius=8,
     detrend=True,
     standardize_confounds=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
     t_r=dataset.t_r,
@@ -152,14 +153,15 @@ show()
 # for more details.
 from nilearn.plotting import view_connectome
 
-view = view_connectome(partial_correlation_matrix, dmn_coords)
+view = view_connectome(
+    partial_correlation_matrix, dmn_coords, node_labels=labels
+)
 
 # In a notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 view
 
 # %%
-
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 
@@ -204,6 +206,7 @@ spheres_masker = NiftiSpheresMasker(
     radius=5.0,
     detrend=True,
     standardize_confounds=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
     t_r=dataset.t_r,
@@ -244,7 +247,8 @@ print(f"Covariance matrix has shape {matrix.shape}.")
 #
 # We use `:func: nilearn.plotting.plot_matrix`
 # to visualize our correlation matrix
-# and display the graph of connections with `nilearn.plotting.plot_connectome`.
+# and display the graph of connections
+# with :func:`~nilearn.plotting.plot_connectome`.
 from nilearn.plotting import plot_matrix
 
 plot_matrix(
@@ -273,7 +277,7 @@ plot_connectome(
 # %%
 # Sometimes, the information in the correlation matrix is overwhelming and
 # aggregating edge strength from the graph would help. Use the function
-# `nilearn.plotting.plot_markers` to visualize this information.
+# :func:`~nilearn.plotting.plot_markers` to visualize this information.
 from nilearn.plotting import plot_markers
 
 # calculate normalized, absolute strength for each node
@@ -344,6 +348,7 @@ spheres_masker = NiftiSpheresMasker(
     radius=4.5,
     detrend=True,
     standardize_confounds=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
     t_r=dataset.t_r,

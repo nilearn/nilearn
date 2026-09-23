@@ -2,13 +2,16 @@
 
 import abc
 import contextlib
+import json
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
-from typing import Any
+from pathlib import Path
+from typing import Any, Self, overload
 
 import numpy as np
 from joblib import Memory
+from nibabel import Nifti1Image
 from sklearn.base import TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
@@ -17,18 +20,23 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import stringify_path
+from nilearn._utils.helpers import is_matplotlib_installed, stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import ensure_finite_data, repr_niimgs, safe_get_data
+from nilearn._utils.niimg import (
+    ensure_finite_data,
+    img_data_dtype,
+    repr_niimgs,
+    safe_get_data,
+)
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
-from nilearn.exceptions import NotImplementedWarning
+from nilearn._utils.tags import InputTags
 from nilearn.image.image import (
     check_niimg,
     check_volume_for_fit,
@@ -38,7 +46,7 @@ from nilearn.image.image import (
     smooth_img,
 )
 from nilearn.image.resampling import resample_img
-from nilearn.maskers._mixin import _ReportingMixin
+from nilearn.maskers._mixin import MaskerReportMixin
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
@@ -73,13 +81,17 @@ def filter_and_extract(
         If any other parameter is needed, a functor or a partial
         function must be provided.
 
-    For all other parameters refer to NiftiMasker documentation
+    .. do not check for missing parameters in docstring
 
     Returns
     -------
     signals : 1D or 2D numpy array
         Signals extracted using the extraction function. It is a scikit-learn
         friendly 2D array with shape n_samples x n_features.
+
+    Notes
+    -----
+    For all other parameters refer to NiftiMasker documentation
 
     """
     if memory is None:
@@ -178,11 +190,21 @@ def filter_and_extract(
 def mask_logger(step, img=None, verbose=0) -> None:
     """Log similar messages for all maskers."""
     repr = None
+
     if img is not None:
-        repr = img.__repr__()
-        if verbose > 1:
+        if isinstance(img, (str, Path)) or (
+            isinstance(img, (list, tuple))
+            and isinstance(img[0], (str, Path, SurfaceImage))
+        ):
+            if verbose == 1:
+                repr = repr_niimgs(img, shorten=True)
+            elif verbose >= 2:
+                repr = repr_niimgs(img, shorten=False)
+        elif verbose == 1:
+            repr = img.__repr__()
+        elif verbose == 2:
             repr = repr_niimgs(img, shorten=True)
-        elif verbose > 2:
+        elif verbose >= 3:
             repr = repr_niimgs(img, shorten=False)
 
     messages = {
@@ -262,7 +284,7 @@ def sanitize_displayed_maps(
                 f"But masker only has {n_maps} {var_name}(s). "
                 f"'displayed_{var_name}s' was set to {n_maps}."
             )
-            estimator._report_content["warning_messages"].append(msg)
+            estimator._append_report_warning(msg)
 
             displayed_maps = n_maps
 
@@ -285,14 +307,13 @@ def sanitize_displayed_maps(
             f"{unavailable_maps} because "
             f"masker only has {n_maps} {var_name}(s)."
         )
-        estimator._report_content["warning_messages"].append(msg)
+        estimator._append_report_warning(msg)
 
     return estimator, displayed_maps
 
 
-@fill_doc
 class _BaseMasker(
-    _ReportingMixin,
+    MaskerReportMixin,
     TransformerMixin,
     CacheMixin,
     NilearnBaseEstimator,
@@ -303,7 +324,7 @@ class _BaseMasker(
 
     @property
     def _n_features_out(self):
-        """Needed by sklearn machinery for set_ouput."""
+        """Needed by sklearn machinery for set_output."""
         return self.n_elements_
 
     @abc.abstractmethod
@@ -313,6 +334,33 @@ class _BaseMasker(
         """
         raise NotImplementedError()
 
+    def _check_dtype(self):
+        if self.dtype == bool:
+            raise TypeError("'dtype' cannot be bool")
+
+    def _get_target_dtype(
+        self, imgs: Nifti1Image | SurfaceImage | list[SurfaceImage]
+    ):
+        """Adapts dtype to apply to transform() output."""
+        if isinstance(imgs, Nifti1Image):
+            source_dtype = img_data_dtype(imgs)
+        elif isinstance(imgs, SurfaceImage):
+            source_dtype = imgs.data._dtype
+        else:
+            source_dtype = imgs[0].data._dtype
+
+        target_dtype = get_target_dtype(source_dtype, self.dtype)
+        # here target_dtype is None if:
+        # - self.dtype is None
+        # - self.dtype == source_dtype
+        if target_dtype is None and self.dtype is not None:
+            # requested dtype already matches the source image's dtype,
+            # but intermediate computations (e.g. standardization)
+            # may have changed the working dtype.
+            target_dtype = source_dtype
+
+        return target_dtype
+
 
 @fill_doc
 class BaseMasker(_BaseMasker):
@@ -321,7 +369,7 @@ class BaseMasker(_BaseMasker):
     _template_name = "body_masker.jinja"
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Compute the mask corresponding to the data.
 
         Parameters
@@ -335,13 +383,15 @@ class BaseMasker(_BaseMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
         if imgs is not None:
+            mask_logger("load_data", img=imgs, verbose=self.verbose)
             self._check_imgs(imgs)
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
@@ -394,20 +444,17 @@ class BaseMasker(_BaseMasker):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(masker=True)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags()
         tags.estimator_type = "masker"
         return tags
 
-    def _get_masker_params(self, ignore: None | list[str] = None, deep=False):
+    @property
+    def _n_features_out(self):
+        """Needed by sklearn machinery for set_output."""
+        return self.n_elements_
+
+    def _get_masker_params(self, ignore: list[str] | None = None, deep=False):
         """Get parameters for this masker.
 
         Very similar to the BaseEstimator.get_params() from sklearn
@@ -418,7 +465,7 @@ class BaseMasker(_BaseMasker):
         ignore : None or list of strings
             Names of the parameters that are not returned.
 
-        deep : bool, default=True
+        deep : :obj:`bool`, default=False
             If True, will return the parameters for this estimator
             and contained subobjects that are estimators.
 
@@ -440,7 +487,13 @@ class BaseMasker(_BaseMasker):
 
         return params
 
-    def _load_mask(self, imgs):
+    @overload
+    def _load_mask(self, imgs: None) -> None: ...
+
+    @overload
+    def _load_mask(self, imgs: Nifti1Image) -> Nifti1Image: ...
+
+    def _load_mask(self, imgs) -> Nifti1Image | None:
         """Load and validate mask if one passed at init.
 
         Returns
@@ -457,14 +510,15 @@ class BaseMasker(_BaseMasker):
 
         # ensure that the mask_img_ is a 3D binary image
         tmp = check_niimg(self.mask_img, atleast_4d=True)
-        mask = safe_get_data(tmp, ensure_finite=True)
-        mask = mask.astype(bool).all(axis=3)
-        mask_img_ = new_img_like(self.mask_img, mask)
+
+        mask_data = safe_get_data(tmp, ensure_finite=True)
+        mask = mask_data.astype(bool).all(axis=3)
+        mask_img_ = new_img_like(tmp, mask)
 
         # Just check that the mask is valid
         load_mask_img(mask_img_)
         if imgs is not None:
-            check_compatibility_mask_and_images(self.mask_img, imgs)
+            check_compatibility_mask_and_images(mask_img_, imgs)
 
         return mask_img_
 
@@ -494,19 +548,6 @@ class BaseMasker(_BaseMasker):
         """
         check_is_fitted(self)
         self._check_imgs(imgs)
-
-        if self.standardize in [True, False]:
-            # TODO (nilearn >= 0.15.0) remove warning
-            warnings.warn(
-                category=FutureWarning,
-                message=(
-                    "boolean values for 'standardize' "
-                    "will be deprecated in nilearn 0.15.0.\n"
-                    "Use 'zscore_sample' instead of 'True' or "
-                    "use 'None' instead of 'False'."
-                ),
-                stacklevel=find_stack_level(),
-            )
 
         if confounds is None and not self.high_variance_confounds:
             return self.transform_single_imgs(
@@ -552,12 +593,20 @@ class BaseMasker(_BaseMasker):
         %(signals_transform_nifti)s
 
         """
-        return self.fit(imgs, y, **fit_params).transform(
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            self.fit(imgs, y, **fit_params)
+        return self.transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
     @fill_doc
-    def inverse_transform(self, X):
+    def inverse_transform(self, X) -> Nifti1Image:
         """Transform the data matrix back to an image in brain space.
 
         This step only performs spatial unmasking,
@@ -586,20 +635,25 @@ class BaseMasker(_BaseMasker):
         # internal structures of the header: remove the memmaped array
         with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
+
+        img = self._post_process_inverse_transform(X, img)
+
         return img
 
-    def _check_array(
-        self, signals: np.ndarray, sklearn_check: bool = True
-    ) -> np.ndarray:
+    def _check_array(self, signals, sklearn_check: bool = True) -> np.ndarray:
         """Check array to inverse transform.
 
         Parameters
         ----------
-        signals : :obj:`numpy.ndarray`
+        signals : array like (numpy array, pandas or polars DataFrame)
 
         sklearn_check : :obj:`bool`
             Run scikit learn check on input
         """
+        if hasattr(signals, "to_numpy"):
+            # convert pandas or polars dataframe to numpy
+            signals = signals.to_numpy().squeeze()
+
         signals = np.atleast_1d(signals)
 
         if sklearn_check:
@@ -620,9 +674,68 @@ class BaseMasker(_BaseMasker):
                 f"Got {signals.shape}."
             )
 
+        if signals.dtype == bool:
+            target_dtype = self.dtype if self.dtype is not None else np.int32
+            warnings.warn(
+                f"Casting boolean input to {target_dtype}",
+                stacklevel=find_stack_level(),
+            )
+            signals = signals.astype(target_dtype)
+
         return signals
 
+    def _get_summary_html(self, summary):
+        """Convert summary part of the report content for nifti maskers to
+        html.
+        """
+        return self._dict_to_html(summary)
 
+    def _create_brainsprite(
+        self,
+        bg_img: Nifti1Image | None,
+        stat_map_img: Nifti1Image,
+        cmap=None,
+    ) -> None:
+
+        from nilearn.plotting.html_stat_map import create_brainsprite
+
+        self._reporting_data["bg_base64"] = None
+        self._reporting_data["cm_base64"] = None
+        self._reporting_data["stat_map_base64"] = None
+        self._reporting_data["params"] = json.dumps({})
+
+        if not is_matplotlib_installed():
+            return
+
+        if bg_img is None:  # images were not provided to fit
+            bg_img = stat_map_img
+
+        json_view = create_brainsprite(
+            stat_map_img=stat_map_img,
+            bg_img=bg_img,
+            cmap=self.cmap if cmap is None else cmap,
+            symmetric_cmap=False,
+            unique_id=self._report_content["unique_id"],
+        )
+
+        self._reporting_data["bg_base64"] = json_view["bg_base64"]
+        self._reporting_data["cm_base64"] = json_view["cm_base64"]
+        self._reporting_data["stat_map_base64"] = json_view["stat_map_base64"]
+        self._reporting_data["params"] = json.dumps(json_view["params"])
+
+    def _post_process_inverse_transform(
+        self, input: np.ndarray, output: Nifti1Image
+    ) -> Nifti1Image:
+        """Set dtype for data to return for inverse_transform."""
+        target_dtype = get_target_dtype(input.dtype, self.dtype)
+        if target_dtype is None:
+            target_dtype = input.dtype
+        output = new_img_like(output, output.get_fdata().astype(target_dtype))
+        output.set_data_dtype(target_dtype)
+        return output
+
+
+@fill_doc
 class _BaseSurfaceMasker(_BaseMasker):
     """Class from which all surface maskers should inherit."""
 
@@ -634,14 +747,6 @@ class _BaseSurfaceMasker(_BaseMasker):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(surf_img=True, niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=True, niimg_like=False)
         tags.estimator_type = "masker"
@@ -662,7 +767,13 @@ class _BaseSurfaceMasker(_BaseMasker):
                 f"Got: {imgs.__class__.__name__}"
             )
 
-    def _load_mask(self, imgs):
+    @overload
+    def _load_mask(self, imgs: None) -> None: ...
+
+    @overload
+    def _load_mask(self, imgs: SurfaceImage) -> SurfaceImage: ...
+
+    def _load_mask(self, imgs) -> SurfaceImage | None:
         """Load and validate mask if one passed at init.
 
         Returns
@@ -698,7 +809,7 @@ class _BaseSurfaceMasker(_BaseMasker):
         return mask_img_
 
     @abc.abstractmethod
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Present only to comply with sklearn estimators checks."""
 
     @fill_doc
@@ -731,30 +842,14 @@ class _BaseSurfaceMasker(_BaseMasker):
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
 
-        if self.smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                NotImplementedWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = None
-
-        if self.standardize in [True, False]:
-            # TODO (nilearn >= 0.15.0) remove warning
-            warnings.warn(
-                category=FutureWarning,
-                message=(
-                    "boolean values for 'standardize' "
-                    "will be deprecated in nilearn 0.15.0.\n"
-                    "Use 'zscore_sample' instead of 'True' or "
-                    "use 'None' instead of 'False'."
-                ),
-                stacklevel=find_stack_level(),
-            )
-
         if self.reports:
             self._reporting_data["images"] = imgs
+
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+        _wrap_output = (
+            sklearn_output_config is not None
+            and sklearn_output_config.get("transform", "default") != "default"
+        )
 
         if confounds is None and not self.high_variance_confounds:
             with warnings.catch_warnings():
@@ -762,7 +857,11 @@ class _BaseSurfaceMasker(_BaseMasker):
                 signals = self.transform_single_imgs(
                     imgs, confounds=confounds, sample_mask=sample_mask
                 )
-            return signals.squeeze() if return_1D else signals
+            return (
+                signals.squeeze()
+                if return_1D and not _wrap_output
+                else signals
+            )
 
         # Compute high variance confounds if requested
         all_confounds = []
@@ -781,13 +880,20 @@ class _BaseSurfaceMasker(_BaseMasker):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
-        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+        return signals.squeeze() if return_1D and not _wrap_output else signals
 
-        return (
-            signals.squeeze()
-            if return_1D and sklearn_output_config is not None
-            else signals
-        )
+    def _post_process_inverse_transform(
+        self, input: np.ndarray, output: SurfaceImage, return_1D: bool
+    ) -> SurfaceImage:
+        """Set dtype and squeeze data to return for inverse_transform."""
+        target_dtype = get_target_dtype(input.dtype, self.dtype)
+        if target_dtype is None:
+            target_dtype = input.dtype
+        output.data._set_dtype(target_dtype)
+        if return_1D:
+            for k, v in output.data.parts.items():
+                output.data.parts[k] = v.squeeze()
+        return output
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
@@ -819,7 +925,26 @@ class _BaseSurfaceMasker(_BaseMasker):
         %(signals_transform_surface)s
         """
         del y
-        return self.fit(imgs).transform(imgs, confounds, sample_mask)
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore", message=r".*Generation of a mask.*"
+            )
+            return self.fit(imgs).transform(imgs, confounds, sample_mask)
+
+    def _smooth(self, imgs):
+        if self.smoothing_fwhm is not None:
+            logger.log("Smoothing images", verbose=self.verbose)
+
+            imgs = cache(
+                smooth_img,
+                self.memory,
+                func_memory_level=2,
+                memory_level=self.memory_level,
+            )(imgs, self.smoothing_fwhm)
+
+        return imgs
 
     def _check_array(
         self, signals: np.ndarray, sklearn_check: bool = True
@@ -828,11 +953,15 @@ class _BaseSurfaceMasker(_BaseMasker):
 
         Parameters
         ----------
-        signals : :obj:`numpy.ndarray`
+        signals : array like (numpy array, pandas or polars DataFrame)
 
         sklearn_check : :obj:`bool`
             Run scikit learn check on input
         """
+        if hasattr(signals, "to_numpy"):
+            # convert pandas or polars dataframe to numpy
+            signals = signals.to_numpy()
+
         signals = np.atleast_2d(signals)
 
         if sklearn_check:
@@ -844,6 +973,14 @@ class _BaseSurfaceMasker(_BaseMasker):
                 f"Last dimension should be {self.n_elements_}.\n"
                 f"Got {signals.shape[-1]}."
             )
+
+        if signals.dtype == bool:
+            target_dtype = self.dtype if self.dtype is not None else np.int32
+            warnings.warn(
+                f"Casting boolean input to {target_dtype}",
+                stacklevel=find_stack_level(),
+            )
+            signals = signals.astype(target_dtype)
 
         return signals
 
@@ -933,3 +1070,18 @@ class _BaseSurfaceMasker(_BaseMasker):
             **self.clean_args_,
         )
         return region_signals
+
+    def _get_summary_html(self, summary):
+        """Convert summary part of the report content for surface maskers to
+        html.
+        """
+        summary_html = {}
+        for part in summary:
+            summary_html[part] = self._dict_to_html(
+                summary[part],
+                precision=2,
+                header=True,
+                index=False,
+                sparsify=False,
+            )
+        return summary_html

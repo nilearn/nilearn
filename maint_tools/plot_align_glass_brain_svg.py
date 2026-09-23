@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 # /// script
-# requires-python = ">=3.10"
+# requires-python = ">=3.11"
 # dependencies = [
-#   "nilearn[plotting]>=0.12",
+#   "nilearn[plotting,plotly]>=0.12",
 #    "PyQt6"
 # ]
 # ///

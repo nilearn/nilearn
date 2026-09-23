@@ -3,5 +3,5 @@
 blank_issues_enabled: true
 contact_links:
 -   name: Usage question
-    url: https://neurostars.org/tag/nilearn
+    url: https://neurostars.org/tag/nilearn/19
     about: Please ask question about using Nilearn here.

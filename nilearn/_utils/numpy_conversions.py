@@ -35,7 +35,7 @@ def as_ndarray(
     arr : array-like
         input array. Any value accepted by numpy.asarray is valid.
 
-    copy : bool
+    copy : :obj:`bool`
         if True, force a copy of the array. Always True when arr is a memmap.
 
     dtype : any numpy dtype
@@ -100,10 +100,10 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
 
     Parameters
     ----------
-    csv_path : string or pathlib.Path
+    csv_path : :obj:`str` or pathlib.Path
         Path of the CSV file to load.
 
-    delimiters : string
+    delimiters : :obj:`str`
         Each character of the delimiters string is a potential delimiters for
         the CSV file.
 
@@ -124,7 +124,7 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
         # because the delimiter is wrong.
         # In that case, we try to guess the delimiter.
         try:
-            with Path(csv_path).open() as csv_file:
+            with Path(csv_path).open(encoding="utf-8") as csv_file:
                 dialect = csv.Sniffer().sniff(csv_file.readline(), delimiters)
         except csv.Error as e:
             raise TypeError(
@@ -136,3 +136,29 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
         )
 
     return array
+
+
+def get_target_dtype(dtype, target_dtype):
+    """Return a new dtype if conversion is needed.
+
+    Parameters
+    ----------
+    dtype : dtype
+        Data type of the original data
+
+    target_dtype : {None, dtype, "auto"}
+        If None, no conversion is required. If a type is provided, the
+        function will check if a conversion is needed. The "auto" mode will
+        automatically convert to int32 if dtype is discrete and float32 if it
+        is continuous.
+
+    Returns
+    -------
+    dtype : dtype
+        The data type toward which the original data should be converted.
+    """
+    if target_dtype is None:
+        return None
+    if target_dtype == "auto":
+        target_dtype = np.int32 if dtype.kind == "i" else np.float32
+    return None if target_dtype == dtype else target_dtype

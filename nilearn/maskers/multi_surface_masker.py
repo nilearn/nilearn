@@ -1,5 +1,7 @@
 """Extract data from multiple 2D surface objects."""
 
+from typing import Self
+
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -32,7 +34,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -48,6 +50,10 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
     %(high_pass)s
 
     %(t_r)s
+
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
 
     %(memory)s
 
@@ -88,13 +94,14 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         self,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         high_variance_confounds=False,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         n_jobs=1,
@@ -103,21 +110,6 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         cmap=DEFAULT_SEQUENTIAL_CMAP,
         clean_args=None,
     ):
-        self.mask_img = mask_img
-        self.smoothing_fwhm = smoothing_fwhm
-        self.standardize = standardize
-        self.standardize_confounds = standardize_confounds
-        self.high_variance_confounds = high_variance_confounds
-        self.detrend = detrend
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.memory = memory
-        self.memory_level = memory_level
-        self.verbose = verbose
-        self.reports = reports
-        self.cmap = cmap
-        self.clean_args = clean_args
         super().__init__(
             # Mask is provided or computed
             mask_img=mask_img,
@@ -129,6 +121,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
@@ -139,7 +132,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         self.n_jobs = n_jobs
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -158,10 +151,11 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -206,6 +200,8 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
             for i, x in enumerate(imgs):
                 x.data._check_n_samples(1, f"imgs[{i}]")
 
+        imgs = self._smooth(imgs)
+
         if self.reports:
             self._reporting_data["images"] = imgs
 
@@ -218,4 +214,12 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
-        return self._clean(output, confounds, sample_mask)
+        target_dtype = self._get_target_dtype(imgs)
+
+        output = self._clean(output, confounds, sample_mask)
+
+        # target_dtype is None: no explicit dtype was requested,
+        # so keep the dtype produced by the extraction/cleaning pipeline
+        # (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return output if target_dtype is None else output.astype(target_dtype)

@@ -141,6 +141,7 @@ neg_log_pvals_permuted_ols_unmasked = non_parametric_inference(
     mask=None,
     smoothing_fwhm=5.0,
     n_jobs=2,
+    random_state=0,  # to ensure reproducible results
     verbose=1,
 )
 

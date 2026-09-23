@@ -1,13 +1,15 @@
 """Logging facility for nilearn."""
 
 import inspect
+import time
 import traceback
 from pathlib import Path
 
 import numpy as np
 
 from nilearn._base import NilearnBaseEstimator
-from nilearn.typing import Verbose
+from nilearn._utils.docs import fill_doc
+from nilearn.nilearn_typing import Verbose
 
 
 def _has_rich() -> bool:
@@ -22,12 +24,15 @@ def _has_rich() -> bool:
 
 
 if _has_rich():
-    from rich import print
+    from rich.console import Console
     from rich.markup import escape
+
+    console = Console(highlight=True, soft_wrap=True)
 
 
 # The technique used in the log() function only applies to CPython, because
 # it uses the inspect module to walk the call stack.
+@fill_doc
 def log(
     msg: str,
     verbose: Verbose,
@@ -44,7 +49,7 @@ def log(
 
     Parameters
     ----------
-    msg : str
+    msg : :obj:`str`
         Message to display.
 
     %(verbose)s
@@ -64,6 +69,9 @@ def log(
         Verbosity level at and above which message should be displayed to the
         user. Most of the time this parameter can be left unchanged.
 
+    with_traceback : :obj:`bool`
+        Print traceback in the log.
+
     Notes
     -----
     This function does tricky things to ensure that the proper object is
@@ -75,6 +83,8 @@ def log(
     is the one which is most likely to have been written in the user's script.
 
     """
+    from nilearn._utils.helpers import is_notebook
+
     if verbose is False:
         verbose = 0
     if verbose is True:
@@ -106,8 +116,10 @@ def log(
     if object_self is not None:
         func_name = f"{object_self.__class__.__name__}.{func_name}"
 
-    if _has_rich():
-        print(f"[blue]\\[{func_name}][/blue] {escape(msg)}")
+    # Do not bother using rich in notebooks
+    # as the colored highlights are not rendered in their output.
+    if _has_rich() and not is_notebook():
+        console.print(f"[blue]\\[{func_name}][/blue] {escape(msg)}")
     else:
         print(f"[{func_name}] {msg}")
 
@@ -120,7 +132,7 @@ def compose_err_msg(msg: str, **kwargs) -> str:
 
     Parameters
     ----------
-    msg : string
+    msg : :obj:`str`
         Arbitrary message.
 
     kwargs : dict, optional
@@ -128,11 +140,11 @@ def compose_err_msg(msg: str, **kwargs) -> str:
 
     Returns
     -------
-    updated_msg : string
+    updated_msg : :obj:`str`
         msg, with "key: value" appended. Only string values are appended.
 
-    Example
-    -------
+    Examples
+    --------
     >>> compose_err_msg('Error message with arguments...', arg_num=123, \
         arg_str='filename.nii', arg_bool=True)
     'Error message with arguments...\\narg_str: filename.nii'
@@ -198,3 +210,24 @@ def one_level_deeper() -> int:
     Needs to be in a module that does not start with 'test'
     """
     return find_stack_level()
+
+
+def readable_time(seconds) -> str:
+    """Convert a duration in seconds to a human-readable string.
+
+    The output includes hours, minutes, and seconds as needed, using
+    abbreviated units (HR/HRS, MIN, SEC).
+
+    Parameters
+    ----------
+    seconds : int or float
+        Time duration in seconds.
+
+    Returns
+    -------
+    str
+        Human-readable time string.
+    """
+    seconds = round(seconds)
+
+    return time.strftime("%H HR %M MIN %S SEC", time.gmtime(seconds))

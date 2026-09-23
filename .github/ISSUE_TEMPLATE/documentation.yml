@@ -8,7 +8,7 @@ description: Request an improvement to the existing documentation.
 
 title: '[DOC] '
 
-labels: [Documentation]
+labels: [Documentation, Needs Triage]
 
 body:
 

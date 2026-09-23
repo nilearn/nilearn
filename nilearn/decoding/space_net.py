@@ -8,7 +8,7 @@ import collections
 import time
 import warnings
 from functools import partial
-from typing import ClassVar
+from typing import Any, ClassVar, Self
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -27,26 +27,25 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, readable_time
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
     sanitize_verbose,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._utils.tags import InputTags
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import adjust_screening_percentile
+from nilearn.decoding.space_net_solvers import (
+    graph_net_logistic,
+    graph_net_squared_loss,
+    tvl1_solver,
+)
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import unmask_from_to_3d_array
 from nilearn.surface import SurfaceImage
-
-from .space_net_solvers import (
-    graph_net_logistic,
-    graph_net_squared_loss,
-    tvl1_solver,
-)
 
 
 def _crop_mask(mask):
@@ -87,13 +86,13 @@ def _univariate_feature_screening(
     mask : ndarray or booleans, shape (nx, ny, nz)
         Mask defining brain Rois.
 
-    is_classif : bool
+    is_classif : :obj:`bool`
         Flag telling whether the learning task is classification or regression.
 
     %(screening_percentile)s
 
     %(smoothing_fwhm)s
-        Default=2.
+        default=2.
 
     Returns
     -------
@@ -155,21 +154,21 @@ def _space_net_alpha_grid(
     y : ndarray, shape (n_samples,)
         Target / response vector.
 
-    l1_ratio : float, default=1
+    l1_ratio : :obj:`float`, default=1
         The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
         For ``l1_ratio = 0`` the penalty is purely a spatial prior
         (Graph-Net, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
         For ``0 < l1_ratio < 1``, the penalty is a combination of L1
         and a spatial prior.
 
-    eps : float, default=1e-3
+    eps : :obj:`float`, default=1e-3
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
     n_alphas : int, default=10
         Number of alphas along the regularization path.
 
-    logistic : bool, default=False
+    logistic : :obj:`bool`, default=False
         Indicates where the underlying loss function is logistic.
 
     """
@@ -216,7 +215,7 @@ class _EarlyStoppingCallback:
     for scoring.
     """
 
-    def __init__(self, X_test, y_test, is_classif, debias=False, verbose=0):
+    def __init__(self, X_test, y_test, is_classif, verbose, debias=False):
         self.X_test = X_test
         self.y_test = y_test
         self.is_classif = is_classif
@@ -320,7 +319,7 @@ def _center_data(X, y):
         Centered version of X
     y : ndarray of shape (n_samples,) or (n_samples, n_targets)
         Centered version of y
-    y_offset : float or ndarray of shape (n_features,)
+    y_offset : :obj:`float` or ndarray of shape (n_features,)
         Mean of y
     """
     X = check_array(
@@ -354,13 +353,13 @@ def path_scores(
     train,
     test,
     solver_params,
+    verbose,
     is_classif=False,
     n_alphas=10,
     eps=1e-3,
     key=None,
     debias=False,
     screening_percentile=20,
-    verbose=0,
 ):
     """Compute scores of different alphas in regression \
     and classification used by CV objects.
@@ -406,7 +405,7 @@ def path_scores(
         Indicates whether the loss is a classification loss or a
         regression loss.
 
-    key: ??? TODO: Add description.
+    key : ??? TODO: Add description.
 
     %(debias)s
 
@@ -495,7 +494,7 @@ def path_scores(
                     mask=mask,
                     init=init,
                     callback=early_stopper,
-                    verbose=max(verbose - 1, 0),
+                    verbose=verbose,
                     **path_solver_params,
                 )
 
@@ -548,7 +547,7 @@ def path_scores(
             y_test,
             is_classif=is_classif,
             debias=debias,
-            verbose=verbose,
+            verbose=max(verbose - 1, 0),
         )._debias(best_w)
 
     if len(test) == 0.0:
@@ -630,7 +629,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
 
     %(screening_percentile)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
@@ -680,7 +679,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         tol=5e-4,
         memory=None,
         memory_level=1,
-        standardize=True,
+        standardize="zscore_sample",
         verbose=0,
         n_jobs=1,
         eps=1e-3,
@@ -714,44 +713,16 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         self.target_shape = target_shape
         self.positive = positive
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(require_y=True, niimg_like=True, surf_img=True)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.target_tags.required = True
         tags.input_tags = InputTags(niimg_like=True, surf_img=False)
         return tags
-
-    # TODO: try to extract into children classes
-    @property
-    def _is_classification(self) -> bool:
-        # TODO remove for sklearn>=1.6
-        # this private method can probably be removed
-        # when dropping sklearn>=1.5 and replaced by just:
-        #   self.__sklearn_tags__().estimator_type == "classifier"
-        if SKLEARN_LT_1_6:
-            # TODO remove for sklearn>=1.8
-            return self._estimator_type == "classifier"
-        return self.__sklearn_tags__().estimator_type == "classifier"
 
     def _check_params(self) -> None:
         """Make sure parameters are sane."""
@@ -780,10 +751,10 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         check_parameter_in_allowed(
             self.penalty, self.SUPPORTED_PENALTIES, "penalty"
         )
-        if self._is_classification:
+        if self.__sklearn_tags__().estimator_type == "classifier":
             self._validate_loss(self.loss)
 
-    def _set_coef_and_intercept(self, w):
+    def _set_coef_and_intercept(self, w) -> None:
         """Set the loadings vector (coef) and the intercept of the fitted \
         model.
         """
@@ -818,7 +789,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         # implemented in children classes
         raise NotImplementedError()
 
-    def fit(self, X, y):
+    def fit(self, X, y) -> Self:
         """Fit the learner.
 
         Parameters
@@ -882,7 +853,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
             if loss == "mse":
                 solver = graph_net_squared_loss
             else:
-                solver = graph_net_logistic
+                solver = graph_net_logistic  # type: ignore[assignment]
         elif loss == "mse":
             solver = partial(tvl1_solver, loss="mse")
         else:
@@ -917,7 +888,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
 
         # scores & mean weights map over all folds
         n_folds = len(self.cv_)
-        self.cv_scores_ = [[] for _ in range(n_problems)]
+        self.cv_scores_: list[list[Any]] = [[] for _ in range(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
@@ -927,8 +898,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
 
         # main loop: loop on classes and folds
         solver_params = {"tol": self.tol, "max_iter": self.max_iter}
-        self.best_model_params_ = []
-        self.alpha_grids_ = []
+        self.best_model_params_: list[Any] = []
+        self.alpha_grids_: list[Any] = []
         for (
             test_scores,
             best_w,
@@ -937,7 +908,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
             alphas,
             y_train_mean,
             (cls, fold),
-        ) in Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)(
+        ) in Parallel(n_jobs=self.n_jobs)(
             delayed(self._cache(path_scores, func_memory_level=2))(
                 solver,
                 X,
@@ -954,7 +925,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
                 is_classif=is_classifier(self),
                 key=(cls, fold),
                 debias=self.debias,
-                verbose=self.verbose,
+                verbose=max(self.verbose - 1, 0),
                 screening_percentile=self.screening_percentile_,
             )
             for cls in range(n_problems)
@@ -970,9 +941,13 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
             w[cls] += best_w
 
         # misc
-        self.cv_scores_ = np.array(self.cv_scores_)
-        self.best_model_params_ = np.array(self.best_model_params_)
-        self.alpha_grids_ = np.array(self.alpha_grids_)
+        self.cv_scores_ = np.array(self.cv_scores_)  # type: ignore[assignment]
+        self.best_model_params_ = np.array(  # type: ignore[assignment]
+            self.best_model_params_
+        )
+        self.alpha_grids_ = np.array(  # type: ignore[assignment]
+            self.alpha_grids_
+        )
 
         self.ymean_ /= n_folds
         w, self.ymean_, self.all_coef_ = self._adapt_weights_y_mean_all_coef(w)
@@ -991,7 +966,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         # report time elapsed
         duration = time.time() - tic
         logger.log(
-            f"Time Elapsed: {duration:.3f} seconds.",
+            f"Time Elapsed: {readable_time(duration)} seconds.",
             self.verbose,
         )
 
@@ -1003,7 +978,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
     def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "masker_")
 
-    def predict(self, X):
+    def predict(self, X) -> np.ndarray:
         """Predict class labels for samples in X.
 
         Parameters
@@ -1098,7 +1073,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     %(memory_level1)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(verbose0)s
 
@@ -1156,7 +1131,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         tol=1e-4,
         memory=None,
         memory_level=1,
-        standardize=True,
+        standardize="zscore_sample",
         verbose=0,
         n_jobs=1,
         eps=1e-3,
@@ -1193,9 +1168,6 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         )
         self.loss = loss
 
-        # TODO (sklearn  >= 1.6.0) remove
-        self._estimator_type = "classifier"
-
     def _validate_loss(self, value) -> None:
         if value is not None:
             check_parameter_in_allowed(value, self.SUPPORTED_LOSSES, "loss")
@@ -1217,7 +1189,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
     def _set_intercept(self) -> None:
         self.intercept_ = self.w_[:, -1]
 
-    def score(self, X, y):
+    def score(self, X, y) -> float:
         """Return the mean accuracy on the given test data and labels.
 
         Parameters
@@ -1232,13 +1204,13 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
         Returns
         -------
-        score : float
+        score : :obj:`float`
             Mean accuracy of self.predict(X)  w.r.t y.
         """
         check_is_fitted(self)
         return accuracy_score(y, self.predict(X))
 
-    def decision_function(self, X):
+    def decision_function(self, X) -> np.ndarray:
         """Predict confidence scores for samples.
 
         The confidence score for a sample is the signed distance of that
@@ -1330,7 +1302,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
 
     %(memory_level1)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(verbose0)s
 
@@ -1381,7 +1353,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         tol=1e-4,
         memory=None,
         memory_level=1,
-        standardize=True,
+        standardize="zscore_sample",
         verbose=0,
         n_jobs=1,
         eps=1e-3,
@@ -1446,7 +1418,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
     def _adapt_weights_y_mean_all_coef(self, w):
         return w[0], self.ymean_[0], np.array(self.all_coef_)
 
-    def fit(self, X, y):
+    def fit(self, X, y) -> Self:
         """Fit the learner.
 
         Parameters

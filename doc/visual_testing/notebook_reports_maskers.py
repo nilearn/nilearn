@@ -2,7 +2,7 @@
 
 import marimo
 
-__generated_with = "0.17.8"
+__generated_with = "0.21.0"
 app = marimo.App(width="medium")
 
 
@@ -94,6 +94,24 @@ def _(nifti_masker_reports):
 
 
 @app.cell
+def _(BUILD_TYPE, report_nifti_masker):
+    nifti_masker_reports_brainsprite = report_nifti_masker(
+        build_type=BUILD_TYPE, engine="brainsprite"
+    )
+    return (nifti_masker_reports_brainsprite,)
+
+
+@app.cell
+def _(nifti_masker_reports_brainsprite):
+    nifti_masker_reports_brainsprite[0]
+
+
+@app.cell
+def _(nifti_masker_reports_brainsprite):
+    nifti_masker_reports_brainsprite[1]
+
+
+@app.cell
 def _(BUILD_TYPE, report_nifti_maps_masker):
     nifti_maps_masker_reports = report_nifti_maps_masker(build_type=BUILD_TYPE)
     return (nifti_maps_masker_reports,)
@@ -125,6 +143,24 @@ def _(nifti_labels_masker_reports):
 @app.cell
 def _(nifti_labels_masker_reports):
     nifti_labels_masker_reports[1]
+
+
+@app.cell
+def _(BUILD_TYPE, report_nifti_labels_masker):
+    nifti_labels_masker_reports_brainsprite = report_nifti_labels_masker(
+        build_type=BUILD_TYPE, engine="brainsprite"
+    )
+    return (nifti_labels_masker_reports_brainsprite,)
+
+
+@app.cell
+def _(nifti_labels_masker_reports_brainsprite):
+    nifti_labels_masker_reports_brainsprite[0]
+
+
+@app.cell
+def _(nifti_labels_masker_reports_brainsprite):
+    nifti_labels_masker_reports_brainsprite[1]
 
 
 @app.cell

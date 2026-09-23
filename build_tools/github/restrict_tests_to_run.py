@@ -57,6 +57,7 @@ known_dirs = sorted(
         "nilearn/_utils",
         "nilearn/connectome",
         "nilearn/mass_univariate",
+        "nilearn/_assets",
     ]
 )
 assert known_dirs == all_folders, f"\n{known_dirs=}\n{all_folders=}"
@@ -165,10 +166,12 @@ def restrict_tests(changed_files: list[str]) -> list[str]:
             x == lowest_layer
             for lowest_layer in [
                 "nilearn/_utils",
+                "nilearn/_base.py",
                 "nilearn/conftest.py",
                 "nilearn/exceptions.py",
                 "nilearn/signal.py",
-                "nilearn/typing.py",
+                "nilearn/nilearn_typing.py",
+                "nilearn/_assets",
             ]
         ):
             tests_to_run.extend(
@@ -290,6 +293,20 @@ try:
             ),
             (
                 ["nilearn/conftest.py"],
+                [
+                    *HIGHEST_LAYER,
+                    *TOP_LAYER,
+                    *MID_LAYER,
+                    "nilearn/tests/test_masking.py",
+                    "nilearn/tests/test_signal.py",
+                    "nilearn/connectome",
+                ],
+            ),
+            (
+                # NilearnBaseEstimator, used by nearly every estimator
+                # across the codebase, is defined here: as foundational
+                # as nilearn/_utils
+                ["nilearn/_base.py"],
                 [
                     *HIGHEST_LAYER,
                     *TOP_LAYER,

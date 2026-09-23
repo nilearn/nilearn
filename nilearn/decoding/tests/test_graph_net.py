@@ -20,8 +20,7 @@ from nilearn.decoding.space_net_solvers import (
     mfista,
 )
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
-
-from .test_same_api import to_niimgs
+from nilearn.decoding.tests.test_same_api import to_niimgs
 
 
 def _make_data(task="regression", size=4):
@@ -242,12 +241,7 @@ def test_max_alpha_squared_loss(estimator, l1_ratio):
     """
     X, y, _, _, mask_, X_ = _make_data()
 
-    reg = estimator(
-        mask=mask_,
-        max_iter=10,
-        penalty="graph-net",
-        standardize="zscore_sample",
-    )
+    reg = estimator(mask=mask_, max_iter=10, penalty="graph-net")
 
     reg.l1_ratios = l1_ratio
     reg.alphas = np.max(np.dot(X.T, y)) / l1_ratio
@@ -277,7 +271,7 @@ def test_tikhonov_regularization_vs_graph_net():
         max_iter=400,
         fit_intercept=False,
         screening_percentile=100.0,
-        standardize=False,
+        standardize=None,
     )
     graph_net.fit(X_, y.copy())
 
@@ -294,6 +288,7 @@ def test_tikhonov_regularization_vs_graph_net():
 
 
 def test_mfista_solver_graph_net_no_l1_term():
+    """Test MFISTA solver for graph-net loss without an l1 term."""
     w = np.zeros(2)
     X = np.array([[1, 0], [0, 4]])
     y = np.array([-10, 20])

@@ -22,30 +22,40 @@ def main(args=sys.argv) -> None:
     datasets.fetch_atlas_schaefer_2018()
 
     _, urls = datasets.fetch_ds000030_urls()
+    # Only keep the files for the ``stopsignal`` task that are actually
+    # needed by examples/04_glm_first_level/plot_bids_features.py:
+    # the raw functional data and events, the relevant fMRIPrep
+    # derivatives, and the FSL ``stopsignal.feat`` derivatives used
+    # for comparison.
+    # Restricting the download with
+    # ``inclusion_filters`` this way, rather than trying to list every
+    # folder to exclude, avoids pulling in the (much larger)
+    # derivatives of the other tasks acquired for this subject.
+    inclusion_patterns = ["*sub-*stopsignal*"]
+    # Some fMRIPrep and FSL derivatives are are not used in that example.
     exclusion_patterns = [
-        "*group*",
-        "*phenotype*",
-        "*mriqc*",
-        "*parameter_plots*",
-        "*physio_plots*",
-        "*space-fsaverage*",
-        "*space-T1w*",
-        "*dwi*",
-        "*beh*",
-        "*task-bart*",
-        "*task-rest*",
-        "*task-scap*",
-        "*task-task*",
+        "*_space-T1w*",
+        "*_space-fsaverage*",
+        "*cope*gz",
+        "*jpg",
+        "*png",
+        "*txt",
+        "*tiff",
+        "*gif",
+        "*res4D*",
     ]
     urls = datasets.select_from_index(
-        urls, exclusion_filters=exclusion_patterns, n_subjects=1
+        urls,
+        inclusion_filters=inclusion_patterns,
+        exclusion_filters=exclusion_patterns,
+        n_subjects=1,
     )
     datasets.fetch_openneuro_dataset(urls=urls)
 
     datasets.fetch_adhd(n_subjects=1)
-    datasets.fetch_development_fmri(n_subjects=5)
+    datasets.fetch_development_fmri(n_subjects=60)
     datasets.fetch_fiac_first_level()
-    datasets.fetch_oasis_vbm(n_subjects=5)
+    datasets.fetch_oasis_vbm(n_subjects=100)
     datasets.fetch_localizer_first_level()
 
     if build_type in ["full", "html", "html-strict"]:
@@ -63,7 +73,9 @@ def main(args=sys.argv) -> None:
         datasets.fetch_atlas_juelich("maxprob-thr0-1mm")
         for dimension in [10, 20]:
             datasets.fetch_atlas_smith_2009(resting=False, dimension=dimension)
-        datasets.fetch_atlas_yeo_2011()
+        datasets.fetch_atlas_yeo_2011(n_networks=7)
+        datasets.fetch_atlas_yeo_2011(n_networks=17)
+        datasets.fetch_atlas_msdl()
 
         datasets.fetch_surf_fsaverage()
         datasets.fetch_surf_fsaverage("fsaverage")
@@ -76,20 +88,18 @@ def main(args=sys.argv) -> None:
         datasets.fetch_coords_power_2011()
         datasets.fetch_coords_dosenbach_2010()
 
-        datasets.fetch_development_fmri(n_subjects=60)
-
         datasets.fetch_haxby()
         datasets.fetch_language_localizer_demo_dataset()
         datasets.fetch_localizer_button_task()
-        datasets.fetch_localizer_calculation_task(n_subjects=20)
         for contrast, n_subjects in zip(
             [
+                "calculation (auditory and visual cue)",
                 "vertical checkerboard",
                 "horizontal checkerboard",
                 "left vs right button press",
                 "left button press (auditory cue)",
             ],
-            [16, 16, 16, 94],
+            [20, 16, 16, 16, 94],
             strict=False,
         ):
             datasets.fetch_localizer_contrasts(
@@ -108,7 +118,6 @@ def main(args=sys.argv) -> None:
         )
         datasets.fetch_mixed_gambles(n_subjects=16)
         datasets.fetch_miyawaki2008()
-        datasets.fetch_oasis_vbm(n_subjects=100)
         datasets.fetch_spm_multimodal_fmri()
         datasets.fetch_spm_auditory()
         datasets.fetch_surf_nki_enhanced(n_subjects=1)

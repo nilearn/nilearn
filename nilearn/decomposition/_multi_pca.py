@@ -7,8 +7,7 @@ import numpy as np
 from sklearn.utils.extmath import randomized_svd
 
 from nilearn._utils.docs import fill_doc
-
-from ._base import _BaseDecomposition
+from nilearn.decomposition._base import _BaseDecomposition
 
 
 @fill_doc
@@ -24,7 +23,7 @@ class _MultiPCA(_BaseDecomposition):
     n_components : int, default=20
         Number of components to extract.
 
-    do_cca : boolean, default=True
+    do_cca : :obj:`bool`, default=True
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
@@ -35,7 +34,7 @@ class _MultiPCA(_BaseDecomposition):
     %(mask_decomposition)s
 
     %(mask_strategy)s
-        Default='epi'.
+        default='epi'.
         .. note::
 
           These strategies are only relevant for Nifti images and the parameter
@@ -48,13 +47,13 @@ class _MultiPCA(_BaseDecomposition):
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
-    standardize_confounds : boolean, default=True
+    standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend : boolean, default=False
+    detrend : :obj:`bool`, default=False
         If detrend is True, the time-series will be detrended before
         components extraction.
 
@@ -82,6 +81,10 @@ class _MultiPCA(_BaseDecomposition):
 
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
 
     memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
@@ -112,12 +115,13 @@ class _MultiPCA(_BaseDecomposition):
         smoothing_fwhm=None,
         do_cca=True,
         random_state=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -138,6 +142,7 @@ class _MultiPCA(_BaseDecomposition):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             target_affine=target_affine,
             target_shape=target_shape,
             mask_strategy=mask_strategy,

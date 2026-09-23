@@ -19,13 +19,13 @@ from nilearn.surface.surface import get_data as get_surface_data
 
 
 @pytest.fixture
-def shape():
+def shape() -> tuple[int, int, int]:
     """Return a shape."""
     return (9, 10, 11)
 
 
 @pytest.fixture
-def simple_stat_img(shape, affine_eye):
+def simple_stat_img(shape, affine_eye) -> Nifti1Image:
     """Create a simple stat image for more tests.
 
     Contains both positive and negative clusters.
@@ -33,8 +33,7 @@ def simple_stat_img(shape, affine_eye):
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[4:6, 7:9, 8:10] = -5.0
-    stat_img = Nifti1Image(data, affine_eye)
-    return stat_img
+    return Nifti1Image(data, affine_eye)
 
 
 def validate_clusters_table(
@@ -46,7 +45,7 @@ def validate_clusters_table(
     duplicated_ID = clusters_table.duplicated(subset=["Cluster ID"])
     assert not any(duplicated_ID.to_list()), clusters_table
 
-    assert not any(clusters_table["Peak Stat"].to_numpy() == np.nan)
+    assert not clusters_table["Peak Stat"].isna().to_numpy().any()
 
     # VERY unlikely that two different clusters have the same peak stat
     duplicated_stats = clusters_table.duplicated(subset=["Peak Stat"])
@@ -142,20 +141,63 @@ def test_get_clusters_table(
     expected_n_cluster,
 ):
     """Test several combination of input parameters."""
-    clusters_table = get_clusters_table(
+    clusters_table, _ = get_clusters_table(
         simple_stat_img,
         stat_threshold=stat_threshold,
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
+        return_label_maps=True,
     )
     validate_clusters_table(clusters_table, expected_n_cluster)
+
+
+@pytest.mark.parametrize("call_style", ["omitted", "keyword", "positional"])
+def test_get_clusters_table_return_label_maps_deprecation(
+    simple_stat_img, call_style
+):
+    """Warn on calls that keep the deprecated table-only return.
+
+    TODO (nilearn >= 0.17.0) remove test.
+    """
+    match = 'The "return_label_maps" parameter is deprecated'
+
+    with pytest.warns(FutureWarning, match=match) as warning_list:
+        if call_style == "omitted":
+            clusters_table = get_clusters_table(simple_stat_img, 4)
+        elif call_style == "keyword":
+            clusters_table = get_clusters_table(
+                simple_stat_img, 4, return_label_maps=False
+            )
+        else:
+            clusters_table = get_clusters_table(
+                simple_stat_img, 4, 0, False, 8, False
+            )
+
+    assert isinstance(clusters_table, pd.DataFrame)
+    assert warning_list[0].filename == __file__
+
+
+def test_get_clusters_table_surface_return_label_maps_deprecation(surf_img_1d):
+    """Warn on the deprecated table-only return for surface data.
+
+    TODO (nilearn >= 0.17.0) remove test.
+    """
+    with pytest.warns(
+        FutureWarning,
+        match='The "return_label_maps" parameter is deprecated',
+    ):
+        clusters_table = get_clusters_table(
+            surf_img_1d, 0.1, return_label_maps=False
+        )
+
+    assert isinstance(clusters_table, pd.DataFrame)
 
 
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, expected_n_cluster",
     [
         (4, 0, 2),
-        (4, 2, 1),
+        (4, 2, 2),
         (6, 0, 0),
         (-4, 0, 2),
         (-4, 2, 0),
@@ -199,7 +241,7 @@ def test_get_clusters_table_surface(
     ),
     [
         (4, 0, 2, 2, True),
-        (4, 2, 1, 0, False),
+        (4, 2, 2, 0, False),
         (6, 0, 0, 0, False),
     ],
 )
@@ -262,29 +304,32 @@ def test_get_clusters_table_surface_real_data(
     """
     stat_img = load_fsaverage_data(mesh_type="inflated")
 
-    clusters_table_two_sided = get_clusters_table(
+    clusters_table_two_sided, _ = get_clusters_table(
         stat_img,
         stat_threshold=np.abs(stat_threshold),
         cluster_threshold=cluster_threshold,
         two_sided=True,
+        return_label_maps=True,
     )
 
     validate_clusters_table(
         clusters_table_two_sided, expected_n_cluster_two_sided
     )
 
-    clusters_table_positive = get_clusters_table(
+    clusters_table_positive, _ = get_clusters_table(
         stat_img,
         stat_threshold=np.abs(stat_threshold),
         cluster_threshold=cluster_threshold,
         two_sided=False,
+        return_label_maps=True,
     )
 
-    clusters_table_negative = get_clusters_table(
+    clusters_table_negative, _ = get_clusters_table(
         math_img("img*-1", img=stat_img),
         stat_threshold=stat_threshold,
         cluster_threshold=cluster_threshold,
         two_sided=False,
+        return_label_maps=True,
     )
 
     assert len(clusters_table_two_sided) == (
@@ -297,10 +342,20 @@ def test_get_clusters_table_surface_min_distance(surf_img_1d, simple_stat_img):
     with pytest.warns(
         UserWarning, match="'min_distance' parameter is not used"
     ):
-        get_clusters_table(surf_img_1d, stat_threshold=0.1, min_distance=5)
+        get_clusters_table(
+            surf_img_1d,
+            stat_threshold=0.1,
+            min_distance=5,
+            return_label_maps=True,
+        )
 
     with warnings.catch_warnings(record=True) as w:
-        get_clusters_table(simple_stat_img, stat_threshold=0.1, min_distance=5)
+        get_clusters_table(
+            simple_stat_img,
+            stat_threshold=0.1,
+            min_distance=5,
+            return_label_maps=True,
+        )
     assert len(w) == 0
 
 
@@ -308,7 +363,10 @@ def test_get_clusters_table_negative_min_distance_error(simple_stat_img):
     """Check min_distance cannot be negative."""
     with pytest.raises(ValueError, match="'min_distance' must be positive"):
         get_clusters_table(
-            simple_stat_img, stat_threshold=0.1, min_distance=-4
+            simple_stat_img,
+            stat_threshold=0.1,
+            min_distance=-4,
+            return_label_maps=True,
         )
 
 
@@ -317,24 +375,32 @@ def test_get_clusters_table_no_cluster_found_warning(
 ):
     """Check warning is thrown when too high threshold or no cluster found."""
     with pytest.warns(UserWarning, match="But, you have given threshold=1000"):
-        clusters_table = get_clusters_table(
-            simple_stat_img, stat_threshold=1000
+        clusters_table, _ = get_clusters_table(
+            simple_stat_img, stat_threshold=1000, return_label_maps=True
         )
     validate_clusters_table(clusters_table, expected_n_cluster=0)
 
     with pytest.warns(UserWarning, match="But, you have given threshold=1000"):
-        clusters_table = get_clusters_table(surf_img_1d, stat_threshold=1000)
-    validate_clusters_table(clusters_table, expected_n_cluster=0)
-
-    with pytest.warns(UserWarning, match="No clusters found"):
-        clusters_table = get_clusters_table(
-            simple_stat_img, stat_threshold=4.9, cluster_threshold=1000
+        clusters_table, _ = get_clusters_table(
+            surf_img_1d, stat_threshold=1000, return_label_maps=True
         )
     validate_clusters_table(clusters_table, expected_n_cluster=0)
 
     with pytest.warns(UserWarning, match="No clusters found"):
-        clusters_table = get_clusters_table(
-            surf_img_1d, stat_threshold=1, cluster_threshold=1000
+        clusters_table, _ = get_clusters_table(
+            simple_stat_img,
+            stat_threshold=4.9,
+            cluster_threshold=1000,
+            return_label_maps=True,
+        )
+    validate_clusters_table(clusters_table, expected_n_cluster=0)
+
+    with pytest.warns(UserWarning, match="No clusters found"):
+        clusters_table, _ = get_clusters_table(
+            surf_img_1d,
+            stat_threshold=1,
+            cluster_threshold=1000,
+            return_label_maps=True,
         )
     validate_clusters_table(clusters_table, expected_n_cluster=0)
 
@@ -348,11 +414,12 @@ def test_get_clusters_table_negative_threshold(shape, affine_eye):
 
     data_orig = deepcopy(data)
 
-    clusters_table = get_clusters_table(
+    clusters_table, _ = get_clusters_table(
         stat_img,
         stat_threshold=-1,
         cluster_threshold=0,
         two_sided=False,
+        return_label_maps=True,
     )
 
     validate_clusters_table(clusters_table, expected_n_cluster=1)
@@ -389,7 +456,9 @@ def test_smoke_get_clusters_table_filename(tmp_path, simple_stat_img):
     """Run get_clusters_table on a file."""
     fname = str(tmp_path / "stat_img.nii.gz")
     simple_stat_img.to_filename(fname)
-    clusters_table = get_clusters_table(fname, 4, 0, two_sided=True)
+    clusters_table, _ = get_clusters_table(
+        fname, 4, 0, two_sided=True, return_label_maps=True
+    )
     validate_clusters_table(clusters_table, expected_n_cluster=2)
 
 
@@ -399,11 +468,12 @@ def test_get_clusters_table_4d_image(shape, affine_eye):
     data[2:4, 5:7, 6:8] = 5.0
     data[4:6, 7:9, 8:10] = -5.0
     stat_img = Nifti1Image(data, affine_eye)
-    clusters_table = get_clusters_table(
+    clusters_table, _ = get_clusters_table(
         stat_img,
         4,
         0,
         two_sided=True,
+        return_label_maps=True,
     )
     validate_clusters_table(clusters_table, expected_n_cluster=2)
 
@@ -416,7 +486,13 @@ def test_get_clusters_table_nans(shape, affine_eye):
     data[data == 0] = np.nan
     stat_img = Nifti1Image(data, affine_eye)
     with pytest.warns(UserWarning, match="Non-finite values detected"):
-        clusters_table = get_clusters_table(stat_img, 1e-2, 0, two_sided=False)
+        clusters_table, _ = get_clusters_table(
+            stat_img,
+            1e-2,
+            0,
+            two_sided=False,
+            return_label_maps=True,
+        )
 
     validate_clusters_table(clusters_table, expected_n_cluster=1)
 
@@ -430,11 +506,12 @@ def test_get_clusters_table_subpeaks(shape, affine_eye):
     data[6, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
     stat_img = Nifti1Image(data, affine_eye)
 
-    clusters_table = get_clusters_table(
+    clusters_table, _ = get_clusters_table(
         stat_img,
         0,
         0,
         min_distance=9,
+        return_label_maps=True,
     )
 
     validate_clusters_table(clusters_table, expected_n_cluster=2)
@@ -507,11 +584,12 @@ def test_get_clusters_table_not_modifying_stat_image(
     stat_img = Nifti1Image(data, affine_eye)
     data_orig = get_data(stat_img).copy()
 
-    clusters_table = get_clusters_table(
+    clusters_table, _ = get_clusters_table(
         stat_img,
         stat_threshold=stat_threshold,
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
+        return_label_maps=True,
     )
     validate_clusters_table(clusters_table, expected_n_cluster)
     assert np.allclose(data_orig, get_data(stat_img))

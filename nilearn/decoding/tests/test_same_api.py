@@ -56,7 +56,8 @@ def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
     return X, y, w, mask
 
 
-def to_niimgs(X, dim):
+def to_niimgs(X, dim) -> tuple[Nifti1Image, Nifti1Image]:
+    """Convert a 2D masked array and its mask into 4D niimgs."""
     p = np.prod(dim)
 
     assert len(dim) == 3
@@ -77,6 +78,7 @@ def to_niimgs(X, dim):
 
 
 def test_same_energy_calculus_pure_lasso(rng):
+    """Test that squared_loss matches spatial-grad energy for pure lasso."""
     X, y, w, mask = _make_data(rng=rng, masked=True)
 
     # check funcvals
@@ -94,6 +96,7 @@ def test_same_energy_calculus_pure_lasso(rng):
 
 @pytest.mark.thread_unsafe
 def test_lipschitz_constant_loss_mse(rng):
+    """Test the Lipschitz constant of the squared loss gradient."""
     X, _, _, mask = _make_data(rng=rng, masked=True)
     alpha = 0.1
     mask = np.ones(X.shape[1]).astype(bool)
@@ -107,6 +110,7 @@ def test_lipschitz_constant_loss_mse(rng):
 
 @pytest.mark.thread_unsafe
 def test_lipschitz_constant_loss_logreg(rng):
+    """Test the Lipschitz constant of the logistic loss gradient."""
     X, _, _, mask = _make_data(rng=rng, masked=True)
     grad_weight = 0.1 * X.shape[0] * 0.0
 
@@ -157,9 +161,9 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
 @pytest.mark.parametrize(
     "estimator, standardize",
     [
-        (SpaceNetRegressor, True),
-        (SpaceNetRegressor, False),
-        (SpaceNetClassifier, True),
+        (SpaceNetRegressor, "zscore_sample"),
+        (SpaceNetRegressor, None),
+        (SpaceNetClassifier, "zscore_sample"),
     ],
 )
 def test_graph_net_and_tvl1_same_for_pure_l1_spacenet(
@@ -238,9 +242,9 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
 @pytest.mark.parametrize(
     "estimator, standardize",
     [
-        (SpaceNetRegressor, True),
-        (SpaceNetRegressor, False),
-        (SpaceNetClassifier, True),
+        (SpaceNetRegressor, "zscore_sample"),
+        (SpaceNetRegressor, None),
+        (SpaceNetClassifier, "zscore_sample"),
     ],
 )
 def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
@@ -277,7 +281,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
 
 @pytest.mark.slow
 @pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
-@pytest.mark.parametrize("standardize", [True, False])
+@pytest.mark.parametrize("standardize", ["zscore_sample", None])
 def test_graph_net_and_tv_same_for_pure_l1_spacenet_regressor(
     standardize, decimal=1
 ):
@@ -315,6 +319,7 @@ def test_graph_net_and_tv_same_for_pure_l1_spacenet_regressor(
 @pytest.mark.parametrize("penalty", ["graph-net", "tv-l1"])
 @pytest.mark.parametrize("cls", [SpaceNetRegressor, SpaceNetClassifier])
 def test_coef_shape(penalty, cls):
+    """Test that SpaceNet estimators expose a coef_ per class/target."""
     iris = load_iris()
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, (2, 2, 2))
@@ -324,7 +329,6 @@ def test_coef_shape(penalty, cls):
         max_iter=3,
         penalty=penalty,
         alphas=1.0,
-        standardize="zscore_sample",
     ).fit(X, y)
 
     assert model.coef_.ndim == 2

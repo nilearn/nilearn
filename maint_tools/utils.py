@@ -73,7 +73,7 @@ def list_nodes(
 ) -> list[ast.ClassDef] | list[ast.FunctionDef]:
     """Return AST of the nodes in a module."""
     if isinstance(file, Path):
-        with file.open() as f:
+        with file.open(encoding="utf-8") as f:
             module = ast.parse(f.read())
     else:
         module = file
@@ -112,3 +112,16 @@ for subpackage in nilearn.__all__:
             submod = importlib.import_module(f"nilearn.{subpackage}.{x}")
             if hasattr(submod, "__all__"):
                 public_api.extend(submod.__all__)
+
+
+try:
+    # ---------------- TESTS ----------------
+
+    def test_list_modules():
+        """Smoke test for list_modules."""
+        filenames = list_modules(
+            skip_private=True, folders_to_skip=["data", "tests"]
+        )
+        assert len(filenames) == 104
+except Exception:
+    ...

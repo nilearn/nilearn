@@ -60,55 +60,22 @@ Install
 Latest release
 --------------
 
-**1. Setup a virtual environment**
-
-We recommend that you install ``nilearn`` in a virtual Python environment,
-either managed with the standard library ``venv`` or with ``conda``
-(see `miniconda <https://docs.conda.io/en/latest/miniconda.html>`_ for instance).
-Either way, create and activate a new python environment.
-
-With ``venv``:
-
-.. code-block:: bash
-
-    python3 -m venv /<path_to_new_env>
-    source /<path_to_new_env>/bin/activate
-
-Windows users should change the last line to ``\<path_to_new_env>\Scripts\activate.bat``
-in order to activate their virtual environment.
-
-With ``conda``:
-
-.. code-block:: bash
-
-    conda create -n nilearn python=3.10
-    conda activate nilearn
-
-**2. Install nilearn with pip**
-
+The easiest way to install Nilearn is using pip.
 Execute the following command in the command prompt / terminal
 in the proper python environment:
 
 .. code-block:: bash
 
-    python -m pip install -U nilearn
+    python -m pip install nilearn
+
+Please find all installation instructions
+`on our install page <https://nilearn.github.io/dev/install.html>`_.
 
 Development version
 -------------------
 
 Please find all development setup instructions in the
-`contribution guide <https://nilearn.github.io/stable/development.html#setting-up-your-environment>`_.
-
-Check installation
-------------------
-
-Try importing nilearn in a python / iPython session:
-
-.. code-block:: python
-
-    import nilearn
-
-If no error is raised, you have installed nilearn correctly.
+`contribution guide <https://nilearn.github.io/dev/development.html#setting-up-your-environment>`_.
 
 Drop-in Hours
 =============
@@ -120,21 +87,27 @@ least one member of the core-developer team is available. These events are held
 on `Jitsi Meet <https://meet.jit.si/nilearn-drop-in-hours>`_ and are fully open,
 anyone is welcome to join!
 For more information and ways to engage with the Nilearn team see
-`How to get help <https://nilearn.github.io/stable/development.html#how-to-get-help>`_.
+`How to get help <https://nilearn.github.io/dev/development.html#how-to-get-help>`_.
 
 Dependencies
 ============
 
-The required dependencies to use the software are listed
+The required dependencies to use Nilearn are listed
 in the file `pyproject.toml <https://github.com/nilearn/nilearn/blob/main/pyproject.toml>`_.
 
-If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.8.0 is required.
+If you are using Nilearn plotting functionalities or running the examples, ``matplotlib`` is required.
 
-Some plotting functions in Nilearn support both matplotlib and plotly as plotting engines.
+Some plotting functions in Nilearn require both matplotlib and plotly as plotting engines.
 In order to use the plotly engine in these functions,
 you will need to install both plotly and kaleido, which can both be installed with pip and anaconda.
 
-If you want to run the tests, you need pytest >= 6.0.0 and pytest-cov for coverage reporting.
+Please find all installation instructions
+`on our install page <https://nilearn.github.io/dev/install.html>`_.
+
+If you want to run the tests,
+extra dependencies (such as ``pytest`` and ``pytest-cov``) are required.
+See our `development setup instructions <https://nilearn.github.io/dev/development.html#setting-up-your-environment>`_
+to know how to install them.
 
 Development
 ===========

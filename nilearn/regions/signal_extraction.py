@@ -6,8 +6,10 @@ or as weights in one image per region (maps).
 """
 
 import warnings
+from functools import partial
 
 import numpy as np
+from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from scipy import linalg, ndimage
 
@@ -115,7 +117,6 @@ def _get_labels_data(
     mask_img=None,
     background_label=0,
     dim=None,
-    keep_masked_labels=False,
 ):
     """Get the label data.
 
@@ -146,7 +147,6 @@ def _get_labels_data(
     dim : :obj:`int`, default=None
         Integer slices mask for a specific dimension.
 
-    %(keep_masked_labels)s
 
     Returns
     -------
@@ -169,18 +169,6 @@ def _get_labels_data(
 
     labels_data = safe_get_data(labels_img, ensure_finite=True)
 
-    if keep_masked_labels:
-        labels = list(np.unique(labels_data))
-        # TODO (nilearn >= 0.15.0)
-        warnings.warn(
-            (
-                "In version 0.15.0, "
-                '"keep_masked_labels" parameter will be removed.'
-            ),
-            FutureWarning,
-            stacklevel=find_stack_level(),
-        )
-
     # Consider only data within the mask
     use_mask = _check_shape_and_affine_compatibility(target_img, mask_img, dim)
     if use_mask:
@@ -188,12 +176,19 @@ def _get_labels_data(
         mask_data = safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
         labels_before_mask = {int(label) for label in np.unique(labels_data)}
+
         # Applying mask on labels_data
         labels_data[np.logical_not(mask_data)] = background_label
         labels_after_mask = {int(label) for label in np.unique(labels_data)}
         labels_diff = labels_before_mask.difference(labels_after_mask)
+
         # Raising a warning if any label is removed due to the mask
-        if labels_diff and not keep_masked_labels:
+        if labels_diff:
+            if len(labels_after_mask) == 1:
+                raise ValueError(
+                    "No label left after applying mask to the labels image."
+                )
+
             warnings.warn(
                 "After applying mask to the labels image, "
                 "the following labels were "
@@ -205,8 +200,7 @@ def _get_labels_data(
                 stacklevel=find_stack_level(),
             )
 
-    if not keep_masked_labels:
-        labels = list(np.unique(labels_data))
+    labels = list(np.unique(labels_data))
 
     if background_label in labels:
         labels.remove(background_label)
@@ -214,7 +208,6 @@ def _get_labels_data(
     return labels, labels_data
 
 
-# FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 @fill_doc
 def img_to_signals_labels(
     imgs,
@@ -223,9 +216,8 @@ def img_to_signals_labels(
     background_label=0,
     order="F",
     strategy="mean",
-    keep_masked_labels=False,
-    return_masked_atlas=True,
-):
+    n_jobs=1,
+) -> tuple[np.ndarray, list, Nifti1Image]:
     """Extract region signals from image.
 
     This function is applicable to regions defined by labels.
@@ -250,26 +242,14 @@ def img_to_signals_labels(
         as background (i.e. no region).
 
     background_label : number, default=0
-        Number representing background in labels_img.
+        Number representing background in ``labels_img``.
 
     order : :obj:`str`, default='F'
         Ordering of output array ("C" or "F").
 
     %(strategy)s
 
-    %(keep_masked_labels)s
-
-    return_masked_atlas : :obj:`bool`, default=True
-        If True, the masked atlas is returned.
-
-        .. nilearn_versionchanged :: 0.13.1
-
-            Default changed to True.
-
-        .. nilearn_deprecated:: 0.13.0
-
-            This parameter will be removed in versions >= 0.15.0
-            and the masked atlas will always be returned.
+    %(n_jobs)s
 
     Returns
     -------
@@ -283,8 +263,10 @@ def img_to_signals_labels(
         Corresponding labels for each signal. signal[:, n] was extracted from
         the region with label labels[n].
 
-    masked_atlas : Niimg-like object
+    masked_atlas : :class:`nibabel.nifti1.Nifti1Image`
         Regions definition as labels after applying the mask.
+        If no ``mask_img`` has been passed,
+        then this will be the same as the input ``labels_img``.
 
     See Also
     --------
@@ -292,6 +274,41 @@ def img_to_signals_labels(
     nilearn.regions.img_to_signals_maps
     nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels images
         e.g. clusters
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nibabel import Nifti1Image
+    >>> from nilearn.regions.signal_extraction import img_to_signals_labels
+    >>>
+    >>> # Create a label image with definitions for 3 regions.
+    >>> labels_data = np.array(
+    ...     [[[1, 2], [1, 2]], [[3, 3], [3, 3]]], dtype=np.int32
+    ... )
+    >>> labels_img = Nifti1Image(labels_data, np.eye(4))
+    >>>
+    >>> # Create data where the average values of regions 1, 2, 3
+    >>> # is 0, 1 and 2 respectively.
+    >>> img_data = np.asarray(
+    ...     [
+    ...         [[[0.3], [0.1]], [[-0.3], [1.9]]],
+    ...         [[[2.0], [2.0]], [[2.0], [2.0]]],
+    ...     ]
+    ... )
+    >>> img = Nifti1Image(img_data, np.eye(4))
+    >>>
+    >>> # Extract mean region signals from the image.
+    >>> mean_signals, _, _ = img_to_signals_labels(img, labels_img)
+    >>> mean_signals
+    array([[0., 1., 2.]])
+    >>>
+    >>> # We could also extract some other statistics
+    >>> # (like the maximum) from each region.
+    >>> maximum_signals, _, _ = img_to_signals_labels(
+    ...     img, labels_img, strategy="maximum"
+    ... )
+    >>> maximum_signals
+    array([[0.3, 1.9, 2. ]])
 
     """
     check_params(locals())
@@ -308,51 +325,28 @@ def img_to_signals_labels(
         labels_img,
         mask_img,
         background_label,
-        keep_masked_labels=keep_masked_labels,
     )
 
     data = safe_get_data(imgs, ensure_finite=True)
     target_datatype = np.float32 if data.dtype == np.float32 else np.float64
     # Nilearn issue: 2135, PR: 2195 for why this is necessary.
-    signals = np.ndarray(
-        (data.shape[-1], len(labels)), order=order, dtype=target_datatype
+    reduction_function = partial(
+        getattr(ndimage, strategy), labels=labels_data, index=labels
     )
-    reduction_function = getattr(ndimage, strategy)
-    for n, img in enumerate(np.rollaxis(data, -1)):
-        signals[n] = np.asarray(
-            reduction_function(img, labels=labels_data, index=labels)
-        )
-    # Set to zero signals for missing labels. Workaround for Scipy behavior
-    if keep_masked_labels:
-        missing_labels = set(labels) - set(np.unique(labels_data))
-        labels_index = {l: n for n, l in enumerate(labels)}
-        for this_label in missing_labels:
-            signals[:, labels_index[this_label]] = 0
+    # Parallel reduction across samples
+    signals = Parallel(n_jobs=n_jobs)(
+        delayed(reduction_function)(img) for img in np.rollaxis(data, -1)
+    )
+    signals = np.asarray(signals, dtype=target_datatype, order=order)
 
-    if return_masked_atlas:
-        # finding the new labels image
-        masked_atlas = Nifti1Image(
-            labels_data.astype(np.int8), labels_img.affine
-        )
-        return signals, labels, masked_atlas
-    else:
-        # TODO (nilearn >= 0.15.0)
-        warnings.warn(
-            (
-                "In version 0.15, "
-                '"return_masked_atlas" parameter will be removed '
-                "and the masked atlas will always be returned. "
-                'Set "return_masked_atlas" to True to avoid this warning.'
-            ),
-            FutureWarning,
-            stacklevel=find_stack_level(),
-        )
-        return signals, labels
+    # finding the new labels image
+    masked_atlas = Nifti1Image(labels_data.astype(np.int32), labels_img.affine)
+    return signals, labels, masked_atlas
 
 
 def signals_to_img_labels(
     signals, labels_img, mask_img=None, background_label=0, order="F"
-):
+) -> Nifti1Image:
     """Create image from region signals defined as labels.
 
     The same region signal is used for each :term:`voxel` of the
@@ -391,7 +385,7 @@ def signals_to_img_labels(
     -------
     img : :class:`nibabel.nifti1.Nifti1Image`
         Reconstructed image. dtype is that of "signals", affine and shape are
-        those of labels_img.
+        those of ``labels_img``.
 
     See Also
     --------
@@ -400,15 +394,41 @@ def signals_to_img_labels(
     nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels
         images e.g. clusters
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.regions import signals_to_img_labels
+    >>>
+    >>> # create signals with 2 time points and 3 regions
+    >>> signals = np.random.default_rng(42).standard_normal((2, 3))
+    >>> signals
+    array([[ 0.30471708, -1.03998411,  0.7504512 ],
+           [ 0.94056472, -1.95103519, -1.30217951]])
+    >>>
+    >>> # create labels image with definitions for 3 regions
+    >>> labels_data = np.array(
+    ...     [[[1, 2], [1, 2]], [[3, 3], [3, 3]]], dtype=np.int32
+    ... )
+    >>> labels_img = Nifti1Image(labels_data, np.eye(4))
+    >>>
+    >>> # create image from region signals defined as labels
+    >>> img = signals_to_img_labels(signals, labels_img)
+    >>> img_data = img.get_fdata()
+    >>> img_data
+    array([[[[ 0.30471708,  0.94056472],
+             [-1.03998411, -1.95103519]],
+            [[ 0.30471708,  0.94056472],
+             [-1.03998411, -1.95103519]]],
+           [[[ 0.7504512 , -1.30217951],
+             [ 0.7504512 , -1.30217951]],
+            [[ 0.7504512 , -1.30217951],
+             [ 0.7504512 , -1.30217951]]]])
+
     """
     labels_img = check_niimg_3d(labels_img)
 
     labels, labels_data = _get_labels_data(
-        labels_img,
-        labels_img,
-        mask_img,
-        background_label,
-        keep_masked_labels=False,
+        labels_img, labels_img, mask_img, background_label
     )
 
     signals = np.asarray(signals)
@@ -439,7 +459,9 @@ def signals_to_img_labels(
 
 
 @fill_doc
-def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
+def img_to_signals_maps(
+    imgs, maps_img, mask_img=None
+) -> tuple[np.ndarray, list[int]]:
     """Extract region signals from image.
 
     This function is applicable to regions defined by maps.
@@ -460,15 +482,13 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
         Every point outside the mask is considered
         as background (i.e. outside of any region).
 
-    %(keep_masked_maps)s
-
     Returns
     -------
     region_signals : :class:`numpy.ndarray`
         Signals extracted from each region.
         Shape is: (scans number, number of regions intersecting mask)
 
-    labels : :obj:`list`
+    maps : :obj:`list` of :obj:`int`
         maps_img[..., labels[n]] is the region that has been used to extract
         signal region_signals[:, n].
 
@@ -480,8 +500,6 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
         maps e.g. ICA
 
     """
-    check_params(locals())
-
     maps_img = check_niimg_4d(maps_img)
     imgs = check_niimg_4d(imgs)
 
@@ -489,54 +507,49 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
 
     maps_data = safe_get_data(maps_img, ensure_finite=True)
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
-    labels = np.arange(maps_data.shape[-1], dtype=int)
+    maps = np.arange(maps_data.shape[-1], dtype=int)
 
     use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
     if use_mask:
         mask_img = check_niimg_3d(mask_img)
-        labels_before_mask = {int(label) for label in labels}
-        maps_data, maps_mask, labels = _trim_maps(
+        maps_before_mask = {int(map) for map in maps}
+        maps_data, maps_mask, maps = _trim_maps(
             maps_data,
             safe_get_data(mask_img, ensure_finite=True),
-            keep_empty=keep_masked_maps,
         )
         maps_mask = as_ndarray(maps_mask, dtype=bool)
-        if keep_masked_maps:
-            # TODO (nilearn >= 0.15.0)
+
+        maps_after_mask = {int(map) for map in maps}
+        maps_diff = maps_before_mask.difference(maps_after_mask)
+
+        # Raising a warning if any map is removed due to the mask
+        if maps_diff:
+            if len(maps_after_mask) == 0:
+                raise ValueError(
+                    "No map left after applying mask to the maps image."
+                )
+
             warnings.warn(
-                'Applying "mask_img" before '
-                "signal extraction may result in empty region signals in the "
-                "output. These are currently kept.\n"
-                '"keep_masked_maps" parameter will be removed '
-                "in version 0.15. "
-                'Set "keep_masked_maps=False" to silence this warning.',
-                FutureWarning,
+                "After applying mask to the maps image, "
+                "maps with the following indices were "
+                f"removed: {maps_diff}. "
+                f"Out of {len(maps_before_mask)} maps, the "
+                "masked map image only contains "
+                f"{len(maps_after_mask)} maps.",
                 stacklevel=find_stack_level(),
             )
-        else:
-            labels_after_mask = {int(label) for label in labels}
-            labels_diff = labels_before_mask.difference(labels_after_mask)
-            # Raising a warning if any map is removed due to the mask
-            if labels_diff:
-                warnings.warn(
-                    "After applying mask to the maps image, "
-                    "maps with the following indices were "
-                    f"removed: {labels_diff}. "
-                    f"Out of {len(labels_before_mask)} maps, the "
-                    "masked map image only contains "
-                    f"{len(labels_after_mask)} maps.",
-                    stacklevel=find_stack_level(),
-                )
 
     data = safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :], data[maps_mask, :])[
         0
     ].T
 
-    return region_signals, list(labels)
+    return region_signals, list(maps)
 
 
-def signals_to_img_maps(region_signals, maps_img, mask_img=None):
+def signals_to_img_maps(
+    region_signals, maps_img, mask_img=None
+) -> Nifti1Image:
     """Create image from region signals defined as maps.
 
     region_signals, mask_img must have the same shapes and affines.
@@ -563,7 +576,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     Returns
     -------
     img : :class:`nibabel.nifti1.Nifti1Image`
-        Reconstructed image. affine and shape are those of maps_img.
+        Reconstructed image. Affine and shape are those of ``maps_img``.
 
     See Also
     --------
@@ -653,7 +666,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
         if not keep_empty and sums[n] == 0:
             continue
         trimmed_maps[mask, p] = maps[mask, n]
-        maps_mask[trimmed_maps[..., p] > 0] = 1
+        maps_mask[trimmed_maps[..., p] != 0] = 1
         p += 1
 
     indices = (

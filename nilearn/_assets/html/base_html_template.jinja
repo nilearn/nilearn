@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Nilearn - {{ page_title }}</title>
+        <link rel="icon"
+              type="image/x-icon"
+              href="https://raw.githubusercontent.com/nilearn/nilearn/main/doc/logos/favicon.ico" />
+        <meta name="viewport"
+              content="width = device-width, initial-scale = 1"
+              charset="UTF-8" />
+        {% if head_css %}
+            <!-- djlint:off --><style type="text/css">{% include "css/head.css" %}</style><!-- djlint:on -->
+        {% endif %}
+
+        {% block style %}
+        {% endblock style %}
+
+        {% block script %}
+        {% endblock script %}
+
+    </head>
+    <body>
+
+        {% block main %}
+        {% endblock main %}
+
+        {% block footer %}
+        {% endblock footer %}
+
+    </body>
+
+    {% block endscript %}
+    {% endblock endscript %}
+
+</html>

@@ -7,8 +7,6 @@ import tempfile
 import warnings
 from pathlib import Path
 
-import pytest
-
 # we use memory_profiler library for memory consumption checks
 try:
     from memory_profiler import memory_usage
@@ -34,6 +32,8 @@ except ImportError:
         """Use as a decorator to skip tests requiring memory_profiler."""
 
         def dummy_func():
+            import pytest
+
             pytest.skip("Test requires memory_profiler.")
 
         return dummy_func
@@ -56,7 +56,7 @@ def assert_memory_less_than(
     memory_limit : int
         The expected memory limit in MiB.
 
-    tolerance : float
+    tolerance : :obj:`float`
         As memory_profiler results have some variability, this adds some
         tolerance around memory_limit. Accepted values are in range [0.0, 1.0].
 
@@ -101,7 +101,7 @@ def serialize_niimg(img, gzipped=True):
 
 def write_imgs_to_path(
     *imgs,
-    file_path: None | Path = None,
+    file_path: Path | None = None,
     create_files: bool = True,
     use_wildcards: bool = False,
 ):
@@ -115,22 +115,22 @@ def write_imgs_to_path(
         Several Nifti images. Every format understood by nibabel.save is
         accepted.
 
-    file_path: pathlib.Path
+    file_path : pathlib.Path
         Output directory
 
-    create_files : bool
+    create_files : :obj:`bool`
         If True, imgs are written on disk and filenames are returned. If
         False, nothing is written, and imgs is returned as output. This is
         useful to test the two cases (filename / Nifti1Image) in the same
         loop.
 
-    use_wildcards : bool
+    use_wildcards : :obj:`bool`
         If True, and create_files is True, imgs are written on disk and a
         matching glob is returned.
 
     Returns
     -------
-    filenames : string or list of strings
+    filenames : :obj:`str` or list of strings
         Filename(s) where input images have been written. If a single image
         has been given as input, a single string is returned. Otherwise, a
         list of string is returned.
@@ -164,10 +164,20 @@ def write_imgs_to_path(
         return imgs
 
 
+def is_ci() -> bool:
+    """Return whether we are in CI."""
+    return os.environ.get("CI") is not None
+
+
 def are_tests_running() -> bool:
     """Return whether we are running the pytest test loader."""
     # https://docs.pytest.org/en/stable/example/simple.html#detect-if-running-from-within-a-pytest-run
     return os.environ.get("PYTEST_VERSION") is not None
+
+
+def baseline_generation_running() -> bool:
+    """Return whether we are running some test on the HTML output."""
+    return os.environ.get("HTML_TEST") is not None
 
 
 def skip_if_running_tests(msg="") -> None:
@@ -175,9 +185,11 @@ def skip_if_running_tests(msg="") -> None:
 
     Parameters
     ----------
-    msg : string, default=""
+    msg : :obj:`str`, default=""
         The message issued when a test is skipped.
 
     """
     if are_tests_running():
+        import pytest
+
         pytest.skip(msg, allow_module_level=True)

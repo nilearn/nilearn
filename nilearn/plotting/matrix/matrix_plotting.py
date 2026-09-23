@@ -1,9 +1,13 @@
 """Miscellaneous matrix plotting utilities."""
 
+from typing import Literal
+
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from nilearn import DEFAULT_DIVERGING_CMAP
@@ -15,7 +19,8 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
-from nilearn.plotting.displays._slicers import save_figure_if_needed
+from nilearn.nilearn_typing import ColorBar, OutputFile, Title
+from nilearn.plotting._engine_utils import save_figure_if_needed
 from nilearn.plotting.matrix._utils import (
     mask_matrix,
     pad_contrast_matrix,
@@ -27,7 +32,7 @@ from nilearn.plotting.matrix._utils import (
 
 
 def _configure_axis(
-    axes, labels, label_size: int, x_label_rotation, y_label_rotation
+    axes, labels, label_size, x_label_rotation, y_label_rotation
 ) -> None:
     """Help for plot_matrix."""
     if not labels:
@@ -47,27 +52,31 @@ def _configure_axis(
             label.set_rotation(y_label_rotation)
 
 
-def _configure_grid(axes, tri, size):
+def _configure_grid(axes, tri, size) -> None:
     """Help for plot_matrix."""
     # Different grids for different layouts
     if tri == "lower":
         for i in range(size):
             # Correct for weird mis-sizing
-            i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="gray")
-            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
+            pos = 1.001 * i
+            axes.plot(
+                [pos + 0.5, pos + 0.5], [size - 0.5, pos + 0.5], color="gray"
+            )
+            axes.plot([pos + 0.5, -0.5], [pos + 0.5, pos + 0.5], color="gray")
     elif tri == "diag":
         for i in range(size):
             # Correct for weird mis-sizing
-            i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="gray")
-            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color="gray")
+            pos = 1.001 * i
+            axes.plot(
+                [pos + 0.5, pos + 0.5], [size - 0.5, pos - 0.5], color="gray"
+            )
+            axes.plot([pos + 0.5, -0.5], [pos - 0.5, pos - 0.5], color="gray")
     else:
         for i in range(size):
             # Correct for weird mis-sizing
-            i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color="gray")
-            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
+            pos = 1.001 * i
+            axes.plot([pos + 0.5, pos + 0.5], [size - 0.5, -0.5], color="gray")
+            axes.plot([size - 0.5, -0.5], [pos + 0.5, pos + 0.5], color="gray")
 
 
 def _fit_axes(axes) -> None:
@@ -101,8 +110,18 @@ def _fit_axes(axes) -> None:
         axes.set_position(new_position)
 
 
-def _sanitize_figure_and_axes(figure, axes):
-    """Help for plot_matrix."""
+def _sanitize_figure_and_axes(figure, axes) -> tuple[Figure, Axes]:
+    """Help for plot_matrix.
+
+    Returns
+    -------
+    fig : :class:`matplotlib.figure.Figure`
+        The figure to plot on.
+
+    axes : :class:`matplotlib.axes.Axes`
+        The axes to plot on.
+
+    """
     if axes is not None and figure is not None:
         raise ValueError(
             "Parameters figure and axes cannot be specified together. "
@@ -111,12 +130,9 @@ def _sanitize_figure_and_axes(figure, axes):
     if figure is not None:
         if isinstance(figure, plt.Figure):
             fig = figure
-            if hasattr(fig, "set_layout_engine"):  # can be removed w/mpl 3.5
-                fig.set_layout_engine("constrained")
         else:
             fig = plt.figure(figsize=figure, layout="constrained")
         axes = plt.gca()
-        own_fig = True
     elif axes is None:
         fig, axes = plt.subplots(
             1,
@@ -124,42 +140,55 @@ def _sanitize_figure_and_axes(figure, axes):
             figsize=(7, 5),
             layout="constrained",
         )
-        own_fig = True
     else:
         fig = axes.figure
-        own_fig = False
-    return fig, axes, own_fig
+    return fig, axes
 
 
 def _sanitize_inputs_plot_matrix(
     mat_shape, tri, labels, reorder, figure, axes
-):
+) -> tuple[list | None, str | bool, Figure, Axes]:
     """Help for plot_matrix.
 
     This function makes sure the inputs to plot_matrix are valid.
+
+    Returns
+    -------
+    labels : :obj:`list` or None
+        The validated labels.
+
+    reorder : :obj:`str` or :obj:`bool`
+        The validated ``reorder`` value.
+
+    fig : :class:`matplotlib.figure.Figure`
+        The figure to plot on.
+
+    axes : :class:`matplotlib.axes.Axes`
+        The axes to plot on.
+
     """
     sanitize_tri(tri)
     labels = sanitize_labels(mat_shape, labels)
     reorder = sanitize_reorder(reorder)
-    fig, axes, own_fig = _sanitize_figure_and_axes(figure, axes)
-    return labels, reorder, fig, axes, own_fig
+    fig, axes = _sanitize_figure_and_axes(figure, axes)
+    return labels, reorder, fig, axes
 
 
 @fill_doc
 def plot_matrix(
     mat,
-    title=None,
+    title: Title = None,
     labels=None,
     figure=None,
     axes=None,
-    colorbar=True,
+    colorbar: ColorBar = True,
     cmap=DEFAULT_DIVERGING_CMAP,
-    tri="full",
-    auto_fit=True,
-    grid=False,
-    reorder=False,
+    tri: Literal["full", "lower", "diag"] = "full",
+    auto_fit: bool = True,
+    grid: bool = False,
+    reorder: bool = False,
     **kwargs,
-):
+) -> Axes:
     """Plot the given matrix.
 
     Parameters
@@ -193,7 +222,7 @@ def plot_matrix(
             Specifying both axes and figure is not allowed.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     %(cmap)s
         default="RdBu_r"
@@ -201,9 +230,9 @@ def plot_matrix(
     tri : {'full', 'lower', 'diag'}, default='full'
         Which triangular part of the matrix to plot:
 
-            - 'lower': Plot the lower part
-            - 'diag': Plot the lower part with the diagonal
-            - 'full': Plot the full matrix
+        - 'lower': Plot the lower part
+        - 'diag': Plot the lower part with the diagonal
+        - 'full': Plot the full matrix
 
 
     auto_fit : :obj:`bool`, default=True
@@ -220,9 +249,6 @@ def plot_matrix(
         Accepted linkage options for the clustering are 'single',
         'complete', and 'average'. True defaults to average linkage.
 
-        .. note::
-            This option is only available with SciPy >= 1.0.0.
-
         .. nilearn_versionadded:: 0.4.1
 
     kwargs : extra keyword arguments, optional
@@ -233,13 +259,30 @@ def plot_matrix(
     display : :class:`matplotlib.axes.Axes`
         Axes image.
 
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>>
+        >>> from nilearn.plotting import plot_matrix, show
+        >>>
+        >>> rng =  np.random.default_rng(0)
+        >>> matrix = rng.normal(size=(10, 10))
+        >>> vmax = np.max(np.abs(matrix.ravel()))
+        >>>
+        >>> fig = plot_matrix(matrix, vmax=vmax, vmin=-vmax)
+        >>>
+        >>> show()
+
     """
     check_params(locals())
-    labels, reorder, fig, axes, _ = _sanitize_inputs_plot_matrix(
+    labels, reorder_method, fig, axes = _sanitize_inputs_plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
-    if reorder:
-        mat, labels = reorder_matrix(mat, labels, reorder)
+    if reorder_method:
+        mat, labels = reorder_matrix(mat, labels, reorder_method)
     if tri != "full":
         mat = mask_matrix(mat, tri)
 
@@ -275,8 +318,12 @@ def plot_matrix(
 
 @fill_doc
 def plot_contrast_matrix(
-    contrast_def, design_matrix, colorbar=True, axes=None, output_file=None
-):
+    contrast_def,
+    design_matrix,
+    colorbar: ColorBar = True,
+    axes=None,
+    output_file: OutputFile = None,
+) -> Axes:
     """Create plot for :term:`contrast` definition.
 
     Parameters
@@ -294,7 +341,7 @@ def plot_contrast_matrix(
         Design matrix to use.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     axes : :class:`matplotlib.axes.Axes` or None, default=None
         Axis on which to plot the figure.
@@ -306,6 +353,7 @@ def plot_contrast_matrix(
     -------
     axes : :class:`matplotlib.axes.Axes`
         Figure object.
+
 
     """
     check_params(locals())
@@ -345,21 +393,22 @@ def plot_contrast_matrix(
         fig = axes.figure
         fig.colorbar(mat, fraction=0.025, pad=0.04)
 
-    return save_figure_if_needed(axes, output_file)
+    save_figure_if_needed(axes.figure, output_file)
+    return axes
 
 
 @fill_doc
 def plot_design_matrix(
     design_matrix,
-    rescale=True,
+    rescale: bool = True,
     axes=None,
-    output_file=None,
-):
+    output_file: OutputFile = None,
+) -> Axes:
     """Plot a design matrix.
 
     Parameters
     ----------
-    design matrix : :class:`pandas.DataFrame` or \
+    design_matrix : :class:`pandas.DataFrame` or \
                     :obj:`str` or :obj:`pathlib.Path` to a TSV event file
         Describes a design matrix.
 
@@ -375,6 +424,33 @@ def plot_design_matrix(
     -------
     axes : :class:`matplotlib.axes.Axes`
         The axes used for plotting.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>> from pandas import DataFrame
+        >>> from nilearn.glm.first_level import make_first_level_design_matrix
+        >>> from nilearn.plotting import plot_design_matrix, show
+        >>>
+        >>> # creating a design matrix
+        >>> frame_times = np.arange(9)
+        >>> onsets = np.arange(9)
+        >>> duration = np.linspace(1, 9, 9)
+        >>> trial_type = ["ET_0", "ET_0", "ET_0",
+        ...             "ET_1", "ET_1", "ET_1",
+        ...             "ET_2", "ET_2", "ET_2"]
+        >>> events = DataFrame({"trial_type": trial_type,
+        ...                    "onset": onsets,
+        ...                    "duration": duration})
+        >>> design_matrix = make_first_level_design_matrix(frame_times, events)
+        >>>
+        >>> ax = plot_design_matrix(design_matrix)
+        >>>
+        >>> show()
+
 
     """
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
@@ -405,11 +481,14 @@ def plot_design_matrix(
     # corresponding dataframe
     axes.xaxis.tick_top()
 
-    return save_figure_if_needed(axes, output_file)
+    save_figure_if_needed(axes.figure, output_file)
+    return axes
 
 
 @fill_doc
-def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
+def plot_event(
+    model_event, cmap=None, output_file: OutputFile = None, **fig_kwargs
+) -> Figure:
     """Create plot for event visualization.
 
     .. warning::
@@ -445,6 +524,26 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     -------
     figure : :class:`matplotlib.figure.Figure`
         Plot Figure object.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import pandas as pd
+        >>>
+        >>> from nilearn.plotting import plot_event, show
+        >>>
+        >>> trial_type = ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
+        >>> onset = [0, 70, 100, 10, 30, 90, 30, 40, 60]
+        >>> duration =  [1, 5, 3] * 3
+        >>> model_event = pd.DataFrame({"onset": onset,
+        ...                             "duration": duration,
+        ...                             "trial_type": trial_type})
+        >>>
+        >>> fig = plot_event(model_event)
+        >>>
+        >>> show()
 
     """
     model_event = check_and_load_tables(model_event, "model_event")
@@ -527,18 +626,19 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     axes.set_yticks(np.arange(n_runs) + 0.5)
     axes.set_yticklabels(np.arange(n_runs) + 1)
 
-    return save_figure_if_needed(figure, output_file)
+    save_figure_if_needed(figure, output_file)
+    return figure
 
 
 @fill_doc
 def plot_design_matrix_correlation(
     design_matrix,
-    tri="full",
+    tri: Literal["full", "diag"] = "full",
     cmap=DEFAULT_DIVERGING_CMAP,
-    colorbar=True,
-    output_file=None,
+    colorbar: ColorBar = True,
+    output_file: OutputFile = None,
     **kwargs,
-):
+) -> Axes:
     """Compute and plot the correlation between regressor of a design matrix.
 
     The drift and constant regressors are omitted from the plot.
@@ -580,6 +680,34 @@ def plot_design_matrix_correlation(
     -------
     display : :class:`matplotlib.axes.Axes`
         Axes image.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>> from pandas import DataFrame
+        >>> from nilearn.glm.first_level import make_first_level_design_matrix
+        >>> from nilearn.plotting import plot_design_matrix_correlation
+        >>> from nilearn.plotting.image.img_plotting import show
+        >>>
+        >>> #creating a design matrix
+        >>>
+        >>> frame_times = np.arange(25)
+        >>> onsets = np.arange(9)
+        >>> duration = np.linspace(1, 9, 9)
+        >>> trial_type = ["ET_0", "ET_0", "ET_0",
+        ...               "ET_1", "ET_1", "ET_1",
+        ...               "ET_2", "ET_2", "ET_2"]
+        >>> events = DataFrame({"trial_type": trial_type,
+        ...                     "onset": onsets,
+        ...                     "duration": duration})
+        >>>
+        >>> design_matrix = make_first_level_design_matrix(frame_times, events)
+        >>>
+        >>> ax = plot_design_matrix_correlation(design_matrix)
+        >>> show()
     """
     check_params(locals())
 
@@ -629,4 +757,5 @@ def plot_design_matrix_correlation(
         **kwargs,
     )
 
-    return save_figure_if_needed(display, output_file)
+    save_figure_if_needed(display.figure, output_file)
+    return display

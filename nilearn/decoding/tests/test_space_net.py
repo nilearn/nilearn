@@ -14,16 +14,14 @@ from sklearn.model_selection import KFold
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_GTE_1_8
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     SpaceNetClassifier,
     SpaceNetRegressor,
-    _center_data,
     _crop_mask,
     _EarlyStoppingCallback,
     _space_net_alpha_grid,
@@ -37,6 +35,7 @@ from nilearn.decoding.space_net_solvers import (
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.image import get_data
+from nilearn.maskers import NiftiMasker
 
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
@@ -46,38 +45,16 @@ IS_CLASSIF = [True, False]
 
 PENALTY = ["graph-net", "tv-l1"]
 
-ESTIMATORS_TO_CHECK = [
-    SpaceNetClassifier(standardize="zscore_sample"),
-    SpaceNetRegressor(standardize="zscore_sample"),
-]
+ESTIMATORS_TO_CHECK = [SpaceNetClassifier(), SpaceNetRegressor()]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.slow
@@ -96,6 +73,7 @@ def test_check_estimator_nilearn(estimator, check, name):
 def test_space_net_alpha_grid(
     rng, is_classif, l1_ratio, n_alphas, n_samples=4, n_features=3
 ):
+    """Check that alpha grid matches the analytically computed alpha max."""
     X = rng.standard_normal((n_samples, n_features))
     y = np.arange(n_samples)
 
@@ -118,6 +96,7 @@ def test_space_net_alpha_grid(
 
 
 def test_space_net_alpha_grid_same_as_sk():
+    """Check alpha grid matches scikit-learn's for the default l1_ratio."""
     iris = load_iris()
     X = iris.data
     y = iris.target
@@ -129,12 +108,15 @@ def test_space_net_alpha_grid_same_as_sk():
 
 
 def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
-    # This test evolves w so that every line of th _EarlyStoppingCallback
-    # code is executed a some point. This a kind of code fuzzing.
+    """Exercise every line of _EarlyStoppingCallback via code fuzzing.
+
+    This test evolves w so that every line of the _EarlyStoppingCallback
+    code is executed at some point.
+    """
     X_test = rng.standard_normal((n_samples, n_features))
     y_test = np.dot(X_test, np.ones(n_features))
     w = np.zeros(n_features)
-    escb = _EarlyStoppingCallback(X_test, y_test, False)
+    escb = _EarlyStoppingCallback(X_test, y_test, False, verbose=0)
     for counter in range(50):
         k = min(counter, n_features - 1)
         w[k] = 1
@@ -152,6 +134,7 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
 
 
 def test_screening_space_net():
+    """Check screening percentile is corrected to 100% for a small mask."""
     size = 4
     X_, *_ = create_graph_net_simulation_data(
         snr=1.0, n_samples=10, size=size, n_points=5, random_state=42
@@ -159,11 +142,11 @@ def test_screening_space_net():
     _, mask = to_niimgs(X_, [size] * 3)
 
     for verbose in [0, 1]:
-        with pytest.warns(UserWarning):
+        with pytest.warns(UserWarning, match="Brain mask is smaller than"):
             screening_percentile = adjust_screening_percentile(
                 10, mask, verbose
             )
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="Brain mask is smaller than"):
         screening_percentile = adjust_screening_percentile(10, mask)
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
@@ -171,67 +154,8 @@ def test_screening_space_net():
     assert screening_percentile == 100
 
 
-@pytest.mark.parametrize(
-    "X, y, expected_X, expected_y, expected_y_mean",
-    [
-        # all zeros
-        (
-            np.zeros((3, 2)),
-            np.array([1, 2, 3]),
-            np.zeros((3, 2)),
-            np.array([-1, 0, 1]),
-            2,
-        ),
-        # constant value
-        (
-            np.array([[5, 5], [5, 5], [5, 5]]),
-            np.array([10, 10, 10]),
-            np.zeros((3, 2)),
-            np.zeros(3),
-            10,
-        ),
-        # positive-negative value
-        (
-            np.array([[1, -2], [-3, 4], [5, -6]]),
-            np.array([7, 8, 9]),
-            np.array([[0, -0.66], [-4, 5.33], [4, -4.66]]),
-            np.array([-1, 0, 1]),
-            8,
-        ),
-        # single feature
-        (
-            np.array([[1], [2], [3]]),
-            np.array([1, 2, 3]),
-            np.array([[-1], [0], [1]]),
-            np.array([-1, 0, 1]),
-            2,
-        ),
-        # single sample
-        (
-            np.array([[42, 43]]),
-            np.array([99]),
-            np.zeros((1, 2)),
-            np.array([0]),
-            99,
-        ),
-        # already centered
-        (
-            np.array([[-1, 1], [0, 0], [1, -1]]),
-            np.array([-1, 0, 1]),
-            np.array([[-1, 1], [0, 0], [1, -1]]),
-            np.array([-1, 0, 1]),
-            0,
-        ),
-    ],
-)
-def test_center_data(X, y, expected_X, expected_y, expected_y_mean):
-    tmp = _center_data(X, y)
-    np.testing.assert_allclose(tmp[0], expected_X, rtol=1e-2, atol=1e-2)
-    np.testing.assert_allclose(tmp[1], expected_y)
-    assert tmp[2] == expected_y_mean
-
-
 def test_logistic_path_scores():
+    """Check logistic path scores shape and returned coefficients length."""
     iris = load_iris()
     X, y = iris.data, iris.target
     _, mask = to_niimgs(X, [2, 2, 2])
@@ -248,6 +172,7 @@ def test_logistic_path_scores():
         np.arange(len(X)),
         np.arange(len(X)),
         {},
+        verbose=0,
     )[:2]
     test_scores = test_scores[0]
 
@@ -256,6 +181,7 @@ def test_logistic_path_scores():
 
 
 def test_squared_loss_path_scores():
+    """Check squared loss path scores shape and returned coefficients."""
     iris = load_iris()
     X, y = iris.data, iris.target
     _, mask = to_niimgs(X, [2, 2, 2])
@@ -272,6 +198,7 @@ def test_squared_loss_path_scores():
         np.arange(len(X)),
         np.arange(len(X)),
         {},
+        verbose=0,
     )[:2]
 
     test_scores = test_scores[0]
@@ -282,6 +209,7 @@ def test_squared_loss_path_scores():
 @pytest.mark.parametrize("l1_ratio", [0.99])
 @pytest.mark.parametrize("debias", [True])
 def test_tv_regression_simple(rng, l1_ratio, debias):
+    """Smoke test fitting SpaceNetRegressor with tv-l1 penalty."""
     dim = (4, 4, 4)
     W_init = np.zeros(dim)
     W_init[2:3, 1:2, -2:] = 1
@@ -301,7 +229,6 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
         penalty="tv-l1",
         max_iter=10,
         debias=debias,
-        standardize="zscore_sample",
     ).fit(X, y)
 
 
@@ -336,7 +263,7 @@ def test_space_net_classifier_invalid_loss(rng):
         mask=mask,
         alphas=alphas,
         tol=1e-10,
-        standardize=False,
+        standardize=None,
         screening_percentile=100.0,
         loss="logistic",
     ).fit(X_, y)
@@ -345,7 +272,7 @@ def test_space_net_classifier_invalid_loss(rng):
         mask=mask,
         alphas=alphas,
         tol=1e-10,
-        standardize=False,
+        standardize=None,
         screening_percentile=100.0,
         loss="mse",
     ).fit(X_, y)
@@ -355,7 +282,7 @@ def test_space_net_classifier_invalid_loss(rng):
             mask=mask,
             alphas=alphas,
             tol=1e-10,
-            standardize=False,
+            standardize=None,
             screening_percentile=100.0,
             loss="bar",
         ).fit(X_, y)
@@ -380,6 +307,7 @@ def test_string_params_case(rng, penalty_wrong_case, estimator):
 
 @pytest.mark.parametrize("l1_ratio", [0.01, 0.5, 0.99])
 def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
+    """Smoke test fitting SpaceNetRegressor with tv-l1 on a 3D image."""
     dim = (3, 4, 5)
     W_init = np.zeros(dim)
     W_init[2:3, 3:, 1:3] = 1
@@ -398,12 +326,12 @@ def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
         l1_ratios=l1_ratio,
         penalty="tv-l1",
         max_iter=10,
-        standardize="zscore_sample",
     ).fit(X, y)
 
 
 @pytest.mark.slow
 def test_graph_net_classifier_score():
+    """Check SpaceNetClassifier score matches accuracy of its predictions."""
     iris = load_iris()
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
@@ -414,7 +342,7 @@ def test_graph_net_classifier_score():
         alphas=1.0 / 0.01 / X.shape[0],
         l1_ratios=1.0,
         tol=1e-10,
-        standardize=False,
+        standardize=None,
         screening_percentile=100.0,
     ).fit(X_, y)
 
@@ -436,15 +364,16 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
     X_, mask = to_niimgs(X, (2, 2, 2))
+    masker = NiftiMasker(mask_img=mask).fit()
 
     tvl1 = SpaceNetClassifier(
-        mask=mask,
+        mask=masker,
         alphas=1.0 / C / X.shape[0],
         l1_ratios=1.0,
         tol=tol,
         max_iter=1000,
         penalty="tv-l1",
-        standardize=False,
+        standardize=None,
         screening_percentile=100.0,
     ).fit(X_, y)
 
@@ -488,7 +417,6 @@ def test_lasso_vs_graph_net():
         l1_ratios=1,
         penalty="graph-net",
         max_iter=100,
-        standardize="zscore_sample",
     )
     lasso.fit(X_, y)
     graph_net.fit(X, y)
@@ -501,6 +429,7 @@ def test_lasso_vs_graph_net():
 
 
 def test_crop_mask(rng):
+    """Check that _crop_mask tightens the mask without losing voxels."""
     mask = np.zeros((3, 4, 5), dtype=bool)
     box = mask[:2, :3, :4]
     box[rng.random(box.shape) < 3.0] = 1  # mask covers 30% of brain
@@ -516,6 +445,7 @@ def test_crop_mask(rng):
 def test_univariate_feature_screening(
     rng, is_classif, dim=(11, 12, 13), n_samples=10
 ):
+    """Check univariate feature screening keeps a subset of features."""
     mask = rng.random(dim) > 100.0 / np.prod(dim)
 
     assert mask.sum() >= 100.0
@@ -541,6 +471,7 @@ def test_univariate_feature_screening(
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 def test_space_net_alpha_grid_pure_spatial(rng, is_classif):
+    """Check alpha grid has no NaN when l1_ratio=0 (pure spatial penalty)."""
     X = rng.standard_normal((10, 100))
     y = np.arange(X.shape[0])
 
@@ -553,6 +484,7 @@ def test_space_net_alpha_grid_pure_spatial(rng, is_classif):
 
 @pytest.mark.parametrize("mask_empty", [np.array([]), np.zeros((2, 2, 2))])
 def test_crop_mask_empty_mask(mask_empty):
+    """Raise error when _crop_mask is given an empty mask."""
     with pytest.raises(ValueError, match=r"Empty mask:."):
         _crop_mask(mask_empty)
 
@@ -565,37 +497,8 @@ def test_space_net_one_alpha_no_crash(model):
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, [2, 2, 2])
 
-    model(n_alphas=1, mask=mask, standardize="zscore_sample").fit(X, y)
-    model(
-        n_alphas=2,
-        mask=mask,
-        alphas=None,
-        standardize="zscore_sample",
-    ).fit(X, y)
-
-
-@pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
-def test_checking_inputs_length(model):
-    iris = load_iris()
-    X, y = iris.data, iris.target
-    y = 2 * (y > 0) - 1
-    X_, mask = to_niimgs(X, (2, 2, 2))
-
-    # Remove ten samples from y
-    y = y[:-10]
-
-    with pytest.raises(ValueError, match="inconsistent numbers of samples"):
-        model(
-            mask=mask,
-            alphas=1.0 / 0.01 / X.shape[0],
-            l1_ratios=1.0,
-            tol=1e-10,
-            screening_percentile=100.0,
-            standardize="zscore_sample",
-        ).fit(
-            X_,
-            y,
-        )
+    model(n_alphas=1, mask=mask).fit(X, y)
+    model(n_alphas=2, mask=mask, alphas=None).fit(X, y)
 
 
 def test_targets_in_y_space_net_regressor():
@@ -605,7 +508,7 @@ def test_targets_in_y_space_net_regressor():
     y = np.ones(iris.target.shape)
 
     imgs, mask = to_niimgs(X, (2, 2, 2))
-    regressor = SpaceNetRegressor(mask=mask, standardize="zscore_sample")
+    regressor = SpaceNetRegressor(mask=mask)
 
     with pytest.raises(
         ValueError, match="The given input y must have at least 2 targets"

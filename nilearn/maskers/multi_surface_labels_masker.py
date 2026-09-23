@@ -1,5 +1,7 @@
 """Extract data from multiple 2D surface objects."""
 
+from typing import Self
+
 from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
@@ -58,7 +60,7 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -74,6 +76,10 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
     %(high_pass)s
 
     %(t_r)s
+
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
 
     %(memory)s
 
@@ -127,13 +133,14 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         high_variance_confounds=False,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         n_jobs=1,
@@ -143,26 +150,6 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         cmap=DEFAULT_SEQUENTIAL_CMAP,
         clean_args=None,
     ):
-        self.labels_img = labels_img
-        self.labels = labels
-        self.lut = lut
-        self.background_label = background_label
-        self.mask_img = mask_img
-        self.smoothing_fwhm = smoothing_fwhm
-        self.standardize = standardize
-        self.standardize_confounds = standardize_confounds
-        self.high_variance_confounds = high_variance_confounds
-        self.detrend = detrend
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.memory = memory
-        self.memory_level = memory_level
-        self.verbose = verbose
-        self.strategy = strategy
-        self.reports = reports
-        self.cmap = cmap
-        self.clean_args = clean_args
         super().__init__(
             labels_img=labels_img,
             labels=labels,
@@ -177,6 +164,7 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
@@ -188,7 +176,7 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         self.n_jobs = n_jobs
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -207,10 +195,11 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         """
         del y
         check_params(self.__dict__)
+        self._check_dtype()
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         if imgs is not None:
             self._check_imgs(imgs)

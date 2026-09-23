@@ -5,48 +5,28 @@ from numpy.testing import assert_array_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.maskers import SurfaceLabelsMasker
 from nilearn.maskers.tests.conftest import sklearn_surf_label_img
 from nilearn.surface import SurfaceImage
 
-ESTIMATORS_TO_CHECK = [SurfaceLabelsMasker(sklearn_surf_label_img())]
-
-if SKLEARN_LT_1_6:
-
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+ESTIMATORS_TO_CHECK = [
+    SurfaceLabelsMasker(sklearn_surf_label_img()),
+    SurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
+]
 
 
-@pytest.mark.slow
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -69,6 +49,7 @@ def test_fit(surf_label_img):
     assert masker.region_ids_ == {"background": 0, 0: 1}
 
 
+@pytest.mark.thread_unsafe
 def test_fit_transform(surf_label_img, surf_img_1d):
     """Test transform does not return any value for the background.
 
@@ -79,6 +60,43 @@ def test_fit_transform(surf_label_img, surf_img_1d):
 
     assert masker.n_elements_ == 1
     assert signal.size == masker.n_elements_
+
+
+def test_no_label_error(surf_mesh):
+    """Raise an error at fit time if the image has no label."""
+    label_img = SurfaceImage(
+        mesh=surf_mesh,
+        data={
+            "left": np.asarray([0, 0, 0, 0]),
+            "right": np.asarray([0, 0, 0, 0, 0]),
+        },
+    )
+    masker = SurfaceLabelsMasker(label_img)
+    with pytest.raises(ValueError, match="Image has no label"):
+        masker.fit()
+
+
+def test_all_labels_masked_error(surf_mesh):
+    """Raise an error at fit time all labels are masked by mask_img."""
+    label_img = SurfaceImage(
+        mesh=surf_mesh,
+        data={
+            "left": np.asarray([1, 1, 0, 0]),
+            "right": np.asarray([1, 1, 0, 0, 0]),
+        },
+    )
+    mask_img = SurfaceImage(
+        mesh=surf_mesh,
+        data={
+            "left": np.asarray([0, 0, 1, 1]),
+            "right": np.asarray([0, 0, 1, 1, 1]),
+        },
+    )
+    masker = SurfaceLabelsMasker(label_img, mask_img=mask_img)
+    with pytest.raises(
+        ValueError, match="Image has no label left after masking"
+    ):
+        masker.fit()
 
 
 @pytest.mark.parametrize("labels", [["Background", "bar"], ["bar"]])
@@ -227,7 +245,9 @@ def test_label_image_no_background_missing_regions(
     label_img = SurfaceImage(surf_mesh, data)
 
     labels_masker = SurfaceLabelsMasker(
-        labels_img=label_img, background_label=background_label, **kwargs
+        labels_img=label_img,
+        background_label=background_label,
+        **kwargs,
     ).fit()
 
     if "lut" in kwargs:
@@ -343,7 +363,7 @@ def test_transform_with_mask(surf_mesh, surf_img_2d):
 
 
 @pytest.fixture
-def polydata_labels():
+def polydata_labels() -> dict[str, np.ndarray]:
     """Return polydata with 4 regions."""
     return {
         "left": np.asarray([2, 0, 10, 1]),
@@ -352,7 +372,7 @@ def polydata_labels():
 
 
 @pytest.fixture
-def expected_mean_value():
+def expected_mean_value() -> dict[str, int]:
     """Return expected values for some specific labels."""
     return {
         "1": 5,
@@ -363,7 +383,7 @@ def expected_mean_value():
 
 
 @pytest.fixture
-def data_left_1d_with_expected_mean(rng, expected_mean_value):
+def data_left_1d_with_expected_mean(rng, expected_mean_value) -> np.ndarray:
     """Generate left data with given expected value for one sample."""
     return np.asarray(
         [
@@ -376,7 +396,7 @@ def data_left_1d_with_expected_mean(rng, expected_mean_value):
 
 
 @pytest.fixture
-def data_right_1d_with_expected_mean(rng, expected_mean_value):
+def data_right_1d_with_expected_mean(rng, expected_mean_value) -> np.ndarray:
     """Generate right data with given expected value for one sample."""
     return np.asarray(
         [
@@ -390,7 +410,7 @@ def data_right_1d_with_expected_mean(rng, expected_mean_value):
 
 
 @pytest.fixture
-def expected_signal(expected_mean_value):
+def expected_signal(expected_mean_value) -> np.ndarray:
     """Return signal extract from data with expected mean."""
     return np.asarray(
         [
@@ -403,7 +423,7 @@ def expected_signal(expected_mean_value):
 
 
 @pytest.fixture
-def inverse_data_left_1d_with_expected_mean(expected_mean_value):
+def inverse_data_left_1d_with_expected_mean(expected_mean_value) -> np.ndarray:
     """Return inversed left data with given expected value for one sample."""
     return np.asarray(
         [
@@ -416,7 +436,9 @@ def inverse_data_left_1d_with_expected_mean(expected_mean_value):
 
 
 @pytest.fixture
-def inverse_data_right_1d_with_expected_mean(expected_mean_value):
+def inverse_data_right_1d_with_expected_mean(
+    expected_mean_value,
+) -> np.ndarray:
     """Return inversed right data with given expected value for one sample."""
     return np.asarray(
         [

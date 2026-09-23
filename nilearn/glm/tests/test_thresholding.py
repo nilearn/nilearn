@@ -25,6 +25,7 @@ from nilearn.surface.surface import get_data as get_surf_data
 
 
 def test_fdr(rng):
+    """Check fdr_threshold matches the expected inverse survival value."""
     n = 100
     x = np.linspace(0.5 / n, 1.0 - 0.5 / n, n)
     x[:10] = 0.0005
@@ -43,6 +44,7 @@ def test_fdr(rng):
 
 
 def test_fdr_error(rng):
+    """Raise error for alpha outside [0, 1]."""
     n = 100
     x = np.linspace(0.5 / n, 1.0 - 0.5 / n, n)
     x[:10] = 0.0005
@@ -56,13 +58,14 @@ def test_fdr_error(rng):
         fdr_threshold(x, 1.5)
 
 
-def _data_norm_isf(shape):
+def _data_norm_isf(shape) -> np.ndarray:
     p = np.prod(shape)
     return norm.isf(np.linspace(1.0 / p, 1.0 - 1.0 / p, p)).reshape(shape)
 
 
 @pytest.fixture
-def data_norm_isf(shape_3d_default):
+def data_norm_isf(shape_3d_default) -> np.ndarray:
+    """Return normal inverse survival function data of default 3D shape."""
     return _data_norm_isf(shape_3d_default)
 
 
@@ -86,10 +89,10 @@ def test_threshold_stats_img_warn_threshold_unused(
         assert any("is not used with" in str(x) for x in warnings_list)
 
 
-@pytest.mark.slow
 def test_threshold_stats_img_no_height_control(
     data_norm_isf, img_3d_ones_eye, affine_eye
 ):
+    """Check threshold_stats_img with height_control=None and no map."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -142,6 +145,7 @@ def test_threshold_stats_img_no_height_control(
 def test_threshold_stats_img_error_height_control(
     data_norm_isf, img_3d_ones_eye, affine_eye
 ):
+    """Raise error for invalid height_control value."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -168,8 +172,8 @@ def test_threshold_stats_img_error_cluster_threshold(
         )
 
 
-@pytest.mark.slow
 def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
+    """Check threshold_stats_img with various height_control values."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -221,6 +225,7 @@ def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
 
 
 def test_threshold_stats_img_errors(img_3d_rand_eye):
+    """Raise errors for invalid stat_img, height_control, and threshold."""
     with pytest.raises(ValueError, match="'stat_img' cannot be None"):
         threshold_stats_img(None, None, alpha=0.05, height_control="fdr")
 
@@ -274,7 +279,6 @@ def test_hommel(alpha, expected):
     assert _compute_hommel_value(z, alpha=alpha) == expected
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, expected, expected_n_unique_values",
@@ -291,6 +295,7 @@ def test_hommel(alpha, expected):
 def test_all_resolution_inference(
     data_norm_isf, affine_eye, kwargs, expected, expected_n_unique_values
 ):
+    """Check cluster_level_inference with various threshold kwargs."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -351,6 +356,7 @@ def test_all_resolution_inference_surface(
 def test_all_resolution_inference_with_mask(
     img_3d_ones_eye, affine_eye, data_norm_isf
 ):
+    """Check cluster_level_inference with a mask_img."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -366,7 +372,6 @@ def test_all_resolution_inference_with_mask(
     assert np.sum(vals > 0) == 8
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "threshold, expected_n_unique_values",
     [
@@ -416,6 +421,7 @@ def test_all_resolution_inference_surface_mask(surf_img_1d):
 
 
 def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
+    """Check cluster_level_inference detects a single active voxel."""
     data = data_norm_isf
     data[3, 6, 7] = 10
     stat_img = Nifti1Image(data, affine_eye)
@@ -429,6 +435,7 @@ def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
 def test_all_resolution_inference_one_sided(
     data_norm_isf, img_3d_ones_eye, affine_eye
 ):
+    """Check threshold_stats_img with two_sided=False."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -488,7 +495,6 @@ def test_all_resolution_inference_shape_errors(img_4d_rand_eye, surf_img_2d):
         cluster_level_inference(surf_img_2d(2), threshold=0.5)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("two_sided", [True, False])
 @pytest.mark.parametrize("control", ["fdr", "bonferroni"])
 def test_all_resolution_inference_height_control(
@@ -564,47 +570,48 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     Also check the user of cluster_threshold.
     """
     surf_img_1d.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
-    surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
+    surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 3.0])
 
     # two sided
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=2
+        surf_img_1d, height_control=None, threshold=2.1
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
     assert_equal(
-        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=2, cluster_threshold=2
+        surf_img_1d, height_control=None, threshold=2.1, cluster_threshold=2
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
     assert_equal(
-        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
     # one sided positive
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, two_sided=False
+        surf_img_1d, height_control=None, two_sided=False, threshold=3.0
     )
 
-    assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 4.0]))
+    assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
     assert_equal(
-        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
     result, _ = threshold_stats_img(
         surf_img_1d,
         height_control=None,
         two_sided=False,
-        cluster_threshold=2,
+        cluster_threshold=3,
+        threshold=3.0,
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 0.0]))
     assert_equal(
-        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
     # one sided negative
@@ -655,50 +662,3 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
     assert_equal(
         result.data.parts["right"], np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
     )
-
-
-@pytest.mark.thread_unsafe
-@pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
-@pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
-def test_deprecation_threshold(surf_img_1d, height_control, threshold):
-    """Check warning thrown when threshold==old threshold.
-
-    # TODO (nilearn >= 0.15.0)
-    # remove
-    """
-    with warnings.catch_warnings(record=True) as warning_list:
-        threshold_stats_img(
-            surf_img_1d, height_control=height_control, threshold=threshold
-        )
-
-    n_warnings = len(
-        [x for x in warning_list if issubclass(x.category, FutureWarning)]
-    )
-    if height_control is None and threshold == 3.0:
-        assert n_warnings == 1, [str(x) for x in warning_list]
-    else:
-        assert n_warnings == 0, [str(x) for x in warning_list]
-
-
-@pytest.mark.slow
-@pytest.mark.thread_unsafe
-@pytest.mark.parametrize("threshold", [3, 3.0, 2.9, DEFAULT_Z_THRESHOLD])
-def test_deprecation_threshold_cluster_level_inference(
-    threshold, img_3d_rand_eye, surf_img_1d
-):
-    """Check cluster_level_inference warns when threshold==old threshold .
-
-    # TODO (nilearn >= 0.15.0)
-    # remove
-    """
-    for stat_img in [img_3d_rand_eye, surf_img_1d]:
-        with warnings.catch_warnings(record=True) as warning_list:
-            cluster_level_inference(stat_img, threshold=threshold)
-
-        n_warnings = len(
-            [x for x in warning_list if issubclass(x.category, FutureWarning)]
-        )
-        if threshold == 3.0:
-            assert n_warnings == 1
-        else:
-            assert n_warnings == 0

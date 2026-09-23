@@ -50,6 +50,7 @@ masker = NiftiLabelsMasker(
     labels_img=atlas_filename,
     lut=look_up_table,
     standardize_confounds=True,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     verbose=1,
 )
@@ -167,7 +168,7 @@ plot_matrix(
 # that removes the index of volumes exceeding the framewise displacement and
 # standardized DVARS threshold, and all the continuous segment with less than
 # five volumes. Before applying scrubbing, it's important to access the
-# percentage of volumns scrubbed. Scrubbing is not a suitable strategy for
+# percentage of volumes scrubbed. Scrubbing is not a suitable strategy for
 # datasets with too many high motion subjects.
 # On top of the simple strategy above, let's add scrubbing to our
 # strategy.

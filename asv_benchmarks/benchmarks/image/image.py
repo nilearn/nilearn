@@ -2,7 +2,7 @@
 
 from nilearn.image import index_img, mean_img
 
-from ..utils import Benchmark, load
+from .._utils import Benchmark, load
 
 
 class LoadImgBenchmark(Benchmark):
@@ -41,11 +41,11 @@ class IndexImgBenchmark(Benchmark):
 
     def time_image_index_img(self):
         """Time the loading the image followed by indexing a voxel."""
-        index_img(self.fmri_filename, slice(1, self.length - 10, 2))
+        index_img(self.fmri_filename, slice(1, self.length - 1, 2))
 
     def peakmem_image_index_img(self):
         """Peak memory of loading the image followed by indexing a voxel."""
-        index_img(self.fmri_filename, slice(1, self.length - 10, 2))
+        index_img(self.fmri_filename, slice(1, self.length - 1, 2))
 
 
 class CompareLoad(Benchmark):

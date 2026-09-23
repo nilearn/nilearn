@@ -1,0 +1,30 @@
+:root[data-theme="black"] {
+color-scheme: dark;
+background-color: black !important;
+color: white;
+}
+:root[data-theme="white"] {
+color-scheme: light;
+background-color: white !important;
+color: black;
+}
+body {
+margin: 0;
+height: 100vh;
+display: flex;
+flex-direction: column;
+}
+#gl {
+flex: 1;
+min-height: 0;
+width: 100%;
+}
+#page-title {
+text-align: center;
+font-size: {{ font_size }};
+font-family: Arial, sans-serif;
+}
+#toolbar {
+flex-shrink: 0;
+background: transparent;
+}
