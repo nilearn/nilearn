@@ -118,7 +118,7 @@ svc_ova
 
 from sklearn.model_selection import GroupKFold, cross_val_score
 
-cv = GroupKFold(n_splits=5)
+cv = GroupKFold(n_splits=6)
 
 # %%
 cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=cv, groups=run, verbose=1)
