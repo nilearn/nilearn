@@ -60,6 +60,7 @@ known_dirs = sorted(
         "nilearn/connectome",
         "nilearn/mass_univariate",
         "nilearn/_assets",
+        "nilearn/_estimator_checks",
     ]
 )
 assert known_dirs == all_folders, f"\n{known_dirs=}\n{all_folders=}"
