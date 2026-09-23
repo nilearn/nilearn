@@ -142,9 +142,7 @@ from nilearn.surface.utils import (
     assert_surface_image_equal,
 )
 
-
-def nilearn_dir() -> Path:
-    return Path(__file__).parents[1]
+NILEARN_DIR = Path(__file__).parents[1]
 
 
 def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
@@ -2901,7 +2899,7 @@ def check_masker_with_confounds(estimator_orig) -> None:
 
     dataframe = pd.DataFrame(array)
 
-    confounds_path = nilearn_dir() / "tests" / "data" / "spm_confounds.txt"
+    confounds_path = NILEARN_DIR / "tests" / "data" / "spm_confounds.txt"
 
     for confounds in [array, dataframe, confounds_path, str(confounds_path)]:
         signal_2 = estimator.fit_transform(input_img, confounds=confounds)
