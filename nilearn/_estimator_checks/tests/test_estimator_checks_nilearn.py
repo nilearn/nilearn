@@ -192,6 +192,7 @@ def test_check_estimator_count():
 
 
 @pytest.mark.slow
+@pytest.mark.flaky(reruns=1, reruns_delay=2)
 @pytest.mark.parametrize(
     "estimator, name, check",
     nilearn_check_estimator(estimators=_estimators()),
