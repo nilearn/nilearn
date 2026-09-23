@@ -27,6 +27,9 @@ doc = [
     "sphinx>=7.4.7",
     "sphinx-copybutton>=0.5.2",
     "sphinx-design>=0.6.1",
+    # sphinx-prompt<1.8.0 ships its package in a "sphinx-prompt" folder
+    # that cannot be imported as "sphinx_prompt"
+    "sphinx-prompt>=1.8.0",
     "sphinxcontrib-mermaid>=1.0.0",
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",

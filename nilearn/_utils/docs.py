@@ -156,7 +156,7 @@ brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
 docdict["cbar_tick_format"] = """
 cbar_tick_format : :obj:`str`, optional
     Controls how to format the tick labels of the colorbar.
-    Ex: use "%%.2g" to display using scientific notation.
+    Ex: use ``"%.2g"`` to display using scientific notation.
 """
 
 # classifier_options
