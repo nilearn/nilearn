@@ -525,19 +525,16 @@ if with_jupyterlite:
     try_examples_global_warning_text = (
         "Running the nilearn examples in JupyterLite is experimental"
         " and you may encounter unexpected behavior.\n\n"
-        " In particular, note that imports will take a lot longer"
-        " than usual, for example the first `import nilearn` can take"
-        " roughly 10-20s.\n\nIf you notice problems, feel free to open"
-        " an [issue](https://github.com/nilearn/nilearn/issues/new/choose) "
-        "about it."
+        " In particular, note that imports may take a lot longer"
+        " than usual---for example, the first `import nilearn` can take"
+        " roughly 10-20s---and that the "
+        " version of nilearn used in Jupyterlite might not be in sync "
+        " with the one you are browsing the documentation for.\n\n"
+        " If you encounter any problems, please report them in a new"
+        " [issue](https://github.com/nilearn/nilearn/issues/new/choose)."
     )
-    # Work around https://github.com/jupyterlite/pyodide-kernel/issues/166
-    # and https://github.com/pyodide/micropip/issues/223 by installing the
-    # dependencies first, and then nilearn.
     try_examples_preamble = """
     # Jupyterlite specific code
-    import matplotlib
-    import pandas
     %pip install -q nilearn
     """
 
