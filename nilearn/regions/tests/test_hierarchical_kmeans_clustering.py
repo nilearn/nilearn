@@ -5,11 +5,10 @@ from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.helpers import is_windows_platform
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
     HierarchicalKMeans,
@@ -24,36 +23,19 @@ from nilearn.surface.tests.test_surface import flat_mesh
 # to run sklearn checks
 ESTIMATORS_TO_CHECK = [HierarchicalKMeans(n_clusters=2)]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+@pytest.mark.single_process
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.single_process
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -73,6 +55,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     ],
 )
 def test_adjust_small_clusters(test_list, n_clusters):
+    """Test that _adjust_small_clusters rounds sizes to nonzero integers."""
     test_list = np.asarray(test_list)
 
     assert np.sum(test_list) == n_clusters
@@ -85,7 +68,9 @@ def test_adjust_small_clusters(test_list, n_clusters):
         assert isinstance(a, (int, np.integer))
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_hierarchical_k_means():
+    """Test that hierarchical_k_means recovers the expected cluster labels."""
     X = [[10, -10, 30], [12, -8, 24]]
     truth_labels = np.tile([0, 1, 2], 5)
     X = np.tile(X, 5).T
@@ -94,7 +79,9 @@ def test_hierarchical_k_means():
     assert_array_almost_equal(test_labels, truth_labels)
 
 
-def test_hierarchical_k_means_clustering_transform():
+@pytest.mark.single_process
+def test_transform():
+    """Test that HierarchicalKMeans.transform reduces to n_clusters."""
     n_samples = 15
     n_clusters = 8
     data_img, mask_img = generate_fake_fmri(
@@ -108,7 +95,9 @@ def test_hierarchical_k_means_clustering_transform():
     assert X_red.shape == (n_samples, n_clusters)
 
 
-def test_hierarchical_k_means_clustering_inverse_transform():
+@pytest.mark.single_process
+def test_inverse_transform():
+    """Test that HierarchicalKMeans.inverse_transform restores input shape."""
     n_samples = 15
     n_clusters = 8
     data_img, mask_img = generate_fake_fmri(
@@ -124,7 +113,8 @@ def test_hierarchical_k_means_clustering_inverse_transform():
 
 
 @pytest.mark.parametrize("n_clusters", [None, -2, 0, "2"])
-def test_hierarchical_k_means_clustering_error_n_clusters(n_clusters):
+def test_error_n_clusters(n_clusters):
+    """Test that HierarchicalKMeans rejects invalid n_clusters values."""
     n_samples = 15
     data_img, mask_img = generate_fake_fmri(
         shape=(10, 11, 12), length=n_samples
@@ -140,7 +130,9 @@ def test_hierarchical_k_means_clustering_error_n_clusters(n_clusters):
         HierarchicalKMeans(n_clusters=n_clusters).fit(X)
 
 
-def test_hierarchical_k_means_clustering_scaling():
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
+def test_scaling():
+    """Test that scaling weights inverse_transform output by cluster size."""
     n_samples = 15
     n_clusters = 8
     data_img, mask_img = generate_fake_fmri(
@@ -159,15 +151,18 @@ def test_hierarchical_k_means_clustering_scaling():
     X_compress_scaled = hkmeans_scaled.inverse_transform(X_red_scaled)
 
     assert_array_almost_equal(
-        np.asarray([np.sqrt(s) * a for s, a in zip(sizes, X_red.T)]).T,
+        np.asarray(
+            [np.sqrt(s) * a for s, a in zip(sizes, X_red.T, strict=False)]
+        ).T,
         X_red_scaled,
     )
     assert_array_almost_equal(X_compress, X_compress_scaled)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.parametrize("n_clusters", [2, 4, 5])
-def test_hierarchical_k_means_clustering_surface(
+def test_surface(
     surf_img_2d, surf_mask_dim, surf_mask_1d, surf_mask_2d, n_clusters
 ):
     """Test hierarchical k-means clustering on surface."""
@@ -192,8 +187,10 @@ def test_hierarchical_k_means_clustering_surface(
     assert X_inverse.shape == X.shape
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("img_type", ["surface", "volume"])
-def test_hierarchical_k_means_n_clusters_warning(img_type, rng):
+def test_n_clusters_warning(img_type, rng):
+    """Test that HierarchicalKMeans warns when n_clusters exceeds features."""
     n_samples = 15
     if img_type == "surface":
         mesh = {

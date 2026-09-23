@@ -1,0 +1,63 @@
+---
+# Runs pytest on maint_tools and build_tools folders.
+#
+###
+name: test maintenance scripts
+
+on:
+    push:
+        branches:
+        -   main
+        paths:
+        -   maint_tools/**/*
+        -   build_tools/**/*
+        -   .github/workflows/test_maintenance_scripts.yml
+    pull_request:
+        branches:
+        -   '*'
+        paths:
+        -   maint_tools/**/*
+        -   build_tools/**/*
+        -   .github/workflows/test_maintenance_scripts.yml
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+# Force to use color
+env:
+    FORCE_COLOR: true
+
+jobs:
+
+    test_maintenance_scripts:
+
+        name: test maintenance scripts
+
+        runs-on: ubuntu-latest
+
+        steps:
+        -   uses: actions/checkout@v7
+            with:
+                fetch-depth: 0
+
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v7
+
+        -   name: Setup python
+            uses: actions/setup-python@v6
+            with:
+                python-version: 3.14
+
+        -   name: Install tox
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+
+        -   name: Merge with upstream
+            # build_tools/github/build_type.py's tests exercise its real
+            # main(), which shells out to "git merge-base ... upstream/main":
+            # a fresh checkout only has "origin", not "upstream", set up.
+            shell: bash -el {0}
+            run: ./build_tools/github/merge_upstream.sh
+
+        -   name: Run test suite
+            run: tox run -e test_maint_tools

@@ -5,9 +5,13 @@ from warnings import warn
 
 import numpy as np
 
-from nilearn._utils import fill_doc
-from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import is_plotly_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_parameter_in_allowed,
+)
 from nilearn.plotting._utils import DEFAULT_ENGINE
 from nilearn.surface import (
     PolyMesh,
@@ -38,9 +42,9 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
 
     Parameters
     ----------
-    engine: :obj:`str`, default='matplotlib'
+    engine : :obj:`str`, default='matplotlib'
         Name of the required backend engine. Can be ``matplotlib`` or
-    ``plotly``.
+        ``plotly``.
 
     Returns
     -------
@@ -48,14 +52,11 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
     :class:`~nilearn.plotting.surface._plotly_backend`.
         The backend module for the specified engine.
     """
+    check_parameter_in_allowed(
+        engine, ["matplotlib", "plotly", "niivue"], "engine"
+    )
     if engine == "matplotlib":
-        if is_matplotlib_installed():
-            import nilearn.plotting.surface._matplotlib_backend as backend
-        else:
-            raise ImportError(
-                "Using engine='matplotlib' requires that ``matplotlib`` is "
-                "installed."
-            )
+        import nilearn.plotting.surface._matplotlib_backend as backend
     elif engine == "plotly":
         if is_plotly_installed():
             import nilearn.plotting.surface._plotly_backend as backend
@@ -63,26 +64,25 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
             raise ImportError(
                 "Using engine='plotly' requires that ``plotly`` is installed."
             )
-    else:
-        raise ValueError(
-            f"Unknown plotting engine {engine}. "
-            "Please use either 'matplotlib' or "
-            "'plotly'."
-        )
+    elif engine == "niivue":
+        import nilearn.plotting.surface._niivue_backend as backend
+
     return backend
 
 
-def check_engine_params(params, engine):
+def check_engine_params(params, engine: str) -> None:
     """Check default values of the parameters that are not implemented for
     current engine and warn the user if the parameter has other value then
     None.
 
     Parameters
     ----------
-    params: :obj:`dict`
+    params : :obj:`dict`
         A dictionary where keys are the unimplemented parameter names for a
-    specific engine and values are the assigned value for corresponding
-    parameter.
+        specific engine and values are the assigned value for corresponding
+        parameter.
+
+    engine : :obj:`str`
     """
     for parameter, value in params.items():
         if value is not None:
@@ -227,10 +227,10 @@ def _get_hemi(surf_mesh, hemi):
 
     Parameters
     ----------
-    surf_mesh: :obj:`~nilearn.surface.PolyMesh`
+    surf_mesh : :obj:`~nilearn.surface.PolyMesh`
         The surface mesh object containing the left and/or right hemisphere
         meshes.
-    hemi: {'left', 'right', 'both'}
+    hemi : {'left', 'right', 'both'}
 
     Returns
     -------
@@ -241,8 +241,8 @@ def _get_hemi(surf_mesh, hemi):
           :obj:`numpy.ndarray`.
         - If ``hemi='both'``, returns :obj:`~nilearn.surface.InMemoryMesh`
     """
-    if not isinstance(surf_mesh, PolyMesh):
-        raise ValueError("mesh should be of type PolyMesh.")
+    check_is_of_allowed_type(surf_mesh, (PolyMesh,), "surf_mesh")
+    check_parameter_in_allowed(hemi, ["both", "left", "right"], "hemi")
 
     if hemi == "both":
         return combine_hemispheres_meshes(surf_mesh)
@@ -254,8 +254,6 @@ def _get_hemi(surf_mesh, hemi):
                 f"{hemi=} does not exist in mesh. Available hemispheres are:"
                 f"{surf_mesh.parts.keys()}."
             )
-    else:
-        raise ValueError("hemi must be one of 'left', 'right' or 'both'.")
 
 
 @fill_doc
@@ -284,7 +282,7 @@ def check_surface_plotting_inputs(
 
     Parameters
     ----------
-    surf_map: :obj:`~nilearn.surface.SurfaceImage` | :obj:`numpy.ndarray`
+    surf_map : :obj:`~nilearn.surface.SurfaceImage` | :obj:`numpy.ndarray`
               | None
 
     %(surf_mesh)s
@@ -295,6 +293,10 @@ def check_surface_plotting_inputs(
     %(hemi)s
 
     %(bg_map)s
+
+    map_var_name : :obj:`str`, default="surf_map"
+
+    mesh_var_name : :obj:`str`, default="surf_mesh"
 
     Returns
     -------
@@ -319,7 +321,8 @@ def check_surface_plotting_inputs(
     if surf_mesh is None and not isinstance(surf_map, SurfaceImage):
         raise TypeError(
             f"If you want to pass {mesh_var_name}=None, "
-            f"then {map_var_name} must be a SurfaceImage instance."
+            f"then {map_var_name} must be a SurfaceImage instance. "
+            f"Got surf_map={surf_map.__class__.__name__}"
         )
 
     if isinstance(surf_mesh, SurfaceImage):
@@ -358,6 +361,26 @@ def check_surface_plotting_inputs(
     return surf_map, surf_mesh, bg_map
 
 
+def get_bg_data(bg_map, n_vertices):
+    """Get bg_data for bg_map and check if its number of vertices comply with
+    n_vertices.
+       If bg_map is None,  return an array of n_vertices elements with value
+    0.5.
+       If bg_map is not None, but number of vertices is not equal to
+    n_vertices, raise ValueError.
+    """
+    if bg_map is None:
+        bg_data = np.ones(n_vertices) * 0.5
+    else:
+        bg_data = np.copy(load_surf_data(bg_map))
+        if bg_data.shape[0] != n_vertices:
+            raise ValueError(
+                "The bg_map does not have the same number "
+                "of vertices as the mesh."
+            )
+    return bg_data
+
+
 def get_faces_on_edge(faces, parc_idx):
     """Identify which faces lie on the outeredge of the parcellation defined by
     the indices in parc_idx.
@@ -367,7 +390,7 @@ def get_faces_on_edge(faces, parc_idx):
     faces : :obj:`numpy.ndarray` of shape (n, 3), indices of the mesh faces
 
     parc_idx : :obj:`numpy.ndarray`, indices of the vertices of the region to
-    be plotted
+               be plotted
 
     """
     # count how many vertices belong to the given parcellation in each face

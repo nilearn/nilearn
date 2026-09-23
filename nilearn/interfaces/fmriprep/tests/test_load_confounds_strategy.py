@@ -198,7 +198,7 @@ def test_irrelevant_input(tmp_path, fmriprep_version):
             file_nii, denoise_strategy="simple", ica_aroma="full"
         )
     # invalid strategy
-    with pytest.raises(KeyError, match="blah"):
+    with pytest.raises(ValueError, match="blah"):
         load_confounds_strategy(file_nii, denoise_strategy="blah")
 
 
@@ -215,6 +215,6 @@ def test_empty_strategy(tmp_path):
 
     warning_message = "strategy is empty, confounds will return None."
     with pytest.warns(UserWarning, match=warning_message):
-        confounds, sample_mask = load_confounds(file_nii, strategy=[])
+        confounds, _ = load_confounds(file_nii, strategy=[])
 
     assert confounds is None

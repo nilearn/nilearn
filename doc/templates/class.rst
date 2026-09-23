@@ -14,7 +14,6 @@
 .. autoclass:: {{ objname }}
    :inherited-members:
    :special-members: __init__
-   :exclude-members: set_output
    :member-order: alphabetical
 
 .. include:: {{module}}.{{objname}}.examples

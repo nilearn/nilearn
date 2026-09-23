@@ -4,17 +4,24 @@ import numpy as np
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm.contrasts import expression_to_contrast_vector
 
 VALID_REORDER_VALUES = (True, False, "single", "complete", "average")
 VALID_TRI_VALUES = ("full", "lower", "diag")
 
 
-def mask_matrix(mat, tri):
+def mask_matrix(mat, tri) -> np.ma.MaskedArray:
     """Help for plot_matrix.
 
     This function masks the matrix depending on the provided
     value of ``tri``.
+
+    Returns
+    -------
+    :class:`numpy.ma.MaskedArray`
+        The input matrix with the requested triangle masked out.
+
     """
     if tri == "lower":
         mask = np.tri(mat.shape[0], k=-1, dtype=bool) ^ True
@@ -23,7 +30,7 @@ def mask_matrix(mat, tri):
     return np.ma.masked_array(mat, mask)
 
 
-def pad_contrast_matrix(contrast_def, design_matrix):
+def pad_contrast_matrix(contrast_def, design_matrix) -> np.ndarray:
     """Pad contrasts with zeros.
 
     Parameters
@@ -71,21 +78,39 @@ def pad_contrast_matrix(contrast_def, design_matrix):
     return contrast_def
 
 
-def sanitize_labels(mat_shape, labels):
-    """Help for plot_matrix."""
+def sanitize_labels(mat_shape, labels) -> list | None:
+    """Help for plot_matrix.
+
+    Returns
+    -------
+    :obj:`list` or None
+        The labels as a list, or None if no non-empty label was passed.
+
+    """
     # we need a list so an empty one will be cast to False
     if isinstance(labels, np.ndarray):
         labels = labels.tolist()
-    if labels and len(labels) != mat_shape[0]:
-        raise ValueError(
-            f"Length of labels ({len(labels)}) "
-            f"unequal to length of matrix ({mat_shape[0]})."
-        )
+    if labels:
+        if len(labels) != mat_shape[0]:
+            raise ValueError(
+                f"Length of labels ({len(labels)}) "
+                f"unequal to length of matrix ({mat_shape[0]})."
+            )
+        if all(x == "" for x in labels):
+            labels = None
     return labels
 
 
-def sanitize_reorder(reorder):
-    """Help for plot_matrix."""
+def sanitize_reorder(reorder) -> str | bool:
+    """Help for plot_matrix.
+
+    Returns
+    -------
+    :obj:`str` or :obj:`bool`
+        The validated ``reorder`` value,
+        with ``True`` replaced by the default ``"average"`` method.
+
+    """
     if reorder not in VALID_REORDER_VALUES:
         param_to_print = []
         for item in VALID_REORDER_VALUES:
@@ -101,20 +126,26 @@ def sanitize_reorder(reorder):
     return reorder
 
 
-def sanitize_tri(tri, allowed_values=None):
+def sanitize_tri(tri, allowed_values=None) -> None:
     """Help for plot_matrix."""
     if allowed_values is None:
         allowed_values = VALID_TRI_VALUES
-    if tri not in allowed_values:
-        raise ValueError(
-            f"Parameter tri needs to be one of: {', '.join(allowed_values)}."
-        )
+    check_parameter_in_allowed(tri, allowed_values, "tri")
 
 
-def reorder_matrix(mat, labels, reorder):
+def reorder_matrix(mat, labels, reorder) -> tuple[np.ndarray, list]:
     """Help for plot_matrix.
 
     This function reorders the provided matrix.
+
+    Returns
+    -------
+    mat : :class:`numpy.ndarray`
+        The reordered matrix.
+
+    labels : :obj:`list`
+        The labels reordered to match the matrix.
+
     """
     if not labels:
         raise ValueError("Labels are needed to show the reordering.")

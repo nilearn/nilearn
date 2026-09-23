@@ -109,7 +109,7 @@ class OLSModel:
 
         Returns
         -------
-        loglf : float
+        loglf : :obj:`float`
             The value of the loglikelihood function.
 
         Notes
@@ -171,7 +171,7 @@ class OLSModel:
         """
         return X
 
-    def fit(self, Y):
+    def fit(self, Y) -> "RegressionResults":
         """Fit model to data `Y`.
 
         Full fit of the model including estimate of covariance matrix,
@@ -237,7 +237,7 @@ class ARModel(OLSModel):
             if len(self.rho.shape) not in [0, 1]:
                 raise ValueError("AR parameters must be a scalar or a vector")
             if self.rho.shape == ():
-                self.rho.shape = (1,)
+                self.rho = self.rho.reshape((1,))
             self.order = self.rho.shape[0]
         super().__init__(design)
 
@@ -379,7 +379,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
 
-    def logL(self):  # noqa: N802
+    def logL(self) -> None:  # noqa: N802
         """Return the maximized log-likelihood."""
         raise NotImplementedError(
             "logL not implemented for "

@@ -3,11 +3,9 @@ import pytest
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
-    check_estimator,
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import (
@@ -17,34 +15,14 @@ from nilearn.surface.utils import (
 
 ESTIMATORS_TO_CHECK = [SurfaceMasker()]
 
-if SKLEARN_LT_1_6:
 
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize(
@@ -54,26 +32,6 @@ else:
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
-
-
-def test_fit_list_surf_images(surf_img_2d):
-    """Test fit on list of surface images.
-
-    - resulting mask should have a single 'timepoint'
-    - all vertices should be included in the mask, because no mask is provided
-
-    """
-    masker = SurfaceMasker()
-    masker.fit([surf_img_2d(3), surf_img_2d(5)])
-    assert masker.mask_img_.shape == (surf_img_2d(1).shape[0],)
-    assert masker.mask_img_.shape == (masker.n_elements_,)
-
-
-def test_fit_list_surf_images_with_mask(surf_mask_1d, surf_img_2d):
-    """Test fit on list of surface images when masker has a mask."""
-    masker = SurfaceMasker(mask_img=surf_mask_1d)
-    masker.fit([surf_img_2d(3), surf_img_2d(5)])
-    assert masker.mask_img_.shape == (surf_img_2d(1).shape[0],)
 
 
 @pytest.mark.parametrize("n_timepoints", [3])

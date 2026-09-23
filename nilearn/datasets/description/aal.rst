@@ -9,9 +9,9 @@ See :func:`nilearn.datasets.fetch_atlas_aal`.
 
 Notes
 -----
-This atlas is the result of an automated anatomical :term:`parcellation`
+This :term:`Deterministic atlas` is the result of an automated anatomical :term:`parcellation`
 of the spatially normalized single-subject high-resolution T1 volume
-provided by the Montreal Neurological Institute (MNI)
+provided by the Montreal Neurological Institute (:term:`MNI`)
 (:footcite:t:`Collins1998`).
 
 Using this :term:`parcellation` method, three procedures to perform the automated anatomical labeling
@@ -24,6 +24,7 @@ For the AAL version SPM 5, 8, and 12, the map image (data.maps) contains 117 uni
 that define the parcellation.
 However, these values are not consecutive integers from 0 to 116, as is usually the case in Nilearn.
 Therefore, they should not be interpreted as indices for the list of label names.
+
 In contrast, the total number of parcellations in AAL 3v2 is 167.
 The 3v2 atlas contains 171 unique integer values that define the parcellation.
 These values are consecutive integers from 0 to 170,
@@ -46,22 +47,21 @@ Conversely, to get the region ID corresponding to the label
     # This should print '2001'
     data.indices[data.labels.index("Precentral_L")]
 
-For more information on this atlas,
-see :footcite:t:`AAL_atlas`,
+For more information on this dataset's structure, see
+https://www.gin.cnrs.fr/en/tools/aal/, :footcite:t:`AAL_atlas`,
 and :footcite:t:`Tzourio-Mazoyer2002`.
 
 Content
 -------
-    :"regions": str. path to nifti file containing regions.
+    :"maps": :obj:`str`. path to nifti file containing regions.
     :"labels": dict. labels dictionary with their region id as key and name as value
+    :"indices": :obj:`list` of :obj:`str` Indices mapping 'labels' to values in the 'maps' image.
+    :"lut": look up table for the regions
 
 References
 ----------
 
 .. footbibliography::
-
-For more information on this dataset's structure, see
-https://www.gin.cnrs.fr/en/tools/aal/
 
 License
 -------

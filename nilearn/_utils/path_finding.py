@@ -3,7 +3,7 @@
 import glob
 from pathlib import Path
 
-from .helpers import stringify_path
+from nilearn._utils.helpers import stringify_path
 
 
 def resolve_globbing(path):

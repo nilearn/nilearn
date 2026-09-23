@@ -16,80 +16,63 @@ https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
 """
 
 from dataclasses import dataclass
+from typing import Any
 
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
+from sklearn.utils import InputTags as SkInputTags
 
-SKLEARN_LT_1_6 = parse(sklearn_version).release[1] < 6
 
-if SKLEARN_LT_1_6:
+@dataclass
+class InputTags(SkInputTags):
+    """Tags for the input data.
 
-    def tags(
-        niimg_like=True,
-        surf_img=False,
-        masker=False,
-        multi_masker=False,
-        glm=False,
-        **kwargs,
-    ):
-        """Add nilearn tags to estimator.
+    Nilearn version of sklearn.utils.InputTags
+    https://scikit-learn.org/1.6/modules/generated/sklearn.utils.InputTags.html#sklearn.utils.InputTags
+    """
 
-        See also: InputTags
+    # same as base input tags of
+    # sklearn.utils.InputTags
+    one_d_array: bool = False
+    two_d_array: bool = True
+    three_d_array: bool = False
+    sparse: bool = False
+    categorical: bool = False
+    string: bool = False
+    dict: bool = False
+    positive_only: bool = False
+    allow_nan: bool = False
+    pairwise: bool = False
 
-        TODO remove when dropping sklearn 1.5
-        """
-        X_types = kwargs.get("X_types", [])
-        X_types.append("2darray")
-        if niimg_like:
-            X_types.append("niimg_like")
-        if surf_img:
-            X_types.append("surf_img")
-        if masker:
-            X_types.append("masker")
-        if multi_masker:
-            X_types.append("multi_masker")
-        if glm:
-            X_types.append("glm")
-        X_types = list(set(X_types))
+    # nilearn specific things
 
-        return dict(X_types=X_types, **kwargs)
+    # estimator accepts for str, Path to .nii[.gz] file
+    # or NiftiImage object
+    niimg_like: bool = True
+    # estimator accepts SurfaceImage object
+    surf_img: bool = False
 
-else:
-    from sklearn.utils import InputTags as SkInputTags
 
-    @dataclass
-    class InputTags(SkInputTags):
-        """Tags for the input data.
+def get_tag(estimator: Any, tag: str) -> bool:
+    if not hasattr(estimator, "__sklearn_tags__"):
+        return False
+    tags = estimator.__sklearn_tags__()
+    return getattr(tags.input_tags, tag, False)
 
-        Nilearn version of sklearn.utils.InputTags
-        https://scikit-learn.org/1.6/modules/generated/sklearn.utils.InputTags.html#sklearn.utils.InputTags
-        """
 
-        # same as base input tags of
-        # sklearn.utils.InputTags
-        one_d_array: bool = False
-        two_d_array: bool = True
-        three_d_array: bool = False
-        sparse: bool = False
-        categorical: bool = False
-        string: bool = False
-        dict: bool = False
-        positive_only: bool = False
-        allow_nan: bool = False
-        pairwise: bool = False
+def is_masker(estimator: Any) -> bool:
+    if not hasattr(estimator, "__sklearn_tags__"):
+        return False
+    return estimator.__sklearn_tags__().estimator_type == "masker"
 
-        # nilearn specific things
 
-        # estimator accepts for str, Path to .nii[.gz] file
-        # or NiftiImage object
-        niimg_like: bool = True
-        # estimator accepts SurfaceImage object
-        surf_img: bool = False
+def is_glm(estimator: Any) -> bool:
+    if not hasattr(estimator, "__sklearn_tags__"):
+        return False
+    return estimator.__sklearn_tags__().estimator_type == "glm"
 
-        # estimator that are maskers
-        # TODO: implement a masker_tags attribute
-        masker: bool = False
-        multi_masker: bool = False
 
-        # glm
-        glm: bool = False
+def accept_niimg_input(estimator: Any) -> bool:
+    return get_tag(estimator, "niimg_like")
+
+
+def accept_surf_img_input(estimator: Any) -> bool:
+    return get_tag(estimator, "surf_img")

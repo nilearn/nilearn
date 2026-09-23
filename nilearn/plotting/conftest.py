@@ -1,0 +1,48 @@
+"""Fixtures for tests for plotting."""
+
+from typing import Any
+
+import numpy as np
+import pytest
+from nibabel import Nifti1Image
+
+from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn.datasets import load_mni152_template
+
+
+def pytest_ignore_collect(collection_path, config):  # noqa: ARG001
+    """Skip all collection inside this directory when matplotlib is absent."""
+    if not is_matplotlib_installed():
+        return True
+    return None
+
+
+@pytest.fixture(scope="session")
+def mni152_template_res_2() -> Nifti1Image:
+    """Return the mni152 template at 2 mm resolution."""
+    return load_mni152_template(resolution=2)
+
+
+@pytest.fixture
+def adjacency() -> np.ndarray:
+    """Adjacency matrix symmetric up to 1e-3 relative tolerance."""
+    return np.array(
+        [
+            [1.0, -2.0, 0.3, 0.0],
+            [-2.002, 1, 0.0, 0.0],
+            [0.3, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
+
+
+@pytest.fixture
+def node_coords() -> np.ndarray:
+    """Array of node coordinates for testing."""
+    return np.arange(3 * 4).reshape(4, 3)
+
+
+@pytest.fixture
+def params_plot_connectome() -> dict[str, Any]:
+    """Return basic set of parameters for testing plot_connectome."""
+    return {"edge_threshold": 0.38, "title": "threshold=0.38", "node_size": 10}

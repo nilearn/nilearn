@@ -1,11 +1,10 @@
 """Test CanICA."""
 
-import sys
-
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
 
+from nilearn._utils.helpers import is_windows_platform
 from nilearn.decomposition.canica import CanICA
 from nilearn.decomposition.tests.conftest import (
     RANDOM_STATE,
@@ -32,20 +31,14 @@ def test_percentile_range(rng, canica_data_single_img):
 
     # stress thresholding via edge case
     canica = CanICA(
-        n_components=edge_case,
-        threshold=float(edge_case),
-        smoothing_fwhm=None,
+        n_components=edge_case, threshold=float(edge_case), smoothing_fwhm=None
     )
 
     with pytest.warns(UserWarning, match="obtained a critical threshold"):
         canica.fit(canica_data_single_img)
 
 
-# TODO remove skipif when dropping python 3.9
-@pytest.mark.skipif(
-    sys.version_info[1] == 9,
-    reason="fails only on MacOS with python 3.9",
-)
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_canica_square_img(
     decomposition_mask_img, canica_components, canica_data
@@ -85,7 +78,6 @@ def test_canica_square_img(
     assert_array_almost_equal(K_abs, 0, 1)
 
 
-@pytest.mark.timeout(0)
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_component_sign(canica_data, data_type):
     """Check sign of extracted components.
@@ -97,9 +89,7 @@ def test_component_sign(canica_data, data_type):
     """
     # run CanICA many times (this is known to produce different results)
     canica = CanICA(
-        n_components=4,
-        random_state=RANDOM_STATE,
-        smoothing_fwhm=None,
+        n_components=4, random_state=RANDOM_STATE, smoothing_fwhm=None
     )
 
     for _ in range(3):

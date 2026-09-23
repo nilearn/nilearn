@@ -4,9 +4,12 @@ from math import sqrt
 
 import numpy as np
 
-from nilearn.masking import unmask_from_to_3d_array
-
-from ._objective_functions import (
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
+from nilearn.decoding._objective_functions import (
     divergence,
     gradient,
     gradient_id,
@@ -17,13 +20,14 @@ from ._objective_functions import (
     squared_loss,
     squared_loss_grad,
 )
-from ._proximal_operators import (
+from nilearn.decoding._proximal_operators import (
     prox_l1,
     prox_l1_with_intercept,
     prox_tvl1,
     prox_tvl1_with_intercept,
 )
-from .fista import mfista
+from nilearn.decoding.fista import mfista
+from nilearn.masking import unmask_from_to_3d_array
 
 
 def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
@@ -41,7 +45,9 @@ def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight : float
+    mask : ndarray
+
+    grad_weight : :obj:`float`
         l1_ratio * alpha.
 
     Returns
@@ -74,7 +80,9 @@ def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight : float
+    mask : ndarray
+
+    grad_weight : :obj:`float`
         l1_ratio * alpha
 
     Returns
@@ -102,13 +110,12 @@ def _graph_net_data_function(X, w, mask, grad_weight):
     X : ndarray, shape (n_samples, n_features)
         Design matrix.
 
-    y : ndarray, shape (n_samples,)
-        Target / response vector.
-
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight : float
+    mask : ndarray
+
+    grad_weight : :obj:`float`
         l1_ratio * alpha.
 
     Returns
@@ -142,13 +149,12 @@ def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
     X : ndarray, shape (n_samples, n_features)
         Design matrix.
 
-    y : ndarray, shape (n_samples,)
-        Target / response vector.
-
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight : float
+    adjoint_mask : ndarray
+
+    grad_weight : :obj:`float`
         l1_ratio * alpha.
 
     Returns
@@ -171,8 +177,8 @@ def _squared_loss_derivative_lipschitz_constant(
     of the Graph-Net regression problem (squared_loss + grad_weight*grad) \
     via power method.
     """
-    rng = np.random.RandomState(42)
-    a = rng.randn(X.shape[1])
+    rng = np.random.default_rng(42)
+    a = rng.normal(size=X.shape[1])
     a /= sqrt(np.dot(a, a))
     adjoint_mask = np.tile(mask, [mask.ndim] + [1] * mask.ndim)
 
@@ -214,8 +220,8 @@ def _logistic_derivative_lipschitz_constant(
     # data_constant = sp.linalg.norm(X, 2) ** 2
     data_constant = logistic_loss_lipschitz_constant(X)
 
-    rng = np.random.RandomState(42)
-    a = rng.randn(X.shape[1])
+    rng = np.random.default_rng(42)
+    a = rng.normal(size=X.shape[1])
     a /= sqrt(np.dot(a, a))
     grad_buffer = np.zeros(mask.shape)
     for _ in range(n_iterations):
@@ -280,7 +286,7 @@ def graph_net_squared_loss(
     w : ndarray, shape (n_features,)
         Solution vector.
 
-    solver_info : float
+    solver_info : :obj:`float`
         Solver information, for warm start.
 
     objective : array of floats
@@ -332,7 +338,7 @@ def graph_net_squared_loss(
         callback=callback,
         tol=tol,
         max_iter=max_iter,
-        verbose=verbose,
+        verbose=max(verbose - 1, 0),
         init=init,
     )
 
@@ -418,7 +424,7 @@ def graph_net_logistic(
         callback=callback,
         tol=tol,
         max_iter=max_iter,
-        verbose=verbose,
+        verbose=max(verbose - 1, 0),
         init=init,
     )
 
@@ -450,10 +456,7 @@ def _tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
         Value of TV-L1 penalty.
     """
     loss = loss.lower()
-    if loss not in ["mse", "logistic"]:
-        raise ValueError(
-            f"loss must be one of 'mse' or 'logistic'; got '{loss}'"
-        )
+    check_parameter_in_allowed(loss, ["mse", "logistic"], "loss")
 
     if loss == "mse":
         out = squared_loss(X, y, w)
@@ -467,6 +470,7 @@ def _tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
     return out
 
 
+@fill_doc
 def tvl1_solver(
     X,
     y,
@@ -480,7 +484,7 @@ def tvl1_solver(
     prox_max_iter=5000,
     tol=1e-4,
     callback=None,
-    verbose=1,
+    verbose=0,
 ):
     """Minimizes empirical risk for TV-L1 penalized models.
 
@@ -509,8 +513,7 @@ def tvl1_solver(
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    max_iter : :obj:`int`, default=100
-        Defines the iterations for the solver.
+    %(max_iter100)s
 
     prox_max_iter : :obj:`int`, default=5000
         Maximum number of iterations for inner FISTA loop in which
@@ -528,9 +531,14 @@ def tvl1_solver(
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.
 
-    callback : callable(dict) -> bool, default=None
+    init : ndarray or None, default=None
+        Initialization vector for the prox.
+
+    callback : callable(dict) -> :obj:`bool`, default=None
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
+
+    %(verbose0)s
 
     Returns
     -------
@@ -541,15 +549,13 @@ def tvl1_solver(
     objective : array of floats
         Objective function (fval) computed on every iteration.
 
-    solver_info : float
+    solver_info : :obj:`float`
         Solver information, for warm start.
 
     """
-    # sanitize loss
-    if loss not in ["mse", "logistic"]:
-        raise ValueError(
-            f"'{loss}' loss not implemented. Should be 'mse' or 'logistic"
-        )
+    check_params(locals())
+
+    check_parameter_in_allowed(loss, ["mse", "logistic"], "loss")
 
     # shape of image box
     flat_mask = mask.ravel()

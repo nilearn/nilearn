@@ -5,8 +5,9 @@ from math import sqrt
 import numpy as np
 
 from nilearn._utils import logger
-
-from ._objective_functions import (
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.param_validation import check_params
+from nilearn.decoding._objective_functions import (
     divergence_id,
     gradient_id,
     tv_l1_from_gradient,
@@ -77,10 +78,11 @@ def _objective_function_prox_tvl1(input_img, output_img, gradient, weight):
     return 0.5 * (diff * diff).sum() + weight * tv_l1_from_gradient(gradient)
 
 
+@fill_doc
 def prox_tvl1(
     input_img,
     l1_ratio=0.05,
-    weight=50,
+    weight=50.0,
     dgap_tol=5.0e-5,
     x_tol=None,
     max_iter=200,
@@ -104,39 +106,35 @@ def prox_tvl1(
         but it is cast into an ndarray of floats for the computation
         of the denoised image.
 
-    weight : float, optional
+    l1_ratio : :obj:`float`, default=0.05
+
+    weight : :obj:`float`, default=50.0
         Denoising weight. The greater ``weight``, the more denoising (at
         the expense of fidelity to ``input``)
 
-    dgap_tol : float, optional
+    dgap_tol : :obj:`float`, default=5.0e-5
         Precision required. The distance to the exact solution is computed
         by the dual gap of the optimization problem and rescaled by the
         squared l2 norm of the image (for contrast invariance).
 
-    x_tol : float or None, optional
+    x_tol : :obj:`float` or None, default=None
         The maximal relative difference between input and output. If
         specified, this specifies a stopping criterion on x, rather than
         the dual gap.
 
-    max_iter : int, optional
-        Maximal number of iterations used for the optimization.
+    %(max_iter)s
 
-    val_min : None or float, optional
+    val_min : None or float, default=None
         An optional lower bound constraint on the reconstructed image.
 
-    val_max : None or float, optional
+    val_max : None or float, default=None
         An optional upper bound constraint on the reconstructed image.
 
-    verbose : int or bool, optional
-        If True or 1, print the dual gap of the optimization
+    %(verbose0)s
 
-    fista : bool, optional
+    fista : :obj:`bool`, default=True
         If True, uses a FISTA loop to perform the optimization.
         if False, uses an ISTA loop.
-
-    callback : callable
-        Callable that takes the local variables at each
-        steps. Useful for tracking.
 
     init : array of shape as im
         Starting point for the optimization.
@@ -169,14 +167,11 @@ def prox_tvl1(
     For details on implementing the bound constraints, read the aforementioned
     Beck and Teboulle paper.
     """
-    if verbose is False:
-        verbose = 0
-    if verbose is True:
-        verbose = 1
+    check_params(locals())
 
     weight = float(weight)
     input_img_flat = input_img.view()
-    input_img_flat.shape = input_img.size
+    input_img_flat = input_img_flat.reshape(input_img.size)
     input_img_norm = np.dot(input_img_flat, input_img_flat)
     if input_img.dtype.kind != "f":
         input_img = input_img.astype(np.float64)
@@ -294,6 +289,7 @@ def prox_tvl1(
     return output, {"converged": (i < max_iter)}
 
 
+@fill_doc
 def prox_tvl1_with_intercept(
     w,
     shape,
@@ -308,30 +304,29 @@ def prox_tvl1_with_intercept(
 
     Parameters
     ----------
-    weight : float
+    w : ndarray, shape (w_size,)
+        The point at which the prox is being computed
+
+    shape
+
+    l1_ratio : :obj:`float`
+
+    weight : :obj:`float`
        Weight in prox. This would be something like `alpha_ * stepsize`,
        where `alpha_` is the effective (i.e. re-scaled) alpha.
 
-    w : ndarray, shape (w_size,)
-        The point at which the prox is being computed
+    dgap_tol : :obj:`float`
+        Dual-gap tolerance for TV-L1 prox operator approximation loop.
 
     init : ndarray, shape (w_size - 1,), default=None
         Initialization vector for the prox.
 
-    max_iter : int
-        Maximum number of iterations for the solver.
+    %(max_iter5000)s
 
-    verbose : int or bool, optional
-        If True or 1, print the dual gap of the optimization
-
-    dgap_tol : float
-        Dual-gap tolerance for TV-L1 prox operator approximation loop.
+    %(verbose0)s
 
     """
-    if verbose is False:
-        verbose = 0
-    if verbose is True:
-        verbose = 1
+    check_params(locals())
 
     init = init.reshape(shape) if init is not None else init
     out, prox_info = prox_tvl1(

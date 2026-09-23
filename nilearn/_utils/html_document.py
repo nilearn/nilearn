@@ -11,17 +11,16 @@ from queue import Empty, Queue
 from socketserver import TCPServer
 from threading import Thread
 
-from nilearn._utils import remove_parameters
 from nilearn._utils.logger import find_stack_level
 
-MAX_IMG_VIEWS_BEFORE_WARNING = 10
+MAX_IMG_VIEWS_BEFORE_WARNING: int | None = 10
 BROWSER_TIMEOUT_SECONDS = 3.0
 
 WIDTH_DEFAULT = 800
 HEIGHT_DEFAULT = 800
 
 
-def set_max_img_views_before_warning(new_value):
+def set_max_img_views_before_warning(new_value: int | None) -> None:
     """Set the number of open views which triggers a warning.
 
     If `None` or a negative number, disable the memory warning.
@@ -63,10 +62,10 @@ def _open_in_browser(content):
     webbrowser.open(url)
     try:
         queue.get(timeout=BROWSER_TIMEOUT_SECONDS)
-    except Empty:
+    except Empty as e:
         raise RuntimeError(
             "Failed to open nilearn plot or report in a web browser."
-        )
+        ) from e
     server.shutdown()
     server_thread.join()
 
@@ -86,10 +85,15 @@ class HTMLDocument:
 
     _all_open_html_repr: weakref.WeakSet = weakref.WeakSet()
 
-    def __init__(self, html, width=WIDTH_DEFAULT, height=HEIGHT_DEFAULT):
-        self.html = html
-        self.width = width
-        self.height = height
+    def __init__(
+        self,
+        html: str,
+        width: int = WIDTH_DEFAULT,
+        height: int = HEIGHT_DEFAULT,
+    ):
+        self.html: str = html
+        self.width: int = width
+        self.height: int = height
         self._temp_file = None
         self._check_n_open()
         self._temp_file_removing_proc = None
@@ -129,7 +133,7 @@ class HTMLDocument:
             value = WIDTH_DEFAULT
         self._height = value
 
-    def _check_n_open(self):
+    def _check_n_open(self) -> None:
         HTMLDocument._all_open_html_repr.add(self)
         if MAX_IMG_VIEWS_BEFORE_WARNING is None:
             return
@@ -164,7 +168,7 @@ class HTMLDocument:
         self.height = height
         return self
 
-    def get_iframe(self, width=None, height=None):
+    def get_iframe(self, width=None, height=None) -> str:
         """Get the document wrapped in an inline frame.
 
         For inserting in another HTML page of for display in a Jupyter
@@ -196,11 +200,11 @@ class HTMLDocument:
         )
         return wrapped
 
-    def get_standalone(self):
+    def get_standalone(self) -> str:
         """Return the plot in an HTML page."""
         return self.html
 
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
         """Return html representation of the plot.
 
         Used by the Jupyter notebook.
@@ -212,7 +216,7 @@ class HTMLDocument:
         """
         return self.get_iframe()
 
-    def _repr_mimebundle_(self, include=None, exclude=None):
+    def _repr_mimebundle_(self, include=None, exclude=None) -> dict[str, str]:
         """Return html representation of the plot.
 
         Used by the Jupyter notebook.
@@ -225,10 +229,10 @@ class HTMLDocument:
         del include, exclude
         return {"text/html": self.get_iframe()}
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.html
 
-    def save_as_html(self, file_name):
+    def save_as_html(self, file_name: str | Path) -> None:
         """Save the plot in an HTML file, that can later be opened \
         in a browser.
 
@@ -239,37 +243,18 @@ class HTMLDocument:
 
         """
         with Path(file_name).open("wb") as f:
-            f.write(self.get_standalone().encode("utf-8"))
+            f.write(self.get_iframe().encode("utf-8"))
 
-    @remove_parameters(
-        removed_params=["temp_file_lifetime"],
-        reason=(
-            "this function does not use a temporary file anymore "
-            "and 'temp_file_lifetime' has no effect."
-        ),
-        end_version="0.13.0",
-    )
-    def open_in_browser(
-        self,
-        file_name=None,
-        temp_file_lifetime="deprecated",  # noqa: ARG002
-    ):
+    def open_in_browser(self, file_name: str | None = None) -> None:
         """Save the plot to a temporary HTML file and open it in a browser.
 
         Parameters
         ----------
         file_name : :obj:`str` or ``None``, default=None
             HTML file to use as a temporary file.
-
-        temp_file_lifetime : :obj:`float`, default=30
-
-            .. deprecated:: 0.10.3
-
-                The parameter is kept for backward compatibility and will be
-                removed in a future version. It has no effect.
         """
         if file_name is None:
-            _open_in_browser(self.get_standalone().encode("utf-8"))
+            _open_in_browser(self.get_iframe().encode("utf-8"))
         else:
             self.save_as_html(file_name)
             webbrowser.open(f"file://{file_name}")

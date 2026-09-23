@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from nilearn._utils import stringify_path
+from nilearn._utils.helpers import stringify_path
 
 
 def check_and_load_tables(tables_to_check, var_name):
@@ -16,7 +16,7 @@ def check_and_load_tables(tables_to_check, var_name):
 
        Numpy arrays will also be appended as is.
 
-    tables_to_check : str or pathlib.Path to a TSV or CSV \
+    tables_to_check : :obj:`str` or pathlib.Path to a TSV or CSV \
               or pandas.DataFrame or numpy.ndarray or, \
               a list of str or pathlib.Path to a TSV or CSV \
               or pandas.DataFrame or numpy.ndarray
@@ -24,7 +24,7 @@ def check_and_load_tables(tables_to_check, var_name):
               the first column is considered to be index column.
               numpy.ndarray will not be appended to the output.
 
-    var_name : str
+    var_name : :obj:`str`
                name of the `tables_to_check` passed,
                to print in the error message
 
@@ -108,7 +108,7 @@ def coerce_to_dict(input_arg):
 
     Parameters
     ----------
-    input_arg : String or Collection[str or Int or Sequence[Int]]
+    input_arg : :obj:`str` or Collection[str or Int or Sequence[Int]]
      or Dict[str, str or np.array] or None
         Can be of the form:
          'string'
@@ -132,61 +132,3 @@ def coerce_to_dict(input_arg):
             input_arg = [input_arg]
         input_arg = {str(contrast_): contrast_ for contrast_ in input_arg}
     return input_arg
-
-
-def make_stat_maps(
-    model, contrasts, output_type="z_score", first_level_contrast=None
-):
-    """Given a model and contrasts, return the corresponding z-maps.
-
-    Parameters
-    ----------
-    model : FirstLevelModel or SecondLevelModel object
-        Must have a fitted design matrix(ces).
-
-    contrasts : Dict[str, ndarray or str]
-        Dict of contrasts for a first or second level model.
-        Corresponds to the contrast_def for the FirstLevelModel
-        (nilearn.glm.first_level.FirstLevelModel.compute_contrast)
-        & second_level_contrast for a SecondLevelModel
-        (nilearn.glm.second_level.SecondLevelModel.compute_contrast)
-
-    output_type : :obj:`str`, default='z_score'
-        The type of statistical map to retain from the contrast.
-
-        .. versionadded:: 0.9.2
-
-    %(first_level_contrast)s
-
-        .. versionadded:: 0.12.0
-
-    Returns
-    -------
-    statistical_maps : Dict[str, niimg] or Dict[str, Dict[str, niimg]]
-        Dict of statistical z-maps keyed to contrast names/titles.
-
-    See Also
-    --------
-    nilearn.glm.first_level.FirstLevelModel.compute_contrast
-    nilearn.glm.second_level.SecondLevelModel.compute_contrast
-
-    """
-    from nilearn.glm.second_level import SecondLevelModel
-
-    if isinstance(model, SecondLevelModel):
-        return {
-            contrast_name: model.compute_contrast(
-                contrast_data,
-                output_type=output_type,
-                first_level_contrast=first_level_contrast,
-            )
-            for contrast_name, contrast_data in contrasts.items()
-        }
-
-    return {
-        contrast_name: model.compute_contrast(
-            contrast_data,
-            output_type=output_type,
-        )
-        for contrast_name, contrast_data in contrasts.items()
-    }

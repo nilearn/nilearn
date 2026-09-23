@@ -11,11 +11,14 @@ import numpy as np
 from scipy import linalg
 
 from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.param_validation import check_params
 
 
+@fill_doc
 def _check_lipschitz_continuous(
     f, ndim, lipschitz_constant, n_trials=10, random_state=42
-):
+) -> None:
     """Empirically check Lipschitz continuity of a function.
 
     If this test is passed, then we are empirically confident in the
@@ -34,7 +37,7 @@ def _check_lipschitz_continuous(
       continuity (i.e. it corresponds to the size of the vector that `f`
       takes as an argument).
 
-    lispchitz_constant : float,
+    lipschitz_constant : :obj:`float`,
       Constant associated to the Lipschitz continuity.
 
     n_trials : int,
@@ -58,6 +61,7 @@ def _check_lipschitz_continuous(
                 raise RuntimeError(f"Counter example: ({x}, {y})")
 
 
+@fill_doc
 def mfista(
     f1_grad,
     f2_prox,
@@ -71,7 +75,7 @@ def mfista(
     check_lipschitz=False,
     dgap_factor=None,
     callback=None,
-    verbose=2,
+    verbose=0,
 ):
     """Solve FISTA in a generic way.
 
@@ -122,18 +126,16 @@ def mfista(
         Function called on every iteration. If it returns True, then the loop
         breaks.
 
-    max_iter : :obj:`int`, default=1000
-        Maximum number of iterations for the solver.
+    %(max_iter1000)s
 
-    verbose : :obj:`int`, default=2
-        Indicate the level of verbosity.
+    %(verbose0)s
 
     Returns
     -------
     w : ndarray, shape (w_size,)
        A minimizer for `f + g`.
 
-    solver_info : float
+    solver_info : :obj:`float`
         Solver information, for warm starting.
 
     cost : array of floats
@@ -149,6 +151,8 @@ def mfista(
     Jun 2014, Tubingen, Germany. IEEE
 
     """
+    check_params(locals())
+
     # initialization
     if init is None:
         init = {}

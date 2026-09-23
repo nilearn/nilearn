@@ -7,6 +7,7 @@ from scipy import linalg
 from scipy.ndimage import label
 
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 
 
 def calculate_tfce(
@@ -15,7 +16,7 @@ def calculate_tfce(
     E=0.5,
     H=2,
     dh="auto",
-    two_sided_test=True,
+    two_sided_test: bool = True,
 ):
     """Calculate threshold-free cluster enhancement values for scores maps.
 
@@ -38,7 +39,7 @@ def calculate_tfce(
         Step size for TFCE calculation.
         If set to 'auto', use 100 steps, as is done in fslmaths.
         A good alternative is 0.1 for z and t maps, as in [1]_.
-    two_sided_test : :obj:`bool`, default=False
+    two_sided_test : :obj:`bool`, default=True
         Whether to assess both positive and negative clusters (True) or just
         positive ones (False).
 
@@ -190,11 +191,9 @@ def null_to_p(test_values, null_array, alternative="two-sided"):
     This function assumes that the null distribution for two-sided tests is
     symmetric around zero.
     """
-    if alternative not in {"two-sided", "larger", "smaller"}:
-        raise ValueError(
-            'Argument "alternative" must be one of '
-            '["two-sided", "larger", "smaller"]'
-        )
+    check_parameter_in_allowed(
+        alternative, {"two-sided", "larger", "smaller"}, "alternative"
+    )
 
     return_first = isinstance(test_values, (float, int))
     test_values = np.atleast_1d(test_values)
@@ -364,7 +363,7 @@ def orthonormalize_matrix(m, tol=1.0e-12):
     m : numpy array,
         The matrix to orthonormalize.
 
-    tol : float, default=1e-12
+    tol : :obj:`float`, default=1e-12
         Tolerance parameter for nullity.
 
     Returns
@@ -415,7 +414,7 @@ def t_score_with_covars_and_normalized_design(
         Targets variates. F-ordered is better for efficient computation.
 
     covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None, \
-            optional
+            default=None
         Confounding variates.
 
     Returns

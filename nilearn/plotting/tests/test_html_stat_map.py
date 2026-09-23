@@ -1,5 +1,6 @@
 import base64
-import warnings
+import json
+import re
 from io import BytesIO
 
 import numpy as np
@@ -7,39 +8,43 @@ import pytest
 from matplotlib import pyplot as plt
 from nibabel import Nifti1Image
 
-from nilearn import datasets, image
+from nilearn.conftest import _img_3d_rand
 from nilearn.image import get_data, new_img_like
+from nilearn.image.resampling import to_matrix_vector
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.html_stat_map import (
     StatMapView,
     _bytes_io_to_base64,
     _data_to_sprite,
     _get_bg_mask_and_cmap,
+    _get_brainsprite_html_ids,
     _get_cut_slices,
+    _is_isotropic,
     _json_view_data,
     _json_view_params,
     _json_view_size,
     _json_view_to_html,
-    _load_bg_img,
     _mask_stat_map,
     _resample_stat_map,
+    _resample_to_isotropic,
     _save_cm,
     _save_sprite,
     _threshold_data,
+    load_bg_img,
     view_img,
 )
 
 
-def _check_html(html_view, title=None):
+def check_html_view_img(html_view, title=None):
     """Check the presence of some expected code in the html viewer."""
     assert isinstance(html_view, StatMapView)
-    assert "var brain =" in str(html_view)
+    assert "brain = brainsprite(" in str(html_view)
     assert "overlayImg" in str(html_view)
     if title is not None:
-        assert f"<title>{title}</title>" in str(html_view)
+        assert f"<title>Nilearn - {title}</title>" in str(html_view)
 
 
-def _simulate_img(affine=None):
+def _simulate_img(affine=None) -> tuple[Nifti1Image, np.ndarray]:
     """Simulate data with one "spot".
 
     Returns
@@ -56,19 +61,20 @@ def _simulate_img(affine=None):
     return img, data
 
 
-def _check_affine(affine):
+def _check_affine(affine) -> None:
     """Check positive, isotropic, near-diagonal affine."""
     assert affine[0, 0] == affine[1, 1]
     assert affine[2, 2] == affine[1, 1]
     assert affine[0, 0] > 0
 
-    A, b = image.resampling.to_matrix_vector(affine)
+    A, _ = to_matrix_vector(affine)
     assert np.all((np.abs(A) > 0.001).sum(axis=0) == 1), (
         "the affine transform was not near-diagonal"
     )
 
 
 def test_data_to_sprite():
+    """Check that _data_to_sprite tiles slices as expected."""
     # Simulate data and turn into sprite
     data = np.zeros([8, 8, 8])
     data[2:6, 2:6, 2:6] = 1
@@ -93,33 +99,34 @@ def test_data_to_sprite():
 
 
 def test_threshold_data():
+    """Check _threshold_data with auto, None, positive and zero thresholds."""
     data = np.arange(-3, 4)
 
     # Check that an 'auto' threshold leaves at least one element
-    data_t, mask, thresh = _threshold_data(data, threshold="auto")
+    data_t, mask, _ = _threshold_data(data, threshold="auto")
     gtruth_m = np.array([False, True, True, True, True, True, False])
     gtruth_d = np.array([-3, 0, 0, 0, 0, 0, 3])
     assert (mask == gtruth_m).all()
     assert (data_t == gtruth_d).all()
 
     # Check that threshold=None keeps everything
-    data_t, mask, thresh = _threshold_data(data, threshold=None)
+    data_t, mask, _ = _threshold_data(data, threshold=None)
     assert np.all(np.logical_not(mask))
     assert np.all(data_t == data)
 
     # Check positive threshold works
-    data_t, mask, thresh = _threshold_data(data, threshold=1)
+    data_t, mask, _ = _threshold_data(data, threshold=1)
     gtruth = np.array([False, False, True, True, True, False, False])
     assert (mask == gtruth).all()
 
     # Check 0 threshold works
-    data_t, mask, thresh = _threshold_data(data, threshold=0)
+    data_t, mask, _ = _threshold_data(data, threshold=0)
     gtruth = np.array([False, False, False, True, False, False, False])
     assert (mask == gtruth).all()
 
     # Check that overly lenient threshold returns array
     data = np.arange(3, 10)
-    data_t, mask, thresh = _threshold_data(data, threshold=2)
+    data_t, mask, _ = _threshold_data(data, threshold=2)
     gtruth = np.full(7, False)
     assert (mask == gtruth).all()
 
@@ -169,20 +176,24 @@ def test_save_cmap(cmap, n_colors):
     assert np.allclose(img, expected, atol=0.1)
 
 
+@pytest.mark.thread_unsafe
 def test_mask_stat_map():
+    """Check _mask_stat_map with no threshold and a zero threshold."""
     # Generate simple simulated data with one "spot"
     img, data = _simulate_img()
 
     # Try not to threshold anything
-    mask_img, img, data_t, thresh = _mask_stat_map(img, threshold=None)
+    mask_img, img, _, _ = _mask_stat_map(img, threshold=None)
     assert np.max(get_data(mask_img)) == 0
 
     # Now threshold at zero
-    mask_img, img, data_t, thresh = _mask_stat_map(img, threshold=0)
+    mask_img, img, _, _ = _mask_stat_map(img, threshold=0)
     assert np.min((data == 0) == get_data(mask_img))
 
 
+@pytest.mark.thread_unsafe
 def test_load_bg_img(affine_eye):
+    """Check load_bg_img returns a positive isotropic near-diagonal affine."""
     # Generate simple simulated data with non-diagonal affine
     affine = affine_eye
     affine[0, 0] = -1
@@ -190,26 +201,35 @@ def test_load_bg_img(affine_eye):
     img, _ = _simulate_img(affine)
 
     # use empty bg_img
-    bg_img, _, _, _ = _load_bg_img(img, bg_img=None)
+    bg_img, _, _, _ = load_bg_img(img, bg_img=None)
     # Check positive isotropic, near-diagonal affine
     _check_affine(bg_img.affine)
 
     # Try to load the default background
-    bg_img, _, _, _ = _load_bg_img(img)
+    bg_img, _, _, _ = load_bg_img(img)
 
     # Check positive isotropic, near-diagonal affine
     _check_affine(bg_img.affine)
 
 
 def test_get_bg_mask_and_cmap():
-    # non-regression test for issue #3120 (bg image was masked with mni
-    # template mask)
+    """Non-regression test for issue #3120.
+
+    Background image was masked with mni template mask.
+    """
     img, _ = _simulate_img()
-    mask, cmap = _get_bg_mask_and_cmap(img, False)
+    mask, _ = _get_bg_mask_and_cmap(img, False)
     assert (mask == np.zeros(img.shape, dtype=bool)).all()
+
+    # Non-regression test for issue #6465
+    _, black_bg_cmap = _get_bg_mask_and_cmap(img, True)
+    assert black_bg_cmap._rgba_bad == (0.0, 0.0, 0.0, 1.0)
+    _, white_bg_cmap = _get_bg_mask_and_cmap(img, False)
+    assert white_bg_cmap._rgba_bad == (1.0, 1.0, 1.0, 1.0)
 
 
 def test_resample_stat_map(affine_eye):
+    """Check _resample_stat_map resamples stat and mask to bg resolution."""
     # Start with simple simulated data
     bg_img, data = _simulate_img()
 
@@ -241,6 +261,7 @@ def test_resample_stat_map(affine_eye):
 
 
 def test_json_view_params(affine_eye):
+    """Check that _json_view_params generates the expected structure."""
     # Try to generate some sprite parameters
     params = _json_view_params(
         shape=[4, 4, 4],
@@ -248,6 +269,7 @@ def test_json_view_params(affine_eye):
         vmin=0,
         vmax=1,
         cut_slices=[1, 1, 1],
+        html_ids=_get_brainsprite_html_ids("test-viewer"),
         black_bg=True,
         opacity=0.5,
         draw_cross=False,
@@ -260,16 +282,119 @@ def test_json_view_params(affine_eye):
     # Just check that a structure was generated,
     # and test a single parameter
     assert params["overlay"]["opacity"] == 0.5
+    assert params["canvas"] == "3Dviewer-test-viewer"
+    assert params["sprite"] == "spriteImg-test-viewer"
+    assert params["overlay"]["sprite"] == "overlayImg-test-viewer"
+    assert params["colorMap"]["img"] == "colorMap-test-viewer"
+
+
+@pytest.mark.parametrize("marker", [3, 11, 20, 28])
+def test_json_view_params_displays_requested_slice(marker):
+    """The tile drawn must hold the slice whose coordinate was requested.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/6504.
+    ``_get_cut_slices`` already returns a 0-based voxel index, but a further
+    ``- 1`` was applied before sending it to the viewer, which draws the
+    sprite tile at ``numSlice`` and only adds one when reading coordinates
+    back out. The slice on screen was therefore the neighbor of the one
+    requested, labeled with the requested coordinate.
+    """
+    n = 32
+    affine = np.diag([-3.0, 3.0, 3.0, 1.0])
+    affine[:3, 3] = [48.0, -48.0, -48.0]
+    # voxel values encode their own x index, so a tile identifies its source
+    data = np.zeros((n, n, n), dtype="float32")
+    for i in range(n):
+        data[i, :, :] = i
+    img = Nifti1Image(data, affine)
+
+    world_x = (affine @ np.array([marker, 0.0, 0.0, 1.0]))[0]
+    cut_slices = _get_cut_slices(
+        img, cut_coords=[world_x, 0.0, 0.0], threshold=None
+    )
+    params = _json_view_params(
+        (n, n, n),
+        affine,
+        vmin=0,
+        vmax=1,
+        cut_slices=cut_slices,
+        html_ids=_get_brainsprite_html_ids("test-viewer"),
+    )
+
+    sprite = _data_to_sprite(data)
+    n_rows = int(np.ceil(np.sqrt(n)))
+    n_columns = int(np.ceil(n / float(n_rows)))
+    tile = int(params["numSlice"]["X"])
+    row, column = tile // n_columns, tile % n_columns
+    block = sprite[row * n : (row + 1) * n, column * n : (column + 1) * n]
+
+    assert int(block.max()) == marker
+
+
+@pytest.mark.parametrize("cut_coords", [[0.0, -12.0, 9.0], [15.0, 6.0, -21.0]])
+def test_json_view_params_reports_requested_coordinates(cut_coords):
+    """The coordinates shown must still be the ones requested."""
+    n = 32
+    affine = np.diag([-3.0, 3.0, 3.0, 1.0])
+    affine[:3, 3] = [48.0, -48.0, -48.0]
+    img = Nifti1Image(np.zeros((n, n, n), dtype="float32"), affine)
+
+    cut_slices = _get_cut_slices(img, cut_coords=cut_coords, threshold=None)
+    params = _json_view_params(
+        (n, n, n),
+        affine,
+        vmin=0,
+        vmax=1,
+        cut_slices=cut_slices,
+        html_ids=_get_brainsprite_html_ids("test-viewer"),
+    )
+    num_slice = params["numSlice"]
+    index = np.array(
+        [num_slice["X"] + 1, num_slice["Y"] + 1, num_slice["Z"] + 1, 1.0]
+    )
+    displayed = (np.asarray(params["affine"]) @ index)[:3]
+
+    assert displayed == pytest.approx(cut_coords)
+
+
+@pytest.mark.parametrize(
+    "cut,expected", [(19.5, 20), (20.5, 21), (21.5, 22), (20.4, 20)]
+)
+def test_json_view_params_breaks_ties_upwards(cut, expected):
+    """Round the way the viewer does, so every cut moves by one slice.
+
+    ``brainsprite.js`` rounds ``numSlice`` with ``Math.round``, which breaks
+    ties upwards, while Python's ``round`` breaks them to even. Using the
+    latter would send the same index as before this fix whenever a cut lands
+    exactly between two slices on an even voxel index, leaving the off-by-one
+    in place for those cuts.
+    """
+    n = 32
+    affine = np.diag([2.0, 2.0, 2.0, 1.0])
+
+    params = _json_view_params(
+        (n, n, n),
+        affine,
+        vmin=0,
+        vmax=1,
+        cut_slices=np.array([cut, cut, cut]),
+        html_ids=_get_brainsprite_html_ids("test-viewer"),
+    )
+
+    assert params["numSlice"] == {"X": expected, "Y": expected, "Z": expected}
+    # must survive json.dumps
+    assert all(isinstance(v, int) for v in params["numSlice"].values())
 
 
 def test_json_view_size():
+    """Check that _json_view_size computes the expected viewer dimensions."""
     # Build some minimal sprite Parameters
     sprite_params = {"nbSlice": {"X": 4, "Y": 4, "Z": 4}}
     width, height = _json_view_size(sprite_params)
 
     # This is a simple case: height is 4 pixels, width 3 x 4 = 12 pixels
-    # with an additional 120% height factor for annotations and margins
-    ratio = 1.2 * 4 / 12
+    # with an additional 150% height factor for annotations and margins
+    ratio = 1.5 * 4 / 12
 
     # check we received the expected width and height
     width_exp = 600
@@ -311,6 +436,7 @@ def _get_data_and_json_view(black_bg, cbar, radiological):
 @pytest.mark.parametrize("cbar", [True, False])
 @pytest.mark.parametrize("radiological", [True, False])
 def test_json_view_data(black_bg, cbar, radiological):
+    """Check that _json_view_data returns the expected base64 fields."""
     _, json_view = _get_data_and_json_view(black_bg, cbar, radiological)
     # Check the presence of critical fields
     assert isinstance(json_view["bg_base64"], str)
@@ -322,13 +448,17 @@ def test_json_view_data(black_bg, cbar, radiological):
 @pytest.mark.parametrize("cbar", [True, False])
 @pytest.mark.parametrize("radiological", [True, False])
 def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
+    """Check that _json_view_to_html builds a valid viewer."""
     data, json_view = _get_data_and_json_view(black_bg, cbar, radiological)
+    html_ids = _get_brainsprite_html_ids("test-viewer")
+    json_view["html_ids"] = html_ids
     json_view["params"] = _json_view_params(
         data.shape,
         affine_eye,
         vmin=0,
         vmax=1,
         cut_slices=[1, 1, 1],
+        html_ids=html_ids,
         black_bg=True,
         opacity=1,
         draw_cross=True,
@@ -338,12 +468,63 @@ def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
         radiological=radiological,
     )
 
-    # Create a viewer
     html_view = _json_view_to_html(json_view)
-    _check_html(html_view)
+    check_html_view_img(html_view)
+
+
+def test_brainsprite_viewers_have_unique_element_ids():
+    """Check that multiple viewers bind to their own HTML elements."""
+    img, _ = _simulate_img()
+    views = [
+        view_img(img, resampling_interpolation="nearest"),
+        view_img(img, resampling_interpolation="nearest"),
+    ]
+    configs = []
+    all_dom_ids = []
+
+    for view in views:
+        config_match = re.search(r"brainsprite\((\{.*\})\);", str(view))
+        assert config_match is not None
+        config = json.loads(config_match.group(1))
+        configs.append(config)
+
+        element_ids = [
+            config["canvas"],
+            config["sprite"],
+            config["overlay"]["sprite"],
+            config["colorMap"]["img"],
+        ]
+        for element_id in element_ids:
+            assert f'id="{element_id}"' in str(view)
+
+        dom_ids = set(
+            re.findall(
+                r'id="((?:div_viewer|3Dviewer|spriteImg|overlayImg|'
+                r'colorMap|opacity|demo)-[^"]+)"',
+                str(view),
+            )
+        )
+        assert len(dom_ids) == 7
+        all_dom_ids.append(dom_ids)
+
+    first_ids = {
+        configs[0]["canvas"],
+        configs[0]["sprite"],
+        configs[0]["overlay"]["sprite"],
+        configs[0]["colorMap"]["img"],
+    }
+    second_ids = {
+        configs[1]["canvas"],
+        configs[1]["sprite"],
+        configs[1]["overlay"]["sprite"],
+        configs[1]["colorMap"]["img"],
+    }
+    assert first_ids.isdisjoint(second_ids)
+    assert all_dom_ids[0].isdisjoint(all_dom_ids[1])
 
 
 def test_get_cut_slices(affine_eye):
+    """Check _get_cut_slices with automatic, manual and rescaled affines."""
     # Generate simple simulated data with one "spot"
     img, data = _simulate_img()
 
@@ -367,99 +548,94 @@ def test_get_cut_slices(affine_eye):
 
 
 @pytest.mark.parametrize(
-    "params, warning_msg",
+    "view_img_kwargs,expected_output_title",
     [
-        (
-            {"threshold": 2.0, "vmax": 4.0},
-            "The given float value must not exceed .*",
-        ),
-        (
-            {"symmetric_cmap": False},
-            "'partition' will ignore the 'mask' of the MaskedArray *",
-        ),
+        ({"threshold": 2.0, "vmax": 4.0}, "Slice viewer"),
+        ({"threshold": 1e6}, "Slice viewer"),
+        ({"width_view": 1000}, "Slice viewer"),
+        ({"threshold": "95%", "title": "SOME_TITLE"}, "SOME_TITLE"),
     ],
 )
-def test_view_img_3d_warnings(params, warning_msg):
-    """Test warning when viewing 3D images."""
-    mni = datasets.load_mni152_template(resolution=2)
+def test_view_img_3d(img_3d_mni, view_img_kwargs, expected_output_title):
+    """Test plotting of 3D images with different params."""
+    html_view = view_img(img_3d_mni, **view_img_kwargs)
+    check_html_view_img(html_view, title=expected_output_title)
 
-    # Create a fake functional image by resample the template
-    img = image.resample_img(
-        mni,
-        target_affine=3 * np.eye(3),
-        copy_header=True,
-        force_resample=True,
+
+def test_view_img_4d(img_3d_mni):
+    """Test for 4D images."""
+    # convert into 4D (with only 1 timepoint)
+    img_4d_mni = new_img_like(
+        img_3d_mni, get_data(img_3d_mni)[:, :, :, np.newaxis]
     )
-
-    # Should not raise warnings
-    with warnings.catch_warnings(record=True) as w:
-        html_view = view_img(img, bg_img=None)
-    assert len(w) == 0
-
-    with pytest.warns(UserWarning, match=warning_msg):
-        html_view = view_img(img, **params)
-
-    _check_html(html_view)
+    html_view = view_img(img_4d_mni)
+    check_html_view_img(html_view)
 
 
-def test_view_img_3d_warnings_more():
-    """Test warning when viewing 3D images.
-
-    Has more precise checks on the output.
-    """
-    mni = datasets.load_mni152_template(resolution=2)
-
-    # Create a fake functional image by resample the template
-    img = image.resample_img(
-        mni,
-        target_affine=3 * np.eye(3),
-        copy_header=True,
-        force_resample=True,
-    )
-
+def test_view_img_warnings(img_3d_mni):
+    """Test that warning about the threshold is emitted."""
+    # expect warning otherwise
     with pytest.warns(
-        UserWarning,
-        match="'partition' will ignore the 'mask' of the MaskedArray",
+        UserWarning, match="The given float value must not exceed .*"
     ):
-        html_view = view_img(img)
+        html_view = view_img(img_3d_mni, threshold=1000)
 
-    _check_html(html_view, title="Slice viewer")
+    check_html_view_img(html_view)
 
-    with pytest.warns(
-        UserWarning,
-        match="'partition' will ignore the 'mask' of the MaskedArray",
-    ):
-        html_view = view_img(img, threshold="95%", title="SOME_TITLE")
 
-    _check_html(html_view, title="SOME_TITLE")
+def test_view_img_non_isotropic():
+    """Smoke test for non-isotropic images."""
+    img = _img_3d_rand(affine=np.diag([2, 3, 4, 1]))
+    html_view = view_img(img)
+    check_html_view_img(html_view)
 
 
 @pytest.mark.parametrize(
-    "params",
+    "affine,is_isotropic",
     [
-        {"threshold": 2.0, "vmax": 4.0},
-        {"threshold": 1e6},
-        {"width_view": 1000},
+        (np.diag([2, 2, 2, 1]), True),
+        (np.diag([2, 3, 2, 1]), False),
+        (
+            np.array(
+                [
+                    [2, 0, 0, 1],
+                    [0, 2, 0, 3],
+                    [0, 0, 2, 5],
+                    [0, 0, 0, 1],
+                ]
+            ),
+            True,
+        ),
+        (
+            np.array(
+                [
+                    [2, 0, 0, 1],
+                    [0, 3, 0, 3],
+                    [0, 0, 2, 5],
+                    [0, 0, 0, 1],
+                ]
+            ),
+            False,
+        ),
     ],
 )
-def test_view_img_4d_warnings(params):
-    """Test warning when viewing 4D images."""
-    mni = datasets.load_mni152_template(resolution=2)
+def test_is_isotropic(affine, is_isotropic):
+    """Check _is_isotropic correctly detects isotropic affines."""
+    assert _is_isotropic(affine) == is_isotropic
 
-    # Create a fake functional image by resample the template
-    img = image.resample_img(
-        mni,
-        target_affine=3 * np.eye(3),
-        copy_header=True,
-        force_resample=True,
-    )
-    img_4d = image.new_img_like(img, get_data(img)[:, :, :, np.newaxis])
-    assert len(img_4d.shape) == 4
 
-    with pytest.warns(
-        UserWarning,
-        match="'partition' will ignore the 'mask' of the MaskedArray",
-    ):
-        html_view = view_img(img_4d, **params)
+@pytest.mark.parametrize(
+    "voxel_size,expected_affine",
+    [
+        (None, np.diag([-0.5, 0.5, 0.5, 1])),
+        (2, np.diag([-2, 2, 2, 1])),
+        (3, np.diag([-3, 3, 3, 1])),
+    ],
+)
+def test_resample_to_isotropic(voxel_size, expected_affine):
+    """Check _resample_to_isotropic produces the expected isotropic affine."""
+    affine = np.diag([-0.5, 1, 2, 1])
+    img = _img_3d_rand(affine=affine)
 
-    _check_html(html_view)
+    resample_img = _resample_to_isotropic(img, voxel_size=voxel_size)
+    assert np.allclose(resample_img.affine, expected_affine)

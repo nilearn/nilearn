@@ -6,21 +6,23 @@ import collections.abc
 import itertools
 import operator
 import warnings
+from typing import Self
 
 import numpy as np
 import scipy.linalg
-from joblib import Memory, Parallel, delayed
-from sklearn.base import BaseEstimator
+from joblib import Parallel, delayed
 from sklearn.covariance import empirical_covariance
 from sklearn.model_selection import check_cv
 from sklearn.utils import check_array
 from sklearn.utils.extmath import fast_logdet
 
-from nilearn._utils import CacheMixin, fill_doc, logger
+from nilearn._base import NilearnBaseEstimator
+from nilearn._utils import logger
+from nilearn._utils.cache_mixin import CacheMixin
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.param_validation import check_params, sanitize_verbose
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -46,11 +48,11 @@ def compute_alpha_max(emp_covs, n_samples):
 
     Returns
     -------
-    alpha_max : float
+    alpha_max : :obj:`float`
         minimal value for the regularization parameter that gives a
         fully sparse matrix.
 
-    alpha_min : float
+    alpha_min : :obj:`float`
         minimal value for the regularization parameter that gives a fully
         dense matrix.
 
@@ -73,7 +75,7 @@ def compute_alpha_max(emp_covs, n_samples):
     return np.max(norms), np.min(norms[norms > 0])
 
 
-def _update_submatrix(full, sub, sub_inv, p, h, v):
+def _update_submatrix(full, sub, sub_inv, p, h, v) -> None:
     """Update submatrix and its inverse.
 
     sub_inv is the inverse of the submatrix of "full" obtained by removing
@@ -115,7 +117,7 @@ def _update_submatrix(full, sub, sub_inv, p, h, v):
     sub_inv /= 2.0
 
 
-def _assert_submatrix(full, sub, n):
+def _assert_submatrix(full: np.ndarray, sub: np.ndarray, n: int) -> None:
     """Check that "sub" is the matrix obtained \
     by removing the p-th col and row in "full".
 
@@ -141,7 +143,7 @@ def group_sparse_covariance(
     probe_function=None,
     precisions_init=None,
     debug=False,
-):
+) -> tuple[np.ndarray, np.ndarray]:
     """Compute sparse precision matrices and covariance matrices.
 
     The precision matrices returned by this function are sparse, and share a
@@ -167,8 +169,7 @@ def group_sparse_covariance(
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
 
-    max_iter : :obj:`int`, default=50
-        maximum number of iterations.
+    %(max_iter50)s
 
     tol : positive :obj:`float` or None, default=0.001
         The tolerance to declare convergence: if the duality gap goes below
@@ -212,6 +213,8 @@ def group_sparse_covariance(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     emp_covs, n_samples = empirical_covariances(
         subjects, assume_centered=False
     )
@@ -477,7 +480,7 @@ def _init_omega(emp_covs, precisions_init):
     return omega
 
 
-def _check_alpha(alpha):
+def _check_alpha(alpha) -> None:
     if not isinstance(alpha, (int, float)) or alpha < 0:
         raise ValueError(
             "Regularization parameter alpha must be a positive number.\n"
@@ -485,7 +488,7 @@ def _check_alpha(alpha):
         )
 
 
-def _check_diagonal_normalization(emp_covs, n_subjects):
+def _check_diagonal_normalization(emp_covs, n_subjects) -> None:
     ones = np.ones(emp_covs.shape[0])
     for k in range(n_subjects):
         if (
@@ -544,7 +547,7 @@ def _check_if_tolerance_reached(tol, max_norm, verbose, n):
 
 
 @fill_doc
-class GroupSparseCovariance(CacheMixin, BaseEstimator):
+class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
     """Covariance and precision matrix estimator.
 
     The model used has been introduced in :footcite:t:`Varoquaux2010a`, and the
@@ -561,9 +564,8 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         The tolerance to declare convergence: if the dual gap goes below
         this value, iterations are stopped.
 
-    max_iter : :obj:`int`, default=10
-        maximum number of iterations. The default value is rather
-        conservative.
+    %(max_iter10)s
+        The default value is rather conservative.
 
     %(verbose0)s
 
@@ -575,6 +577,11 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
     ----------
     covariances_ : numpy.ndarray, shape (n_features, n_features, n_subjects)
         empirical covariance matrices.
+
+    memory_ : joblib memory cache
+
+    n_features_in_ : :obj:`int`
+        Number of features seen during fit.
 
     precisions_ : numpy.ndarraye, shape (n_features, n_features, n_subjects)
         precisions matrices estimated using the group-sparse algorithm.
@@ -602,32 +609,8 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         self.memory_level = memory_level
         self.verbose = verbose
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(niimg_like=False)
-        return tags
-
     @fill_doc
-    def fit(self, subjects, y=None):
+    def fit(self, subjects, y=None) -> Self:
         """Fits the group sparse precision model according \
         to the given training data and parameters.
 
@@ -650,6 +633,8 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         del y
         check_params(self.__dict__)
 
+        verbose = sanitize_verbose(self.verbose)
+
         # casting single arrays to list mostly to help
         # with checking comlpliance with sklearn estimator guidelines
         if isinstance(subjects, np.ndarray):
@@ -670,31 +655,30 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
                 ensure_min_samples=2,
             )
 
-        if self.memory is None:
-            self.memory = Memory(location=None)
+        self._fit_cache()
 
-        logger.log("Computing covariance matrices", verbose=self.verbose)
+        logger.log("Computing covariance matrices", verbose=verbose)
         self.covariances_, n_samples = empirical_covariances(
             subjects, assume_centered=False
         )
 
         self.n_features_in_ = next(iter(s.shape[1] for s in subjects))
 
-        logger.log("Computing precision matrices", verbose=self.verbose)
+        logger.log("Computing precision matrices", verbose=verbose)
         ret = self._cache(_group_sparse_covariance)(
             self.covariances_,
             n_samples,
             self.alpha,
             tol=self.tol,
             max_iter=self.max_iter,
-            verbose=max(0, self.verbose - 1),
+            verbose=max(0, verbose - 1),
             debug=False,
         )
 
         self.precisions_ = ret
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "precisions_") and hasattr(self, "covariances_")
 
 
@@ -746,6 +730,7 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
     # single precision to double will be required or not.
     emp_covs = np.empty((n_features, n_features, n_subjects), order="F")
     for k, s in enumerate(subjects):
+        # TODO should we use sample std?
         if standardize:
             s = s / s.std(axis=0)  # copy on purpose
         M = empirical_covariance(s, assume_centered=assume_centered)
@@ -792,15 +777,15 @@ def group_sparse_scores(
 
     Returns
     -------
-    log_lik : float
+    log_lik : :obj:`float`
         log-likelihood of precisions on the given covariances. This is the
         opposite of the loss function, without the regularization term
 
-    objective : float
+    objective : :obj:`float`
         value of objective function. This is the value minimized by
         group_sparse_covariance()
 
-    duality_gap : float
+    duality_gap : :obj:`float`
         duality gap upper bound. The returned bound is tight: it vanishes for
         the optimal precision matrices
 
@@ -936,6 +921,8 @@ def group_sparse_covariance_path(
         only if test_subjs is not None.
 
     """
+    check_params(locals())
+
     train_covs, train_n_samples = empirical_covariances(
         train_subjs, assume_centered=False, standardize=True
     )
@@ -1013,7 +1000,7 @@ class EarlyStopProbe:
 
 
 @fill_doc
-class GroupSparseCovarianceCV(BaseEstimator):
+class GroupSparseCovarianceCV(NilearnBaseEstimator):
     """Sparse inverse covariance w/ cross-validated choice of the parameter.
 
     A cross-validated value for the regularization parameter is first
@@ -1047,8 +1034,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
         tolerance used during the final optimization for determining precision
         matrices value.
 
-    max_iter : :obj:`int`, default=100
-        maximum number of iterations in the final optimization.
+    %(max_iter100)s
 
     %(verbose0)s
 
@@ -1074,10 +1060,10 @@ class GroupSparseCovarianceCV(BaseEstimator):
         sparsity pattern (if a coefficient is zero for a given matrix, it
         is also zero for every other.)
 
-    alpha_ : float
+    alpha_ : :obj:`float`
         penalization parameter value selected.
 
-    cv_alphas_ : list of floats
+    cv_alphas_ : :obj:`list` of floats
         all values of the penalization parameter explored.
 
     cv_scores_ : numpy.ndarray, shape (n_alphas, n_folds)
@@ -1125,32 +1111,8 @@ class GroupSparseCovarianceCV(BaseEstimator):
         self.debug = debug
         self.early_stopping = early_stopping
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(niimg_like=False)
-        return tags
-
     @fill_doc
-    def fit(self, subjects, y=None):
+    def fit(self, subjects, y=None) -> Self:
         """Compute cross-validated group-sparse precisions.
 
         Parameters
@@ -1182,6 +1144,8 @@ class GroupSparseCovarianceCV(BaseEstimator):
                 "'subjects' must be a list of 2D numpy arrays. "
                 f"Got {subjects.__class__.__name__}"
             )
+
+        verbose = sanitize_verbose(self.verbose)
 
         for x in subjects:
             check_array(
@@ -1218,14 +1182,14 @@ class GroupSparseCovarianceCV(BaseEstimator):
             n_refinements = self.n_refinements
             alpha_1, _ = compute_alpha_max(emp_covs, n_samples)
             alpha_0 = 1e-2 * alpha_1
-            alphas = np.logspace(
+            alphas = np.logspace(  # type: ignore[assignment]
                 np.log10(alpha_0), np.log10(alpha_1), n_alphas
             )[::-1]
 
         covs_init = itertools.repeat(None)
 
         # Copying the cv generators to use them n_refinements times.
-        cv_ = zip(*cv)
+        cv_ = zip(*cv, strict=False)
 
         for i, (this_cv) in enumerate(itertools.tee(cv_, n_refinements)):
             # Compute the cross-validated loss on the current grid
@@ -1238,37 +1202,36 @@ class GroupSparseCovarianceCV(BaseEstimator):
                             *[
                                 (subject[train, :], subject[test, :])
                                 for subject, (train, test) in zip(
-                                    subjects, train_test
+                                    subjects, train_test, strict=False
                                 )
-                            ]
+                            ],
+                            strict=False,
                         )
                     )
                 )
             if self.early_stopping:
                 probes = [
-                    EarlyStopProbe(
-                        test_subjs, verbose=max(0, self.verbose - 1)
-                    )
+                    EarlyStopProbe(test_subjs, verbose=max(0, verbose - 1))
                     for _, test_subjs in train_test_subjs
                 ]
             else:
-                probes = itertools.repeat(None)
+                probes = itertools.repeat(None)  # type: ignore[assignment]
 
-            this_path = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+            this_path = Parallel(n_jobs=self.n_jobs, verbose=verbose)(
                 delayed(group_sparse_covariance_path)(
                     train_subjs,
                     alphas,
                     test_subjs=test_subjs,
                     max_iter=self.max_iter_cv,
                     tol=self.tol_cv,
-                    verbose=max(0, self.verbose - 1),
+                    verbose=max(0, verbose - 1),
                     debug=self.debug,
                     # Warm restart is useless with early stopping.
                     precisions_init=None if self.early_stopping else prec_init,
                     probe_function=probe,
                 )
                 for (train_subjs, test_subjs), prec_init, probe in zip(
-                    train_test_subjs, covs_init, probes
+                    train_test_subjs, covs_init, probes, strict=False
                 )
             )
 
@@ -1277,14 +1240,20 @@ class GroupSparseCovarianceCV(BaseEstimator):
             #   of alpha.
             # - precisions_list: corresponding precisions matrices, for each
             #   value of alpha.
-            precisions_list, scores = list(zip(*this_path))
+            precisions_list, scores = list(zip(*this_path, strict=False))
             # now scores[i][j] is the score for the i-th folding, j-th value of
             # alpha (analogous for precisions_list)
-            precisions_list = list(zip(*precisions_list))
-            scores = [np.mean(sc) for sc in zip(*scores)]
+            precisions_list = list(  # type: ignore[assignment]
+                zip(*precisions_list, strict=False)
+            )
+            scores = [  # type: ignore[assignment]
+                np.mean(sc) for sc in zip(*scores, strict=False)
+            ]
             # scores[i] is the mean score obtained for the i-th value of alpha.
 
-            path.extend(list(zip(alphas, scores, precisions_list)))
+            path.extend(
+                list(zip(alphas, scores, precisions_list, strict=False))
+            )
             path = sorted(path, key=operator.itemgetter(0), reverse=True)
 
             # Find the maximum score (avoid using the built-in 'max' function
@@ -1323,7 +1292,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
                 alpha_1 = path[best_index - 1][0]
                 alpha_0 = path[best_index + 1][0]
                 covs_init = path[best_index - 1][2]
-            alphas = np.logspace(
+            alphas = np.logspace(  # type: ignore[assignment]
                 np.log10(alpha_1), np.log10(alpha_0), len(alphas) + 2
             )
             alphas = alphas[1:-1]
@@ -1331,10 +1300,10 @@ class GroupSparseCovarianceCV(BaseEstimator):
                 logger.log(
                     "[GroupSparseCovarianceCV] Done refinement "
                     f"{i: 2} out of {n_refinements}",
-                    verbose=self.verbose,
+                    verbose=verbose,
                 )
 
-        path = list(zip(*path))
+        path = list(zip(*path, strict=False))
         cv_scores_ = list(path[1])
         alphas = list(path[0])
 
@@ -1343,7 +1312,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
         self.cv_alphas_ = alphas
 
         # Finally, fit the model with the selected alpha
-        logger.log("Final optimization", verbose=self.verbose)
+        logger.log("Final optimization", verbose=verbose)
         self.covariances_ = emp_covs
         self.precisions_ = _group_sparse_covariance(
             emp_covs,
@@ -1351,10 +1320,10 @@ class GroupSparseCovarianceCV(BaseEstimator):
             self.alpha_,
             tol=self.tol,
             max_iter=self.max_iter,
-            verbose=max(0, self.verbose - 1),
+            verbose=max(0, verbose - 1),
             debug=self.debug,
         )
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "precisions_") and hasattr(self, "covariances_")

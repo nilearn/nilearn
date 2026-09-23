@@ -16,7 +16,6 @@ from nilearn.decomposition.tests.conftest import (
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 
 
-@pytest.mark.timeout(0)
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 @pytest.mark.parametrize("length", [1, 2])
 def test_multi_pca(
@@ -29,7 +28,9 @@ def test_multi_pca(
        and that fit output is deterministic.
     """
     multi_pca = _MultiPCA(
-        mask=decomposition_mask_img, n_components=3, random_state=RANDOM_STATE
+        mask=decomposition_mask_img,
+        n_components=3,
+        random_state=RANDOM_STATE,
     )
     multi_pca.fit(decomposition_images)
 
@@ -38,7 +39,9 @@ def test_multi_pca(
     components1 = multi_pca.components_
 
     multi_pca = _MultiPCA(
-        mask=decomposition_mask_img, n_components=3, random_state=RANDOM_STATE
+        mask=decomposition_mask_img,
+        n_components=3,
+        random_state=RANDOM_STATE,
     )
     multi_pca.fit(length * decomposition_images)
     components2 = multi_pca.components_
@@ -89,20 +92,12 @@ def test_multi_pca_score_single_subject_n_components(
         n_components=5,
     )
     multi_pca.fit(decomposition_img)
+
+    check_decomposition_estimator(multi_pca, data_type)
+
     s = multi_pca.score(decomposition_img)
 
     assert_almost_equal(s, 1.0, 1)
-
-    # Per component score
-    multi_pca = _MultiPCA(
-        mask=decomposition_mask_img,
-        random_state=RANDOM_STATE,
-        memory_level=0,
-        n_components=5,
-    )
-    multi_pca.fit(decomposition_img)
-
-    check_decomposition_estimator(multi_pca, data_type)
 
     if data_type == "nifti":
         masker = NiftiMasker(decomposition_mask_img).fit()

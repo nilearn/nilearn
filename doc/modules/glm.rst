@@ -45,6 +45,7 @@ Functions
     fdr_threshold
     cluster_level_inference
     threshold_stats_img
+    save_glm_to_bids
 
 
 :mod:`nilearn.glm.first_level`

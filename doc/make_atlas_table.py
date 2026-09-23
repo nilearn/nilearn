@@ -1,9 +1,19 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   "nilearn[min_plotting]",
+#    "tabulate"
+# ]
+# ///
 """Generate markdown files with table summarizing information about atlases."""
 
 from pathlib import Path
+from ssl import SSLCertVerificationError
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from requests.exceptions import SSLError
+from urllib3.exceptions import MaxRetryError
 
 from nilearn.datasets import (
     fetch_atlas_aal,
@@ -167,7 +177,10 @@ for display_name, details in deterministic_atlases.items():
     fn = details["fn"]
     params = details.get("params", {})
 
-    data = fn(**params)
+    try:
+        data = fn(**params)
+    except (SSLError, MaxRetryError, SSLCertVerificationError):
+        continue
 
     name = fn.__name__.replace("fetch_atlas_", "")
 
@@ -274,7 +287,7 @@ _generate_markdown_file("deterministic_atlases.md", dict_for_df)
 #
 
 # dict to define fetching options for each atlas
-probablistic_atlases = {
+probabilistic_atlases = {
     "Allen (2011)": {"fn": fetch_atlas_allen_2011},
     "Craddock (2012)": {
         "fn": fetch_atlas_craddock_2012,
@@ -307,11 +320,14 @@ probablistic_atlases = {
 
 dict_for_df = {"name": [], "image": []}
 
-for display_name, details in probablistic_atlases.items():
+for display_name, details in probabilistic_atlases.items():
     fn = details["fn"]
     params = details.get("params", {})
 
-    data = fn(**params)
+    try:
+        data = fn(**params)
+    except (SSLError, MaxRetryError, SSLCertVerificationError):
+        continue
 
     name = fn.__name__.replace("fetch_atlas_", "")
 
@@ -321,7 +337,7 @@ for display_name, details in probablistic_atlases.items():
     params_str = ""
     for k, v in params.items():
         params_str += f"_{k}-{v}"
-    output_file = output_dir / f"probablistic_atlas_{name}{params_str}.png"
+    output_file = output_dir / f"probabilistic_atlas_{name}{params_str}.png"
 
     if GENERATE_FIG:
         plot_prob_atlas(

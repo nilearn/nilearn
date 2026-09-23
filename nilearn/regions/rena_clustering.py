@@ -7,19 +7,21 @@ import inspect
 import itertools
 import warnings
 from pathlib import Path
+from typing import Self
 
 import numpy as np
-from joblib import Memory
 from nibabel import Nifti1Image
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
-from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
-from sklearn.utils import check_array
-from sklearn.utils.validation import check_is_fitted
+from sklearn.base import ClusterMixin, TransformerMixin
+from sklearn.utils.validation import check_is_fitted, validate_data
 
-from nilearn._utils import fill_doc, logger
+from nilearn._base import NilearnBaseEstimator
+from nilearn._utils import logger
+from nilearn._utils.cache_mixin import check_memory
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.tags import InputTags
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -50,7 +52,7 @@ def _compute_weights(X, mask_img):
         shape: (n_edges,).
 
     """
-    n_samples, n_features = X.shape
+    n_samples, _ = X.shape
 
     mask = get_data(mask_img).astype("bool")
     shape = mask.shape
@@ -76,7 +78,7 @@ def _make_3d_edges(vertices, is_mask):
     vertices : ndarray
         The indices of the voxels.
 
-    is_mask : boolean
+    is_mask : :obj:`bool`
         If is_mask is true, it returns the mask of edges.
         Returns 1 if the edge is contained in the mask, 0 otherwise.
 
@@ -167,7 +169,7 @@ def _compute_weights_surface(X, mask, edges):
         So n_features is only the number of vertices that were kept after
         masking.
 
-    mask : boolean ndarray, shape = [1, n_vertices]
+    mask : :obj:`bool` ndarray, shape = [1, n_vertices]
         Initial mask used for getting the X. So n_vertices is the total number
         of vertices in the mesh.
 
@@ -227,7 +229,7 @@ def make_edges_surface(faces, mask):
     faces : ndarray
         The vertex indices corresponding the mesh triangles.
 
-    mask : boolean
+    mask : :obj:`bool`
         True if the edge is contained in the mask, False otherwise.
 
     Returns
@@ -357,7 +359,7 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     connectivity : a sparse matrix in COOrdinate format.
         Sparse matrix representation of the weighted adjacency graph.
 
-    threshold : float in the close interval [0, 1], default=1e-7
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
 
     Returns
@@ -418,7 +420,7 @@ def _reduce_data_and_connectivity(
     connectivity : a sparse matrix in COOrdinate format.
         Sparse matrix representation of the weighted adjacency graph.
 
-    threshold : float in the close interval [0, 1], default=1e-7
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
 
     Returns
@@ -528,7 +530,7 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
 @fill_doc
 def recursive_neighbor_agglomeration(
     X, mask_img, n_clusters, n_iter=10, threshold=1e-7, verbose=0
-):
+) -> tuple[int, np.ndarray]:
     """Recursive neighbor agglomeration (:term:`ReNA`).
 
     It performs iteratively the nearest neighbor grouping.
@@ -566,6 +568,8 @@ def recursive_neighbor_agglomeration(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     connectivity = _weighted_connectivity_graph(X, mask_img)
 
     # Initialization
@@ -593,7 +597,11 @@ def recursive_neighbor_agglomeration(
 
 
 @fill_doc
-class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
+class ReNA(
+    ClusterMixin,
+    TransformerMixin,
+    NilearnBaseEstimator,
+):
     """Recursive Neighbor Agglomeration (:term:`ReNA`).
 
     Recursively merges the pair of clusters according to 1-nearest neighbors
@@ -662,29 +670,12 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         self.memory_level = memory_level
         self.verbose = verbose
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(niimg_like=False)
         return tags
@@ -714,7 +705,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             )
 
     @fill_doc
-    def fit(self, X, y=None):
+    def fit(self, X, y=None) -> Self:
         """Compute clustering of the data.
 
         Parameters
@@ -732,21 +723,14 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         del y
         check_params(self.__dict__)
 
-        if SKLEARN_LT_1_6:
-            X = check_array(
-                X, ensure_min_features=2, ensure_min_samples=2, estimator=self
-            )
-            self.n_features_in_ = X.shape[1]
-        else:
-            from sklearn.utils.validation import validate_data
-
-            X = validate_data(
-                self,
-                X,
-                reset=True,
-                ensure_min_features=2,
-                ensure_min_samples=2,
-            )
+        X = validate_data(
+            self,
+            X,
+            reset=True,
+            ensure_min_features=2,
+            ensure_min_samples=2,
+        )
+        self.n_features_in_ = X.shape[1]
 
         self.mask_img_ = self.mask_img
         self._set_mask_img_for_tests()
@@ -765,11 +749,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             check_is_fitted(self.mask_img)
             self.mask_img_ = self.mask_img.mask_img_
 
-        self.memory_ = self.memory
-        if self.memory is None or isinstance(self.memory, str):
-            self.memory_ = Memory(
-                location=self.memory, verbose=max(0, self.verbose - 1)
-            )
+        self.memory_ = check_memory(self.memory, self.verbose)
 
         if self.n_clusters <= 0:
             raise ValueError(
@@ -791,9 +771,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
                 stacklevel=find_stack_level(),
             )
 
-        n_components, labels = self.memory_.cache(
-            recursive_neighbor_agglomeration
-        )(
+        _, labels = self.memory_.cache(recursive_neighbor_agglomeration)(
             X,
             self.mask_img_,
             self.n_clusters,
@@ -811,7 +789,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
         return self
 
-    def __sklearn_is_fitted__(self):
+    def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "labels_")
 
     @fill_doc
@@ -837,18 +815,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
-        # TODO simplify when dropping sklearn 1.5
-        if SKLEARN_LT_1_6:
-            X = check_array(
-                X,
-                ensure_2d=True,
-                estimator=self,
-                ensure_min_features=self.n_features_in_,
-            )
-        else:
-            from sklearn.utils.validation import validate_data
-
-            X = validate_data(self, X, reset=False)
+        X = validate_data(self, X, reset=False)
 
         unique_labels = np.unique(self.labels_)
 

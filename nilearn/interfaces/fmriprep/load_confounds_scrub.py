@@ -108,15 +108,15 @@ def _get_outlier_cols(confounds_columns):
 
     Parameters
     ----------
-    confounds_columns : list
+    confounds_columns : :obj:`list`
         List of confounds column names.
 
     Returns
     -------
-    outlier_cols : list
+    outlier_cols : :obj:`list`
         List of outlier regressor column names.
 
-    confounds_cols : list
+    confounds_cols : :obj:`list`
         List of confounds column names without outlier regressors.
     """
     outlier_cols = {

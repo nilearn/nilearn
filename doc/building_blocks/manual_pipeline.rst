@@ -34,6 +34,7 @@ example, we can download the data from the
 .. code-block:: python
 
      from nilearn import datasets
+
      dataset = datasets.fetch_haxby()
 
 ``dataset.func`` contains filenames referring to dataset files on the disk:
@@ -49,7 +50,7 @@ Access supplementary information on the dataset:
 
 .. code-block:: python
 
-     print(haxby_dataset['description'])
+     print(haxby_dataset["description"])
 
 The complete list of the data-downloading functions can be found in the
 :ref:`reference documentation for the datasets <datasets_ref>`.
@@ -138,7 +139,6 @@ The :class:`NiftiMasker` can be seen as a *tube* that transforms data
 from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
 
-.. include:: ../../examples/masker_note.rst
 
 .. code-block:: python
 
