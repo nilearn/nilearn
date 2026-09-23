@@ -1780,11 +1780,11 @@ def plot_markers(
         Colormap used to represent the node measure.
 
     node_vmin : :obj:`float` or None, default=None
-        Lower bound of the colormap. If `None`, the min of the node_values is
+        Lower bound of the colormap. If ``None``, the min of the node_values is
         used.
 
     node_vmax : :obj:`float` or None, default=None
-        Upper bound of the colormap. If `None`, the min of the node_values is
+        Upper bound of the colormap. If ``None``, the min of the node_values is
         used.
 
     node_threshold : :obj:`float` or None, default=None
