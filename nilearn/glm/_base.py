@@ -184,7 +184,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             "predicted", result_as_time_series=True
         )
 
-    def r_square(self):
+    def r_square_(self):
         """Transform voxelwise r-squared values to the same shape \
         as the input Nifti1Image(s).
 
@@ -197,7 +197,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             "r_square", result_as_time_series=False
         )
 
-    @auto_attr
     def r_square(self):
         """Transform element-wise r-squared to the same shape \
         as the input image.
