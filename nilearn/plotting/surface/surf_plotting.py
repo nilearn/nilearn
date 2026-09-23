@@ -150,7 +150,7 @@ def plot_surf(
 
         .. nilearn_versionchanged:: 0.12.0
             Default value changed to None.
-            If  ``None`` is passed it will default to ``False``.
+            If  ``None`` is passed, it will default to ``False``.
 
     %(colorbar)s
         default=True.
