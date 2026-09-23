@@ -72,16 +72,12 @@ DECODING = [
         screening_percentile=100,
         estimator_args={"random_state": RANDOM_STATE},
     ),
-    DecoderRegressor(
-        screening_percentile=100, estimator_args={"random_state": RANDOM_STATE}
-    ),
+    DecoderRegressor(screening_percentile=100),
     FREMClassifier(
         screening_percentile=100,
         estimator_args={"random_state": RANDOM_STATE},
     ),
-    FREMRegressor(
-        screening_percentile=100, estimator_args={"random_state": RANDOM_STATE}
-    ),
+    FREMRegressor(screening_percentile=100),
     SpaceNetClassifier(),
     SpaceNetRegressor(),
     SearchLight(
