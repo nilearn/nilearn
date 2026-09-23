@@ -480,6 +480,21 @@ jobs:
             # see the "Fail if any benchmark reported as failed" step of
             # the "benchmark" job above for why both the exit code and
             # the log content are checked here.
+            #
+            # Neither of those two checks catches a commit/environment
+            # that fails at *discovery* time (asv building the benchmark
+            # suite's list of benchmarks, which needs to import nilearn):
+            # asv treats that as a soft, recoverable
+            # "Failed: trying different commit/environment" and moves on
+            # to the next combination, so "asv run" still exits 0, and
+            # the failure never becomes "asv: benchmark failed" -- that
+            # string is specific to a benchmark actually being invoked
+            # and erroring, not to the discovery step itself failing.
+            # This was verified against a deliberately broken commit
+            # (nilearn 0.10.0, which imports "pkg_resources" at the top
+            # of nilearn/__init__.py, removed from recent setuptools):
+            # neither the exit code nor "asv: benchmark failed" caught
+            # it, only this "Failed:" line did.
             run: |
                 EXIT_CODE=$(cat asv_run_exit_code)
                 if [ "$EXIT_CODE" -ne 0 ]; then
@@ -490,6 +505,11 @@ jobs:
                 if grep -q "asv: benchmark failed" history_install_check_log; then
                     echo "::error::The 'discovery' smoke benchmark failed for at least one commit in asv_benchmarks/hashestobenchmark.txt with the current matrix, see the excerpt(s) below"
                     grep -B 5 "asv: benchmark failed" history_install_check_log
+                    exit 1
+                fi
+                if grep -q "Failed: trying different commit/environment" history_install_check_log; then
+                    echo "::error::At least one commit in asv_benchmarks/hashestobenchmark.txt could not be built/installed/imported with the current asv.conf.json matrix, see the excerpt(s) below"
+                    grep -B 30 "Failed: trying different commit/environment" history_install_check_log
                     exit 1
                 fi
 
