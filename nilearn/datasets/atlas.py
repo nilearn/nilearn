@@ -480,7 +480,7 @@ def fetch_atlas_destrieux_2009(
     return Atlas(
         maps=files_[1],
         labels=labels.name.to_list(),
-        description=Path(files_[2]).read_text(),
+        description=Path(files_[2]).read_text(encoding="utf-8"),
         atlas_type=atlas_type,
         lut=pd.read_csv(files_[0]),
         template="fsaverage",
@@ -1585,7 +1585,7 @@ def fetch_atlas_aal(
             indices.append(idx.text)
             labels.append(name.text)
     else:
-        with Path(labels_file).open() as fp:
+        with Path(labels_file).open(encoding="utf-8") as fp:
             for line in fp:
                 _, label, index = line.strip().split("\t")
                 indices.append(index)
