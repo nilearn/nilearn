@@ -1,14 +1,11 @@
 """Checks for nilearn estimators.
 
 This module contains the code to run systematic checks
-from sklearn or nilearn
+from nilearn
 on the nilearn 'estimators' (maskers, decoders, ...).
 
-Some of the code here will help specify which of the sklearn
-are expected to fail for some of the nilearn estimators.
-In most cases, there will then be a homemade replacement
-for that sklearn check:
-for example for estimators that expect an image as input and not an array.
+This module contains replacement checks for sklearn estimator checks for most
+cases known to fail for nilearn estimators.
 
 This module also contains several nilearn specific checks
 that have no equivalent in sklearn:
