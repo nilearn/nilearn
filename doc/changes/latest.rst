@@ -32,11 +32,15 @@ Fixes
 
 - :bdg-primary:`Doc` Fix documented defaults that did not match the signatures in :func:`~nilearn.datasets.fetch_atlas_smith_2009`, :func:`~nilearn.datasets.fetch_atlas_difumo`, :func:`~nilearn.datasets.fetch_atlas_schaefer_2018` and in several private helpers (:gh:`6582` by `Venish Paneliya`_).
 
+- :bdg-primary:`Doc` Replace the removed boolean values of ``standardize`` in code examples of the user guide and in the ``FirstLevelModel.standardize_`` docstring (:gh:`6597` by `Reyyi Shreyas`_).
+
 
 Enhancements
 ------------
 
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
+
+- :bdg-primary:`Doc` Add an example comparing the effect of ``standardize="zscore_sample"``, ``standardize="psc"`` and ``standardize=None`` on decoding performance (:gh:`6597` by `Reyyi Shreyas`_).
 
 
 Changes
