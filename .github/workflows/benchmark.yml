@@ -375,6 +375,54 @@ jobs:
                 git commit --message "Overwrite benchmark HTML with main vs latest release comparison (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin gh-pages
 
+    sync-benchmark-dependencies:
+        # Keep asv_benchmarks/asv.conf.json's "pythons" / dependency
+        # matrix from silently drifting behind pyproject.toml's
+        # "min_plotting" dependency group and "requires-python" floor
+        # (see gh-6592 / gh-6593): a stale pin here can lose its
+        # pre-built wheel and break this workflow's "benchmark" job.
+        if: |
+            github.repository == 'nilearn/nilearn' &&
+            github.event_name == 'push'
+        runs-on: ubuntu-24.04
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v7
+
+        -   name: Set up Python
+            uses: actions/setup-python@v6
+            with:
+                python-version: ${{ env.MIN_PYTHON }}
+
+        -   name: Install dependencies
+            run: python -m pip install --upgrade pip packaging
+
+        -   name: Sync asv.conf.json with pyproject.toml
+            id: sync
+            continue-on-error: true
+            run: python asv_benchmarks/check_dependencies_in_sync.py --fix
+
+        -   name: Create Pull Request
+            uses: peter-evans/create-pull-request@v8
+            with:
+                commit-message: sync asv_benchmarks/asv.conf.json with pyproject.toml
+                base: main
+                token: ${{ secrets.GITHUB_TOKEN }}
+                delete-branch: true
+                title: '[BOT] sync asv_benchmarks/asv.conf.json with pyproject.toml'
+                body: done via this [GitHub Action](https://github.com/${{ github.repository_owner }}/nilearn/blob/main/.github/workflows/benchmark.yml)
+
+        -   name: Fail if some mismatches could not be auto-fixed
+            # continue-on-error above lets the PR step run (and pick up
+            # whatever was fixed) even when the sync script also reports
+            # a mismatch it cannot resolve on its own (e.g. a matrix
+            # package with no "==" pinned version in pyproject.toml);
+            # surface that case as a failed job instead of staying silent.
+            if: steps.sync.outcome == 'failure'
+            run: |
+                echo "::error::asv_benchmarks/asv.conf.json still has unresolved mismatches, see the 'Sync asv.conf.json with pyproject.toml' step above."
+                exit 1
+
     list-history-commits:
         if: |
             github.repository == 'nilearn/nilearn' &&

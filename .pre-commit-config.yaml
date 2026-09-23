@@ -160,3 +160,17 @@ repos:
         name: Pyrefly
         pass_filenames: false
         additional_dependencies: [numpy>=1.26.0, nibabel>=5.2.0, requests>=2.33.0, pandas-stubs, lxml-stubs, types-requests]
+
+    # Keep the asv benchmark dependency matrix in sync with pyproject.toml.
+    # Only triggered by pyproject.toml itself: asv_benchmarks/asv.conf.json
+    # is in the global "exclude" above (it is JSONC, not plain JSON), so a
+    # direct edit to it cannot trigger a pre-commit hook either way.
+-   repo: local
+    hooks:
+    -   id: check-asv-dependencies-in-sync
+        name: Check asv_benchmarks/asv.conf.json is in sync with pyproject.toml
+        entry: python asv_benchmarks/check_dependencies_in_sync.py
+        language: python
+        additional_dependencies: [packaging]
+        pass_filenames: false
+        files: ^pyproject\.toml$
