@@ -1,0 +1,360 @@
+{
+  "functions": [
+    {
+      "complexity": 0,
+      "file_name": "_utils.py",
+      "function_name": "Benchmark::fmri_filename",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "_utils.py",
+      "function_name": "_rng",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "_utils.py",
+      "function_name": "Benchmark::setup_cache",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "_utils.py",
+      "function_name": "generate_regions_ts",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "_utils.py",
+      "function_name": "img_labels",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "_utils.py",
+      "function_name": "generate_fake_fmri",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "_utils.py",
+      "function_name": "load",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "glm.py",
+      "function_name": "BaseBenchMarkFLM::setup",
+      "path": "glm.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "image.py",
+      "function_name": "CompareLoad::peakmem_image_load_compare",
+      "path": "image.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "image.py",
+      "function_name": "CompareLoad::time_image_load_compare",
+      "path": "image.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "image.py",
+      "function_name": "CompareMean::peakmem_image_mean_img_compare",
+      "path": "image.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "image.py",
+      "function_name": "CompareMean::time_image_mean_img_compare",
+      "path": "image.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "image.py",
+      "function_name": "CompareSlice::peakmem_image_slice_compare",
+      "path": "image.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "image.py",
+      "function_name": "CompareSlice::time_image_slice_compare",
+      "path": "image.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "image.py",
+      "function_name": "IndexImgBenchmark::peakmem_image_index_img",
+      "path": "image.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "image.py",
+      "function_name": "IndexImgBenchmark::time_image_index_img",
+      "path": "image.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "image.py",
+      "function_name": "LoadImgBenchmark::peakmem_image_load_img",
+      "path": "image.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "image.py",
+      "function_name": "LoadImgBenchmark::time_image_load_img",
+      "path": "image.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "image.py",
+      "function_name": "MeanImgBenchmark::peakmem_image_mean_img",
+      "path": "image.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "image.py",
+      "function_name": "MeanImgBenchmark::time_image_mean_img",
+      "path": "image.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_masker.py",
+      "function_name": "CompareMask::peakmem_nifti_masker_fit_transform_compare",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_masker.py",
+      "function_name": "CompareMask::time_nifti_masker_fit_transform_compare",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_masker.py",
+      "function_name": "NiftiMaskerBenchmark::peakmem_nifti_masker_fit_transform",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_masker.py",
+      "function_name": "NiftiMaskerBenchmark::time_nifti_masker_fit_transform",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "nifti_masker.py",
+      "function_name": "apply_mask",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "_utils.py",
+      "function_name": "BenchMarkTFCE::_run",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "_utils.py",
+      "function_name": "BenchMarkTFCE::peakmem_tfce",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "_utils.py",
+      "function_name": "BenchMarkTFCE::setup",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "_utils.py",
+      "function_name": "BenchMarkTFCE::time_tfce",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "_utils.py",
+      "function_name": "BaseBenchMarkTFCE::setup",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "plotting.py",
+      "function_name": "BenchMarkPlotDesignMatrixCorrelation::peakmem_plot_design_matrix_correlation",
+      "path": "plotting.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "plotting.py",
+      "function_name": "BenchMarkPlotDesignMatrixCorrelation::time_plot_design_matrix_correlation",
+      "path": "plotting.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "plotting.py",
+      "function_name": "BenchMarkPlotting3D::peakmem_plotting_3d",
+      "path": "plotting.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "plotting.py",
+      "function_name": "BenchMarkPlotting3D::setup",
+      "path": "plotting.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "plotting.py",
+      "function_name": "BenchMarkPlotting3D::time_plotting_3d",
+      "path": "plotting.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "plotting.py",
+      "function_name": "BenchMarkPlottingSurface::peakmem_plotting_surface",
+      "path": "plotting.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "plotting.py",
+      "function_name": "BenchMarkPlottingSurface::setup",
+      "path": "plotting.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "plotting.py",
+      "function_name": "BenchMarkPlottingSurface::time_plotting_surface",
+      "path": "plotting.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "plotting.py",
+      "function_name": "BenchMarkPlotDesignMatrixCorrelation::setup",
+      "path": "plotting.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "discovery.py",
+      "function_name": "BenchMarkAllEstimators::peakmem_discovery_all_estimators",
+      "path": "discovery.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "discovery.py",
+      "function_name": "BenchMarkAllEstimators::time_discovery_all_estimators",
+      "path": "discovery.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "discovery.py",
+      "function_name": "BenchMarkAllEstimators::setup",
+      "path": "discovery.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "restrict_benchmarks_to_run.py",
+      "function_name": "list_changed_files",
+      "path": "restrict_benchmarks_to_run.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "restrict_benchmarks_to_run.py",
+      "function_name": "root_folder",
+      "path": "restrict_benchmarks_to_run.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "restrict_benchmarks_to_run.py",
+      "function_name": "main",
+      "path": "restrict_benchmarks_to_run.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "restrict_benchmarks_to_run.py",
+      "function_name": "restrict_benchmarks",
+      "path": "restrict_benchmarks_to_run.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "restrict_benchmarks_to_run.py",
+      "function_name": "print_to_file",
+      "path": "restrict_benchmarks_to_run.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "_utils.py",
+      "function_name": "Benchmark::fmri_filename",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "_utils.py",
+      "function_name": "_rng",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "_utils.py",
+      "function_name": "Benchmark::setup_cache",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "_utils.py",
+      "function_name": "generate_regions_ts",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "_utils.py",
+      "function_name": "img_labels",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "_utils.py",
+      "function_name": "generate_fake_fmri",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "_utils.py",
+      "function_name": "load",
+      "path": "_utils.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "discovery.py",
+      "function_name": "BenchMarkAllEstimators::peakmem_discovery_all_estimators",
+      "path": "discovery.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "discovery.py",
+      "function_name": "BenchMarkAllEstimators::time_discovery_all_estimators",
+      "path": "discovery.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "discovery.py",
+      "function_name": "BenchMarkAllEstimators::setup",
+      "path": "discovery.py"
+    }
+  ],
+  "targets": [
+    "/home/remi-gau/github/tmp/nilearn/asv_benchmarks/benchmarks/_utils.py",
+    "/home/remi-gau/github/tmp/nilearn/asv_benchmarks/benchmarks/_utils.py",
+    "/home/remi-gau/github/tmp/nilearn/asv_benchmarks/benchmarks/glm/glm.py",
+    "/home/remi-gau/github/tmp/nilearn/asv_benchmarks/benchmarks/image/image.py",
+    "/home/remi-gau/github/tmp/nilearn/asv_benchmarks/benchmarks/maskers/nifti_masker.py",
+    "/home/remi-gau/github/tmp/nilearn/asv_benchmarks/benchmarks/mass_univariate/_utils.py",
+    "/home/remi-gau/github/tmp/nilearn/asv_benchmarks/benchmarks/plotting/plotting.py",
+    "/home/remi-gau/github/tmp/nilearn/asv_benchmarks/benchmarks/utils/__init__.py",
+    "/home/remi-gau/github/tmp/nilearn/asv_benchmarks/benchmarks/utils/__init__.py",
+    "/home/remi-gau/github/tmp/nilearn/asv_benchmarks/benchmarks/utils/discovery.py",
+    "/home/remi-gau/github/tmp/nilearn/asv_benchmarks/benchmarks/utils/discovery.py",
+    "/home/remi-gau/github/tmp/nilearn/build_tools/github/restrict_benchmarks_to_run.py"
+  ]
+}

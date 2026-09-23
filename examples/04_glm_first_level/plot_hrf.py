@@ -63,11 +63,11 @@ def mion_response_function(t_r, oversampling=16, onset=0.0):
 
     Parameters
     ----------
-    t_r : float
+    t_r : :obj:`float`
         scan repeat time, in seconds
-    oversampling : int, optional
+    oversampling : int, default=16
         temporal oversampling factor
-    onset : float, optional
+    onset : :obj:`float`, default=0.0
         hrf onset time, in seconds
 
     Returns
@@ -98,10 +98,10 @@ def mion_time_derivative(t_r, oversampling=16.0):
 
     Parameters
     ----------
-    t_r : float
+    t_r : :obj:`float`
         scan repeat time, in seconds
-    oversampling : int, optional
-        temporal oversampling factor, optional
+    oversampling : int, default=16
+        temporal oversampling factor
 
     Returns
     -------

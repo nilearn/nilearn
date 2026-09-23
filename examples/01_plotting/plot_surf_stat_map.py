@@ -100,7 +100,7 @@ pcc_mask = SurfaceImage(
     data=mask_data,
 )
 
-masker = SurfaceLabelsMasker(labels_img=pcc_mask).fit()
+masker = SurfaceLabelsMasker(labels_img=pcc_mask, verbose=1).fit()
 seed_timeseries = masker.transform(surf_img_nki).squeeze()
 
 # %%
@@ -124,7 +124,6 @@ plot_surf_roi(
     bg_on_data=True,
     title="PCC Seed",
     colorbar=False,
-    darkness=None,
 )
 
 show()
@@ -154,7 +153,6 @@ plot_surf_roi(
     bg_on_data=True,
     title="PCC Seed on flat map",
     colorbar=False,
-    darkness=None,
 )
 
 show()
@@ -214,7 +212,6 @@ plot_surf_stat_map(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     title="Correlation map",
-    darkness=None,
 )
 
 show()
@@ -232,7 +229,6 @@ plot_surf_stat_map(
     cmap="bwr",
     threshold=0.5,
     title="Threshold and colormap",
-    darkness=None,
 )
 
 show()
@@ -250,21 +246,19 @@ plot_surf_stat_map(
     cmap="bwr",
     threshold=0.5,
     title="Plotting without background",
-    darkness=None,
 )
 
 show()
 
 # %%
-# The plots can be saved to file,
-# in which case the display is closed after creating the figure
+# The plots can be saved to file.
 from pathlib import Path
 
 output_dir = Path.cwd() / "results" / "plot_surf_stat_map"
 output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
 
-plot_surf_stat_map(
+fig = plot_surf_stat_map(
     surf_mesh=fsaverage_meshes["inflated"],
     stat_map=stat_map_surf,
     hemi=hemisphere,
@@ -273,8 +267,8 @@ plot_surf_stat_map(
     threshold=0.5,
     output_file=output_dir / "plot_surf_stat_map.png",
     cmap="bwr",
-    darkness=None,
 )
+
 
 # %%
 # References

@@ -29,7 +29,7 @@ for stim_type in stimulus_information:
         fig, axes = plt.subplots(6, 8)
         fig.suptitle(stim_type)
 
-        for img_path, ax in zip(file_names, axes.ravel()):
+        for img_path, ax in zip(file_names, axes.ravel(), strict=False):
             ax.imshow(plt.imread(img_path), cmap="gray")
 
         for ax in axes.ravel():

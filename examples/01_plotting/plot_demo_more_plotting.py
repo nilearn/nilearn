@@ -51,7 +51,7 @@ See :ref:`plotting` for more details.
 
 from nilearn import datasets
 
-# haxby dataset to have anatomical image, EPI images and masks
+# The Haxby dataset to have anatomical image, EPI images and masks.
 haxby_dataset = datasets.fetch_haxby()
 haxby_anat_filename = haxby_dataset.anat[0]
 haxby_mask_filename = haxby_dataset.mask_vt[0]
@@ -247,6 +247,19 @@ plotting.plot_stat_map(
 )
 
 # %%
+# It is also possible to specify cut positions in each direction.
+# In this situation, we still set ``display_mode='mosaic'``, but
+# we specify the cut positions of slices as a dictionary with keys
+# "x", "y", "z" and values as list of cut positions in that direction.
+
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="mosaic",
+    cut_coords={"x": [42, 18, -45], "y": [-52, -28, 0], "z": [55, 67, 73]},
+    title="display_mode='mosaic' with cut_coords as dict",
+)
+
+# %%
 # Display object's features
 # -------------------------
 #
@@ -260,7 +273,7 @@ from nilearn import image
 
 # Compute voxel-wise mean functional image across time dimension. Now we have
 # functional image in 3D assigned in mean_haxby_img
-mean_haxby_img = image.mean_img(haxby_func_filename, copy_header=True)
+mean_haxby_img = image.mean_img(haxby_func_filename)
 
 # %%
 # Overlay anatomical image as edges: `add_edges`
@@ -393,7 +406,7 @@ output_dir = Path.cwd() / "results" / "plot_demo_more_plotting"
 output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
 
-plotting.plot_stat_map(
+display = plotting.plot_stat_map(
     stat_img,
     title="Using plot_stat_map output_file",
     output_file=output_dir / "plot_stat_map.png",

@@ -33,9 +33,13 @@ were already normalized to the same :term:`MNI` space.
 # The raw data subject folders only contain bold.json and events.tsv files,
 # while the derivatives folder includes the preprocessed files preproc.nii
 # and the confounds.tsv files.
+#
+# For more information
+# see the :ref:`dataset description <language_localizer_dataset>`.
+#
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
-data = fetch_language_localizer_demo_dataset(legacy_output=False)
+data = fetch_language_localizer_demo_dataset()
 
 # %%
 # Here is the location of the dataset on disk.
@@ -68,6 +72,7 @@ models, run_imgs, events, confounds = first_level_from_bids(
     task_label="languagelocalizer",
     space_label="",
     img_filters=[("desc", "preproc")],
+    smoothing_fwhm=6,
     n_jobs=2,
 )
 
@@ -111,7 +116,7 @@ z_scores = []
 z_scores_left = []
 z_scores_right = []
 for i, (first_level_glm, fmri_img, confound, event) in enumerate(
-    zip(models, run_imgs, confounds, events)
+    zip(models, run_imgs, confounds, events, strict=False)
 ):
     print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
 
@@ -148,18 +153,10 @@ for i, (first_level_glm, fmri_img, confound, event) in enumerate(
 
 # %%
 # View the GLM report of the first subject
+#
+# .. include:: ../../../examples/report_note.rst
+#
 report_flm
-
-# %%
-# Or in a separate browser window
-# report_flm.open_in_browser()
-
-
-# %%
-# Save the report to disk
-output_dir = Path.cwd() / "results" / "plot_surface_bids_analysis"
-output_dir.mkdir(exist_ok=True, parents=True)
-report_flm.save_as_html(output_dir / "report_flm.html")
 
 
 # %%
@@ -190,12 +187,7 @@ report_slm = second_level_glm.generate_report(
 
 # %%
 # View the GLM report at the group level.
+#
+# .. include:: ../../../examples/report_note.rst
+#
 report_slm
-
-# %%
-# Or in a separate browser window
-# report_flm.open_in_browser()
-
-# %%
-# Save it as an html file.
-report_slm.save_as_html(output_dir / "report_slm.html")

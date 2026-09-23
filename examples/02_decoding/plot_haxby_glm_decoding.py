@@ -29,9 +29,6 @@ from nilearn.datasets import fetch_haxby
 
 haxby_dataset = fetch_haxby()
 
-# repetition has to be known
-t_r = 2.5
-
 # %%
 # Load the behavioral data
 # ------------------------
@@ -59,9 +56,9 @@ for run in unique_runs:
     # get the number of scans per run, then the corresponding
     # vector of frame times
     n_scans = len(conditions_run)
-    frame_times = t_r * np.arange(n_scans)
+    frame_times = haxby_dataset.t_r * np.arange(n_scans)
     # each event last the full TR
-    duration = t_r * np.ones(n_scans)
+    duration = haxby_dataset.t_r * np.ones(n_scans)
     # Define the events object
     events_ = pd.DataFrame(
         {
@@ -87,7 +84,7 @@ run_label = []
 from nilearn.glm.first_level import FirstLevelModel
 
 glm = FirstLevelModel(
-    t_r=t_r,
+    t_r=haxby_dataset.t_r,
     mask_img=haxby_dataset.mask,
     high_pass=0.008,
     smoothing_fwhm=4,
@@ -124,28 +121,18 @@ for run in unique_runs:
 
 from nilearn.image import mean_img
 
-mean_img_ = mean_img(func_filename, copy_header=True)
+mean_img_ = mean_img(func_filename)
 report = glm.generate_report(
     contrasts=conditions,
     bg_img=mean_img_,
 )
 
 # %%
-# This report can be viewed in a notebook.
+#
+# .. include:: ../../../examples/report_note.rst
+#
 report
 
-# %%
-# In a jupyter notebook, the report will be automatically inserted, as above.
-
-# We can access the report via a browser:
-# report.open_in_browser()
-
-# Or we can save as an html file.
-from pathlib import Path
-
-output_dir = Path.cwd() / "results" / "plot_haxby_glm_decoding"
-output_dir.mkdir(exist_ok=True, parents=True)
-report.save_as_html(output_dir / "report.html")
 
 # %%
 # Build the decoding pipeline
@@ -159,7 +146,7 @@ report.save_as_html(output_dir / "report.html")
 #
 # * although it usually helps to decode better, z-maps time series don't
 #   need to be rescaled to a 0 mean, variance of 1 so we use
-#   standardize=False.
+#   standardize=None.
 #
 # * we use univariate feature selection to reduce the dimension of the
 #   problem keeping only 5% of voxels which are most informative.
@@ -179,7 +166,7 @@ from nilearn.decoding import Decoder
 decoder = Decoder(
     estimator="svc",
     mask=haxby_dataset.mask,
-    standardize=False,
+    standardize=None,
     screening_percentile=5,
     cv=LeaveOneGroupOut(),
     verbose=1,

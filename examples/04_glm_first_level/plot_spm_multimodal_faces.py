@@ -56,13 +56,11 @@ with warnings.catch_warnings():
     ]
 affine, shape = fmri_img[0].affine, fmri_img[0].shape
 print("Resampling the second image (this takes time)...")
-fmri_img[1] = resample_img(
-    fmri_img[1], affine, shape[:3], copy_header=True, force_resample=True
-)
+fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
 
 # %%
 # Let's create mean image for display purposes.
-mean_image = mean_img(fmri_img, copy_header=True)
+mean_image = mean_img(fmri_img)
 
 # %%
 # Fit the model
@@ -88,6 +86,7 @@ fmri_glm = FirstLevelModel(
     hrf_model=hrf_model,
     drift_model=drift_model,
     high_pass=high_pass,
+    verbose=1,
 )
 
 

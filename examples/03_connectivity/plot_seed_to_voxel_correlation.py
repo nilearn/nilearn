@@ -16,8 +16,6 @@ numpy array, corresponding to the data inside the mask.
     :ref:`for a similar example using cortical surface input data
     <sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -26,11 +24,11 @@ numpy array, corresponding to the data inside the mask.
 #
 # We will work with the first subject
 # of the brain development :term:`fMRI` data set.
-# dataset.func is a list of filenames. We select the 1st (0-based)
-# subject by indexing with [0]).
-from nilearn import datasets, plotting
+# dataset.func is a list of filenames.
+# We select the 1st (0-based) subject by indexing with [0]).
+from nilearn.datasets import fetch_development_fmri
 
-dataset = datasets.fetch_development_fmri(n_subjects=1)
+dataset = fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 confound_filename = dataset.confounds[0]
 
@@ -67,14 +65,14 @@ seed_masker = NiftiSpheresMasker(
     pcc_coords,
     radius=8,
     detrend=True,
-    standardize="zscore_sample",
     standardize_confounds=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
-    t_r=2,
+    t_r=dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
+    verbose=1,
 )
 
 # %%
@@ -94,14 +92,14 @@ from nilearn.maskers import NiftiMasker
 brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
-    standardize="zscore_sample",
     standardize_confounds=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
-    t_r=2,
+    t_r=dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
+    verbose=1,
 )
 
 # %%
@@ -139,6 +137,7 @@ plt.plot(brain_time_series[:, [10, 45, 100, 5000, 10000]])
 plt.title("Time series from 5 random voxels")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
+plt.show()
 
 # %%
 # Performing the seed-to-voxel correlation analysis
@@ -181,10 +180,12 @@ print(
 # we need to create an in memory Nifti image object.
 # Furthermore, we can display the location of the seed with a sphere and
 # set the cross to the center of the seed region of interest.
+from nilearn.plotting import plot_stat_map
+
 seed_to_voxel_correlations_img = brain_masker.inverse_transform(
     seed_to_voxel_correlations.T
 )
-display = plotting.plot_stat_map(
+display = plot_stat_map(
     seed_to_voxel_correlations_img,
     threshold=0.5,
     vmax=1,

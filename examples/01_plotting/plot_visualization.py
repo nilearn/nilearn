@@ -15,7 +15,7 @@ haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print(
-    f"First anatomical nifti image (3D) located is at: {haxby_dataset.anat[0]}"
+    f"First anatomical nifti image (3D) is located at: {haxby_dataset.anat[0]}"
 )
 print(
     f"First functional nifti image (4D) is located at: {haxby_dataset.func[0]}"
@@ -28,7 +28,7 @@ from nilearn.image.image import mean_img
 
 # Compute the mean EPI: we do the mean along the axis 3, which is time
 func_filename = haxby_dataset.func[0]
-mean_haxby = mean_img(func_filename, copy_header=True)
+mean_haxby = mean_img(func_filename)
 
 from nilearn.plotting import plot_epi, show
 

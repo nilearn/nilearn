@@ -1,0 +1,67 @@
+{
+  "functions": [
+    {
+      "complexity": 0,
+      "file_name": "check_dependencies_in_sync.py",
+      "function_name": "_fix_pythons_line",
+      "path": "check_dependencies_in_sync.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "check_dependencies_in_sync.py",
+      "function_name": "load_asv_conf",
+      "path": "check_dependencies_in_sync.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "check_dependencies_in_sync.py",
+      "function_name": "apply_fixes",
+      "path": "check_dependencies_in_sync.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "check_dependencies_in_sync.py",
+      "function_name": "min_python_from_pyproject",
+      "path": "check_dependencies_in_sync.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "check_dependencies_in_sync.py",
+      "function_name": "_fix_matrix_versions",
+      "path": "check_dependencies_in_sync.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "check_dependencies_in_sync.py",
+      "function_name": "min_versions_from_pyproject",
+      "path": "check_dependencies_in_sync.py"
+    },
+    {
+      "complexity": 6,
+      "file_name": "check_dependencies_in_sync.py",
+      "function_name": "_resolve_group",
+      "path": "check_dependencies_in_sync.py"
+    },
+    {
+      "complexity": 7,
+      "file_name": "check_dependencies_in_sync.py",
+      "function_name": "main",
+      "path": "check_dependencies_in_sync.py"
+    },
+    {
+      "complexity": 8,
+      "file_name": "check_dependencies_in_sync.py",
+      "function_name": "check_in_sync",
+      "path": "check_dependencies_in_sync.py"
+    },
+    {
+      "complexity": 17,
+      "file_name": "check_dependencies_in_sync.py",
+      "function_name": "_strip_json_comments",
+      "path": "check_dependencies_in_sync.py"
+    }
+  ],
+  "targets": [
+    "/home/remi-gau/github/tmp/nilearn/asv_benchmarks/check_dependencies_in_sync.py"
+  ]
+}

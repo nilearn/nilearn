@@ -15,6 +15,11 @@ should first run the
 :ref:`sphx_glr_auto_examples_00_tutorials_plot_single_subject_single_run.py`
 tutorial to get a bit more familiar with the base concepts,
 and only then run this tutorial example.
+
+.. seealso::
+
+    For more information about the dataset
+    see its :ref:`description <localizer_first_level_dataset>`.
 """
 
 # %%
@@ -65,7 +70,7 @@ fmri_img = data.epi_img
 #
 import pandas as pd
 
-t_r = 2.4
+t_r = data.t_r
 events_file = data["events"]
 events = pd.read_table(events_file)
 events
@@ -469,8 +474,8 @@ plt.show()
 #  Note the five additional columns in the design matrix.
 #
 # The effect on the activation maps is complex: auditory/visual effects are
-# killed, probably because they were somewhat colinear to the confounds. On the
-# other hand, some of the maps become cleaner (horizontal-vertical,
+# killed, probably because they were somewhat collinear to the confounds. On
+# the other hand, some of the maps become cleaner (horizontal-vertical,
 # computation) after this addition.
 
 # %%
@@ -533,7 +538,7 @@ plt.show()
 # Masking consists in selecting the region of the image on which the
 # model is run: it is useless to run it outside of the brain.
 #
-# The approach taken by FirstLeveModel is to estimate it from the :term:`fMRI`
+# The approach taken by FirstLevelModel is to estimate it from the :term:`fMRI`
 # data itself when no mask is explicitly provided.  Since the data
 # have been resampled into :term:`MNI` space, we can use instead a mask of the
 # gray matter in :term:`MNI` space. The benefit is that it makes voxel-level
@@ -543,7 +548,7 @@ plt.show()
 from nilearn.datasets import fetch_icbm152_brain_gm_mask
 from nilearn.plotting import plot_roi
 
-data_mask = first_level_model.masker_.mask_img_
+data_mask = first_level_model.mask_img_
 
 icbm_mask = fetch_icbm152_brain_gm_mask()
 
@@ -564,8 +569,6 @@ resampled_icbm_mask = resample_to_img(
     icbm_mask,
     data_mask,
     interpolation="nearest",
-    copy_header=True,
-    force_resample=True,
 )
 
 # %%

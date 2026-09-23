@@ -15,10 +15,13 @@ narrative sentence reading/listening.
 # Prepare some images for a simple t test
 # ---------------------------------------
 # This is a simple manually performed second level analysis.
+# We fetch the "calculation (auditory and visual cue)" :term:`contrast`
+# maps of 20 subjects from the Localizer dataset.
 from nilearn import datasets
 
 n_samples = 20
-localizer_dataset = datasets.fetch_localizer_calculation_task(
+localizer_dataset = datasets.fetch_localizer_contrasts(
+    ["calculation (auditory and visual cue)"],
     n_subjects=n_samples,
 )
 
@@ -40,7 +43,7 @@ design_matrix = pd.DataFrame([1] * n_samples, columns=["intercept"])
 # Next, we specify and estimate the model.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model = SecondLevelModel(n_jobs=2).fit(
+second_level_model = SecondLevelModel(n_jobs=2, verbose=1).fit(
     cmap_filenames, design_matrix=design_matrix
 )
 
@@ -59,7 +62,6 @@ threshold_img(
     threshold=3.29,
     cluster_threshold=10,
     two_sided=True,
-    copy_header=True,
 )
 
 # %%

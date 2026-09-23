@@ -1,0 +1,1053 @@
+{
+  "functions": [
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "_not_fitted_error_message",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "_sanitize_standard_output",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_fit_returns_self",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_dont_overwrite_parameters",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_inputs_length",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_clean_kwargs",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_nifti_masker_fit_transform_files",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_nifti_masker_fit_with_3d_mask",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_surface_masker_fit_transform_errors",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_tags",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_verbose",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "expected_failed_checks_clustering",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "inapplicable_checks",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "estimator_checks.py",
+      "function_name": "nilearn_dir",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_decoder_empty_data_messages",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_overwrite_params",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_regressor_no_decision_function",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_shelving",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_warning_embedded_masker",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "estimator_checks.py",
+      "function_name": "_check_mask_img_",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_decoder_estimator_args",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_doc_link",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_clean",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_detrending",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_empty_data_messages",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_no_mask_no_img",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_smooth",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_transformer_sample_mask",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_nifti_masker_dtype",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_nifti_masker_fit_transform_5d",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_generate_report_false",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_transformer",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_with_confounds",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_multi_nifti_masker_shelving",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_multimasker_transformer_sample_mask",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_nifti_masker_generate_report_after_fit_with_only_mask",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_supervised_img_estimator_y_no_nan",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_requires_y_none",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_verbose",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_compatibility_mask_image",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_fit_with_empty_mask",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_fit_with_non_finite_in_mask",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_mask_img_from_imgs",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_refit",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_multimasker_with_confounds",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "estimator_checks.py",
+      "function_name": "_extra_kwargs",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_dtype_bool",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_fit_check_is_fitted",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_generate_report",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_joblib_cache",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 6,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_decoder_screening_n_features",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 6,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_decoder_with_arrays",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 6,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_glm_empty_data_messages",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 6,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_generate_report_constant",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 6,
+      "file_name": "estimator_checks.py",
+      "function_name": "expected_failed_checks_decoders",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 7,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_decoder_compatibility_mask_image",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 7,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_transformer_high_variance_confounds",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 8,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_multimasker_transformer_high_variance_confounds",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 8,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_nilearn_methods_sample_order_invariance",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 9,
+      "file_name": "estimator_checks.py",
+      "function_name": "_generate_report_with_no_warning",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 9,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_mask_img",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 9,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_multimasker_generate_report",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 9,
+      "file_name": "estimator_checks.py",
+      "function_name": "fit_estimator",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 9,
+      "file_name": "estimator_checks.py",
+      "function_name": "nilearn_check_estimator",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 10,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_nifti_masker_fit_transform",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 10,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_verbosity_embedded_masker",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 11,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_cache_warning",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 11,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_fit_idempotent",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 11,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_n_elements",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 12,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_estimator",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 12,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_standardize_dtype",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 12,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_surface_masker_list_surf_images_no_mask",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 14,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_fit_score_takes_y",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 14,
+      "file_name": "estimator_checks.py",
+      "function_name": "generate_data_to_fit",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 15,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_decoder_with_surface_data",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 16,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_doc_attributes",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 16,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_standardization",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 17,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_pipeline_consistency",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 17,
+      "file_name": "estimator_checks.py",
+      "function_name": "return_expected_failed_checks",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 18,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_inverse_transform",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 19,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_standardization",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 19,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_masker_transform_resampling",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 22,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_surface_masker_list_surf_images_with_mask",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 25,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_pickle",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 30,
+      "file_name": "estimator_checks.py",
+      "function_name": "nilearn_check_generator",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 31,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_set_output",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 43,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_dict_unchanged",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 45,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_dtypes_inverse_transform",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 46,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_dtypes",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 67,
+      "file_name": "estimator_checks.py",
+      "function_name": "check_img_estimator_dtypes_transform",
+      "path": "estimator_checks.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "multi_surface_masker.py",
+      "function_name": "MultiSurfaceMasker::__init__",
+      "path": "multi_surface_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "multi_surface_masker.py",
+      "function_name": "MultiSurfaceMasker::fit",
+      "path": "multi_surface_masker.py"
+    },
+    {
+      "complexity": 12,
+      "file_name": "multi_surface_masker.py",
+      "function_name": "MultiSurfaceMasker::transform_single_imgs",
+      "path": "multi_surface_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "NiftiLabelsMasker::__init__",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "NiftiLabelsMasker::_region_id_name",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "NiftiLabelsMasker::fit_transform",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "NiftiLabelsMasker::inverse_transform",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "_ExtractionFunctor::__call__",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "_ExtractionFunctor::__init__",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "NiftiLabelsMasker::__sklearn_is_fitted__",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "NiftiLabelsMasker::_post_masking_atlas",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "NiftiLabelsMasker::_check_labels",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "NiftiLabelsMasker::_resample_labels",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "NiftiLabelsMasker::_load_report_displays",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "NiftiLabelsMasker::_run_report_checks",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 11,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "NiftiLabelsMasker::_create_figure_for_report",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 16,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "NiftiLabelsMasker::transform_single_imgs",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 26,
+      "file_name": "nifti_labels_masker.py",
+      "function_name": "NiftiLabelsMasker::_fit",
+      "path": "nifti_labels_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::__init__",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::fit_transform",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::inverse_transform",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "_ExtractionFunctor::__call__",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "_ExtractionFunctor::__init__",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::__sklearn_is_fitted__",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::_load_report_displays",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::_run_report_checks",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::_create_figure_for_report",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 25,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::transform_single_imgs",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 32,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::_fit",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_masker.py",
+      "function_name": "NiftiMasker::__init__",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_masker.py",
+      "function_name": "NiftiMasker::__sklearn_is_fitted__",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_masker.py",
+      "function_name": "_ExtractionFunctor::__call__",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_masker.py",
+      "function_name": "_ExtractionFunctor::__init__",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "nifti_masker.py",
+      "function_name": "NiftiMasker::_load_report_displays",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "nifti_masker.py",
+      "function_name": "make_brain_mask_func",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "nifti_masker.py",
+      "function_name": "NiftiMasker::transform_single_imgs",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "nifti_masker.py",
+      "function_name": "filter_and_mask",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "nifti_masker.py",
+      "function_name": "NiftiMasker::_run_report_checks",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 6,
+      "file_name": "nifti_masker.py",
+      "function_name": "_get_mask_strategy",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 10,
+      "file_name": "nifti_masker.py",
+      "function_name": "NiftiMasker::_create_figure_for_report",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 28,
+      "file_name": "nifti_masker.py",
+      "function_name": "NiftiMasker::_fit",
+      "path": "nifti_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_spheres_masker.py",
+      "function_name": "NiftiSpheresMasker::__init__",
+      "path": "nifti_spheres_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_spheres_masker.py",
+      "function_name": "NiftiSpheresMasker::fit_transform",
+      "path": "nifti_spheres_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_spheres_masker.py",
+      "function_name": "_ExtractionFunctor::__init__",
+      "path": "nifti_spheres_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "nifti_spheres_masker.py",
+      "function_name": "NiftiSpheresMasker::__sklearn_is_fitted__",
+      "path": "nifti_spheres_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "nifti_spheres_masker.py",
+      "function_name": "_ExtractionFunctor::__call__",
+      "path": "nifti_spheres_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "nifti_spheres_masker.py",
+      "function_name": "_iter_signals_from_spheres",
+      "path": "nifti_spheres_masker.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "nifti_spheres_masker.py",
+      "function_name": "NiftiSpheresMasker::_run_report_checks",
+      "path": "nifti_spheres_masker.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "nifti_spheres_masker.py",
+      "function_name": "NiftiSpheresMasker::inverse_transform",
+      "path": "nifti_spheres_masker.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "nifti_spheres_masker.py",
+      "function_name": "NiftiSpheresMasker::_load_report_displays",
+      "path": "nifti_spheres_masker.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "nifti_spheres_masker.py",
+      "function_name": "NiftiSpheresMasker::transform_single_imgs",
+      "path": "nifti_spheres_masker.py"
+    },
+    {
+      "complexity": 6,
+      "file_name": "nifti_spheres_masker.py",
+      "function_name": "NiftiSpheresMasker::_create_figure_for_report",
+      "path": "nifti_spheres_masker.py"
+    },
+    {
+      "complexity": 15,
+      "file_name": "nifti_spheres_masker.py",
+      "function_name": "apply_mask_and_get_affinity",
+      "path": "nifti_spheres_masker.py"
+    },
+    {
+      "complexity": 17,
+      "file_name": "nifti_spheres_masker.py",
+      "function_name": "NiftiSpheresMasker::_fit",
+      "path": "nifti_spheres_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "surface_labels_masker.py",
+      "function_name": "SurfaceLabelsMasker::__init__",
+      "path": "surface_labels_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "surface_labels_masker.py",
+      "function_name": "SurfaceLabelsMasker::__sklearn_is_fitted__",
+      "path": "surface_labels_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "surface_labels_masker.py",
+      "function_name": "SurfaceLabelsMasker::_create_figure_for_report",
+      "path": "surface_labels_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "surface_labels_masker.py",
+      "function_name": "SurfaceLabelsMasker::inverse_transform",
+      "path": "surface_labels_masker.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "surface_labels_masker.py",
+      "function_name": "SurfaceLabelsMasker::_generate_reporting_data",
+      "path": "surface_labels_masker.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "surface_labels_masker.py",
+      "function_name": "SurfaceLabelsMasker::_load_report_displays",
+      "path": "surface_labels_masker.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "surface_labels_masker.py",
+      "function_name": "signals_to_surf_img_labels",
+      "path": "surface_labels_masker.py"
+    },
+    {
+      "complexity": 9,
+      "file_name": "surface_labels_masker.py",
+      "function_name": "SurfaceLabelsMasker::fit",
+      "path": "surface_labels_masker.py"
+    },
+    {
+      "complexity": 13,
+      "file_name": "surface_labels_masker.py",
+      "function_name": "SurfaceLabelsMasker::transform_single_imgs",
+      "path": "surface_labels_masker.py"
+    },
+    {
+      "complexity": 16,
+      "file_name": "surface_labels_masker.py",
+      "function_name": "SurfaceLabelsMasker::_fit",
+      "path": "surface_labels_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "surface_maps_masker.py",
+      "function_name": "SurfaceMapsMasker::__init__",
+      "path": "surface_maps_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "surface_maps_masker.py",
+      "function_name": "SurfaceMapsMasker::__sklearn_is_fitted__",
+      "path": "surface_maps_masker.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "surface_maps_masker.py",
+      "function_name": "SurfaceMapsMasker::_create_figure_for_report",
+      "path": "surface_maps_masker.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "surface_maps_masker.py",
+      "function_name": "SurfaceMapsMasker::inverse_transform",
+      "path": "surface_maps_masker.py"
+    },
+    {
+      "complexity": 7,
+      "file_name": "surface_maps_masker.py",
+      "function_name": "SurfaceMapsMasker::_load_report_displays",
+      "path": "surface_maps_masker.py"
+    },
+    {
+      "complexity": 8,
+      "file_name": "surface_maps_masker.py",
+      "function_name": "SurfaceMapsMasker::fit",
+      "path": "surface_maps_masker.py"
+    },
+    {
+      "complexity": 9,
+      "file_name": "surface_maps_masker.py",
+      "function_name": "SurfaceMapsMasker::_run_report_checks",
+      "path": "surface_maps_masker.py"
+    },
+    {
+      "complexity": 10,
+      "file_name": "surface_maps_masker.py",
+      "function_name": "SurfaceMapsMasker::_fit",
+      "path": "surface_maps_masker.py"
+    },
+    {
+      "complexity": 18,
+      "file_name": "surface_maps_masker.py",
+      "function_name": "SurfaceMapsMasker::transform_single_imgs",
+      "path": "surface_maps_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "surface_masker.py",
+      "function_name": "SurfaceMasker::__init__",
+      "path": "surface_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "surface_masker.py",
+      "function_name": "SurfaceMasker::__sklearn_is_fitted__",
+      "path": "surface_masker.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "surface_masker.py",
+      "function_name": "SurfaceMasker::inverse_transform",
+      "path": "surface_masker.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "surface_masker.py",
+      "function_name": "SurfaceMasker::_create_figure_for_report",
+      "path": "surface_masker.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "surface_masker.py",
+      "function_name": "SurfaceMasker::_load_report_displays",
+      "path": "surface_masker.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "surface_masker.py",
+      "function_name": "SurfaceMasker::_set_contour_colors",
+      "path": "surface_masker.py"
+    },
+    {
+      "complexity": 6,
+      "file_name": "surface_masker.py",
+      "function_name": "SurfaceMasker::_fit",
+      "path": "surface_masker.py"
+    },
+    {
+      "complexity": 8,
+      "file_name": "surface_masker.py",
+      "function_name": "SurfaceMasker::_fit_mask_img",
+      "path": "surface_masker.py"
+    },
+    {
+      "complexity": 8,
+      "file_name": "surface_masker.py",
+      "function_name": "SurfaceMasker::fit",
+      "path": "surface_masker.py"
+    },
+    {
+      "complexity": 12,
+      "file_name": "surface_masker.py",
+      "function_name": "SurfaceMasker::transform_single_imgs",
+      "path": "surface_masker.py"
+    }
+  ],
+  "targets": [
+    "/home/remi-gau/github/tmp/nilearn/nilearn/_utils/estimator_checks.py",
+    "/home/remi-gau/github/tmp/nilearn/nilearn/maskers/multi_surface_masker.py",
+    "/home/remi-gau/github/tmp/nilearn/nilearn/maskers/nifti_labels_masker.py",
+    "/home/remi-gau/github/tmp/nilearn/nilearn/maskers/nifti_maps_masker.py",
+    "/home/remi-gau/github/tmp/nilearn/nilearn/maskers/nifti_masker.py",
+    "/home/remi-gau/github/tmp/nilearn/nilearn/maskers/nifti_spheres_masker.py",
+    "/home/remi-gau/github/tmp/nilearn/nilearn/maskers/surface_labels_masker.py",
+    "/home/remi-gau/github/tmp/nilearn/nilearn/maskers/surface_maps_masker.py",
+    "/home/remi-gau/github/tmp/nilearn/nilearn/maskers/surface_masker.py"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "functions": [
+    {
+      "complexity": 0,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::__init__",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::fit_transform",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::inverse_transform",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "_ExtractionFunctor::__call__",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "_ExtractionFunctor::__init__",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::__sklearn_is_fitted__",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::_load_report_displays",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::_run_report_checks",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::_create_figure_for_report",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 24,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::transform_single_imgs",
+      "path": "nifti_maps_masker.py"
+    },
+    {
+      "complexity": 32,
+      "file_name": "nifti_maps_masker.py",
+      "function_name": "NiftiMapsMasker::_fit",
+      "path": "nifti_maps_masker.py"
+    }
+  ],
+  "targets": [
+    "/home/remi-gau/github/tmp/nilearn/nilearn/maskers/nifti_maps_masker.py"
+  ]
+}

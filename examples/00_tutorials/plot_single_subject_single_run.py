@@ -42,7 +42,7 @@ from nilearn.image import mean_img
 from nilearn.plotting import plot_anat, plot_img, plot_stat_map, show
 
 fmri_img = subject_data.func
-mean_img = mean_img(subject_data.func[0], copy_header=True)
+mean_img = mean_img(subject_data.func[0])
 plot_img(mean_img, cbar_tick_format="%i")
 
 plot_anat(subject_data.anat, cbar_tick_format="%i")
@@ -80,8 +80,6 @@ from nilearn.glm.first_level import FirstLevelModel
 # * ``t_r=7(s)`` is the time of repetition of acquisitions
 # * ``noise_model='ar1'`` specifies the noise covariance model:
 #   a lag-1 dependence
-# * ``standardize=False`` means that we do not want
-#   to rescale the time series to mean 0, variance 1
 # * ``hrf_model='spm'`` means that we rely
 #   on the :term:`SPM` "canonical hrf" model
 #   (without time or dispersion derivatives)
@@ -90,17 +88,31 @@ from nilearn.glm.first_level import FirstLevelModel
 # * ``high_pass=0.01`` (Hz) defines the cutoff frequency
 #   (inverse of the time period).
 fmri_glm = FirstLevelModel(
-    t_r=7,
+    t_r=subject_data.t_r,
     noise_model="ar1",
-    standardize=False,
     hrf_model="spm",
     drift_model="cosine",
     high_pass=0.01,
+    verbose=1,
 )
 
 # %%
+#
+# .. include:: ../../../examples/html_repr_note.rst
+#
+fmri_glm
+
+# %%
 # Now that we have specified the model, we can run it on the :term:`fMRI` image
+#
+# .. note ::
+#
+#   After fitting,
+#   the HTML representation of the estimator looks different
+#   than before fitting.
+#
 fmri_glm = fmri_glm.fit(fmri_img, events)
+fmri_glm
 
 # %%
 # One can inspect the design matrix (rows represent time, and
@@ -125,7 +137,9 @@ output_dir = Path.cwd() / "results" / "plot_single_subject_single_run"
 output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
 
-plot_design_matrix(design_matrix, output_file=output_dir / "design_matrix.png")
+fig = plot_design_matrix(
+    design_matrix, output_file=output_dir / "design_matrix.png"
+)
 
 # %%
 # The first column contains the expected response profile of regions which are
@@ -345,8 +359,11 @@ eff_map.to_filename(output_dir / "listening_gt_rest_eff_map.nii.gz")
 #
 from nilearn.reporting import get_clusters_table
 
-table = get_clusters_table(
-    z_map, stat_threshold=threshold, cluster_threshold=20
+table, _ = get_clusters_table(
+    z_map,
+    stat_threshold=threshold,
+    cluster_threshold=20,
+    return_label_maps=True,
 )
 table
 
