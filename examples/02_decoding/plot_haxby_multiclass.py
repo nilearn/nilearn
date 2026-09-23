@@ -113,7 +113,7 @@ svc_ova
 # The :term:`fMRI` data is acquired by runs,
 # and the noise is autocorrelated in a given run.
 # Hence, observations from the same run must not be split between the training
-# and test sets. Here we use a 5-fold group cross-validation, with runs as
+# and test sets. Here we use a 6-fold group cross-validation, with runs as
 # groups.
 
 from sklearn.model_selection import GroupKFold, cross_val_score
