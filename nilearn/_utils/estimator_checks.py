@@ -146,6 +146,9 @@ NILEARN_DIR = Path(__file__).parents[1]
 
 
 def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
+    """Return a tuple in the form: (estimator, estimator_name, check_function)
+    for each estimator in the ``estimators`` list.
+    """
     check_is_of_allowed_type(estimators, (list,), "estimators")
 
     checks_to_run = []
