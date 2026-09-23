@@ -81,7 +81,7 @@ Either way, create and activate a new Python environment.
             .. tab-item:: conda
                 :class-label: tab-4
 
-                Note that ``conda`` allows you to choose the python version.
+                Note that ``conda`` allows you to choose the Python version.
 
                 .. prompt:: powershell
 
