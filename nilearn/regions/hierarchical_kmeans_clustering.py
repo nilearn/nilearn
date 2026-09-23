@@ -173,6 +173,9 @@ class HierarchicalKMeans(
     n_clusters : :obj:`int`, default=2
         The number of clusters to find.
 
+        .. nilearn_versionchanged:: 0.15.0
+            Changed default `n_clusters` from `None` to `2`.
+
     init : {'k-means++', 'random' or an ndarray}, default='k-means++'
         Method for initialization.
 
