@@ -423,6 +423,76 @@ jobs:
                 echo "::error::asv_benchmarks/asv.conf.json still has unresolved mismatches, see the 'Sync asv.conf.json with pyproject.toml' step above."
                 exit 1
 
+    check-history-commits-installable:
+        # asv_benchmarks/hashestobenchmark.txt lists old nilearn releases
+        # that "benchmark-history" below also benchmarks, using this same
+        # asv.conf.json matrix -- but only on a schedule (quarterly) or a
+        # manual trigger, and by running the *entire* suite for each one,
+        # which is too expensive to also do on every push/PR. Bumping the
+        # matrix (or "pythons") can silently make one of those old
+        # releases uninstallable, or break at import time (see the note
+        # about versions older than 0.11.0 needing "pkg_resources", which
+        # recent setuptools dropped, in CONTRIBUTING.rst), long before
+        # that job would ever surface it.
+        #
+        # The "discovery" benchmark (asv_benchmarks/benchmarks/utils/discovery.py)
+        # is cheap to run and, unlike most others, already tolerates being
+        # run against nilearn versions that predate the feature it
+        # exercises (see its own docstring): it raises NotImplementedError,
+        # which asv reports as "skipped" rather than "failed". So running
+        # it against every hashestobenchmark.txt commit on every relevant
+        # push/PR is a fast, cheap proxy for "does this commit still
+        # build and import with the current matrix", without needing a
+        # dedicated script.
+        if: |
+            github.repository == 'nilearn/nilearn' &&
+            (github.event_name == 'pull_request' || github.event_name == 'push')
+        runs-on: ubuntu-24.04
+        defaults:
+            run:
+                working-directory: ./asv_benchmarks
+
+        steps:
+        -   uses: actions/checkout@v7
+
+        -   uses: actions/setup-python@v6
+            with:
+                python-version: ${{ env.MIN_PYTHON }}
+
+        -   name: Install asv
+            run: |
+                pip install --upgrade pip
+                pip install asv
+                pip install nilearn
+
+        -   name: Get all the machine info
+            run: asv machine --yes
+
+        -   name: Edit asv-machine.json to a custom machine name
+            run: python ../build_tools/github/set_machine_name.py fv-az1113-357
+
+        -   name: Check hashestobenchmark.txt commits build and import
+            run: |
+                asv run --show-stderr --verbose -b discovery --machine fv-az1113-357 HASHFILE:hashestobenchmark.txt 2>&1 | tee history_install_check_log
+                echo "${PIPESTATUS[0]}" > asv_run_exit_code
+
+        -   name: Fail if a commit is no longer installable/importable
+            # see the "Fail if any benchmark reported as failed" step of
+            # the "benchmark" job above for why both the exit code and
+            # the log content are checked here.
+            run: |
+                EXIT_CODE=$(cat asv_run_exit_code)
+                if [ "$EXIT_CODE" -ne 0 ]; then
+                    echo "::error::Building the asv environment failed for at least one commit in asv_benchmarks/hashestobenchmark.txt with the current asv.conf.json matrix, see the excerpt below"
+                    tail -n 100 history_install_check_log
+                    exit 1
+                fi
+                if grep -q "asv: benchmark failed" history_install_check_log; then
+                    echo "::error::The 'discovery' smoke benchmark failed for at least one commit in asv_benchmarks/hashestobenchmark.txt with the current matrix, see the excerpt(s) below"
+                    grep -B 5 "asv: benchmark failed" history_install_check_log
+                    exit 1
+                fi
+
     list-history-commits:
         if: |
             github.repository == 'nilearn/nilearn' &&
