@@ -1,5 +1,6 @@
 ---
-# Runs pytest on maint_tools and build_tools folders.
+# Runs pytest on maint_tools, build_tools and (a couple of files from)
+# asv_benchmarks folders.
 #
 ###
 name: test maintenance scripts
@@ -11,6 +12,9 @@ on:
         paths:
         -   maint_tools/**/*
         -   build_tools/**/*
+        -   asv_benchmarks/check_dependencies_in_sync.py
+        -   asv_benchmarks/asv.conf.json
+        -   pyproject.toml
         -   .github/workflows/test_maintenance_scripts.yml
     pull_request:
         branches:
@@ -18,6 +22,9 @@ on:
         paths:
         -   maint_tools/**/*
         -   build_tools/**/*
+        -   asv_benchmarks/check_dependencies_in_sync.py
+        -   asv_benchmarks/asv.conf.json
+        -   pyproject.toml
         -   .github/workflows/test_maintenance_scripts.yml
 
 concurrency:
