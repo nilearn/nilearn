@@ -13,11 +13,15 @@ If you have issues when using Nilearn, or if you have questions on how to use it
 please don't hesitate to reach out!
 
 There are currently three ways to interact with the Nilearn team:
-through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues,
-and through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_,
-usually **every Wednesday from 4pm to 5pm UTC**.
-We post on our `Bluesky account <https://bsky.app/profile/nilearn.bsky.social>`_ in advance to let you know
-if the drop-in hours are happening that week.
+
+* through the :neurostars:`neurostars <>` forum
+
+* our :nilearn-gh:`github <>` issues
+
+* through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_,
+  usually **every Wednesday from 4pm to 5pm UTC**.
+  We post on our `Bluesky account <https://bsky.app/profile/nilearn.bsky.social>`_ in advance
+  to let you know if the drop-in hours are happening that week.
 
 If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn,
 we would appreciate it if you either ask it during the drop-in hours
@@ -168,7 +172,7 @@ As a rule of thumb:
 Adding atlases and datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Downloaders for new atlases datasets are usually discouraged.
+Downloaders for new atlases and datasets are usually discouraged.
 
 There is no intention to provide a comprehensive collection of downloaders
 for the most widely used atlases and datasets.
@@ -852,6 +856,8 @@ Continuous integration
 
 See the :ref:`continuous integration` page.
 
+.. _setup_development_environment:
+
 Setting up your environment
 ===========================
 
@@ -867,21 +873,9 @@ Here are the key steps you need to go through to copy the repo before contributi
 
       git clone git@github.com:<your_username>/nilearn.git
 
-2. (optional but highly recommended) set up a virtual environment to wor
+2. (optional but highly recommended) set up a virtual environment to work
    in using whichever environment management tool you're used to and activate it.
-   For example:
-
-.. code-block:: bash
-
-      python3 -m venv nilearn
-      source nilearn/bin/activate
-
-or:
-
-.. code-block:: bash
-
-      conda create -n nilearn pip
-      conda activate nilearn
+   See :ref:`our virtual environment setup instructions <virtual_env>`.
 
 3. install the forked version of ``nilearn``
 
@@ -890,12 +884,6 @@ or:
       When you install nilearn, it will use the version stored in the version control system
       (in this case git)
       to get the version number you would see if you typed in your terminal:
-
-      .. code-block:: bash
-
-            pip show nilearn
-
-      or:
 
       .. code-block:: bash
 
@@ -914,25 +902,18 @@ or:
             # check that you got all the tags
             git tag --list
 
-You can then install nilearn in editable mode:
+You can then install Nilearn in editable mode:
 
 .. code-block:: bash
 
-      pip install -e . --group dev
+      pip install -e '.[plotting,plotly]' --group dev
 
 This installs your local version of Nilearn,
 along with all dependencies necessary for developers (hence the ``dev`` group).
 For more information about the dependency installation options, see ``pyproject.toml``.
 The installed version will also reflect any changes you make to your code.
 
-4. check that all tests pass with (this can take a while):
-
-.. code-block:: bash
-
-      pytest nilearn
-
-
-5. (optional) install `prek <https://prek.j178.dev>`_ hooks
+4. (optional) install `prek <https://prek.j178.dev>`_ hooks
    to run the linter and other checks before each commit:
 
 .. code-block:: bash
@@ -1065,8 +1046,7 @@ An even quicker option is:
 
       .. code-block:: bash
 
-            python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
-            plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+            python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
 
       or if you want to use make :
 
