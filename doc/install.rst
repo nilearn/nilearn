@@ -3,12 +3,12 @@ Installing Nilearn
 
 There are different ways to install Nilearn:
 
-* :ref:`Install the latest official release <install_official_release>`. This
-  is the best approach for most users.
+* Install the latest official release (see below).
+  This is the best approach for most users.
 
 * :ref:`Building the package from source <setup_development_environment>`.
-  This is mainly needed by users who wish to contribute to the project, as this allows
-  to install an editable version of the project.
+  This is mainly needed by users who wish to contribute to the project,
+  as this allows to install an editable version of the project.
 
 .. _virtual_env:
 
@@ -98,6 +98,21 @@ you can add ``matplotlib`` as optional dependency for **static** visualizations,
 and ``matplotlib`` as well as ``plotly`` as optional dependencies
 for both static and **interactive** visualizations.
 
+.. admonition:: Important
+
+    To be able to save images with plotly,
+    make sure that Google Chrome is installed!
+    You can install a compatible Chrome version using
+    the ``kaleido_get_chrome`` command in command line or
+    ``kaleido.get_chrome_sync()`` function
+    in Python:
+
+    .. code-block:: python
+
+        import kaleido
+
+        kaleido.get_chrome_sync()
+
 .. tab-set::
 
     .. tab-item:: base
@@ -108,14 +123,14 @@ for both static and **interactive** visualizations.
             .. tab-item:: pip / conda
                 :class-label: tab-4
 
-                .. prompt:: bash
+                .. code-block:: bash
 
                     pip install nilearn
 
             .. tab-item:: uv
                 :class-label: tab-4
 
-                .. prompt:: bash
+                .. code-block:: bash
 
                     uv pip install nilearn
 
@@ -127,17 +142,16 @@ for both static and **interactive** visualizations.
             .. tab-item:: pip / conda
                 :class-label: tab-4
 
-                .. prompt:: bash
+                .. code-block:: bash
 
                     pip install 'nilearn[plotting]'
 
             .. tab-item:: uv
                 :class-label: tab-4
 
-                .. prompt:: bash
+                .. code-block:: bash
 
                     uv pip install 'nilearn[plotting]'
-
 
     .. tab-item:: interactive
         :class-label: tab-4
@@ -147,16 +161,18 @@ for both static and **interactive** visualizations.
             .. tab-item:: pip / conda
                 :class-label: tab-4
 
-                .. prompt:: bash
+                .. code-block:: bash
 
                     pip install 'nilearn[plotting,plotly]'
+                    python -c "import kaleido;  kaleido.get_chrome_sync()"
 
             .. tab-item:: uv
                 :class-label: tab-4
 
-                .. prompt:: bash
+                .. code-block:: bash
 
                     uv pip install 'nilearn[plotting,plotly]'
+                    uv run 'python -c "import kaleido;  kaleido.get_chrome_sync()"'
 
 Note that Nilearn also optionally supports `rich <https://rich.readthedocs.io/en/latest/introduction.html>`_
 to get prettier log output and download progress bar.

@@ -856,6 +856,8 @@ Continuous integration
 
 See the :ref:`continuous integration` page.
 
+.. _setup_development_environment:
+
 Setting up your environment
 ===========================
 
@@ -1044,8 +1046,7 @@ An even quicker option is:
 
       .. code-block:: bash
 
-            python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
-            plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+            python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
 
       or if you want to use make :
 

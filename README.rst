@@ -60,7 +60,7 @@ Install
 Latest release
 --------------
 
-The easiest way to install ``nilearn`` is using pip.
+The easiest way to install Nilearn is using pip.
 Execute the following command in the command prompt / terminal
 in the proper python environment:
 
@@ -75,7 +75,7 @@ Development version
 -------------------
 
 Please find all development setup instructions in the
-`contribution guide <https://nilearn.github.io/stable/development.html#setting-up-your-environment>`_.
+`contribution guide <https://nilearn.github.io/dev/development.html#setting-up-your-environment>`_.
 
 Drop-in Hours
 =============
@@ -87,21 +87,27 @@ least one member of the core-developer team is available. These events are held
 on `Jitsi Meet <https://meet.jit.si/nilearn-drop-in-hours>`_ and are fully open,
 anyone is welcome to join!
 For more information and ways to engage with the Nilearn team see
-`How to get help <https://nilearn.github.io/stable/development.html#how-to-get-help>`_.
+`How to get help <https://nilearn.github.io/dev/development.html#how-to-get-help>`_.
 
 Dependencies
 ============
 
-The required dependencies to use the software are listed
+The required dependencies to use Nilearn are listed
 in the file `pyproject.toml <https://github.com/nilearn/nilearn/blob/main/pyproject.toml>`_.
 
-If you are using nilearn plotting functionalities or running the examples, ``matplotlib`` is required.
+If you are using Nilearn plotting functionalities or running the examples, ``matplotlib`` is required.
 
-Some plotting functions in Nilearn support both matplotlib and plotly as plotting engines.
+Some plotting functions in Nilearn require both matplotlib and plotly as plotting engines.
 In order to use the plotly engine in these functions,
 you will need to install both plotly and kaleido, which can both be installed with pip and anaconda.
 
-If you want to run the tests, you need ``pytest`` and ``pytest-cov`` for coverage reporting.
+Please find all installation instructions
+`on our install page <https://nilearn.github.io/dev/install.html>`_.
+
+If you want to run the tests,
+extra dependencies (such as ``pytest`` and ``pytest-cov``) are required.
+See our `development setup instructions <https://nilearn.github.io/dev/development.html#setting-up-your-environment>`_
+to know how to install them.
 
 Development
 ===========
