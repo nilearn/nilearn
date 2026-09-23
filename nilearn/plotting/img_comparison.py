@@ -83,8 +83,9 @@ def plot_img_comparison(
     src_label : :obj:`str`, default='image set 2'
         Name of source images.
 
-    output_dir : :obj:`str` or None, default=None
+    output_dir : :obj:`str`, :obj:`pathlib.Path` or None, default=None
         Directory where plotted figures will be stored.
+        No figure is saved if ``None`` is passed.
 
     axes : :obj:`list` of two matplotlib Axes objects, or None, default=None
         Can receive a list of the form [ax1, ax2] to render the plots.

@@ -401,11 +401,12 @@ def make_first_level_design_matrix(
     if events is not None:
         events = check_and_load_tables(events, "events")[0]
         # create the condition-related regressors
+        hrf_model_ = (
+            hrf_model.lower() if isinstance(hrf_model, str) else hrf_model
+        )
         matrix, names = _convolve_regressors(
             events=events,
-            hrf_model=hrf_model.lower()
-            if isinstance(hrf_model, str)
-            else hrf_model,
+            hrf_model=hrf_model_,
             frame_times=frame_times,
             fir_delays=fir_delays,
             min_onset=min_onset,
