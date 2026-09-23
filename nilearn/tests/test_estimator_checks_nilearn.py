@@ -57,6 +57,8 @@ from nilearn.regions import (
 )
 from nilearn.utils.discovery import all_estimators
 
+RANDOM_STATE = 0
+
 CONNECTOME = [
     ConnectivityMeasure(cov_estimator=EmpiricalCovariance()),
     ConnectivityMeasure(),
@@ -68,30 +70,35 @@ CONNECTOME = [
 DECODING = [
     Decoder(
         screening_percentile=100,
-        estimator_args={"random_state": 0},
+        estimator_args={"random_state": RANDOM_STATE},
     ),
-    DecoderRegressor(screening_percentile=100),
+    DecoderRegressor(
+        screening_percentile=100, estimator_args={"random_state": RANDOM_STATE}
+    ),
     FREMClassifier(
         screening_percentile=100,
-        estimator_args={"random_state": 0},
+        estimator_args={"random_state": RANDOM_STATE},
     ),
-    FREMRegressor(screening_percentile=100),
+    FREMRegressor(
+        screening_percentile=100, estimator_args={"random_state": RANDOM_STATE}
+    ),
     SpaceNetClassifier(),
     SpaceNetRegressor(),
     SearchLight(
         mask_img=Nifti1Image(
             np.ones((5, 5, 5), dtype=bool).astype("uint8"), np.eye(4)
-        )
+        ),
+        estimator_args={"random_state": RANDOM_STATE},
     ),
 ]
 
 DECOMPOSITION = [
-    DictLearning(random_state=0),
-    CanICA(random_state=0),
+    DictLearning(random_state=RANDOM_STATE),
+    CanICA(random_state=RANDOM_STATE),
 ]
 
 GLM = [
-    FirstLevelModel(),
+    FirstLevelModel(random_state=RANDOM_STATE),
     SecondLevelModel(),
 ]
 
@@ -130,11 +137,11 @@ REGIONS = [
             affine=_affine_eye(),
         )[0]
     ),
-    HierarchicalKMeans(n_clusters=2),
+    HierarchicalKMeans(n_clusters=2, random_state=RANDOM_STATE),
     ReNA(mask_img=_img_3d_mni(), n_clusters=2),
-    Parcellations(method="kmeans", n_parcels=5),
-    Parcellations(method="ward", n_parcels=5),
-    Parcellations(method="rena", n_parcels=5),
+    Parcellations(method="kmeans", n_parcels=5, random_state=RANDOM_STATE),
+    Parcellations(method="ward", n_parcels=5, random_state=RANDOM_STATE),
+    Parcellations(method="rena", n_parcels=5, random_state=RANDOM_STATE),
 ]
 
 
