@@ -534,10 +534,9 @@ if with_jupyterlite:
         " If you encounter any problems, please report them in a new"
         " [issue](https://github.com/nilearn/nilearn/issues/new/choose)."
     )
-    try_examples_preamble = """
-    # Jupyterlite specific code
-    %pip install -q nilearn
-    """
+    try_examples_preamble = (
+        "%pip install -q nilearn  # Jupyterlite specific code"
+    )
 
 mermaid_version = "11.4.0"
 
