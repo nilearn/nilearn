@@ -663,8 +663,7 @@ class FirstLevelModel(BaseGLM):
             else:
                 _check_repetition_time(self.t_r)
 
-            if self.slice_time_ref is not None:
-                _check_slice_time_ref(self.slice_time_ref)
+            _check_slice_time_ref(self.slice_time_ref)
 
             # Check that events and confounds files match number of runs
             # and can be loaded as DataFrame.
@@ -1496,6 +1495,8 @@ def _check_repetition_time(t_r) -> None:
 
 def _check_slice_time_ref(slice_time_ref) -> None:
     """Check that slice_time_ref is a number between 0 and 1."""
+    if slice_time_ref is None:
+        return
     check_is_of_allowed_type(
         slice_time_ref, (float, int, np.floating, np.integer), "slice_time_ref"
     )
@@ -1920,8 +1921,8 @@ def first_level_from_bids(
             "Note this may lead to the wrong model specification.",
             stacklevel=find_stack_level(),
         )
-    if slice_time_ref is not None:
-        _check_slice_time_ref(slice_time_ref)
+
+    _check_slice_time_ref(slice_time_ref)
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)
