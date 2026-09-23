@@ -527,17 +527,17 @@ if with_jupyterlite:
         "Running the nilearn examples in JupyterLite is experimental"
         " and you may encounter unexpected behavior.\n\n"
         " In particular, note that imports may take a lot longer"
-        " than usual——for example, the first `import nilearn` can take"
-        " roughly 10-20s——and that the "
+        " than usual—for example, the first `import nilearn` can take"
+        " roughly 10-20s—and that the "
         " version of nilearn used in Jupyterlite might not be in sync "
         " with the one you are browsing the documentation for.\n\n"
         " If you encounter any problems, please report them in a new"
         " [issue](https://github.com/nilearn/nilearn/issues/new/choose)."
     )
     try_examples_preamble = """
-        # Jupyterlite specific code
-        %pip install -q nilearn
-        """
+    # Jupyterlite specific code
+    %pip install -q nilearn
+    """
 
 mermaid_version = "11.4.0"
 

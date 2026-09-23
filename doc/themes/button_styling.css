@@ -3,7 +3,7 @@
 
 .try_examples_button {
   color: white;
-  background-color: var(--pst-color-info);
+  background-color: var(--sd-color-primary);
   border: none;
   padding: 5px 10px;
   border-radius: 0.25rem;
@@ -34,7 +34,6 @@
   margin-bottom: 20px;
 }
 
-Expand commentComment on line R108Resolved
 /* Better gaps for examples buttons under admonitions */
 
 .try_examples_outer_iframe {
