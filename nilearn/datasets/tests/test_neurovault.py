@@ -765,7 +765,7 @@ def test_download_image_terms_error(tmp_path, request_mocker):
     # no fail if file already exists
     with Path(
         collection["absolute_path"], "neurosynth_words_for_image_a.json"
-    ).open("w"):
+    ).open("w", encoding="utf-8"):
         pass
 
     neurovault._download_image_terms(image_info, collection, download_params)

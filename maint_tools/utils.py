@@ -73,7 +73,7 @@ def list_nodes(
 ) -> list[ast.ClassDef] | list[ast.FunctionDef]:
     """Return AST of the nodes in a module."""
     if isinstance(file, Path):
-        with file.open() as f:
+        with file.open(encoding="utf-8") as f:
             module = ast.parse(f.read())
     else:
         module = file
