@@ -307,6 +307,7 @@ html_theme = "furo"
 font_awesome = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/"
 html_css_files = [
     "custom.css",
+    "button_styling.css",
     f"{font_awesome}all.min.css",
     f"{font_awesome}fontawesome.min.css",
     f"{font_awesome}solid.min.css",
