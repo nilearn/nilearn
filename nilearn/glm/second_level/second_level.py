@@ -899,7 +899,7 @@ class SecondLevelModel(BaseGLM):
             "MSE",
         ],
         result_as_time_series: bool,
-        Y=None
+        Y=None,
     ):
         """Transform RegressionResults instances within a dictionary \
         (whose keys represent the autoregressive coefficient under the 'ar1' \
@@ -933,7 +933,6 @@ class SecondLevelModel(BaseGLM):
         ]
         possible_attributes += RegressionResults.__static_attributes__
         check_parameter_in_allowed(attribute, possible_attributes, "attribute")
-
 
         if self.minimize_memory:
             raise AttributeError(

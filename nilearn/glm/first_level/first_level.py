@@ -1243,7 +1243,8 @@ class FirstLevelModel(BaseGLM):
             "r_square",
             "MSE",
         ],
-        result_as_time_series: bool, Y=None
+        result_as_time_series: bool,
+        Y=None,
     ):
         """Transform RegressionResults instances within a dictionary \
         (whose keys represent the autoregressive coefficient under the 'ar1' \
@@ -1296,7 +1297,7 @@ class FirstLevelModel(BaseGLM):
         assert self.masker_ is not None
         assert self.labels_ is not None
         assert self.results_ is not None
-  
+
         for i, (design_matrix, labels, results) in enumerate(
             zip(
                 self.design_matrices_,
