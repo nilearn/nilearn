@@ -138,6 +138,7 @@ def cross_val_decoder_score(
     >>> scores.shape
     (3,)
     """
+    check_params(locals())
     if isinstance(imgs, SurfaceImage):
         imgs = [imgs]
     elif isinstance(imgs, NiimgLike):
