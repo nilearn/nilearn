@@ -34,7 +34,6 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn._utils.tags import InputTags
 from nilearn.image import check_niimg
 from nilearn.maskers import (
     MultiNiftiMasker,
@@ -48,6 +47,7 @@ from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.nilearn_typing import NiimgLike
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
+from nilearn.utils.tags import InputTags
 
 
 def _warn_ignored_surface_masker_params(estimator) -> None:

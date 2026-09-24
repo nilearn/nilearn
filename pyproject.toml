@@ -27,6 +27,9 @@ doc = [
     "sphinx>=7.4.7",
     "sphinx-copybutton>=0.5.2",
     "sphinx-design>=0.6.1",
+    # sphinx-prompt<1.8.0 ships its package in a "sphinx-prompt" folder
+    # that cannot be imported as "sphinx_prompt"
+    "sphinx-prompt>=1.8.0",
     "sphinxcontrib-mermaid>=1.0.0",
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
@@ -203,10 +206,12 @@ ignore_imports = [
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
-    "nilearn.plotting.matrix.* -> nilearn.glm.**"
+    "nilearn.plotting.matrix.* -> nilearn.glm.**",
+    "nilearn.** -> nilearn.utils.tags"  # estimator tags are used by all layers
 ]
 # ** utils:
 # - can import from any lower layers
+# - nilearn.utils.tags is a leaf module imported by all layers (see ignore_imports)
 # ** glm, decoding, connectome, decomposition:
 # - cannot import from each other
 # - but can import from any lower layers

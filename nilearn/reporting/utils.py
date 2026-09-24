@@ -12,9 +12,9 @@ def _figure_to_bytes(fig, format, **kwargs) -> bytes:
     """
     # TODO move this entire module in a place
     # where it won't be imported if matplotlib is not around
-    from matplotlib import pyplot as plt
+    from matplotlib.figure import Figure
 
-    if not isinstance(fig, (plt.Figure)):
+    if not isinstance(fig, (Figure)):
         fig = fig.figure
     with io.BytesIO() as io_buffer:
         fig.savefig(

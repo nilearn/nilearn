@@ -14,6 +14,8 @@ updates:
         actions-infrastructure:
             patterns:
             -   actions/*
+    cooldown:
+        default-days: 7
 
 -   package-ecosystem: npm
     directory: /
@@ -35,3 +37,5 @@ updates:
     -   dependency-name: jquery
     -   dependency-name: plotly.js-gl3d-dist-min
     -   dependency-name: '@niivue/niivue'
+    cooldown:
+        default-days: 7
