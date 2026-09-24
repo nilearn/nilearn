@@ -42,6 +42,7 @@ Enhancements
 
 - :bdg-success:`API` :class:`~nilearn.utils.InputTags` is now part of the public API in :mod:`nilearn.utils`, so that third-party estimators can declare whether they accept Nifti and / or surface images (:gh:`6563` by `Aniket Singh Yadav`_).
 
+- :bdg-dark:`Code` Name columns of signals extracted as dataframes by :meth:`~nilearn.maskers.NiftiSphereMasker.transform` (:gh:`6599` by `Rémi Gau`_).
 
 Changes
 -------
