@@ -76,8 +76,7 @@ def cross_val_decoder_score(
         -1 uses all processors. Set the decoder's own ``n_jobs=1`` when
         parallelizing outer folds to avoid nested parallelism.
 
-    verbose : :obj:`int`, default=0
-        Verbosity of scikit-learn's cross-validation computation.
+    %(verbose0)s
 
     params : :obj:`dict` or None, default=None
         Metadata passed to scikit-learn's cross-validation machinery.
