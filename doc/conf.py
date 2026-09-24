@@ -527,10 +527,10 @@ if with_jupyterlite:
         "Running the nilearn examples in JupyterLite is experimental"
         " and you may encounter unexpected behavior.\n\n"
         " In particular, note that load times may take a lot longer"
-        " than usual—for example, the first `%pip install -q nilearn`"
+        " than usual—for example, the `%pip install -q nilearn`"
         " call can take roughly 10-20s—and that the "
-        " version of nilearn used in Jupyterlite might not be in sync "
-        " with the one you are browsing the documentation for.\n\n"
+        " version of nilearn used in Jupyterlite might be different "
+        " than the one used to generate the documentation.\n\n"
         " If you encounter any problems, please report them in a new"
         " [issue](https://github.com/nilearn/nilearn/issues/new/choose)."
     )

@@ -1,6 +1,8 @@
 /* Buttons for JupyterLite-enabled interactive examples */
 /* adapted from https://github.com/numpy/numpy/pull/26745 */
 
+/* Note that this button will not appear in mobile with current styling */
+
 .try_examples_button {
   color: white;
   background-color: var(--sd-color-primary);
