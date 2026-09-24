@@ -130,7 +130,9 @@ def cross_val_decoder_score(
     --------
     >>> import numpy as np
     >>> from nibabel import Nifti1Image
+    >>>
     >>> from nilearn.decoding import Decoder, cross_val_decoder_score
+    >>>
     >>> rng = np.random.default_rng(0)
     >>> img = Nifti1Image(rng.normal(size=(5, 5, 5, 30)), np.eye(4))
     >>> mask = Nifti1Image(np.ones((5, 5, 5)), np.eye(4))
