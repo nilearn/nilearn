@@ -7,7 +7,7 @@ from nilearn.image import check_niimg_3d, iter_img
 from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface import SurfaceImage
 
-
+@fill_doc
 def cross_val_decoder_score(
     estimator,
     imgs,
