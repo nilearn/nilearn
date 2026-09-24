@@ -33,8 +33,10 @@ from nilearn.surface import load_surf_data, load_surf_mesh
 
 try:
     import matplotlib.pyplot as plt
+    from matplotlib.axes import Axes
     from matplotlib.colorbar import make_axes
     from matplotlib.colors import Normalize, to_rgba
+    from matplotlib.figure import Figure
     from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
     from matplotlib.patches import Patch
     from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -253,11 +255,11 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
 
 def _check_figure_axes_inputs(figure, axes) -> None:
     """Check if the specified figure and axes are matplotlib objects."""
-    if figure is not None and not isinstance(figure, plt.Figure):
+    if figure is not None and not isinstance(figure, Figure):
         raise ValueError(
             "figure argument should be None or a 'matplotlib.pyplot.Figure'."
         )
-    if axes is not None and not isinstance(axes, plt.Axes):
+    if axes is not None and not isinstance(axes, Axes):
         raise ValueError(
             "axes argument should be None or a 'matplotlib.pyplot.Axes'."
         )

@@ -245,7 +245,7 @@ def view_connectome(
     node_coords,
     edge_threshold=None,
     edge_cmap=DEFAULT_DIVERGING_CMAP,
-    symmetric_cmap=True,
+    symmetric_cmap: bool = True,
     linewidth=6.0,
     node_color="auto",
     node_size=3.0,

@@ -14,7 +14,6 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.tags import InputTags
 from nilearn.glm._reporting_utils import (
     GLMReportMixin,
     get_runwise_dict,
@@ -27,6 +26,7 @@ from nilearn.image import check_niimg
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
+from nilearn.utils.tags import InputTags
 
 FIGURE_FORMAT = "png"
 
