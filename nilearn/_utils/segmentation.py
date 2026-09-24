@@ -201,7 +201,7 @@ def random_walker(
         save on memory.
 
     spacing : iterable of floats, default=None
-        Spacing between voxels in each spatial dimension. If `None`, then
+        Spacing between voxels in each spatial dimension. If ``None``, then
         the spacing between pixels/voxels in each dimension is assumed 1.
 
     Returns

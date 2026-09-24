@@ -188,18 +188,18 @@ class PlotlySurfaceFigure(SurfaceFigure):
             The value at each vertex is one inside the ROI and zero outside
             the ROI, or an :obj:`int` giving the label number for atlases.
 
-        levels : :obj:`list` of :obj:`int`, or :obj:`None`, default=None
+        levels : :obj:`list` of :obj:`int`, or :obj:``None``, default=None
             A :obj:`list` of indices of the regions that are to be outlined.
             Every index needs to correspond to one index in roi_map.
-            If :obj:`None`, all regions in roi_map are used.
+            If :obj:``None``, all regions in roi_map are used.
 
-        labels : :obj:`list` of :obj:`str` or :obj:`None`, default=None
+        labels : :obj:`list` of :obj:`str` or :obj:``None``, default=None
             A :obj:`list` of labels for the individual regions of interest.
             Provide :obj:`None` as list entry to skip showing the label of
-            that region. If :obj:`None`, no labels are used.
+            that region. If :obj:``None``, no labels are used.
 
         lines : :obj:`list` of :obj:`dict` giving the properties of the \
-                contours, or :obj:`None`, default=None
+                contours, or :obj:``None``, default=None
             For valid keys, see :attr:`plotly.graph_objects.Scatter3d.line`.
             If length 1, the properties defined in that element will be used
             to draw all requested contours.
