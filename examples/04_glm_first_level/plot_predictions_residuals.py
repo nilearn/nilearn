@@ -97,7 +97,7 @@ print(table)
 coords = table.loc[range(1, 7), ["X", "Y", "Z"]].to_numpy()
 print(coords)
 
-masker = NiftiSpheresMasker(coords, verbose=1)
+masker = NiftiSpheresMasker(coords, verbose=1).fit()
 
 # let's have a look at the report to make sure the spheres are well placed.
 report = masker.generate_report()
