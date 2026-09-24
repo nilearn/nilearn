@@ -2,7 +2,7 @@
 
 This module contains the code to run systematic checks
 from sklearn
-on the nilearn 'estimators' (maskers, decoders, ...).
+on nilearn 'estimators' (maskers, decoders, ...).
 
 The code here will help specify which of the sklearn estimator checks
 are expected to fail for some of the nilearn estimators.
