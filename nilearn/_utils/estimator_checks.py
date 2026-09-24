@@ -65,12 +65,6 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import check_is_of_allowed_type
-from nilearn._utils.tags import (
-    accept_niimg_input,
-    accept_surf_img_input,
-    is_glm,
-    is_masker,
-)
 from nilearn._utils.testing import is_ci, write_imgs_to_path
 from nilearn.conftest import (
     _affine_eye,
@@ -140,6 +134,12 @@ from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import (
     assert_surface_image_close,
     assert_surface_image_equal,
+)
+from nilearn.utils.tags import (
+    accept_niimg_input,
+    accept_surf_img_input,
+    is_glm,
+    is_masker,
 )
 
 NILEARN_DIR = Path(__file__).parents[1]
