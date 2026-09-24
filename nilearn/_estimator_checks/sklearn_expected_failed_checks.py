@@ -17,12 +17,6 @@ Replacement checks are in ``nilearn._utils.estimator_checks`` module.
 from sklearn.base import is_classifier, is_regressor
 
 from nilearn._base import NilearnBaseEstimator
-from nilearn._utils.tags import (
-    accept_niimg_input,
-    accept_surf_img_input,
-    is_glm,
-    is_masker,
-)
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
 from nilearn.decoding.decoder import _BaseDecoder
@@ -30,6 +24,12 @@ from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.space_net import BaseSpaceNet
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.regions import HierarchicalKMeans, ReNA
+from nilearn.utils.tags import (
+    accept_niimg_input,
+    accept_surf_img_input,
+    is_glm,
+    is_masker,
+)
 
 
 def return_expected_failed_checks(
