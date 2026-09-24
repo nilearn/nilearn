@@ -72,7 +72,7 @@ def plot_surf(
     Parameters
     ----------
     %(surf_mesh)s
-        If `None` is passed, then ``surf_map`` must be a
+        If ``None`` is passed, then ``surf_map`` must be a
         :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
         :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
@@ -84,7 +84,7 @@ def plot_surf(
         .annot, .label) or a Numpy array with a value for each :term:`vertex`
         of the `surf_mesh`, or a :obj:`~nilearn.surface.SurfaceImage`
         instance.
-        If `None` is passed for ``surf_mesh``, then ``surf_map`` must be a
+        If ``None`` is passed for ``surf_mesh``, then ``surf_map`` must be a
         :obj:`~nilearn.surface.SurfaceImage` instance and its mesh will be
         used for plotting.
 
@@ -127,7 +127,7 @@ def plot_surf(
                 kaleido.get_chrome_sync()
 
     %(cmap)s
-        If `None`, ``matplotlib`` default will be chosen.
+        If ``None``, ``matplotlib`` default will be chosen.
 
     symmetric_cmap : :obj:`bool`, default=None
         Whether to use a symmetric colormap or not.
@@ -137,7 +137,7 @@ def plot_surf(
             engine.
 
         When using ``plotly`` as engine, ``symmetric_cmap`` will default to
-        `False` if `None` is passed.
+        `False` if ``None`` is passed.
 
         .. nilearn_versionadded:: 0.9.0
 
@@ -154,7 +154,7 @@ def plot_surf(
             engine.
 
         When using ``matplotlib`` as engine, ``avg_method`` will default to
-        ``"mean"`` if `None` is passed.
+        ``"mean"`` if ``None`` is passed.
 
     %(threshold)s
         default=None
@@ -170,7 +170,7 @@ def plot_surf(
             engine.
 
         When using ``matplotlib`` as engine, ``alpha`` will default to `"auto"`
-        if `None` is passed.
+        if ``None`` is passed.
 
     %(bg_on_data)s
 
@@ -180,7 +180,7 @@ def plot_surf(
 
     cbar_vmin : :obj:`float` or None, default=None
         Lower bound for the colorbar.
-        If `None`, the value will be set from the data.
+        If ``None``, the value will be set from the data.
 
         .. note::
             This option is currently only implemented for the ``matplotlib``
@@ -188,7 +188,7 @@ def plot_surf(
 
     cbar_vmax : :obj:`float` or None, default=None
         Upper bound for the colorbar.
-        If `None`, the value will be set from the data.
+        If ``None``, the value will be set from the data.
 
         .. note::
             This option is currently only implemented for the ``matplotlib``
@@ -212,7 +212,7 @@ def plot_surf(
             engine.
 
         When using ``plotly`` as engine, ``title_font_size`` will default to
-        `18` if `None` is passed.
+        `18` if ``None`` is passed.
 
         .. nilearn_versionadded:: 0.9.0
 
@@ -222,7 +222,7 @@ def plot_surf(
         The axes instance to plot to. The projection must be `"3d"` (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': "3d"})`,
         where axes should be passed.).
-        If `None`, a new axes is created.
+        If ``None``, a new axes is created.
 
         .. note::
             This option is currently only implemented for the ``matplotlib``
@@ -362,12 +362,13 @@ def plot_surf_contours(
     levels : :obj:`list` of :obj:`int`, or None, default=None
         A list of indices of the regions that are to be outlined.
         Every index needs to correspond to one index in ``roi_map``.
-        If `None`, all regions in ``roi_map`` are used.
+        If ``None``, all regions in ``roi_map`` are used.
 
     labels : :obj:`list` of :obj:`str` or None, or None, default=None
         A list of labels for the individual regions of interest.
-        Provide `None` as list entry to skip showing the label of that region.
-        If `None`, no labels are used.
+        Provide ``None`` as list entry
+        to skip showing the label of that region.
+        If ``None``, no labels are used.
 
     colors : :obj:`list` of matplotlib color names or RGBA values, or None, \
         default=None
@@ -387,7 +388,7 @@ def plot_surf_contours(
         The axes instance to plot to. The projection must be `"3d"` (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': "3d"})`,
         where axes should be passed.).
-        If `None`, uses axes from figure if available, else creates new axes.
+        If ``None``, uses axes from figure if available, else creates new axes.
 
     %(figure)s
 

@@ -1872,7 +1872,7 @@ class BaseStackedSlicer(BaseSlicer):
         ------
         ValueError
             If `cut_coords` is not a number or a sequence of :obj:`float` or
-            :obj:`int` or `None`.
+            :obj:`int` or ``None``.
 
         """
         if cut_coords is None:
@@ -2444,7 +2444,7 @@ class MosaicSlicer(BaseSlicer):
 
         cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
                      :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
-                     `None`, default=None
+                     ``None``, default=None
             The world coordinates of the points where the cuts are performed.
 
             If `cut_coords` is not provided, 7 coordinates of cuts are
@@ -2632,7 +2632,7 @@ class MosaicSlicer(BaseSlicer):
         Parameters
         ----------
         cut_coords : :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
-                     `None`, default=None
+                     ``None``, default=None
             The positions of the crosses to draw.
             If ``None`` is passed, the ``MosaicSlicer``'s cut coordinates are
             used.
