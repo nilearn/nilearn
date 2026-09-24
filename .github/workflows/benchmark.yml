@@ -171,7 +171,7 @@ jobs:
                 ref: ${{ github.event.pull_request.head.sha || github.sha }}
                 persist-credentials: false
 
-        -   uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        -   uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ env.MIN_PYTHON }}
 
@@ -433,7 +433,7 @@ jobs:
             with:
                 persist-credentials: false
 
-        -   uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        -   uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ env.MIN_PYTHON }}
 
@@ -494,7 +494,7 @@ jobs:
             with:
                 persist-credentials: false
 
-        -   uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        -   uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ env.MIN_PYTHON }}
 
@@ -560,7 +560,7 @@ jobs:
                 persist-credentials: false
 
         -   name: Set up Python
-            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+            uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ env.MIN_PYTHON }}
 
@@ -607,7 +607,7 @@ jobs:
             with:
                 persist-credentials: false
 
-        -   uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        -   uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ env.MIN_PYTHON }}
 
