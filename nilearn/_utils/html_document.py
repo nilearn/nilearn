@@ -23,7 +23,7 @@ HEIGHT_DEFAULT = 800
 def set_max_img_views_before_warning(new_value: int | None) -> None:
     """Set the number of open views which triggers a warning.
 
-    If `None` or a negative number, disable the memory warning.
+    If ``None`` or a negative number, disable the memory warning.
     """
     global MAX_IMG_VIEWS_BEFORE_WARNING
     MAX_IMG_VIEWS_BEFORE_WARNING = new_value

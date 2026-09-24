@@ -128,7 +128,7 @@ def _sanitize_figure_and_axes(figure, axes) -> tuple[Figure, Axes]:
             f"You gave 'figure={figure}, axes={axes}'."
         )
     if figure is not None:
-        if isinstance(figure, plt.Figure):
+        if isinstance(figure, Figure):
             fig = figure
         else:
             fig = plt.figure(figsize=figure, layout="constrained")
@@ -179,8 +179,8 @@ def plot_matrix(
     mat,
     title: Title = None,
     labels=None,
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     colorbar: ColorBar = True,
     cmap=DEFAULT_DIVERGING_CMAP,
     tri: Literal["full", "lower", "diag"] = "full",
@@ -321,7 +321,7 @@ def plot_contrast_matrix(
     contrast_def,
     design_matrix,
     colorbar: ColorBar = True,
-    axes=None,
+    axes: Axes | None = None,
     output_file: OutputFile = None,
 ) -> Axes:
     """Create plot for :term:`contrast` definition.
@@ -401,7 +401,7 @@ def plot_contrast_matrix(
 def plot_design_matrix(
     design_matrix,
     rescale: bool = True,
-    axes=None,
+    axes: Axes | None = None,
     output_file: OutputFile = None,
 ) -> Axes:
     """Plot a design matrix.
