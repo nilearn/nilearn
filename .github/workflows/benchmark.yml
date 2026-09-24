@@ -452,8 +452,10 @@ jobs:
         -   name: Run all benchmarks for this commit
             # "<commit>^!" is git's syntax for "just this one commit"
             run: |
-                asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 "${{ matrix.commit }}^!" 2>&1 | tee log_${{ matrix.commit }}
+                asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 "${MATRIX_COMMIT}^!" 2>&1 | tee log_${MATRIX_COMMIT}
                 echo "${PIPESTATUS[0]}" > asv_run_exit_code
+            env:
+                MATRIX_COMMIT: ${{ matrix.commit }}
 
         -   name: Fail if any benchmark reported as failed
             # see the "Fail if any benchmark reported as failed" step of the
@@ -462,13 +464,13 @@ jobs:
             run: |
                 EXIT_CODE=$(cat asv_run_exit_code)
                 if [ "$EXIT_CODE" -ne 0 ]; then
-                    echo "::error::'asv run' exited with status $EXIT_CODE for commit ${{ matrix.commit }}, see the excerpt below"
-                    tail -n 100 log_${{ matrix.commit }}
+                    echo "::error::'asv run' exited with status $EXIT_CODE for commit ${MATRIX_COMMIT}, see the excerpt below"
+                    tail -n 100 log_${MATRIX_COMMIT}
                     exit 1
                 fi
-                if grep -q "asv: benchmark failed" log_${{ matrix.commit }}; then
-                    echo "::error::One or more benchmarks failed for commit ${{ matrix.commit }}, see the excerpt(s) below"
-                    grep -B 5 "asv: benchmark failed" log_${{ matrix.commit }}
+                if grep -q "asv: benchmark failed" log_${MATRIX_COMMIT}; then
+                    echo "::error::One or more benchmarks failed for commit ${MATRIX_COMMIT}, see the excerpt(s) below"
+                    grep -B 5 "asv: benchmark failed" log_${MATRIX_COMMIT}
                     exit 1
                 fi
             env:
@@ -553,10 +555,12 @@ jobs:
         runs-on: ubuntu-24.04
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
 
         -   name: Set up Python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: ${{ env.MIN_PYTHON }}
 
@@ -569,7 +573,7 @@ jobs:
             run: python asv_benchmarks/check_dependencies_in_sync.py --fix
 
         -   name: Create Pull Request
-            uses: peter-evans/create-pull-request@v8
+            uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
             with:
                 commit-message: sync asv_benchmarks/asv.conf.json with pyproject.toml
                 base: main
@@ -599,9 +603,11 @@ jobs:
                 working-directory: ./asv_benchmarks
 
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
 
-        -   uses: actions/setup-python@v6
+        -   uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: ${{ env.MIN_PYTHON }}
 
