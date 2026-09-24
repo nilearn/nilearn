@@ -70,11 +70,7 @@ def cross_val_decoder_score(
         A splitter or an iterable of (train, test) index pairs is also
         accepted. Splitters receive a list of image samples as ``X``.
 
-    n_jobs : :obj:`int` or None, default=None
-        Number of outer folds to evaluate in parallel. None uses one job
-        unless a joblib parallel configuration specifies otherwise.
-        -1 uses all processors. Set the decoder's own ``n_jobs=1`` when
-        parallelizing outer folds to avoid nested parallelism.
+    %(n_jobs)s
 
     %(verbose0)s
 
