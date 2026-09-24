@@ -47,8 +47,15 @@ fmri_niimgs = index_img(fmri_filename, task_mask)
 classification_target = stimuli[task_mask]
 
 # %%
-# The two defaults differ
-# -----------------------
+# Why do the defaults differ?
+# ---------------------------
+# ``NiftiMasker`` is a low-level building block: it only extracts
+# voxels from the mask and leaves any rescaling decision to the user,
+# so it defaults to ``standardize=None``. ``Decoder`` is an
+# end-to-end estimator whose regularized classifier benefits from
+# rescaled features, so it applies ``standardize="zscore_sample"``
+# out of the box. Rather than hard-coding them, the code below reads
+# both defaults from the signatures:
 import inspect
 
 from nilearn.decoding import Decoder
@@ -122,5 +129,18 @@ plt.xticks(rotation=10, ha="right")
 plt.tight_layout()
 
 show()
+
+# %%
+# What does this tell us?
+# -----------------------
+# The setting has a real effect: on this dataset the unstandardized
+# pipeline scores highest (0.957), followed by ``"zscore_sample"``
+# (0.929) and ``"psc"`` (0.882). This is one dataset and one
+# classifier, so the ranking should not be generalized to other
+# data. What does generalize is that the choice matters — and that
+# ``"zscore_sample"`` remains a good default even though it does
+# not translate into higher accuracy here: it puts every voxel on a
+# common zero-mean, unit-variance scale, so no voxel can dominate
+# the estimator purely because of its raw amplitude.
 
 # sphinx_gallery_dummy_images=1
