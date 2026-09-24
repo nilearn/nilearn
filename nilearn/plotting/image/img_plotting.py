@@ -9,11 +9,13 @@ import collections.abc
 import functools
 import inspect
 import warnings
+from typing import Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib import get_backend
+from matplotlib.axes import Axes
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpecFromSubplotSpec
@@ -44,6 +46,8 @@ from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.nilearn_typing import (
     Annotate,
+    BlackBg,
+    CbarTickFormat,
     ColorBar,
     DisplayMode,
     DrawCross,
@@ -51,6 +55,8 @@ from nilearn.nilearn_typing import (
     Radiological,
     ResamplingInterpolation,
     Title,
+    Vmax,
+    Vmin,
 )
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import (
@@ -122,7 +128,7 @@ def _plot_img_with_bg(
     display_factory=get_slicer,
     cbar_vmin=None,
     cbar_vmax=None,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
+    cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
     brain_color=(0.5, 0.5, 0.5),
     decimals=False,
     radiological: Radiological = False,
@@ -316,19 +322,19 @@ def plot_img(
     cut_coords=None,
     output_file: OutputFile = None,
     display_mode: DisplayMode = "ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: str | None = None,
     threshold=None,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg: bool = False,
+    black_bg: BlackBg = False,
     colorbar: ColorBar = True,
     cbar_tick_format: str = DEFAULT_TICK_FORMAT,
     resampling_interpolation: ResamplingInterpolation = "continuous",
     bg_img=None,
-    vmin=None,
-    vmax=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     radiological: Radiological = False,
     decimals: bool = False,
     cmap="gray",
@@ -486,20 +492,20 @@ def plot_anat(
     cut_coords=None,
     output_file: OutputFile = None,
     display_mode="ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     annotate: Annotate = True,
     threshold=None,
     draw_cross: DrawCross = True,
-    black_bg="auto",
-    dim="auto",
+    black_bg: BlackBg = "auto",
+    dim: float | Literal["auto"] = "auto",
     cmap="gray",
     colorbar: ColorBar = True,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
+    cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
     radiological: Radiological = False,
-    vmin=None,
-    vmax=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     **kwargs,
 ) -> BaseSlicer:
     """Plot cuts of an anatomical image.
@@ -631,17 +637,17 @@ def plot_epi(
     cut_coords=None,
     output_file: OutputFile = None,
     display_mode="ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg: bool = True,
+    black_bg: BlackBg = True,
     colorbar: ColorBar = True,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
+    cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
     cmap="gray",
-    vmin=None,
-    vmax=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     radiological: Radiological = False,
     **kwargs,
 ) -> BaseSlicer:
@@ -786,20 +792,20 @@ def plot_roi(
     cut_coords=None,
     output_file: OutputFile = None,
     display_mode="ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     threshold=0.5,
     alpha=0.7,
     cmap="gist_ncar",
-    dim="auto",
+    dim: float | Literal["auto"] = "auto",
     colorbar: ColorBar = True,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
-    vmin=None,
-    vmax=None,
+    cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     resampling_interpolation="nearest",
     view_type="continuous",
     linewidths=2.5,
@@ -984,17 +990,17 @@ def plot_prob_atlas(
     cut_coords=None,
     output_file: OutputFile = None,
     display_mode="ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg="auto",
-    dim="auto",
+    black_bg: BlackBg = "auto",
+    dim: float | Literal["auto"] = "auto",
     colorbar: ColorBar = True,
     cmap="gist_rainbow",
-    vmin=None,
-    vmax=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     alpha=0.7,
     radiological: Radiological = False,
     **kwargs,
@@ -1272,19 +1278,19 @@ def plot_stat_map(
     output_file: OutputFile = None,
     display_mode="ortho",
     colorbar: ColorBar = True,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
-    figure=None,
-    axes=None,
+    cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     threshold=1e-6,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cbar="auto",
-    dim="auto",
-    vmin=None,
-    vmax=None,
+    dim: float | Literal["auto"] = "auto",
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     radiological: Radiological = False,
     resampling_interpolation="continuous",
     transparency=None,
@@ -1454,17 +1460,17 @@ def plot_glass_brain(
     output_file=None,
     display_mode="ortho",
     colorbar=True,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
-    figure=None,
-    axes=None,
+    cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title=None,
     threshold="auto",
     annotate=True,
-    black_bg=False,
+    black_bg: BlackBg = False,
     cmap=None,
     alpha=0.7,
-    vmin=None,
-    vmax=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     plot_abs=True,
     symmetric_cbar="auto",
     resampling_interpolation="continuous",
@@ -1585,9 +1591,9 @@ def plot_glass_brain(
     check_threshold_not_negative(threshold)
 
     if cmap is None:
-        cmap = cm.cold_white_hot
+        cmap = cm.cold_white_hot  # type: ignore[attr-defined]
         if black_bg:
-            cmap = cm.cold_hot
+            cmap = cm.cold_hot  # type: ignore[attr-defined]
         if not plot_abs:
             cmap = plt.cm.RdBu_r
         # use only positive half of colormap if plotting absolute values
@@ -1667,11 +1673,11 @@ def plot_connectome(
     edge_threshold=None,
     output_file: OutputFile = None,
     display_mode="ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     annotate: Annotate = True,
-    black_bg: bool = False,
+    black_bg: BlackBg = False,
     alpha=0.7,
     edge_kwargs=None,
     node_kwargs=None,
@@ -1719,7 +1725,9 @@ def plot_connectome(
         If it is a string it must finish with a percent sign,
         e.g. "25.3%%", and only the edges with a abs(value) above
         the given percentile will be shown.
+
     %(output_file)s
+
     display_mode : :obj:`str`, default='ortho'
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'l' - sagittal left hemisphere only,
@@ -1727,12 +1735,18 @@ def plot_connectome(
         performed in orthogonal directions. Possible values are: 'ortho',
         'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
         'lzry', 'lyrz'.
+
     %(figure)s
+
     %(axes)s
+
     %(title)s
+
     %(annotate)s
+
     %(black_bg)s
         default=False.
+
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for the brain schematics.
 
@@ -1805,11 +1819,11 @@ def plot_markers(
     alpha=0.7,
     output_file: OutputFile = None,
     display_mode="ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     annotate: Annotate = True,
-    black_bg: bool = False,
+    black_bg: BlackBg = False,
     node_kwargs=None,
     colorbar: ColorBar = True,
     radiological: Radiological = False,
@@ -1849,6 +1863,7 @@ def plot_markers(
 
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for markers.
+
     %(output_file)s
 
     display_mode : :obj:`str`, default='ortho'
@@ -1858,17 +1873,25 @@ def plot_markers(
         performed in orthogonal directions. Possible values are: 'ortho',
         'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
         'lzry', 'lyrz'.
+
     %(figure)s
+
     %(axes)s
+
     %(title)s
+
     %(annotate)s
+
     %(black_bg)s
         default=False.
+
     node_kwargs : :obj:`dict` or None, default=None
         will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go
+
     %(colorbar)s
         default=True.
+
     %(radiological)s
 
     Returns
@@ -1966,10 +1989,10 @@ def plot_carpet(
     t_r=None,
     detrend: bool = True,
     output_file: OutputFile = None,
-    figure=None,
-    axes=None,
-    vmin=None,
-    vmax=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     title: Title = None,
     cmap="gray",
     cmap_labels="gist_ncar",
