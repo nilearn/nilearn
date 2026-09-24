@@ -211,7 +211,7 @@ def _group_iter_search_light(
         Target variable to predict. If `y` is provided, it must be
          an array-like object
         with the same length as the number of samples in `X`.
-        When `y` is `None`, a dummy
+        When `y` is ``None``, a dummy
         target is generated internally with half the samples
         labeled as `0` and the other
         half labeled as `1`. This is useful during transformations
