@@ -16,7 +16,7 @@ def cross_val_decoder_score(
     groups=None,
     scoring=None,
     cv=None,
-    n_jobs=None,
+    n_jobs: NJobs=1,
     verbose=0,
     params=None,
     pre_dispatch="2*n_jobs",
