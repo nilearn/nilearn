@@ -55,6 +55,7 @@ from nilearn.image.image import (
     check_niimg_4d,
     check_same_fov,
     clean_img,
+    compute_mean,
     concat_imgs,
     copy_img,
     crop_img,
@@ -336,17 +337,71 @@ def test_smooth_array_fwhm_is_odd_no_copy(affine):
     _check_fwhm(data, affine, fwhm)
 
 
-def test_smooth_array_nan_do_not_propagate():
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("fwhm", [None, 9])
+def test_smooth_array_warns_on_non_finite(fwhm):
+    """``smooth_array`` must report a replacement, and make good on it.
+
+    See https://github.com/nilearn/nilearn/issues/6487.
+    """
     data = _new_data_for_smooth_array()
     data[10, 10, 10] = np.nan
-    fwhm = 9
     affine = AFFINE_TO_TEST[2]
 
-    filtered = smooth_array(
-        data, affine, fwhm=fwhm, ensure_finite=True, copy=True
-    )
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
+        filtered = smooth_array(
+            data, affine, fwhm=fwhm, ensure_finite=True, copy=True
+        )
 
     assert np.all(np.isfinite(filtered))
+
+
+@pytest.mark.ai_generated
+def test_smooth_array_does_not_warn_when_all_finite():
+    """No warning when there is nothing to replace."""
+    data = _new_data_for_smooth_array()
+    affine = AFFINE_TO_TEST[2]
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        smooth_array(data, affine, fwhm=9, ensure_finite=True, copy=True)
+
+
+@pytest.mark.ai_generated
+def test_smooth_array_ensure_finite_false_is_silent():
+    """``ensure_finite=False`` leaves the non-finite values unchanged.
+
+    And does so without warning.
+    """
+    data = _new_data_for_smooth_array()
+    data[10, 10, 10] = np.nan
+    affine = AFFINE_TO_TEST[2]
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        filtered = smooth_array(
+            data, affine, fwhm=None, ensure_finite=False, copy=True
+        )
+
+    assert not np.all(np.isfinite(filtered))
+
+
+@pytest.mark.ai_generated
+def test_compute_mean_smooth_does_not_warn_on_nan(affine_eye):
+    """``compute_mean`` restores the NaNs it cleans, so it must stay silent.
+
+    ``compute_epi_mask(opening=True)`` reaches this path, and a warning
+    there would point at data the caller never sees changed.
+    """
+    data = np.zeros((10, 10, 10, 2))
+    data[5, 5, 5] = np.nan
+    img = Nifti1Image(data, affine_eye)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        mean_data, _ = compute_mean(img, smooth=1)
+
+    assert np.isnan(mean_data[5, 5, 5])
 
 
 def test_smooth_array_same_result_with_fwhm_none_or_zero(
@@ -463,37 +518,140 @@ def test_smooth_img_warning(img_3d_mni):
         smooth_img(img_3d_mni, fwhm=0.0)
 
 
-@pytest.mark.parametrize("fwhm", [None, 0.0, 4.0])
-def test_smooth_img_surface_nan_do_not_propagate(surf_img_1d, fwhm):
-    """Non-finite vertices must be zeroed, as they are for volumes.
+MODALITIES = ["volume", "surface"]
 
-    Regression test for https://github.com/nilearn/nilearn/issues/6487.
-    The volume branch of ``smooth_img`` passes ``ensure_finite=True`` to
-    ``smooth_array``, but the surface branch did not clean its data, so
-    the smoothing iterations spread each non-finite vertex over its
-    neighbors instead.
+
+def _arrays(img) -> list[np.ndarray]:
+    """Every array a volume or surface image holds, in a stable order."""
+    if hasattr(img, "data"):
+        return [img.data.parts[part] for part in sorted(img.data.parts)]
+    return [get_data(img)]
+
+
+def _copy_of_data(img) -> list[np.ndarray]:
+    """Snapshot of an image's values, to compare against after a call."""
+    return [array.copy() for array in _arrays(img)]
+
+
+def _non_finite_warnings(record) -> list:
+    """Only the warnings this feature raises, not whatever else fired."""
+    return [
+        w for w in record if "Non-finite values detected" in str(w.message)
+    ]
+
+
+def _all_finite(img) -> bool:
+    """Whether a volume or surface image holds only finite values."""
+    data = (
+        get_surface_data(img)
+        if isinstance(img, SurfaceImage)
+        else get_data(img)
+    )
+    return bool(np.all(np.isfinite(data)))
+
+
+@pytest.fixture
+def non_finite_img(
+    img_3d_mni, surf_img_1d, add_nans_to_img, add_nans_to_surf_img
+):
+    """Return a factory for an image of either modality holding NaNs."""
+
+    def _non_finite_img(modality):
+        if modality == "volume":
+            return add_nans_to_img(img_3d_mni)
+        return add_nans_to_surf_img(surf_img_1d)
+
+    return _non_finite_img
+
+
+@pytest.fixture
+def finite_img(img_3d_mni, surf_img_1d):
+    """Return a factory for an all-finite image of either modality."""
+
+    def _finite_img(modality):
+        return img_3d_mni if modality == "volume" else surf_img_1d
+
+    return _finite_img
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("modality", MODALITIES)
+@pytest.mark.parametrize("fwhm", [None, 0.0, 4.0])
+def test_smooth_img_warns_on_non_finite(non_finite_img, modality, fwhm):
+    """Users must be told when smoothing zeroes their data.
+
+    Both modalities must warn, exactly once, and the values must really be
+    finite afterwards; the two branches stay in step on all three.
+    See https://github.com/nilearn/nilearn/issues/6487.
+    """
+    with pytest.warns(
+        RuntimeWarning, match="Non-finite values detected"
+    ) as rec:
+        smoothed = smooth_img(non_finite_img(modality), fwhm=fwhm)
+
+    assert len(_non_finite_warnings(rec)) == 1
+    assert _all_finite(smoothed)
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("modality", MODALITIES)
+@pytest.mark.parametrize("fwhm", [None, 0.0, 4.0])
+def test_smooth_img_does_not_warn_when_all_finite(finite_img, modality, fwhm):
+    """No warning when there is nothing to replace."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        smooth_img(finite_img(modality), fwhm=fwhm)
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("modality", MODALITIES)
+@pytest.mark.parametrize("fwhm", [None, 0.0, 4.0])
+def test_smooth_img_ensure_finite_false(non_finite_img, modality, fwhm):
+    """``ensure_finite=False`` leaves non-finite values alone, silently."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        smoothed = smooth_img(
+            non_finite_img(modality), fwhm=fwhm, ensure_finite=False
+        )
+
+    assert not _all_finite(smoothed)
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("modality", MODALITIES)
+def test_smooth_img_does_not_modify_input(non_finite_img, modality):
+    """Cleaning non-finite values must not touch the input image."""
+    img = non_finite_img(modality)
+    expected = _copy_of_data(img)
+
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
+        smooth_img(img, fwhm=4.0)
+
+    for actual, before in zip(_arrays(img), expected, strict=True):
+        assert_array_equal(actual, before)
+
+
+@pytest.mark.ai_generated
+def test_smooth_img_list_warns_for_each_image(surf_img_1d):
+    """The warning is not swallowed when several images are passed.
+
+    The non-finite value sits in a single hemisphere, so each of the two
+    images warns exactly once.
     """
     surf_img_1d.data.parts["left"][0] = np.nan
-    surf_img_1d.data.parts["left"][1] = np.inf
-    surf_img_1d.data.parts["right"][0] = -np.inf
 
-    smoothed = smooth_img(surf_img_1d, fwhm=fwhm)
+    with pytest.warns(
+        RuntimeWarning, match="Non-finite values detected"
+    ) as rec:
+        smoothed = smooth_img([surf_img_1d, surf_img_1d], fwhm=4.0)
 
-    for part in smoothed.data.parts.values():
-        assert np.all(np.isfinite(part))
-
-
-def test_smooth_img_surface_does_not_modify_input(surf_img_1d):
-    """Cleaning non-finite values must not touch the input image."""
-    surf_img_1d.data.parts["left"][0] = np.nan
-    expected = {
-        part: values.copy() for part, values in surf_img_1d.data.parts.items()
-    }
-
-    smooth_img(surf_img_1d, fwhm=4.0)
-
-    for part, values in expected.items():
-        assert_array_equal(surf_img_1d.data.parts[part], values)
+    non_finite_warnings = [
+        w for w in rec if "Non-finite values detected" in str(w.message)
+    ]
+    assert len(non_finite_warnings) == 2
+    for img in smoothed:
+        for part in img.data.parts.values():
+            assert np.all(np.isfinite(part))
 
 
 def test_smooth_img_surface(surf_img_1d):
