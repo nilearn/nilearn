@@ -155,6 +155,8 @@ def _estimators():
     in CI. To generate it locally,
     `` python build_tools/github/restrict_tests_to_run.py`` command must be run
     in command line before running tests.
+
+    If ``tests_to_run.txt`` file does not exist, it returns all estimators.
     """
     path = Path(__file__).resolve().parent.parent.parent / "tests_to_run.txt"
     if path.exists():
