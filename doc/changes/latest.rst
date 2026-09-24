@@ -56,4 +56,4 @@ Changes
 
 - :bdg-danger:`Deprecation` The function :func:`~nilearn.datasets.fetch_localizer_calculation_task` is deprecated and will be removed in version 0.17.0. Use :func:`~nilearn.datasets.fetch_localizer_contrasts` with ``contrasts=["calculation (auditory and visual cue)"]`` instead (:gh:`6538` by `Aniket Singh Yadav`_).
 
-- :bdg-success:`API` The default value of ``n_clusters`` parameter of :class:`~nilearn.regions.HierarchicalKmeans` is changed from ``None`` to ``2``. (:gh:`6585` by `Hande Gözükan`_).
+- :bdg-success:`API` The default value of ``n_clusters`` parameter of :class:`~nilearn.regions.HierarchicalKMeans` is changed from ``None`` to ``2``. (:gh:`6585` by `Hande Gözükan`_).
