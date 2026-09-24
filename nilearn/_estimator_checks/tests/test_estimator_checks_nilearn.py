@@ -60,10 +60,10 @@ from nilearn.utils.discovery import all_estimators
 RANDOM_STATE = 0
 
 CONNECTOME = [
-    ConnectivityMeasure(cov_estimator=EmpiricalCovariance()),
     ConnectivityMeasure(),
-    GroupSparseCovarianceCV(),
+    ConnectivityMeasure(cov_estimator=EmpiricalCovariance()),
     GroupSparseCovariance(),
+    GroupSparseCovarianceCV(),
 ]
 
 
@@ -78,14 +78,14 @@ DECODING = [
         estimator_args={"random_state": RANDOM_STATE},
     ),
     FREMRegressor(screening_percentile=100),
-    SpaceNetClassifier(),
-    SpaceNetRegressor(),
     SearchLight(
         mask_img=Nifti1Image(
             np.ones((5, 5, 5), dtype=bool).astype("uint8"), np.eye(4)
         ),
         estimator_args={"random_state": RANDOM_STATE},
     ),
+    SpaceNetClassifier(),
+    SpaceNetRegressor(),
 ]
 
 DECOMPOSITION = [
@@ -106,25 +106,26 @@ MASKERS = [
     NiftiMapsMasker(maps_img=_img_maps(n_regions=1)),
     NiftiSpheresMasker(seeds=[(1, 1, 1)]),
     NiftiSpheresMasker(seeds=[(1, 1, 1), (1, 2, 3)]),
-    SurfaceMasker(),
-    SurfaceMapsMasker(_surf_maps_img()),
-    SurfaceMapsMasker(_surf_maps_img(n_regions=1)),
-    SurfaceLabelsMasker(sklearn_surf_label_img()),
-    SurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
-    MultiNiftiMasker(),
     MultiNiftiLabelsMasker(labels_img=_img_labels()),
     MultiNiftiLabelsMasker(labels_img=_img_labels(n_regions=1)),
     MultiNiftiMapsMasker(_img_maps(n_regions=2)),
     MultiNiftiMapsMasker(_img_maps(n_regions=1)),
-    MultiSurfaceMasker(),
+    MultiNiftiMasker(),
     MultiSurfaceLabelsMasker(sklearn_surf_label_img()),
     MultiSurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
     MultiSurfaceMapsMasker(_surf_maps_img()),
     MultiSurfaceMapsMasker(_surf_maps_img(n_regions=1)),
+    MultiSurfaceMasker(),
+    SurfaceMasker(),
+    SurfaceLabelsMasker(sklearn_surf_label_img()),
+    SurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
+    SurfaceMapsMasker(_surf_maps_img()),
+    SurfaceMapsMasker(_surf_maps_img(n_regions=1)),
 ]
 
 
 REGIONS = [
+    HierarchicalKMeans(n_clusters=2, random_state=RANDOM_STATE),
     RegionExtractor(
         maps_img=generate_maps(
             shape=_shape_3d_large(),
@@ -133,7 +134,6 @@ REGIONS = [
             affine=_affine_eye(),
         )[0]
     ),
-    HierarchicalKMeans(n_clusters=2, random_state=RANDOM_STATE),
     ReNA(mask_img=_img_3d_mni(), n_clusters=2),
     Parcellations(method="kmeans", n_parcels=5, random_state=RANDOM_STATE),
     Parcellations(method="ward", n_parcels=5, random_state=RANDOM_STATE),
