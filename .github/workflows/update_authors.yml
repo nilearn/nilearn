@@ -14,16 +14,24 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
+permissions:
+    contents: read
+
 jobs:
     update_authors:
+        permissions:
+            contents: write
+            pull-requests: write
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
 
         -   name: Set up Python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: '3.14'
                 allow-prereleases: false
@@ -37,7 +45,7 @@ jobs:
             run: python maint_tools/citation_cff_maint.py
 
         -   name: Create Pull Request
-            uses: peter-evans/create-pull-request@v8
+            uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
             with:
                 commit-message: update AUTHORS.rst and doc/changes/names.rst
                 base: main

@@ -39,8 +39,14 @@ concurrency:
 env:
     FORCE_COLOR: true
 
+permissions:
+    contents: read
+
 jobs:
     test_min_install:
+        permissions:
+            contents: read
+            issues: write
         if: github.repository == 'nilearn/nilearn'
 
         runs-on: ${{ matrix.os }}
@@ -56,10 +62,12 @@ jobs:
 
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
 
         -   name: Setup python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
             with:
                 python-version: ${{ matrix.python-version }}
 
@@ -82,14 +90,14 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.min_dep }}_report.html
                 path: report.html
 
         -   name: Create issue
             if: ${{ steps.test_minimum.outcome != 'success' }}
-            uses: JasonEtco/create-an-issue@v2.9.2
+            uses: JasonEtco/create-an-issue@1b14a70e4d8dc185e5cc76d3bec9eab20257b2c5 # v2.9.2
             env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                 run_id: ${{ github.run_id }}
