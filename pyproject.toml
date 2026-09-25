@@ -27,6 +27,9 @@ doc = [
     "sphinx>=7.4.7",
     "sphinx-copybutton>=0.5.2",
     "sphinx-design>=0.6.1",
+    # sphinx-prompt<1.8.0 ships its package in a "sphinx-prompt" folder
+    # that cannot be imported as "sphinx_prompt"
+    "sphinx-prompt>=1.8.0",
     "sphinxcontrib-mermaid>=1.0.0",
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
@@ -149,7 +152,7 @@ Homepage = "https://nilearn.github.io"
 [tool.codespell]
 builtin = "clear,rare,en-GB_to_en-US"
 ignore-words = ".github/codespell_ignore_words.txt"
-skip = "./.git,*.cff,*.bib,*/tmp,*.min.js,*.umd.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results,AUTHORS.rst"
+skip = "./.git,*.cff,*.bib,*/tmp,*.min.js,*.umd.js,localizer_behavioural.tsv,env,venv,./doc/auto_examples,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results,AUTHORS.rst"
 
 [tool.djlint]
 blank_line_after_tag = "load,extends,include,endblock,set"
@@ -203,10 +206,12 @@ ignore_imports = [
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
-    "nilearn.plotting.matrix.* -> nilearn.glm.**"
+    "nilearn.plotting.matrix.* -> nilearn.glm.**",
+    "nilearn.** -> nilearn.utils.tags"  # estimator tags are used by all layers
 ]
 # ** utils:
 # - can import from any lower layers
+# - nilearn.utils.tags is a leaf module imported by all layers (see ignore_imports)
 # ** glm, decoding, connectome, decomposition:
 # - cannot import from each other
 # - but can import from any lower layers
@@ -304,22 +309,25 @@ protected_modules = [
 ]
 type = "protected"
 
-[tool.mypy]
-allow_redefinition = false
-enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
-exclude = [
-    'nilearn_cache/.*',
-    'nilearn/_version.py'
+[tool.pyrefly]
+# Errors already present in the code base are listed in the baseline file
+# and are not reported, so only new errors fail the check.
+# Regenerate it with: pyrefly check --update-baseline
+baseline = "pyrefly-baseline.json"
+baseline-format = "minimal"
+baseline-matching-mode = "concise-description"
+# Skip the bodies of unannotated functions and treat their return type
+# as Any, as mypy did.
+check-unannotated-defs = false
+infer-return-types = "never"
+preset = "legacy"
+project-excludes = [
+    "**/nilearn_cache/**/*",
+    "**/nilearn/_version.py"
 ]
-warn_unreachable = true
-
-[[tool.mypy.overrides]]
-ignore_errors = true
-module = ["nilearn._version"]
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = [
+project-includes = ["nilearn/**/*.py"]
+python-version = "3.11"
+replace-imports-with-any = [
     "IPython.*",
     "jinja2.*",
     "joblib.*",
@@ -339,6 +347,9 @@ module = [
     "statsmodels.*",
     "svg.*"
 ]
+
+[tool.pyrefly.errors]
+redundant-condition = "error"
 
 [tool.pytest.ini_options]
 # We do not run doctests systematically with "--doctest-modules".

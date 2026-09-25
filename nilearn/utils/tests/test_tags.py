@@ -1,7 +1,8 @@
 """Check Nilearn estimators tags."""
 
 from nilearn._base import NilearnBaseEstimator
-from nilearn._utils.tags import InputTags
+from nilearn.utils import InputTags
+from nilearn.utils.tags import get_tag
 
 
 class NilearnEstimator(NilearnBaseEstimator):
@@ -14,10 +15,7 @@ class NilearnEstimator(NilearnBaseEstimator):
 
 
 def test_nilearn_tags():
-    """Check that adding tags to Nilearn estimators work as expected.
-
-    Especially with different sklearn versions.
-    """
+    """Check that adding tags to Nilearn estimators work as expected."""
     est = NilearnEstimator()
 
     tags = est.__sklearn_tags__()
@@ -27,3 +25,15 @@ def test_nilearn_tags():
     # making sure 2darray still here
     # as it allows to run some sklearn checks
     assert tags.input_tags.two_d_array
+
+
+def test_get_tag():
+    """Check reading a tag from an estimator."""
+    est = NilearnEstimator()
+
+    assert get_tag(est, "surf_img")
+    assert not get_tag(est, "niimg_like")
+    assert not get_tag(est, "unknown_tag")
+
+    # objects without __sklearn_tags__ have no tags
+    assert not get_tag(object(), "niimg_like")

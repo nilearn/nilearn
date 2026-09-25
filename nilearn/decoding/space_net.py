@@ -33,7 +33,6 @@ from nilearn._utils.param_validation import (
     check_params,
     sanitize_verbose,
 )
-from nilearn._utils.tags import InputTags
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net_solvers import (
@@ -46,6 +45,7 @@ from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import unmask_from_to_3d_array
 from nilearn.surface import SurfaceImage
+from nilearn.utils.tags import InputTags
 
 
 def _crop_mask(mask):
@@ -978,7 +978,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
     def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "masker_")
 
-    def predict(self, X):
+    def predict(self, X) -> np.ndarray:
         """Predict class labels for samples in X.
 
         Parameters
@@ -1189,7 +1189,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
     def _set_intercept(self) -> None:
         self.intercept_ = self.w_[:, -1]
 
-    def score(self, X, y):
+    def score(self, X, y) -> float:
         """Return the mean accuracy on the given test data and labels.
 
         Parameters
@@ -1210,7 +1210,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         check_is_fitted(self)
         return accuracy_score(y, self.predict(X))
 
-    def decision_function(self, X):
+    def decision_function(self, X) -> np.ndarray:
         """Predict confidence scores for samples.
 
         The confidence score for a sample is the signed distance of that

@@ -71,7 +71,7 @@ def _md5_sum_file(path):
 
 def read_md5_sum_file(path):
     """Read a MD5 checksum file and returns hashes as a dictionary."""
-    with Path(path).open() as f:
+    with Path(path).open(encoding="utf-8") as f:
         hashes = {}
         while True:
             line = f.readline()
@@ -157,8 +157,8 @@ def _chunk_read_(
     chunk_size : int, default=8192
         Size of downloaded chunks.
 
-    report_hook : :obj:`bool` or None, default=None
-        Whether or not to show downloading advancement. default=None
+    report_hook : :obj:`bool`, default=False
+        Whether or not to show downloading advancement.
 
     initial_size : int, default=0
         If resuming, indicate the initial size of the file.
