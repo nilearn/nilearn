@@ -677,7 +677,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         radius_suffix = ""
         if self.radius is not None:
             radius_suffix = f"; r={np.round(self.radius, decimals=1)}mm"
-        return [str(x) + radius_suffix for x in self.seeds]
+        seeds = np.round(np.asarray(self.seeds), decimals=1)
+        return [str(tuple(x)) + radius_suffix for x in seeds.tolist()]
 
     @fill_doc
     def inverse_transform(self, region_signals) -> Nifti1Image:

@@ -5,6 +5,7 @@ not the underlying functions (clean(), img_to_signals_labels(), etc.). See
 test_masking.py and test_signal.py for details.
 """
 
+import string
 from copy import deepcopy
 
 import numpy as np
@@ -1286,3 +1287,18 @@ def test_lut_shift(lut):
 
     assert masker.region_names_ == {0: "Frontal", 1: "Temporal"}
     assert masker.lut_["name"].to_list() == ["Frontal", "Temporal"]
+
+
+def test_transform_as_dataframe_with_labels(
+    n_regions, img_labels, img_3d_rand_eye, rng
+):
+    """Ensure proper name of dataframe columns."""
+    labels = rng.choice(
+        list(string.ascii_lowercase), size=(n_regions,), replace=False
+    ).tolist()
+    masker = NiftiLabelsMasker(labels_img=img_labels, labels=labels).fit()
+    masker.set_output(transform="pandas")
+
+    s = masker.transform(img_3d_rand_eye)
+
+    assert s.columns.tolist() == labels
