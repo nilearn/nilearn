@@ -11,12 +11,7 @@ from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn._utils.versions import SKLEARN_GTE_1_8
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net import (
@@ -44,27 +39,6 @@ squared_loss_path_scores = partial(path_scores, is_classif=False)
 IS_CLASSIF = [True, False]
 
 PENALTY = ["graph-net", "tv-l1"]
-
-ESTIMATORS_TO_CHECK = [SpaceNetClassifier(), SpaceNetRegressor()]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)

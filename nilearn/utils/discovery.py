@@ -110,9 +110,9 @@ def all_estimators(
     >>> from nilearn.utils import all_estimators
     >>> estimators = all_estimators()
     >>> len(estimators)
-    33
+    31
     >>> estimators[0]
-    ('BaseGLM', <class 'nilearn.glm._base.BaseGLM'>)
+    ('CanICA', <class 'nilearn.decomposition.canica.CanICA'>)
 
     """
     # lazy import to avoid circular imports from nilearn._base
@@ -138,8 +138,16 @@ def all_estimators(
         c
         for c in all_classes
         if (
-            issubclass(c[1], NilearnBaseEstimator)
-            and c[0] != "NilearnBaseEstimator"
+            issubclass(c[-1], NilearnBaseEstimator)
+            and (
+                c[0]
+                not in [
+                    "NilearnBaseEstimator",
+                    "BaseMasker",
+                    "BaseGLM",
+                    "BaseSpaceNet",
+                ]
+            )
         )
     ]
 
