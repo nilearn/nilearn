@@ -529,7 +529,7 @@ if with_jupyterlite:
         " In particular, note that load times may take a lot longer"
         " than usual—for example, the `%pip install -q nilearn`"
         " call can take roughly 10-20s—and that the "
-        " version of nilearn used in Jupyterlite might be different "
+        " version of Nilearn used in Jupyterlite might be different "
         " than the one used to generate the documentation.\n\n"
         " If you encounter any problems, please report them in a new"
         " [issue](https://github.com/nilearn/nilearn/issues/new/choose)."
