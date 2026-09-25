@@ -162,10 +162,10 @@ jobs:
             with:
                 persist-credentials: false
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+            uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
             with:
                 enable-cache: false
-        -   uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        -   uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
         -   name: Install tox
@@ -193,7 +193,7 @@ jobs:
                 fetch-depth: 0
                 persist-credentials: false
         -   name: Setup python
-            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+            uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
         -   name: Install dependencies
@@ -239,7 +239,7 @@ jobs:
 
                       # Set up environment
         -   name: Setup python
-            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+            uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
 
@@ -330,7 +330,7 @@ jobs:
 
         steps:
         -   name: Free Disk Space (Ubuntu)
-            uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
+            uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
             with:
                   # this might remove tools that are actually needed,
                   # if set to "true" but frees about 6 GB
@@ -372,12 +372,12 @@ jobs:
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+            uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
             with:
                 enable-cache: false
 
         -   name: Setup python
-            uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+            uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ matrix.py }}
 
