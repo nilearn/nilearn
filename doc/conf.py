@@ -72,6 +72,7 @@ extensions = [
     "myst_parser",
     "numpydoc",
     "sphinx_copybutton",
+    "sphinx_prompt",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.autodoc",

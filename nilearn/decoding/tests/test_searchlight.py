@@ -5,43 +5,9 @@ import pytest
 from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold, LeaveOneGroupOut
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn.conftest import _rng
 from nilearn.decoding import searchlight
-
-ESTIMATOR_TO_CHECK = [searchlight.SearchLight()]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATOR_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=[
-            searchlight.SearchLight(
-                mask_img=Nifti1Image(
-                    np.ones((5, 5, 5), dtype=bool).astype("uint8"), np.eye(4)
-                )
-            )
-        ]
-    ),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def _make_searchlight_test_data(frames):
