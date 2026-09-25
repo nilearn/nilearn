@@ -38,7 +38,7 @@ from nilearn.masking import apply_mask
 from nilearn.reporting import HTMLReport
 from nilearn.reporting.tests._testing import generate_and_check_report
 from nilearn.surface import SurfaceImage
-from nilearn.utils.tags import accept_surf_img_input
+from nilearn.utils.tags import accepts_surface
 
 
 def generate_and_check_masker_report(
@@ -101,7 +101,7 @@ def generate_and_check_masker_report(
             includes.append('div id="sk-container-id')
 
         if is_matplotlib_installed():
-            if accept_surf_img_input(masker):
+            if accepts_surface(masker):
                 includes.append("data:image/png;base64,")
             elif kwargs.get("engine", "") != "brainsprite":
                 includes.append("data:image/svg+xml;base64,")
