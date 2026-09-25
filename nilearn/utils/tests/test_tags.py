@@ -2,7 +2,7 @@
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn.utils import InputTags
-from nilearn.utils.tags import get_input_tags
+from nilearn.utils.tags import get_input_tag
 
 
 class NilearnEstimator(NilearnBaseEstimator):
@@ -31,9 +31,9 @@ def test_get_tag():
     """Check reading a tag from an estimator."""
     est = NilearnEstimator()
 
-    assert get_input_tags(est, "surf_img")
-    assert not get_input_tags(est, "niimg_like")
-    assert not get_input_tags(est, "unknown_tag")
+    assert get_input_tag(est, "surf_img")
+    assert not get_input_tag(est, "niimg_like")
+    assert not get_input_tag(est, "unknown_tag")
 
     # objects without __sklearn_tags__ have no tags
-    assert not get_input_tags(object(), "niimg_like")
+    assert not get_input_tag(object(), "niimg_like")
