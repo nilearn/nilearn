@@ -524,7 +524,7 @@ if with_jupyterlite:
     jupyterlite_bind_ipynb_suffix = False
     try_examples_global_button_text = "Try it in your browser!"
     try_examples_global_warning_text = (
-        "Running the nilearn examples in JupyterLite is experimental"
+        "Running the Nilearn examples in JupyterLite is experimental"
         " and you may encounter unexpected behavior.\n\n"
         " In particular, note that load times may take a lot longer"
         " than usual—for example, the `%pip install -q nilearn`"
