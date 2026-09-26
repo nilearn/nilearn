@@ -649,7 +649,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         Attributes
         ----------
         region_atlas_ : Niimg-like object
-            Regions definition as labels.
+            Regions definition as labels after applying the mask
+            and resampling.
             The labels correspond to the indices in ``region_ids_``.
             The region in ``region_atlas_``
             that takes the value ``region_ids_[i]``
