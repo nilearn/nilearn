@@ -6,7 +6,6 @@ from pathlib import Path
 
 import numpy as np
 from nibabel import Nifti1Image
-from nibabel.onetime import auto_attr
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -154,10 +153,14 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
 
     # @auto_attr store the value as an object attribute after initial call
     # better performance than @property
-    @auto_attr
-    def residuals_(self):
-        """Transform element-wise residuals to the same shape \
-        as the input image.
+    def residuals(self, Y):
+        """Transform voxelwise residuals to the same shape \
+        as the input Nifti1Image(s).
+
+        Parameters
+        ----------
+        Y : Niimg-like object
+            The data from which to compute the residuals.
 
         Returns
         -------
@@ -165,35 +168,12 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
 
         """
         return self._get_element_wise_model_attribute(
-            "residuals", result_as_time_series=True
+            "residuals", result_as_time_series=True, Y=Y
         )
 
-    @auto_attr
-    def residuals(self):
-        """Transform element-wise residuals to the same shape \
-        as the input image.
-
-        .. nilearn_deprecated:: 0.14.0
-
-        """
-        # TODO (nilearn>=0.16.0) remove the method
-        warnings.warn(
-            stacklevel=find_stack_level(),
-            category=FutureWarning,
-            message=(
-                "residuals' is deprecated.\n "
-                "It will be removed in Nilearn 0.16.0.\n"
-                "Use 'residuals_' instead."
-            ),
-        )
-        return self.residuals_
-
-    # @auto_attr store the value as an object attribute after initial call
-    # better performance than @property
-    @auto_attr
-    def predicted_(self):
-        """Transform element-wise predicted values to the same shape \
-        as the input image.
+    def predicted(self):
+        """Transform voxelwise predicted values to the same shape \
+        as the input Nifti1Image(s).
 
         Returns
         -------
@@ -204,32 +184,9 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             "predicted", result_as_time_series=True
         )
 
-    @auto_attr
-    def predicted(self):
-        """Transform element-wise predicted to the same shape \
-        as the input image.
-
-        .. nilearn_deprecated:: 0.14.0
-
-        """
-        # TODO (nilearn>=0.16.0) remove the method
-        warnings.warn(
-            stacklevel=find_stack_level(),
-            category=FutureWarning,
-            message=(
-                "residuals' is deprecated.\n "
-                "It will be removed in Nilearn 0.16.0.\n"
-                "Use 'residuals_' instead."
-            ),
-        )
-        return self.predicted_
-
-    # @auto_attr store the value as an object attribute after initial call
-    # better performance than @property
-    @auto_attr
     def r_square_(self):
-        """Transform element-wise r-squared values to the same shape \
-        as the input image.
+        """Transform voxelwise r-squared values to the same shape \
+        as the input Nifti1Image(s).
 
         Returns
         -------
@@ -240,7 +197,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             "r_square", result_as_time_series=False
         )
 
-    @auto_attr
     def r_square(self):
         """Transform element-wise r-squared to the same shape \
         as the input image.
