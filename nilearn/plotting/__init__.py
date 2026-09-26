@@ -1,8 +1,11 @@
 """Plotting code for nilearn."""
 
 import warnings
+from pathlib import Path
 
 from nilearn._utils.logger import find_stack_level
+
+GLASS_BRAIN_ASSETS = Path(__file__).resolve().parent / "glass_brain_files"
 
 try:
     import matplotlib  # noqa: F401

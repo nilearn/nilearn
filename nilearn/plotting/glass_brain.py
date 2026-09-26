@@ -1,7 +1,6 @@
 """Brain schematics plotting for glass brain functionality."""
 
 import json
-import pathlib
 
 from matplotlib import colors, patches, transforms
 from matplotlib.path import Path
@@ -83,6 +82,8 @@ def _get_json_and_transform(direction):
     """Return the json filename and an affine transform, which has \
     been tweaked by hand to fit the MNI template.
     """
+    from nilearn.plotting import GLASS_BRAIN_ASSETS
+
     direction_to_view_name = {
         "x": "side",
         "y": "back",
@@ -99,9 +100,8 @@ def _get_json_and_transform(direction):
         "r": [0.38, 0, 0, 0.38, -108, -70],
     }
 
-    dirname = pathlib.Path(__file__).resolve().parent / "glass_brain_files"
     direction_to_filename = {
-        _direction: dirname / f"brain_schematics_{view_name}.json"
+        _direction: GLASS_BRAIN_ASSETS / f"brain_schematics_{view_name}.json"
         for _direction, view_name in direction_to_view_name.items()
     }
 
@@ -176,6 +176,13 @@ def plot_brain_schematics(ax, direction, **kwargs):
     json_filename, transform = _get_json_and_transform(direction)
     with json_filename.open() as json_file:
         json_content = json.load(json_file)
+
+    # schematics that are not aligned on the MNI template
+    # (for example for non human brains)
+    # can carry their own transform in their metadata
+    custom_transform = json_content["metadata"].get("transform")
+    if custom_transform is not None:
+        transform = transforms.Affine2D.from_values(*custom_transform)
 
     mpl_patches = _get_mpl_patches(
         json_content,
