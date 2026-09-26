@@ -81,6 +81,23 @@ class GLMReportMixin(ReportMixin):
                 "drift_model": None,
             }
 
+        engine = kwargs.get("engine", "matplotlib")
+        if not self.__sklearn_is_fitted__():
+            return engine
+        # TODO add a test for this warning
+        elif (
+            isinstance(self.mask_img_, SurfaceImage)
+            and engine == "brainsprite"
+        ):
+            warnings.warns(
+                (
+                    "Engine 'brainsprite' can only be used for volume data. "
+                    "Switching back to 'matplotlib'."
+                ),
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
+
     def _model_attributes_to_dataframe(self, model) -> pd.DataFrame:
         """Return a pandas dataframe with pertinent model attributes &
         information.
@@ -136,6 +153,7 @@ class GLMReportMixin(ReportMixin):
         cut_coords=None,
         display_mode=None,
         report_dims=(1600, 800),
+        engine: Literal["matplotlib", "brainsprite"] = "matplotlib",
     ) -> HTMLReport:
         """Generate an HTML report which shows all important aspects of a
         fitted :term:`GLM`.
@@ -277,6 +295,10 @@ class GLMReportMixin(ReportMixin):
             notebook. Can be set after report creation using report.width,
             report.height.
 
+        engine : {"matplotlib", "brainsprite"}, default = "matplotlib"
+            Engine used to render brain mask and statistical maps.
+            ``"brainsprite"`` is only used for volume based GLM.
+
         Returns
         -------
         report : :class:`~nilearn.reporting.HTMLReport`
@@ -286,13 +308,14 @@ class GLMReportMixin(ReportMixin):
         check_params(locals())
         self._reset_report_warnings()
 
-        self._set_report_basics(engine="matplotlib", title=title)
-        self._run_report_checks(
+        engine = self._run_report_checks(
             height_control=height_control,
             cluster_threshold=cluster_threshold,
             min_distance=min_distance,
             plot_type=plot_type,
+            engine=engine,
         )
+        self._set_report_basics(engine=engine, title=title)
         self._generate_report_content(
             contrasts,
             bg_img,
