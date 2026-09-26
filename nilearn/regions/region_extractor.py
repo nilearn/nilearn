@@ -582,6 +582,10 @@ class RegionExtractor(NiftiMapsMasker):
         self._fit_cache()
 
         self._maps_img = self.regions_img_
+
+        if self._maps_img is None:
+            raise RuntimeError("No supra threshold regions was found")
+
         super().fit(imgs)
 
         return self
