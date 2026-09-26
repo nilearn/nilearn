@@ -18,6 +18,12 @@ for more information on the data used in this example.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`mixed gambles dataset <mixed_gamble_maps>`.
+#
+
+# %%
 # Load the data from the Jimura mixed-gamble experiment
 # -----------------------------------------------------
 from nilearn.datasets import fetch_mixed_gambles

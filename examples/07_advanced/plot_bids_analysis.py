@@ -20,6 +20,13 @@ More specifically, this example will be divided into three sections:
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`language localizer demo dataset
+#    <language_localizer_dataset>`.
+#
+
+# %%
 # Fetch example :term:`BIDS` dataset
 # ----------------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative
@@ -30,10 +37,7 @@ More specifically, this example will be divided into three sections:
 # respectively.
 # The derivatives folders include preprocessed :term:`fMRI`
 # files ``preproc.nii`` and their accompanying ``confounds.tsv`` files.
-#
-# For more information on this dataset, see
-# the :func:`~nilearn.datasets.fetch_language_localizer_demo_dataset`
-# description.
+# .
 #
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 

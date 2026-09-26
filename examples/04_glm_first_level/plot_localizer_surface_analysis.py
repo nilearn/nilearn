@@ -42,6 +42,16 @@ than using a subject-tailored mesh.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`localizer first level dataset
+#      <localizer_first_level_dataset>`
+#    - the :ref:`fsaverage template <fs_average_template>`
+#
+
+# %%
 # Prepare data and analysis parameters
 # ------------------------------------
 #

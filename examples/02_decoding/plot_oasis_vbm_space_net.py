@@ -16,6 +16,12 @@ here, and not the classification object.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`OASIS VBM dataset <oasis_maps>`.
+#
+
+# %%
 # Load the Oasis :term:`VBM` dataset
 # ----------------------------------
 import numpy as np

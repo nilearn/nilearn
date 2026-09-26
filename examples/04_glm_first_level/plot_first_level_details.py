@@ -23,6 +23,16 @@ and only then run this tutorial example.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`ICBM 152 template <icbm_152_template>`
+#    - the :ref:`localizer first level dataset
+#      <localizer_first_level_dataset>`
+#
+
+# %%
 # Retrieving the data
 # -------------------
 #

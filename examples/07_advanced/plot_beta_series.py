@@ -16,13 +16,17 @@ task-based functional connectivity analysis.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`language localizer demo dataset
+#    <language_localizer_dataset>`.
+#
+
+# %%
 # Prepare data and analysis parameters
 # ------------------------------------
 # Download data in :term:`BIDS` format and event information for one subject,
 # and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
-#
-# For more information
-# see the :ref:`dataset description <language_localizer_dataset>`.
 #
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids

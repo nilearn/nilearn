@@ -12,6 +12,12 @@ quality of the model fit.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`SPM auditory dataset <spm_auditory_dataset>`.
+#
+
+# %%
 # Import modules
 # --------------
 import pandas as pd

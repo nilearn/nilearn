@@ -11,6 +11,15 @@ require a longer run time.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`MSDL atlas <msdl_atlas>`
+#    - the :ref:`development fMRI dataset <development_dataset>`
+#
+
+# %%
 import numpy as np
 
 from nilearn.plotting import plot_matrix

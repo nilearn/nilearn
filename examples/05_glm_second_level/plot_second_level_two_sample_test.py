@@ -26,6 +26,13 @@ observe some significant effects in these areas.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Brainomics Localizer dataset
+#    <brainomics_maps>`.
+#
+
+# %%
 import pandas as pd
 
 from nilearn.datasets import fetch_localizer_contrasts

@@ -8,8 +8,6 @@ Ordinary Least Squares
 (:sklearn:`OLS <modules/linear_model.html#ordinary-least-squares>`)
 analysis,
 run at each voxel with :func:`~nilearn.mass_univariate.permuted_ols`.
-As in many other examples, we compare two visual categories from the
-Haxby dataset (:footcite:t:`Haxby2001`): "face" and "house" images.
 
 Note that we consider the mean image per condition
 separately for each run;
@@ -29,6 +27,13 @@ following the approach of :footcite:t:`Anderson2001`.
 We find that Bonferroni correction is a bit more conservative,
 as revealed by the higher detection rate.
 """
+
+# %%
+# .. admonition:: dataset
+#
+#    As in many other examples, we compare two visual categories from the
+#    the :ref:`Haxby dataset <haxby_dataset>`: "face" and "house" images.
+#
 
 # %%
 # Load one subject from the Haxby dataset

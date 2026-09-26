@@ -9,6 +9,13 @@ could have been computed with nilearn :func:`~nilearn.image.mean_img` function.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`development fMRI dataset
+#    <development_dataset>`.
+#
+
+# %%
 # Fetching 2 subject movie watching brain development :term:`fMRI` datasets.
 from nilearn import datasets
 

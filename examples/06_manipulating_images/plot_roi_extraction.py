@@ -26,6 +26,12 @@ visualization & results checking are possible at each step.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
+
+# %%
 # Here are the coordinates of the slice we are interested in each direction.
 # We will be using them for visualization.
 
