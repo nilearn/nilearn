@@ -204,16 +204,6 @@ def cluster_level_inference(
     .. footbibliography::
 
     """
-    # TODO (nilearn >= 0.15.0) remove
-    if threshold == 3.0:
-        warnings.warn(
-            "\nFrom nilearn version>=0.15, "
-            "the default 'threshold' will be set to "
-            f"{DEFAULT_Z_THRESHOLD}.",
-            FutureWarning,
-            stacklevel=find_stack_level(),
-        )
-
     original_threshold = threshold
     if not isinstance(threshold, list):
         threshold = [threshold]
@@ -499,17 +489,7 @@ def threshold_stats_img(
     """
     if height_control is None:
         if threshold is None:
-            threshold = 3.0
-
-        # TODO (nilearn >= 0.15.0) remove
-        if threshold == 3.0:
-            warnings.warn(
-                "\nFrom nilearn version>=0.15, "
-                "the default 'threshold' will be set to "
-                f"{DEFAULT_Z_THRESHOLD}.",
-                FutureWarning,
-                stacklevel=find_stack_level(),
-            )
+            threshold = DEFAULT_Z_THRESHOLD
 
     elif threshold is not None:
         threshold = float(threshold)

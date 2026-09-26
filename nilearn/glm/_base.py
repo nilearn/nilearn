@@ -14,7 +14,6 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.glm._reporting_utils import (
     GLMReportMixin,
     get_runwise_dict,
@@ -27,6 +26,7 @@ from nilearn.image import check_niimg
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
+from nilearn.utils.tags import InputTags
 
 FIGURE_FORMAT = "png"
 
@@ -147,14 +147,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(surf_img=True, niimg_like=True, glm=True)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=True, niimg_like=True)
         tags.estimator_type = "glm"
@@ -583,7 +575,7 @@ def _generate_mask(
     fields["entities"].pop("ses", None)
 
     if generate_bids_name:
-        fields["prefix"] = None
+        fields["prefix"] = ""
 
     return create_bids_filename(fields, entities_to_include)
 
@@ -629,7 +621,7 @@ def _generate_statistical_maps(
         }
 
         if generate_bids_name:
-            fields["prefix"] = None
+            fields["prefix"] = ""
 
         fields["entities"]["contrast"] = _clean_contrast_name(contrast_name)
 
@@ -684,7 +676,7 @@ def _generate_model_level_mapping(
     }
 
     if generate_bids_name:
-        fields["prefix"] = None
+        fields["prefix"] = ""
 
     model_level_mapping = {}
 
@@ -773,7 +765,7 @@ def _generate_contrasts_dict(
         "suffix": "design",
     }
     if generate_bids_name:
-        fields["prefix"] = None
+        fields["prefix"] = ""
 
     contrasts_dict = Bunch()
 

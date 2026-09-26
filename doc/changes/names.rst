@@ -37,6 +37,8 @@
 
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
 
+.. _Aniket Singh Yadav: https://github.com/Aniketsy
+
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
 
 .. _Anton Karpov: https://github.com/karpovantonme
@@ -380,6 +382,8 @@
 .. _Tom Vanasse: https://github.com/tvanasse
 
 .. _Vasco Diogo: https://github.com/vascosa
+
+.. _Venish Paneliya: https://github.com/VenishPaneliya
 
 .. _Victoria Shevchenko: https://github.com/victoris93
 

@@ -65,6 +65,7 @@ Some other past or present contributors are:
 * `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
 * `Andrew Chen`_
 * `Andrés Hoyos Idrobo`_: Rakuten, France
+* `Aniket Singh Yadav`_: Galgotias University, India
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
 * `Anton Karpov`_
 * `Anupriya Kumari`_: Indian Institute of Technology, Roorkee, India
@@ -237,6 +238,7 @@ Some other past or present contributors are:
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_
+* `Venish Paneliya`_
 * `Victoria Shevchenko`_: Inria Saclay, Université Paris Cité, France
 * `Victoria McCray`_: Northeastern University, USA
 * `Vincent Michel`_: https://www.logilab.fr/

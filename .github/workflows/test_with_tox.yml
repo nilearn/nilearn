@@ -54,10 +54,13 @@ concurrency:
 env:
     FORCE_COLOR: true
 
+permissions:
+    contents: read
+
 jobs:
 
     check_skip_flags:
-        uses: ./.github/workflows/check_skip_flags.yml
+        uses: $/.github/workflows/check_skip_flags.yml
         with:
             skip_type: test
 
@@ -72,10 +75,10 @@ jobs:
             # only run latest and oldest python versions on PR
             id: py
             run: |
-                versions='py=["3.14", "3.13", "3.12", "3.11", "3.10"]'
+                versions='py=["3.14", "3.13", "3.12", "3.11"]'
 
                 if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
-                    versions='py=["3.14", "3.10"]'
+                    versions='py=["3.14", "3.11"]'
                 fi
 
                 echo "Will run on the following python: ${versions}"
@@ -101,33 +104,34 @@ jobs:
                 # Using macos on the following as tests run faster on macos.
                 # As 'no plotting' run fewer tests, this allows to fail event faster if using macos.
                 -   description: oldest dependencies - no plotting
-                    py: '3.10'
+                    py: '3.11'
                     os: macos-latest
                     env: min
                 -   description: oldest dependencies - with plotting
-                    py: '3.10'
+                    py: '3.11'
                     os: macos-latest
                     env: plot_min
                 # plotly images saved on different OS can generate slightly
                 # different baseline images. As baseline images are generated
                 # on a linux machine, ubuntu-latest is used
                 -   description: check generated figures
-                    py: '3.10'
+                    py: '3.11'
                     os: ubuntu-latest
                     env: pytest_mpl
 
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
+                persist-credentials: false
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v7
+            uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
 
         -   name: Setup python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ matrix.py }}
                 allow-prereleases: true
@@ -155,14 +159,14 @@ jobs:
 
         -   name: Upload figures comparison
             if: ${{ failure() &&  matrix.env == 'pytest_mpl'}}
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: figure_diff
                 path: results
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
                 path: |
@@ -172,21 +176,21 @@ jobs:
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
 
         -   name: Upload html coverage
             if: success() || failure()
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_htmlcov
                 path: htmlcov
 
         -   name: Upload coverage to CodeCov
             if: success()
-            uses: codecov/codecov-action@v7
+            uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
             with:
                 flags: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.env }}
                 token: ${{ secrets.CODECOV_TOKEN }}
@@ -212,17 +216,18 @@ jobs:
                 env: [pre]
 
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
+                persist-credentials: false
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v7
+            uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
 
         -   name: Setup python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ matrix.py }}
                 allow-prereleases: true
@@ -250,7 +255,7 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
                 path: |
@@ -260,7 +265,7 @@ jobs:
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v7
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
@@ -286,17 +291,18 @@ jobs:
                 env: [flaky]
 
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
+                persist-credentials: false
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v7
+            uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
 
         -   name: Setup python
-            uses: actions/setup-python@v6
+            uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ matrix.py }}
                 allow-prereleases: true

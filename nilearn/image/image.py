@@ -67,6 +67,12 @@ from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
 
 
+def _is_iterable_not_str(imgs: object) -> TypeGuard[Iterable[Any]]:
+    return isinstance(imgs, collections.abc.Iterable) and not isinstance(
+        imgs, str
+    )
+
+
 def is_volume_image(imgs) -> bool:
     """Return True if specified ``imgs`` is of type NiimgLike, SpatialImage, or
     an iterable of those; False otherwise.
@@ -88,7 +94,7 @@ def is_volume_image(imgs) -> bool:
     ):
         return False
 
-    if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
+    if _is_iterable_not_str(imgs):
         for x in imgs:
             if not is_volume_image(x):
                 return False
@@ -878,6 +884,15 @@ def _compute_surface_mean(imgs: SurfaceImage) -> SurfaceImage:
     return new_img_like(imgs, data=data)
 
 
+def _is_surface_img_or_iterable(
+    imgs: object,
+) -> TypeGuard[SurfaceImage | Iterable[SurfaceImage]]:
+    return isinstance(imgs, SurfaceImage) or (
+        isinstance(imgs, collections.abc.Iterable)
+        and all(isinstance(x, SurfaceImage) for x in imgs)
+    )
+
+
 @overload
 def mean_img(
     imgs: SurfaceImage | Iterable[SurfaceImage],
@@ -902,7 +917,10 @@ def mean_img(
 
 @fill_doc
 def mean_img(
-    imgs,
+    imgs: NiimgLike
+    | SurfaceImage
+    | Iterable[NiimgLike]
+    | Iterable[SurfaceImage],
     target_affine=None,
     target_shape=None,
     verbose=0,
@@ -976,23 +994,22 @@ def mean_img(
 
     """
     check_params(locals())
-    is_iterable = isinstance(imgs, collections.abc.Iterable)
-    is_surface_img = isinstance(imgs, SurfaceImage) or (
-        is_iterable and all(isinstance(x, SurfaceImage) for x in imgs)
-    )
-    if is_surface_img:
-        if not is_iterable:
-            imgs = [imgs]
-        all_means = concat_imgs([_compute_surface_mean(x) for x in imgs])
+    if _is_surface_img_or_iterable(imgs):
+        surface_imgs = (
+            imgs if isinstance(imgs, collections.abc.Iterable) else [imgs]
+        )
+        all_means = concat_imgs(
+            [_compute_surface_mean(x) for x in surface_imgs]
+        )
         return _compute_surface_mean(all_means)
 
-    imgs = stringify_path(imgs)
-    is_str = isinstance(imgs, str)
-    is_iterable = isinstance(imgs, collections.abc.Iterable)
-    if is_str or not is_iterable:
-        imgs = [imgs]
+    niimgs = stringify_path(imgs)
+    if isinstance(niimgs, str) or not isinstance(
+        niimgs, collections.abc.Iterable
+    ):
+        niimgs = [niimgs]
 
-    imgs_iter = iter(imgs)
+    imgs_iter = iter(niimgs)
     first_img = check_niimg(next(imgs_iter))
 
     # Compute the first mean to retrieve the reference
@@ -1047,6 +1064,26 @@ def swap_img_hemispheres(img) -> Nifti1Image:
     radio/neuro conventions)
 
     Note that this does not require a change of the affine matrix.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_stat_map, show
+        >>> from nilearn.datasets import load_sample_motor_activation_image
+        >>> from nilearn.image import swap_img_hemispheres
+        >>>
+        >>> motor_activation_image = load_sample_motor_activation_image()
+        >>>
+        >>> swapped_image = swap_img_hemispheres(motor_activation_image)
+        >>>
+        >>> fig1 = plot_stat_map(motor_activation_image, title="original")
+        >>> fig2 = plot_stat_map(
+        ...     swapped_image, title="swapped", cut_coords=fig1.cut_coords
+        ... )
+        >>>
+        >>> show()
 
     """
     from nilearn.image import reorder_img
@@ -2170,7 +2207,7 @@ def clean_img(
     imgs: SurfaceImage | NiimgLike | list[NiimgLike],
     runs: np.ndarray | None = None,
     detrend: bool = True,
-    standardize: Standardize = True,
+    standardize: Standardize = "zscore_sample",
     confounds=None,
     low_pass: LowPass = None,
     high_pass: HighPass = None,
@@ -2223,7 +2260,7 @@ def clean_img(
         If detrending should be applied on timeseries
         (before confound removal).
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of \
         Confounds timeseries. default=None

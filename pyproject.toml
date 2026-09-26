@@ -9,6 +9,7 @@ dev = [
     {include-group = "doc"},
     {include-group = "style"},
     {include-group = "rich"},
+    "docstring_parser",
     "tox>=4",
     "tox-uv"
 ]
@@ -16,8 +17,9 @@ dev = [
 doc = [
     "docutils>=0.17",
     "furo>=2024.8.6",
-    "jupyterlite-pyodide-kernel>=0.7.2",
-    "jupyterlite-sphinx>=0.22.1",
+    # See https://github.com/jupyterlite/pyodide-kernel#compatibility
+    "jupyterlite-pyodide-kernel>=0.8.0,<=0.9.0",
+    "jupyterlite-sphinx>=0.23.0",
     "marimo>=0.12.0",
     "memory_profiler>=0.61",  # measuring memory during docs building
     "myst-parser>=3.0.1",
@@ -26,6 +28,9 @@ doc = [
     "sphinx>=7.4.7",
     "sphinx-copybutton>=0.5.2",
     "sphinx-design>=0.6.1",
+    # sphinx-prompt<1.8.0 ships its package in a "sphinx-prompt" folder
+    # that cannot be imported as "sphinx_prompt"
+    "sphinx-prompt>=1.8.0",
     "sphinxcontrib-mermaid>=1.0.0",
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
@@ -34,7 +39,7 @@ doc = [
     "pyarrow>=13.0.0"  # mostly to avoid some warnings in pandas
 ]
 min = [
-    "joblib==1.2.0",
+    "joblib==1.5.0",
     "nibabel==5.2.0",
     "numpy==1.26.0",
     "pandas==2.3.0",
@@ -42,7 +47,7 @@ min = [
     # scikit-learn version 1.7.0 has a bug that prevents _repr_html_ to run
     # correctly
     # https://scikit-learn.org/stable/whats_new/v1.7.html#sklearn-base
-    "scikit-learn==1.5.0,!=1.7.0",
+    "scikit-learn==1.6.0,!=1.7.0",
     "scipy==1.11.1",
     "jinja2==3.1.6"
 ]
@@ -68,7 +73,7 @@ test = [
 test_common = [
     "numpydoc>=1.8.0",
     "polars>=1.0.0",
-    "pytest>=6.0.0",
+    "pytest>=8.0.0",
     "pytest-csv>=3.0.0",
     "pytest-randomly>=4.0.0",
     "pytest-reporter-html1>=0.9.2,<0.9.4",
@@ -97,14 +102,13 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14"
 ]
 dependencies = [
-    "joblib>=1.2.0",
+    "joblib>=1.5.0",
     "nibabel>=5.2.0",
     "numpy>=1.26.0",
     "pandas>=2.3.0",
@@ -113,7 +117,7 @@ dependencies = [
     # https://scikit-learn.org/stable/whats_new/v1.7.html#sklearn-base
     # sklearn 1.9.0 creates sluggish HTML representation of estimators with many features
     # https://github.com/scikit-learn/scikit-learn/issues/34203
-    "scikit-learn>=1.5.0,!=1.7.0,!=1.9.0",
+    "scikit-learn>=1.6.0,!=1.7.0,!=1.9.0",
     "jinja2>=3.1.6",
     "scipy>=1.11.1",
     "packaging>=26.0.0"
@@ -128,17 +132,12 @@ maintainers = [
 ]
 name = "nilearn"
 readme = "README.rst"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 [project.optional-dependencies]
 # keep plotly as a separate optional extra dependency because of its size
-plotly = [
-    "kaleido>=1.1.0",
-    "plotly>=6.1.1"
-]
-plotting = [
-    "matplotlib>=3.8.0"
-]
+plotly = ["kaleido>=1.1.0", "plotly>=6.1.1"]
+plotting = ["matplotlib>=3.8.0"]
 
 [project.urls]
 Changelog = "https://nilearn.github.io/stable/changes/whats_new.html"
@@ -149,7 +148,7 @@ Homepage = "https://nilearn.github.io"
 [tool.codespell]
 builtin = "clear,rare,en-GB_to_en-US"
 ignore-words = ".github/codespell_ignore_words.txt"
-skip = "./.git,*.cff,*.bib,*/tmp,*.min.js,*.umd.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results,AUTHORS.rst"
+skip = "./.git,*.cff,*.bib,*/tmp,*.min.js,*.umd.js,localizer_behavioural.tsv,env,venv,./doc/auto_examples,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results,AUTHORS.rst"
 
 [tool.djlint]
 blank_line_after_tag = "load,extends,include,endblock,set"
@@ -204,13 +203,11 @@ ignore_imports = [
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
-    "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
-    "nilearn.interfaces.bids.glm -> nilearn.glm.first_level",  # TODO: (nilearn >= 0.15.0) remove
-    "nilearn.interfaces.bids.glm -> nilearn.glm.second_level",  # TODO: (nilearn >= 0.15.0) remove
-    "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level"  # TODO: (nilearn >= 0.15.0) remove
+    "nilearn.** -> nilearn.utils.tags"  # estimator tags are used by all layers
 ]
 # ** utils:
 # - can import from any lower layers
+# - nilearn.utils.tags is a leaf module imported by all layers (see ignore_imports)
 # ** glm, decoding, connectome, decomposition:
 # - cannot import from each other
 # - but can import from any lower layers
@@ -242,10 +239,6 @@ ignore_imports = [
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
-    "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
-    "nilearn.interfaces.bids.glm -> nilearn.glm.first_level",  # TODO: (nilearn >= 0.15.0) remove
-    "nilearn.interfaces.bids.glm -> nilearn.glm.second_level",  # TODO: (nilearn >= 0.15.0) remove
-    "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level",  # TODO: (nilearn >= 0.15.0) remove
     # additional on top of those of "main architecture"
     "nilearn.plotting.tests.test_img_comparisons -> nilearn._utils.data_gen",  # allowed in tests
     "nilearn.plotting.tests.test_img_comparisons -> nilearn.maskers",  # allowed in tests
@@ -276,7 +269,6 @@ forbidden_modules = [
     "nilearn.datasets"
 ]
 ignore_imports = [
-    "nilearn.connectome.tests.* -> nilearn._utils.estimator_checks",
     "nilearn.connectome.tests.test_connectivity_matrices -> nilearn.tests.test_signal",
     "nilearn.connectome.tests.test_group_sparse_cov -> nilearn._utils.data_gen"
 ]
@@ -285,13 +277,9 @@ source_modules = ["nilearn.connectome"]
 type = "forbidden"
 
 [[tool.importlinter.contracts]]
-forbidden_modules = [
-    "nilearn._utils.data_gen"
-]
+forbidden_modules = ["nilearn._utils.data_gen"]
 name = "fixtures from 'nilearn.conftest' should not rely on data generated in 'nilearn._utils.data_gen'"
-source_modules = [
-    "nilearn.conftest"
-]
+source_modules = ["nilearn.conftest"]
 type = "forbidden"
 
 [[tool.importlinter.contracts]]
@@ -307,27 +295,25 @@ allowed_importers = [
     "nilearn.glm"  # TODO try to avoid
 ]
 name = "assets only imported by reporting, plotting, glm"
-protected_modules = [
-    "nilearn._assets"
-]
+protected_modules = ["nilearn._assets"]
 type = "protected"
 
-[tool.mypy]
-allow_redefinition = false
-enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
-exclude = [
-    'nilearn_cache/.*',
-    'nilearn/_version.py'
-]
-warn_unreachable = true
-
-[[tool.mypy.overrides]]
-ignore_errors = true
-module = ["nilearn._version"]
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = [
+[tool.pyrefly]
+# Errors already present in the code base are listed in the baseline file
+# and are not reported, so only new errors fail the check.
+# Regenerate it with: pyrefly check --update-baseline
+baseline = "pyrefly-baseline.json"
+baseline-format = "minimal"
+baseline-matching-mode = "concise-description"
+# Skip the bodies of unannotated functions and treat their return type
+# as Any, as mypy did.
+check-unannotated-defs = false
+infer-return-types = "never"
+preset = "legacy"
+project-excludes = ["**/nilearn_cache/**/*", "**/nilearn/_version.py"]
+project-includes = ["nilearn/**/*.py"]
+python-version = "3.11"
+replace-imports-with-any = [
     "IPython.*",
     "jinja2.*",
     "joblib.*",
@@ -336,10 +322,8 @@ module = [
     "memory_profiler.*",
     "mpl_toolkits.*",
     "marimo.*",
-    "nibabel.*",
     "nilearn._version",
     "numpydoc.*",
-    "packaging.*",
     "plotly.*",
     "polars.*",
     "pytest.*",
@@ -349,6 +333,9 @@ module = [
     "statsmodels.*",
     "svg.*"
 ]
+
+[tool.pyrefly.errors]
+redundant-condition = "error"
 
 [tool.pytest.ini_options]
 # We do not run doctests systematically with "--doctest-modules".
@@ -372,7 +359,7 @@ markers = [
     "engines",  # used to specify engines for a test to be selected from available ones
     "mpl_image_compare"  # registered here so --strict-markers works without pytest-mpl installed
 ]
-minversion = "6.0"
+minversion = "8.0"
 testpaths = ["nilearn"]
 xfail_strict = true
 
@@ -462,9 +449,13 @@ max-complexity = 23
 "**/{doc}/*" = ["B018", "D103"]  # 17 D103 errors to fix
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]  # 13 D103 errors to fix
 "__init__.py" = ["D104", "E402"]
-"doc/conf.py" = ["I001"]  # ignore sorting because this leads to conflict when running prek locally and in CI
+"doc/conf.py" = [
+    "I001"
+]  # ignore sorting because this leads to conflict when running prek locally and in CI
 "nilearn/**/tests/test_*" = ["D100"]
-"nilearn/connectome/tests/test_connectivity_matrices.py" = ["D103"]  # 30 errors to fix
+"nilearn/connectome/tests/test_connectivity_matrices.py" = [
+    "D103"
+]  # 30 errors to fix
 "nilearn/datasets/func.py" = ["PTH211"]  # 1 error
 "nilearn/datasets/tests/conftest.py" = ["D102"]
 "nilearn/datasets/tests/test_atlas.py" = ["D103"]  # 24 errors to fix

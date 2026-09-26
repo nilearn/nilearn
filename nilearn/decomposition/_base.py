@@ -10,7 +10,7 @@ import warnings
 from math import ceil
 from pathlib import Path
 from string import Template
-from typing import get_args
+from typing import Literal, Self, get_args
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -34,7 +34,6 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import check_niimg
 from nilearn.maskers import (
     MultiNiftiMasker,
@@ -48,6 +47,7 @@ from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.nilearn_typing import NiimgLike
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
+from nilearn.utils.tags import InputTags
 
 
 def _warn_ignored_surface_masker_params(estimator) -> None:
@@ -323,7 +323,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
@@ -402,7 +402,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         random_state=None,
         mask=None,
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         standardize_confounds=True,
         detrend=True,
         low_pass=None,
@@ -445,14 +445,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(surf_img=True, niimg_like=True)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=True, niimg_like=True)
         return tags
@@ -471,7 +463,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             )
 
     @fill_doc
-    def fit(self, imgs, y=None, confounds=None):
+    def fit(self, imgs, y=None, confounds=None) -> Self:
         """Compute the mask and the components across subjects.
 
         Parameters
@@ -534,6 +526,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         self._validate_mask()
 
+        masker_type: Literal["nii", "surface", "multi_nii", "multi_surface"]
         masker_type = "multi_nii"
         if self.mask is not None:
             if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)):

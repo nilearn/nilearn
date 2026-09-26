@@ -1,6 +1,7 @@
 """Hierarchical k-means clustering."""
 
 import warnings
+from typing import Self
 
 import numpy as np
 from sklearn.base import (
@@ -10,13 +11,13 @@ from sklearn.base import (
 )
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_is_fitted, validate_data
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn.utils.tags import InputTags
 
 
 def _remove_empty_labels(labels):
@@ -169,8 +170,11 @@ class HierarchicalKMeans(
 
     Parameters
     ----------
-    n_clusters : :obj:`int`
+    n_clusters : :obj:`int`, default=2
         The number of clusters to find.
+
+        .. nilearn_versionchanged:: 0.15.0
+            Changed default `n_clusters` from `None` to `2`.
 
     init : {'k-means++', 'random' or an ndarray}, default='k-means++'
         Method for initialization.
@@ -226,7 +230,7 @@ class HierarchicalKMeans(
 
     def __init__(
         self,
-        n_clusters=None,
+        n_clusters=2,
         init="k-means++",
         batch_size=1000,
         n_init=10,
@@ -244,33 +248,18 @@ class HierarchicalKMeans(
         self.random_state = random_state
         self.scaling = scaling
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(niimg_like=False)
         return tags
 
     @fill_doc
-    def fit(self, X, y=None):
+    def fit(self, X, y=None) -> Self:
         """Compute clustering of the data.
 
         Parameters
@@ -285,22 +274,14 @@ class HierarchicalKMeans(
         self
         """
         del y
-        if SKLEARN_LT_1_6:
-            X = check_array(
-                X, ensure_min_features=2, ensure_min_samples=2, estimator=self
-            )
-            self.n_features_in_ = X.shape[1]
-
-        else:
-            from sklearn.utils.validation import validate_data
-
-            X = validate_data(
-                self,
-                X=X,
-                ensure_min_features=2,
-                ensure_min_samples=2,
-                reset=True,
-            )
+        X = validate_data(
+            self,
+            X=X,
+            ensure_min_features=2,
+            ensure_min_samples=2,
+            reset=True,
+        )
+        self.n_features_in_ = X.shape[1]
 
         # Transpose the data so that we can cluster features (voxels)
         # and input them as samples to the sklearn's clustering algorithm
@@ -372,16 +353,7 @@ class HierarchicalKMeans(
         see `the scikit-learn documentation <https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html>`_.
         """
         check_is_fitted(self)
-
-        # TODO (sklearn >= 1.6.0) simplify
-        if SKLEARN_LT_1_6:
-            X = check_array(
-                X, estimator=self, ensure_min_features=self.n_features_in_
-            )
-        else:
-            from sklearn.utils.validation import validate_data
-
-            X = validate_data(self, X=X, reset=False)
+        X = validate_data(self, X=X, reset=False)
 
         # Transpose the data so that we can cluster features (voxels)
         # and input them as samples to the sklearn's clustering algorithm

@@ -35,7 +35,7 @@ Fixes
 
 - :bdg-dark:`Code` :func:`~reporting.get_clusters_table` can now handle negative ``stat_threshold`` when ``two_sided=False`` (:gh:`5578` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` :func:`~reporting.make_glm_report` and :func:`~glm.threshold_stats_img` will now warn users when they try to use ``threshold`` with ``height_control`` other than ``None`` (:gh:`5578` by `Rémi Gau`_).
+- :bdg-dark:`Code` ``nilearn.reporting.make_glm_report`` and :func:`~glm.threshold_stats_img` will now warn users when they try to use ``threshold`` with ``height_control`` other than ``None`` (:gh:`5578` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix bug that occurred when plotting surfaces with matplotlib in rare cases where ``vmin==vmax`` and when a colorbar was requested (:gh:`5616` by `Rémi Gau`_).
 
@@ -58,4 +58,4 @@ Changes
 
 - :bdg-dark:`Code` Decoding estimators do not inherit from sklearn ``ClassifierMixin`` and ``RegressorMixing`` anymore. It is recommended to rely on estimator tags (accessible via the ``'__sklearn_tags__()'`` special method) to know more about the characteristics of an instance  (:gh:`5595` by `Rémi Gau`_).
 
-- :bdg-danger:`Deprecation` From Nilearn >= 0.15, the default value of ``threshold`` will be changed to ``scipy.stats.norm.isf(0.001)`` (``3.09023...``) in :func:`~glm.threshold_stats_img`, :func:`~glm.cluster_level_inference`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report`, :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5601` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` From Nilearn >= 0.15, the default value of ``threshold`` will be changed to ``scipy.stats.norm.isf(0.001)`` (``3.09023...``) in :func:`~glm.threshold_stats_img`, :func:`~glm.cluster_level_inference`, ``nilearn.reporting.make_glm_report``, :meth:`~glm.first_level.FirstLevelModel.generate_report`, :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5601` by `Rémi Gau`_).

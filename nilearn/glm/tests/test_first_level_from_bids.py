@@ -677,6 +677,7 @@ def test_no_tr(tmp_path_factory):
         )
 
 
+@pytest.mark.single_process
 def test_no_bold_file(tmp_path_factory):
     """Raise error when no bold file in BIDS dataset."""
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_bold"))

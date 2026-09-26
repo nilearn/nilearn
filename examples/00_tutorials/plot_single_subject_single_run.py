@@ -80,8 +80,6 @@ from nilearn.glm.first_level import FirstLevelModel
 # * ``t_r=7(s)`` is the time of repetition of acquisitions
 # * ``noise_model='ar1'`` specifies the noise covariance model:
 #   a lag-1 dependence
-# * ``standardize=False`` means that we do not want
-#   to rescale the time series to mean 0, variance 1
 # * ``hrf_model='spm'`` means that we rely
 #   on the :term:`SPM` "canonical hrf" model
 #   (without time or dispersion derivatives)
@@ -92,7 +90,6 @@ from nilearn.glm.first_level import FirstLevelModel
 fmri_glm = FirstLevelModel(
     t_r=subject_data.t_r,
     noise_model="ar1",
-    standardize=False,
     hrf_model="spm",
     drift_model="cosine",
     high_pass=0.01,
@@ -362,8 +359,11 @@ eff_map.to_filename(output_dir / "listening_gt_rest_eff_map.nii.gz")
 #
 from nilearn.reporting import get_clusters_table
 
-table = get_clusters_table(
-    z_map, stat_threshold=threshold, cluster_threshold=20
+table, _ = get_clusters_table(
+    z_map,
+    stat_threshold=threshold,
+    cluster_threshold=20,
+    return_label_maps=True,
 )
 table
 
