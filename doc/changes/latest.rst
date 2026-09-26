@@ -40,6 +40,8 @@ Enhancements
 
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
 
+- :bdg-primary:`Doc` Docstring examples can now be run in the browser via `jupyterlite <https://jupyterlite.readthedocs.io/en/stable/>`_ (:gh:`6581` by `Elizabeth DuPre`_).
+
 - :bdg-success:`API` :class:`~nilearn.utils.InputTags` is now part of the public API in :mod:`nilearn.utils`, so that third-party estimators can declare whether they accept Nifti and / or surface images (:gh:`6563` by `Aniket Singh Yadav`_).
 
 

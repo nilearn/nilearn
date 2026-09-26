@@ -25,8 +25,8 @@ from nilearn.decoding.space_net import BaseSpaceNet
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.regions import HierarchicalKMeans, ReNA
 from nilearn.utils.tags import (
-    accept_niimg_input,
-    accept_surf_img_input,
+    accepts_surface,
+    accepts_volume,
     is_glm,
     is_masker,
 )
@@ -100,7 +100,7 @@ def return_expected_failed_checks(
 
     # below this point we should only deal with estimators
     # that accept images as input
-    assert accept_niimg_input(estimator) or accept_surf_img_input(estimator)
+    assert accepts_volume(estimator) or accepts_surface(estimator)
 
     if isinstance(estimator, (_BaseDecoder, SearchLight, BaseSpaceNet)):
         return expected_failed_checks_decoders(estimator)

@@ -136,8 +136,8 @@ from nilearn.surface.utils import (
     assert_surface_image_equal,
 )
 from nilearn.utils.tags import (
-    accept_niimg_input,
-    accept_surf_img_input,
+    accepts_surface,
+    accepts_volume,
     is_glm,
     is_masker,
 )
@@ -178,7 +178,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
     if isinstance(estimator, CacheMixin):
         yield (clone(estimator), check_img_estimator_cache_warning)
 
-    if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
+    if accepts_volume(estimator) or accepts_surface(estimator):
         yield (clone(estimator), check_fit_returns_self)
         yield (clone(estimator), check_img_estimator_dtypes)
         yield (clone(estimator), check_img_estimator_dtypes_transform)
@@ -282,7 +282,7 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
                 # TODO enforce for other maskers
                 yield (clone(estimator), check_multi_nifti_masker_shelving)
 
-        if accept_niimg_input(estimator):
+        if accepts_volume(estimator):
             yield (clone(estimator), check_nifti_masker_dtype)
             yield (clone(estimator), check_nifti_masker_fit_transform)
             yield (clone(estimator), check_nifti_masker_fit_transform_5d)
@@ -368,7 +368,7 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
 
     elif is_masker(estimator):
         imgs: Nifti1Image | SurfaceImage
-        if accept_niimg_input(estimator):
+        if accepts_volume(estimator):
             imgs = Nifti1Image(
                 _rng().random(_shape_3d_large()) + 10.0,
                 _affine_eye(),
@@ -395,9 +395,7 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
 
         return decomp_input[0], None
 
-    elif not (
-        accept_niimg_input(estimator) or accept_surf_img_input(estimator)
-    ):
+    elif not (accepts_volume(estimator) or accepts_surface(estimator)):
         return _rng().random((5, 5)), None
 
     else:
@@ -498,18 +496,18 @@ def check_set_output(estimator_orig) -> None:
     if hasattr(estimator, "inverse_transform"):
         for k, v in to_inverse_transform.items():
             r = estimator.inverse_transform(v)
-            if accept_niimg_input(estimator):
+            if accepts_volume(estimator):
                 assert isinstance(r, Nifti1Image)
-            elif accept_surf_img_input(estimator):
+            elif accepts_surface(estimator):
                 assert isinstance(r, SurfaceImage)
             else:
                 assert isinstance(r, np.ndarray)
             results[k] = r
     # check inverse_transform always gives the same result
     for k in ["pandas", "polars"]:
-        if accept_niimg_input(estimator):
+        if accepts_volume(estimator):
             check_imgs_equal(results[k], results["default"])
-        elif accept_surf_img_input(estimator):
+        elif accepts_surface(estimator):
             assert_surface_image_close(results[k], results["default"])
         else:
             assert_array_equal(results[k], results["default"])
@@ -528,7 +526,7 @@ def check_set_output(estimator_orig) -> None:
                 estimator.inverse_transform(v)
 
     # check on 1D image for estimators that accepts surface
-    if accept_surf_img_input(estimator_orig):
+    if accepts_surface(estimator_orig):
         estimator = clone(estimator_orig)
         estimator = fit_estimator(estimator)
 
@@ -702,7 +700,7 @@ def check_doc_link(estimator_orig) -> None:
 
 
 def _check_mask_img_(estimator):
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         assert isinstance(estimator.mask_img_, Nifti1Image)
     else:
         assert isinstance(estimator.mask_img_, SurfaceImage)
@@ -1808,7 +1806,7 @@ def check_img_estimator_clean_dtype(estimator_orig) -> None:
         n_samples = 20
 
         input_img: Nifti1Image | SurfaceImage
-        if accept_niimg_input(estimator_orig):
+        if accepts_volume(estimator_orig):
             signals = _rng().standard_normal(
                 size=(np.prod(_shape_3d_default()), n_samples)
             )
@@ -1822,7 +1820,7 @@ def check_img_estimator_clean_dtype(estimator_orig) -> None:
             input_img = Nifti1Image(
                 data.astype(input_dtype), _affine_eye(), dtype=input_dtype
             )
-        elif accept_surf_img_input(estimator_orig):
+        elif accepts_surface(estimator_orig):
             input_img = _make_surface_img(n_samples)
             input_img.data._set_dtype(input_dtype)
 
@@ -2381,7 +2379,7 @@ def check_masker_detrending(estimator_orig) -> None:
     estimator = clone(estimator_orig)
 
     input_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
         input_img = _make_surface_img(100)
@@ -2411,7 +2409,7 @@ def check_masker_standardization(estimator_orig) -> None:
         pytest.xfail("May fail without the GIL")
 
     input_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator_orig):
+    if accepts_volume(estimator_orig):
         signals = _rng().standard_normal(
             size=(np.prod(_shape_3d_default()), n_samples)
         )
@@ -2424,7 +2422,7 @@ def check_masker_standardization(estimator_orig) -> None:
             signals.reshape((*_shape_3d_default(), n_samples)),
             _affine_eye(),
         )
-    elif accept_surf_img_input(estimator_orig):
+    elif accepts_surface(estimator_orig):
         input_img = _make_surface_img(n_samples)
 
         estimator = clone(estimator_orig)
@@ -2507,7 +2505,7 @@ def check_masker_compatibility_mask_image(estimator_orig) -> None:
 
     mask_img: Nifti1Image | SurfaceImage
     input_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         mask_img = _img_mask_mni()
         input_img = _make_surface_img()
     else:
@@ -2518,7 +2516,7 @@ def check_masker_compatibility_mask_image(estimator_orig) -> None:
     with pytest.raises(TypeError):
         estimator.fit(input_img)
 
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         # using larger images to be compatible
         # with regions extraction tests
         mask = np.zeros(_shape_3d_large(), dtype=np.int8)
@@ -2566,7 +2564,7 @@ def check_masker_mask_img_from_imgs(estimator_orig) -> None:
     """
     estimator = clone(estimator_orig)
 
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
         input_img: Nifti1Image | SurfaceImage = Nifti1Image(
@@ -2608,7 +2606,7 @@ def check_masker_mask_img(estimator_orig) -> None:
     binary_mask_img: Nifti1Image | SurfaceImage
     non_binary_mask_img: Nifti1Image | SurfaceImage
     input_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
         mask_data = np.zeros(_shape_3d_large(), dtype="int8")
@@ -2677,7 +2675,7 @@ def check_masker_mask_img(estimator_orig) -> None:
         estimator.fit(input_img)
 
     _check_mask_img_(estimator)
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         assert_array_equal(
             ref_mask_img_.get_fdata(), estimator.mask_img_.get_fdata()
         )
@@ -2707,7 +2705,7 @@ def check_masker_clean(estimator_orig) -> None:
     estimator = clone(estimator_orig)
 
     input_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
         input_img = _make_surface_img(100)
@@ -2745,7 +2743,7 @@ def check_masker_transformer(estimator_orig) -> None:
         assert "X" not in tmp
 
     input_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
         input_img = _make_surface_img(100)
@@ -2771,7 +2769,7 @@ def check_masker_transformer_high_variance_confounds(estimator_orig) -> None:
     length = 10
 
     input_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         data = _rng().random((*_shape_3d_default(), length))
         input_img = Nifti1Image(data, _affine_eye())
     else:
@@ -2827,7 +2825,7 @@ def check_masker_transformer_sample_mask(estimator_orig) -> None:
     estimator = clone(estimator_orig)
 
     input_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         input_img = _img_4d_rand_eye()
     else:
         input_img = _make_surface_img(5)
@@ -2889,7 +2887,7 @@ def check_masker_with_confounds(estimator_orig) -> None:
 
     length = 20
     input_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         input_img = Nifti1Image(
             _rng().random((*_shape_3d_default(), length)), affine=_affine_eye()
         )
@@ -2942,7 +2940,7 @@ def check_masker_refit(estimator_orig) -> None:
 
     mask_img_1: Nifti1Image | SurfaceImage
     mask_img_2: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         # using larger images to be compatible
         # with regions extraction tests
         mask = np.zeros(_shape_3d_large(), dtype=np.int8)
@@ -2968,7 +2966,7 @@ def check_masker_refit(estimator_orig) -> None:
     estimator.fit()
     fitted_mask_2 = estimator.mask_img_
 
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         with pytest.raises(AssertionError):
             assert_array_equal(
                 fitted_mask_1.get_fdata(), fitted_mask_2.get_fdata()
@@ -2987,7 +2985,7 @@ def check_masker_empty_data_messages(estimator_orig) -> None:
 
     imgs: Nifti1Image | SurfaceImage
     mask_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         data = np.zeros((64, 64, 0))
         imgs = Nifti1Image(data, np.eye(4))
         mask = np.ones(_shape_3d_large())
@@ -3017,7 +3015,7 @@ def check_masker_fit_with_empty_mask(estimator_orig) -> None:
 
     mask_img: Nifti1Image | SurfaceImage
     imgs: list[Nifti1Image] | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         mask_img = _img_3d_zeros()
         imgs = [_img_3d_rand()]
     else:
@@ -3045,7 +3043,7 @@ def check_masker_fit_with_non_finite_in_mask(estimator_orig) -> None:
 
     mask_img: Nifti1Image | SurfaceImage
     imgs: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         # _shape_3d_large() is used,
         # this test would fail for RegionExtractor otherwise
         mask = np.ones(_shape_3d_large())
@@ -3088,7 +3086,7 @@ def check_masker_smooth(estimator_orig) -> None:
     assert hasattr(estimator, "smoothing_fwhm")
 
     imgs: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         imgs = _img_3d_rand()
     else:
         n_sample = 1
@@ -3124,7 +3122,7 @@ def check_masker_inverse_transform(estimator_orig) -> None:
     """
     estimator = clone(estimator_orig)
 
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         # using different shape for imgs, mask
         # to force resampling
         input_shape = (28, 29, 30)
@@ -3173,7 +3171,7 @@ def check_masker_inverse_transform(estimator_orig) -> None:
 
         new_imgs = estimator.inverse_transform(signals)
 
-        if accept_niimg_input(estimator):
+        if accepts_volume(estimator):
             actual_shape = new_imgs.shape
             assert isinstance(imgs, Nifti1Image)
             assert_array_almost_equal(imgs.affine, new_imgs.affine)
@@ -3186,7 +3184,7 @@ def check_masker_inverse_transform(estimator_orig) -> None:
 
         new_imgs_2 = estimator.inverse_transform(signals)
 
-        if accept_niimg_input(estimator):
+        if accepts_volume(estimator):
             assert check_imgs_equal(new_imgs, new_imgs_2)
         else:
             assert_surface_image_equal(new_imgs, new_imgs_2)
@@ -3370,7 +3368,7 @@ def check_masker_joblib_cache(estimator_orig) -> None:
 
     img, _ = generate_data_to_fit(estimator)
 
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         mask_img = new_img_like(img, np.ones(img.shape[:3]))
     else:
         mask_img = _make_surface_mask()
@@ -3380,7 +3378,7 @@ def check_masker_joblib_cache(estimator_orig) -> None:
 
     mask_hash = hash(estimator.mask_img_)
 
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         get_data(estimator.mask_img_)
     else:
         get_surface_data(estimator.mask_img_)
@@ -3402,7 +3400,7 @@ def check_masker_joblib_cache(estimator_orig) -> None:
 
     # Test a tricky issue with memmapped joblib.memory that makes
     # imgs return by inverse_transform impossible to save
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         out_img.to_filename(cachedir / "test.nii")
 
 
@@ -3422,7 +3420,7 @@ def check_masker_verbose(estimator_orig) -> None:
         return
 
     imgs: Nifti1Image | SurfaceImage | list
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         imgs = _img_4d_rand_eye_medium()
     else:
         imgs = _make_surface_img(100)
@@ -3972,7 +3970,7 @@ def check_multimasker_with_confounds(estimator_orig) -> None:
 
     input_imgs: list[Nifti1Image] | list[SurfaceImage]
     single_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         input_imgs = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
         single_img = _img_4d_rand_eye_medium()
     else:
@@ -4024,7 +4022,7 @@ def check_multimasker_transformer_sample_mask(estimator_orig) -> None:
 
     input_imgs: list[Nifti1Image] | list[SurfaceImage]
     single_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         input_imgs = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
         single_img = _img_4d_rand_eye_medium()
     else:
@@ -4080,7 +4078,7 @@ def check_multimasker_transformer_high_variance_confounds(
     length = _img_4d_rand_eye_medium().shape[3]
 
     input_imgs: list[Nifti1Image] | list[SurfaceImage]
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         input_imgs = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
     else:
         input_imgs = [_make_surface_img(length), _make_surface_img(length)]
@@ -4245,7 +4243,7 @@ def check_masker_generate_report(estimator_orig) -> None:
         pytest.xfail("May fail without the GIL")
 
     input_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         input_img = _img_3d_rand()
     else:
         input_img = _make_surface_img(2)
@@ -4281,7 +4279,7 @@ def check_masker_generate_report_constant(estimator_orig) -> None:
     """Check report is constant across calls."""
     estimator = clone(estimator_orig)
     input_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         input_img = _img_3d_rand()
     else:
         input_img = _make_surface_img(2)
@@ -4376,7 +4374,7 @@ def check_masker_generate_report_false(estimator_orig) -> None:
     estimator.reports = False
 
     input_img: Nifti1Image | SurfaceImage
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
         input_img = _make_surface_img(2)
@@ -4403,12 +4401,12 @@ def check_multimasker_generate_report(estimator_orig) -> None:
         pytest.xfail("May fail without the GIL")
 
     input_img: list[Nifti1Image] | list[SurfaceImage]
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         input_img = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
     else:
         input_img = [_make_surface_img(100), _make_surface_img(100)]
 
-    if accept_niimg_input(estimator):
+    if accepts_volume(estimator):
         if isinstance(estimator, NiftiMapsMasker):
             estimator.maps_img = _img_3d_ones()
 
