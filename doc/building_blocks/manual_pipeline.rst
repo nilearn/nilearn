@@ -156,13 +156,8 @@ numerical variances will disproportionately dominate the optimization
 objective, leading to a severe scale bias.
 
 By enabling standardization (such as using the ``standardize``
-parameter in maskers like :class:`~nilearn.maskers.NiftiMasker`),
-the time-series of each feature (e.g., voxel or vertex)
-is shifted and re-scaled,
-minimizing signal scaling differences across features. 
-For example, with ``standardize=zscore_sample``, each feature is z-scored; 
-i.e., shifted to a mean of zero and scaled
-to unit variance. This ensures that all features contribute equally
+parameter in maskers like :class:`~nilearn.maskers.NiftiMasker`), the time-series of each feature (e.g., voxel or vertex)
+is shifted and re-scaled, minimizing signal scaling differences across features. For example, with ``standardize=zscore_sample``, each feature is z-scored; i.e., shifted to a mean of zero and scaled to unit variance. This ensures that all features contribute equally
 to the algorithm, resulting in more stable, reliable, and
 statistically sound predictive models.
 
