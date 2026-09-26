@@ -38,6 +38,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` Add :func:`~decoding.cross_val_decoder_score` to evaluate image-based decoders with outer cross-validation using scikit-learn scoring and splitters (issue :gh:`6068`, PR :gh:`6552` by `Mohammad Sadeghi Hardengi`_).
+
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Docstring examples can now be run in the browser via `jupyterlite <https://jupyterlite.readthedocs.io/en/stable/>`_ (:gh:`6581` by `Elizabeth DuPre`_).
