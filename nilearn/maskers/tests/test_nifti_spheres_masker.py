@@ -25,6 +25,27 @@ def test_seed_extraction(rng, affine_eye):
     assert_array_equal(s[:, 0], data[1, 1, 1])
 
 
+@pytest.mark.ai_generated
+def test_seed_extraction_as_dataframe(rng, affine_eye):
+    """Test seed extraction: ensure proper name of dataframe columns."""
+    masker = NiftiSpheresMasker([(1, 1.598645, -1 / 3), (5, 5, 5)])
+    masker.set_output(transform="pandas")
+
+    data = rng.random((20, 20, 20, 5))
+    img = Nifti1Image(data, affine_eye)
+
+    s = masker.fit_transform(img)
+
+    assert s.columns.to_list() == ["(1.0, 1.6, -0.3)", "(5.0, 5.0, 5.0)"]
+
+    # same but with a radius and testing proper rounding
+    masker = NiftiSpheresMasker([(1, 1, 1), (5, 5, 5)], radius=2.55)
+    masker.set_output(transform="pandas")
+    s = masker.fit_transform(img)
+
+    assert s.columns.to_list() == ["(1, 1, 1); r=2.6mm", "(5, 5, 5); r=2.6mm"]
+
+
 def test_sphere_extraction(rng, affine_eye):
     """Test sphere extraction."""
     seed = (1, 1, 1)

@@ -1,3 +1,5 @@
+import string
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -685,3 +687,20 @@ def test_error_wrong_strategy(surf_label_img):
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, strategy="foo")
     with pytest.raises(ValueError, match="'strategy' must be one of"):
         masker.fit()
+
+
+def test_transform_as_dataframe_with_labels(
+    surf_three_labels_img, surf_img_2d, rng
+):
+    """Ensure proper name of dataframe columns."""
+    labels = rng.choice(
+        list(string.ascii_lowercase), size=(2,), replace=False
+    ).tolist()
+    masker = SurfaceLabelsMasker(
+        labels_img=surf_three_labels_img, labels=labels
+    ).fit()
+    masker.set_output(transform="pandas")
+
+    s = masker.transform(surf_img_2d(5))
+
+    assert s.columns.tolist() == labels
