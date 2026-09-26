@@ -63,7 +63,7 @@ class InputTags(SkInputTags):
     surf_img: bool = False
 
 
-def get_tag(estimator: Any, tag: str) -> bool:
+def get_input_tag(estimator: Any, tag: str) -> bool:
     """Get the value of an input tag of an estimator.
 
     Parameters
@@ -100,11 +100,11 @@ def is_glm(estimator: Any) -> bool:
     return estimator.__sklearn_tags__().estimator_type == "glm"
 
 
-def accept_niimg_input(estimator: Any) -> bool:
+def accepts_volume(estimator: Any) -> bool:
     """Return True if the estimator accepts Niimg-like inputs."""
-    return get_tag(estimator, "niimg_like")
+    return get_input_tag(estimator, "niimg_like")
 
 
-def accept_surf_img_input(estimator: Any) -> bool:
+def accepts_surface(estimator: Any) -> bool:
     """Return True if the estimator accepts SurfaceImage inputs."""
-    return get_tag(estimator, "surf_img")
+    return get_input_tag(estimator, "surf_img")
