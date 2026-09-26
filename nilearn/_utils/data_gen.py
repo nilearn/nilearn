@@ -1566,6 +1566,9 @@ def _write_bids_derivative_func(
     spaces : :obj:`list` of :obj:`str` or None, default=None
         Defaults to ``("MNI", "T1w")``
     """
+    if spaces is None:
+        spaces = ("MNI", "T1w")
+
     n_time_points = 30
 
     if confounds_tag is not None:
