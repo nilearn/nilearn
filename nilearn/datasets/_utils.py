@@ -71,7 +71,7 @@ def _md5_sum_file(path):
 
 def read_md5_sum_file(path):
     """Read a MD5 checksum file and returns hashes as a dictionary."""
-    with Path(path).open() as f:
+    with Path(path).open(encoding="utf-8") as f:
         hashes = {}
         while True:
             line = f.readline()

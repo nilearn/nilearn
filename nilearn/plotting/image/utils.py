@@ -15,6 +15,7 @@ from nilearn._utils.niimg import safe_get_data
 from nilearn.datasets import load_mni152_template
 from nilearn.image import check_niimg_3d, get_data, new_img_like
 from nilearn.image.resampling import reorder_img
+from nilearn.nilearn_typing import BlackBg
 
 
 # A constant class to serve as a sentinel for the default MNI template
@@ -114,7 +115,7 @@ def _load_mni152_template(
 
 
 def _load_custom_anat(
-    anat_img, dim: Literal["auto"] | float, black_bg: Literal["auto"] | bool
+    anat_img, dim: Literal["auto"] | float, black_bg: BlackBg
 ) -> tuple[Any, bool, float | None, float | None]:
     """Load custom anatomy image.
 
