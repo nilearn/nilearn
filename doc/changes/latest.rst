@@ -34,6 +34,8 @@ Fixes
 
 - :bdg-primary:`Doc` Fix documented defaults that did not match the signatures in :func:`~nilearn.datasets.fetch_atlas_smith_2009`, :func:`~nilearn.datasets.fetch_atlas_difumo`, :func:`~nilearn.datasets.fetch_atlas_schaefer_2018` and in several private helpers (:gh:`6582` by `Venish Paneliya`_).
 
+- :bdg-dark:`Code` Fix residual variance of :class:`~nilearn.glm.OLSModel` and :class:`~nilearn.glm.ARModel` being divided by the number of design columns instead of the design rank, which made t and F statistics too small for rank-deficient designs in :class:`~nilearn.glm.first_level.FirstLevelModel` and :class:`~nilearn.glm.second_level.SecondLevelModel` (:gh:`6607`).
+
 
 Enhancements
 ------------
