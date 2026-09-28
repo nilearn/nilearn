@@ -98,6 +98,7 @@ Some other past or present contributors are:
 * `Demian Wassermann`_: Inria, Saclay, France
 * `Derek Pisner`_: St. Petersburg, FL
 * `Dimitri Papadopoulos Orfanos`_: NeuroSpin, CEA, Université Paris-Saclay, Gif-sur-Yvette, France
+* `Donncha O'Toole`_
 * `Elizabeth DuPre`_: Stanford University, Stanford, California, USA
 * `Elvis Dohmatob`_: Facebook AI Research (FAIR)
 * `Eric Larson`_: Institute for Learning and Brain Sciences, University of Washington, Washington, USA

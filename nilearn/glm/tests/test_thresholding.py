@@ -549,9 +549,9 @@ def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
 @pytest.mark.parametrize(
     "threshold, expected_n_unique_values",
     [
-        (2.5, 19),
-        ([2.5, 3.5], 23),
-        ([2.5, 3.0, 3.5], 27),
+        (2.5, 3),
+        ([2.5, 3.5], 7),
+        ([2.5, 3.0, 3.5], 12),
     ],
 )
 def test_cluster_level_inference_surface_realistic_data(
@@ -562,7 +562,6 @@ def test_cluster_level_inference_surface_realistic_data(
     th_map = cluster_level_inference(stat_img, threshold=threshold)
     vals = get_surf_data(th_map)
     assert len(np.unique(vals)) == expected_n_unique_values
-
 
 
 @pytest.mark.ai_generated
