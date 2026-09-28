@@ -12,8 +12,9 @@ series before it reaches the estimator:
 - ``None`` leaves the signal as acquired.
 
 This choice matters because estimators such as SVMs and other regularized
-linear models are sensitive to feature scale: without standardization,
-high-variance voxels can dominate the penalty.
+linear models are sensitive to feature scale. The scikit-learn section on
+`standardization <https://scikit-learn.org/stable/modules/preprocessing.html#standardization-or-standard-scaling>`_
+explains why a high-variance feature can dominate the objective function.
 
 Note that the defaults differ across estimators: ``NiftiMasker`` leaves
 the data untouched (``standardize=None``), while ``Decoder`` standardizes
@@ -103,10 +104,6 @@ for standardize in (None, "zscore_sample", "psc"):
     scores[standardize] = np.mean(
         list(decoder.cv_scores_.values()), axis=0
     ).mean()
-    print(
-        f"standardize={standardize!r:16}"
-        f" -- mean ROC AUC: {scores[standardize]:.3f}"
-    )
 
 # %%
 # Compare the scores
@@ -140,8 +137,7 @@ show()
 # -----------------------
 # The setting has a real effect: on this dataset the unstandardized
 # pipeline scores highest, followed by ``"zscore_sample"`` and then
-# ``"psc"``. Exact scores are deliberately not quoted here: they
-# vary between runs and would go stale without any check failing.
+# ``"psc"``.
 # This is one dataset and one classifier, so the ranking should not
 # be generalized to other data. What does generalize is that the
 # choice matters — and that ``"zscore_sample"`` remains a good
