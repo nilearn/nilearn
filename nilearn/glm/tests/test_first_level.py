@@ -1184,7 +1184,7 @@ def test_first_level_residuals(shape_4d_default):
 
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    residuals = model.residuals_[0]
+    residuals = model.residuals(fmri_data)[0]
     mean_residuals = model.masker_.transform(residuals).mean(0)
 
     assert_array_almost_equal(mean_residuals, 0)
@@ -1206,8 +1206,8 @@ def test_first_level_residuals_errors(shape_4d_default):
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    with pytest.raises(AttributeError, match="To access voxelwise attributes"):
-        model.residuals_[0]
+    with pytest.raises(ValueError, match="To access voxelwise attributes"):
+        model.residuals(fmri_data)[0]
 
     # Check that trying to access residuals without fitting
     # raises an error
@@ -1245,7 +1245,7 @@ def test_get_element_wise_attributes_should_return_as_many_as_design_matrices(
     model.fit(fmri_data, design_matrices=design_matrices)
 
     assert len(
-        model._get_element_wise_model_attribute("residuals", True)
+        model._get_element_wise_model_attribute("residuals", True, Y=fmri_data)
     ) == len(shapes)
 
 
@@ -1266,9 +1266,9 @@ def test_first_level_predictions_r_square(shape_4d_default):
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    pred = model.predicted_[0]
+    pred = model.predicted()[0]
     data = fmri_data[0]
-    r_square_3d = model.r_square_[0]
+    r_square_3d = model.r_square()[0]
 
     y_predicted = model.masker_.transform(pred)
     y_measured = model.masker_.transform(data)

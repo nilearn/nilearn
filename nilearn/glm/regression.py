@@ -17,9 +17,10 @@ General reference for regression models:
 
 __docformat__ = "restructuredtext en"
 
+from typing import ClassVar
+
 import numpy as np
 import scipy.linalg as spl
-from nibabel.onetime import auto_attr
 from numpy.linalg import matrix_rank
 
 from nilearn.glm._utils import positive_reciprocal
@@ -193,16 +194,26 @@ class OLSModel:
         wY = self.whiten(Y)
         beta = np.dot(self.calc_beta, wY)
         wresid = wY - np.dot(self.whitened_design, beta)
-        dispersion = np.sum(wresid**2, 0) / (
-            self.whitened_design.shape[0] - self.whitened_design.shape[1]
-        )
+        sse = np.sum(wresid**2, 0)
+        n_samples = wY.shape[0]
+        n_features = self.whitened_design.shape[1]
+        df_residuals = n_samples - n_features
+        mse = sse / df_residuals
+
+        # Calculate r_square
+        # r_square = var(predicted) / var(whitened_Y)
+        predicted = np.dot(self.whitened_design, beta)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            r_square = np.var(predicted, 0) / np.var(wY, 0)
+
         lfit = RegressionResults(
             beta,
-            Y,
             self,
-            wY,
-            wresid,
-            dispersion=dispersion,
+            n_samples,
+            sse,
+            r_square,
+            mse,
+            dispersion=mse,
             cov=self.normalized_cov_beta,
         )
         return lfit
@@ -269,44 +280,114 @@ class RegressionResults(LikelihoodModelResults):
 
     It handles the output of contrasts, estimates of covariance, etc.
 
+    Parameters
+    ----------
+    theta : ndarray
+        Parameter estimates from estimated model.
+
+    model : ``LikelihoodModel`` instance
+        Model used to generate fit.
+
+    n_samples : int
+        Total number of observations (number of rows in the data Y).
+
+    SSE : ndarray
+        Sum of squared errors.
+
+    r_square : ndarray
+        R-squared statistic.
+
+    MSE : ndarray
+        Mean squared error.
+
+    cov : None or ndarray, default=None
+        Covariance of thetas.
+
+    dispersion : scalar, default=1
+        Multiplicative factor in front of `cov`.
+
+    nuisance : None of ndarray, default=None
+        Parameter estimates needed to compute logL.
+
     """
+
+    __static_attributes__: ClassVar[list[str]] = ["SSE", "r_square", "MSE"]
 
     def __init__(
         self,
         theta,
-        Y,
         model,
-        whitened_Y,
-        whitened_residuals,
+        n_samples,
+        SSE,
+        r_square,
+        MSE,
         cov=None,
         dispersion=1.0,
         nuisance=None,
     ):
         """See LikelihoodModelResults constructor.
 
-        The only difference is that the whitened Y and residual values
-        are stored for a regression model.
+        The difference is that the summary statistics (SSE, r_square, MSE)
+        are stored for a regression model, and no large arrays (Y, residuals)
+        are kept in memory.
 
         """
         LikelihoodModelResults.__init__(
-            self, theta, Y, model, cov, dispersion, nuisance
+            self,
+            theta,
+            model,
+            n_samples=n_samples,
+            cov=cov,
+            dispersion=dispersion,
+            nuisance=nuisance,
         )
-        self.whitened_Y = whitened_Y
-        self.whitened_residuals = whitened_residuals
+        self.SSE = SSE
+        self.r_square = r_square
+        self.MSE = MSE
         self.whitened_design = model.whitened_design
 
-    # @auto_attr store the value as an object attribute after initial call
-    # better performance than @property
-    @auto_attr
-    def residuals(self):
-        """Residuals from the fit."""
-        return self.Y - self.predicted
+    def predicted(self):
+        """Return linear predictor values from a design matrix.
 
-    @auto_attr
-    def normalized_residuals(self):
+        Returns
+        -------
+        predicted : ndarray
+            Predicted values.
+        """
+        beta = self.theta
+        # the LikelihoodModelResults has parameters named 'theta'
+        X = self.whitened_design
+        return np.dot(X, beta)
+
+    def residuals(self, Y):
+        """Residuals from the fit.
+
+        Parameters
+        ----------
+        Y : ndarray
+            Data for which to compute the residuals.
+
+        Returns
+        -------
+        residuals : ndarray
+            Residuals from the fit.
+        """
+        return Y - self.predicted()
+
+    def normalized_residuals(self, Y):
         """Residuals, normalized to have unit length.
 
         See :footcite:t:`Montgomery2006` and :footcite:t:`Davidson2004`.
+
+        Parameters
+        ----------
+        Y : ndarray
+            Data for which to compute the normalized residuals.
+
+        Returns
+        -------
+        norm_residuals : ndarray
+            Residuals, normalized to have unit length.
 
         Notes
         -----
@@ -323,36 +404,9 @@ class RegressionResults(LikelihoodModelResults):
         .. footbibliography::
 
         """
-        return self.residuals * positive_reciprocal(np.sqrt(self.dispersion))
-
-    @auto_attr
-    def predicted(self):
-        """Return linear predictor values from a design matrix."""
-        beta = self.theta
-        # the LikelihoodModelResults has parameters named 'theta'
-        X = self.whitened_design
-        return np.dot(X, beta)
-
-    @auto_attr
-    def SSE(self):  # noqa: N802
-        """Error sum of squares.
-
-        If not from an OLS model this is "pseudo"-SSE.
-        """
-        return (self.whitened_residuals**2).sum(0)
-
-    @auto_attr
-    def r_square(self):
-        """Proportion of explained variance.
-
-        If not from an OLS model this is "pseudo"-R2.
-        """
-        return np.var(self.predicted, 0) / np.var(self.whitened_Y, 0)
-
-    @auto_attr
-    def MSE(self):  # noqa: N802
-        """Return Mean square (error)."""
-        return self.SSE / self.df_residuals
+        return self.residuals(Y) * positive_reciprocal(
+            np.sqrt(self.dispersion)
+        )
 
 
 class SimpleRegressionResults(LikelihoodModelResults):
@@ -366,20 +420,20 @@ class SimpleRegressionResults(LikelihoodModelResults):
     def __init__(self, results):
         """See LikelihoodModelResults constructor.
 
-        The only difference is that the whitened Y and residual values
-        are stored for a regression model.
+        The difference is that only the necessary information for
+        contrast computation is kept.
         """
         self.theta = results.theta
         self.cov = results.cov
         self.dispersion = results.dispersion
         self.nuisance = results.nuisance
 
-        self.df_total = results.Y.shape[0]
+        self.df_total = results.df_total
         self.df_model = results.model.df_model
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
 
-    def logL(self) -> None:  # noqa: N802
+    def logL(self, Y) -> None:  # noqa: N802
         """Return the maximized log-likelihood."""
         raise NotImplementedError(
             "logL not implemented for "
@@ -388,13 +442,40 @@ class SimpleRegressionResults(LikelihoodModelResults):
         )
 
     def residuals(self, Y, X):
-        """Residuals from the fit."""
+        """Residuals from the fit.
+
+        Parameters
+        ----------
+        Y : ndarray
+            Data for which to compute the residuals.
+
+        X : ndarray
+            Design matrix.
+
+        Returns
+        -------
+        residuals : ndarray
+            Residuals from the fit.
+        """
         return Y - self.predicted(X)
 
     def normalized_residuals(self, Y, X):
         """Residuals, normalized to have unit length.
 
         See :footcite:t:`Montgomery2006` and :footcite:t:`Davidson2004`.
+
+        Parameters
+        ----------
+        Y : ndarray
+            Data for which to compute the normalized residuals.
+
+        X : ndarray
+            Design matrix.
+
+        Returns
+        -------
+        norm_residuals : ndarray
+            Residuals, normalized to have unit length.
 
         Notes
         -----
@@ -416,6 +497,17 @@ class SimpleRegressionResults(LikelihoodModelResults):
         )
 
     def predicted(self, X):
-        """Return linear predictor values from a design matrix."""
+        """Return linear predictor values from a design matrix.
+
+        Parameters
+        ----------
+        X : ndarray
+            Design matrix.
+
+        Returns
+        -------
+        predicted : ndarray
+            Predicted values.
+        """
         beta = self.theta
         return np.dot(X, beta)
