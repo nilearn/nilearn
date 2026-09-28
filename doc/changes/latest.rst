@@ -34,7 +34,7 @@ Fixes
 
 - :bdg-primary:`Doc` Fix documented defaults that did not match the signatures in :func:`~nilearn.datasets.fetch_atlas_smith_2009`, :func:`~nilearn.datasets.fetch_atlas_difumo`, :func:`~nilearn.datasets.fetch_atlas_schaefer_2018` and in several private helpers (:gh:`6582` by `Venish Paneliya`_).
 
-- :bdg-info:`Plotting` Avoid overlapping colorbar tick labels when ``0`` is very close to the minimum or maximum value of the colorbar (:gh:`XXXX` by `Rémi Gau`_).
+- :bdg-info:`Plotting` Avoid overlapping colorbar tick labels when ``0`` is very close to the minimum or maximum value of the colorbar (:gh:`6609` by `Rémi Gau`_).
 
 
 Enhancements
