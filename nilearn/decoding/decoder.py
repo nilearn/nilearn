@@ -738,12 +738,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
                 verbose=self.verbose,
             )
 
-        log(
-            "The decoding model will be trained "
-            f"on {n_final_features} features. ",
-            verbose=self.verbose,
-        )
-
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
         parallel_fit_outputs = parallel(
