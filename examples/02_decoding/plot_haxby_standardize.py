@@ -19,6 +19,11 @@ Note that the defaults differ across estimators: ``NiftiMasker`` leaves
 the data untouched (``standardize=None``), while ``Decoder`` standardizes
 by default (``standardize="zscore_sample"``). The code below runs the
 same decoding pipeline with each setting and compares the scores.
+
+Aside from ``standardize``, the data processing and ``Decoder``
+options mirror those of the
+:ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_different_estimators.py`
+example, so the two can be read side by side.
 """
 
 # %%
@@ -134,13 +139,15 @@ show()
 # What does this tell us?
 # -----------------------
 # The setting has a real effect: on this dataset the unstandardized
-# pipeline scores highest (0.957), followed by ``"zscore_sample"``
-# (0.929) and ``"psc"`` (0.882). This is one dataset and one
-# classifier, so the ranking should not be generalized to other
-# data. What does generalize is that the choice matters — and that
-# ``"zscore_sample"`` remains a good default even though it does
-# not translate into higher accuracy here: it puts every voxel on a
-# common zero-mean, unit-variance scale, so no voxel can dominate
-# the estimator purely because of its raw amplitude.
+# pipeline scores highest, followed by ``"zscore_sample"`` and then
+# ``"psc"``. Exact scores are deliberately not quoted here: they
+# vary between runs and would go stale without any check failing.
+# This is one dataset and one classifier, so the ranking should not
+# be generalized to other data. What does generalize is that the
+# choice matters — and that ``"zscore_sample"`` remains a good
+# default even though it does not translate into higher accuracy
+# here: it puts every voxel on a common zero-mean, unit-variance
+# scale, so no voxel can dominate the estimator purely because of
+# its raw amplitude.
 
 # sphinx_gallery_dummy_images=1
