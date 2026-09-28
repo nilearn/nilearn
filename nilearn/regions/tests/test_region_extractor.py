@@ -250,6 +250,17 @@ def test_fit_and_transform(maps_and_mask):
     )
 
 
+def test_empty_extraction(dummy_map):
+    """Raise an error when no region could be extracted."""
+    extractor_without_mask = RegionExtractor(
+        dummy_map, threshold=1.0, thresholding_strategy="img_value"
+    )
+    with pytest.raises(
+        RuntimeError, match="No supra threshold regions was found"
+    ):
+        extractor_without_mask.fit()
+
+
 def test_strategy_ratio_n_voxels(maps):
     extract_ratio = RegionExtractor(
         maps, threshold=0.2, thresholding_strategy="ratio_n_voxels"
