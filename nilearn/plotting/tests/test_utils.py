@@ -350,6 +350,25 @@ def test_get_cbar_ticks_int_tick_format(
     assert np.allclose(ticks, expected, rtol=1e-02)
 
 
+@pytest.mark.ai_generated
+@pytest.mark.parametrize(
+    "vmin,vmax,expected",
+    [
+        (-9.2e-04, 4.6, [-9.2e-04, 1.1, 2.3, 3.4, 4.6]),
+        (-4.6, 9.2e-04, [-4.6, -3.4, -2.3, -1.1, 9.2e-04]),
+    ],
+)
+def test_get_cbar_ticks_zero_close_to_vmin_vmax(vmin, vmax, expected):
+    """Check 0 is not added as a tick when very close to vmin or vmax.
+
+    Otherwise tick labels would overlap in the colorbar.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/6595
+    """
+    ticks = get_cbar_ticks(vmin, vmax)
+    assert np.allclose(ticks, expected, rtol=1e-02)
+
+
 def test_get_cbar_ticks_int_threshold_float():
     """Test nilearn.plotting._utils.get_cbar_ticks for when integer tick
     format with threshold of type float specified.
