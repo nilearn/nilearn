@@ -320,7 +320,8 @@ def test_decoder_fit_logs_training_message_once(
 ):
     """Check that Decoder.fit logs the training message only once.
 
-    Regression test for the duplicated log call (gh-6613).
+    Regression test for the duplicated log call
+    https://github.com/nilearn/nilearn/issues/6613.
     """
     X, y, mask = binary_classification_data
     decoder = Decoder(mask=mask, cv=2, screening_percentile=100, verbose=1)
