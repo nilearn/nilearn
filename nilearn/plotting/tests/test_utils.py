@@ -350,7 +350,6 @@ def test_get_cbar_ticks_int_tick_format(
     assert np.allclose(ticks, expected, rtol=1e-02)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "vmin,vmax,expected",
     [
