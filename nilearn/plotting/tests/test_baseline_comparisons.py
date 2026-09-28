@@ -477,7 +477,6 @@ def test_plot_surf_surface_colorbar_plotly(
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.mpl_image_compare(tolerance=5)
 @mpl.rc_context({"axes.autolimit_mode": "data"})
 def test_plot_surf_colorbar_no_overlapping_ticks():
