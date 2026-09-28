@@ -6,8 +6,10 @@ import pytest
 from nibabel import Nifti1Image
 from sklearn.covariance import EmpiricalCovariance
 
+from nilearn._estimator_checks.nilearn_estimator_checks import (
+    nilearn_check_estimator,
+)
 from nilearn._utils.data_gen import generate_maps
-from nilearn._utils.estimator_checks import nilearn_check_estimator
 from nilearn.conftest import (
     _affine_eye,
     _img_3d_mni,

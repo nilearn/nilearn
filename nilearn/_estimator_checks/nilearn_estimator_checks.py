@@ -322,6 +322,7 @@ def _not_fitted_error_message(estimator) -> str:
 
 
 def generate_data_to_fit(estimator: NilearnBaseEstimator):
+    """Generate fit data for the specified estimator."""
     if is_glm(estimator):
         data, design_matrices = _make_surface_img_and_design()
         return data, design_matrices
@@ -1309,6 +1310,7 @@ def check_img_estimator_pickle(estimator_orig) -> None:
     result = {}
 
     check_methods = ["transform"]
+
     input_data = [X] if isinstance(estimator, SearchLight) else [[X]]
 
     for method in ["predict", "decision_function"]:
