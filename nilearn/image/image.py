@@ -2009,15 +2009,13 @@ def math_img(
     but might have different header information, specifically the TR value,
     see :gh:`2645`.
 
-    .. nilearn_versionadded:: 0.10.4
+    We can also copy the header from one of the input images using
+    ``copy_header_from``.
 
-        We can also copy the header from one of the input images using
-        ``copy_header_from``.
-
-        >>> result_img_with_header = math_img("img1 + img2",
-        ...                                   img1=anatomical_image,
-        ...                                   img2=log_img,
-        ...                                   copy_header_from="img1")
+    >>> result_img_with_header = math_img("img1 + img2",
+    ...                                   img1=anatomical_image,
+    ...                                   img2=log_img,
+    ...                                   copy_header_from="img1")
 
 
     """

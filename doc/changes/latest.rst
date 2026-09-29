@@ -30,9 +30,15 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Use mesh faces, rather than adjacent vertex indices, when computing clusters for surface cluster-level inference (:gh:`6608` by `Donncha O'Toole`_).
+
 - :bdg-primary:`Doc` Use run-aware cross-validation in the Haxby multiclass decoding example to avoid splitting samples from the same run between training and validation sets (:gh:`6591` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-primary:`Doc` Fix documented defaults that did not match the signatures in :func:`~nilearn.datasets.fetch_atlas_smith_2009`, :func:`~nilearn.datasets.fetch_atlas_difumo`, :func:`~nilearn.datasets.fetch_atlas_schaefer_2018` and in several private helpers (:gh:`6582` by `Venish Paneliya`_).
+
+- :bdg-dark:`Code` Fix :meth:`~nilearn.decoding.Decoder.fit` logging ``The decoding model will be trained on N features`` twice per fit (:gh:`6614` by `Reyyi Shreyas`_).
+
+- :bdg-dark:`Code` Fix residual variance of :class:`~nilearn.glm.OLSModel` and :class:`~nilearn.glm.ARModel` being divided by the number of design columns instead of the design rank, which made t and F statistics too small for rank-deficient designs in :class:`~nilearn.glm.first_level.FirstLevelModel` and :class:`~nilearn.glm.second_level.SecondLevelModel` (:gh:`6611` by `Wolfgang Aura`_).
 
 
 Enhancements
@@ -50,6 +56,7 @@ Enhancements
 
 - :bdg-success:`API` The warnings raised when non-finite values are detected are now ``RuntimeWarning`` rather than ``UserWarning``. This covers the ``Non-finite values detected. These values will be replaced with zeros.`` message and the one :class:`~maskers.SurfaceMasker` raises when it masks such vertices out. Code that catches them, with ``warnings.catch_warnings`` or ``pytest.warns``, has to be updated (:gh:`6530` by `Cedric Conday`_).
 
+- :bdg-dark:`Code` Name columns of signals extracted as dataframes by :meth:`~maskers.NiftiSpheresMasker.transform` (:gh:`6599` by `Rémi Gau`_).
 
 Changes
 -------
