@@ -315,6 +315,22 @@ def test_decoder_custom_estimator_param_grid(
     assert hasattr(decoder, "coef_")
 
 
+def test_decoder_fit_logs_training_message_once(
+    binary_classification_data, capsys
+):
+    """Check that Decoder.fit logs the training message only once.
+
+    Regression test for the duplicated log call
+    https://github.com/nilearn/nilearn/issues/6613.
+    """
+    X, y, mask = binary_classification_data
+    decoder = Decoder(mask=mask, cv=2, screening_percentile=100, verbose=1)
+    decoder.fit(X, y)
+
+    captured = capsys.readouterr().out
+    assert captured.count("The decoding model will be trained on") == 1
+
+
 def test_check_parameter_grid_is_empty(rand_x_y):
     X, Y = rand_x_y
     dummy_classifier = DummyClassifier(random_state=0)
