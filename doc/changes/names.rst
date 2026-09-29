@@ -393,6 +393,8 @@
 
 .. _Virgile Fritsch: https://github.com/VirgileFritsch
 
+.. _Wolfgang Aura: https://github.com/wolfgang-aura
+
 .. _Xichun Xu: https://github.com/XichunXu
 
 .. _Yaroslav Halchenko: https://github.com/yarikoptic
