@@ -80,6 +80,8 @@
     </div>
 
     {% include "html/masker/partials/parameters.jinja" %}
-    {% include "html/masker/partials/carousel.jinja" %}
+    {% with is_sphere = true %}
+        {% include "html/masker/partials/carousel.jinja" %}
+    {% endwith %}
 
 {% endblock report %}
