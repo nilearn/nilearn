@@ -103,6 +103,8 @@
 
 .. _Dimitri Papadopoulos Orfanos: https://github.com/DimitriPapadopoulos
 
+.. _Donncha O'Toole: https://github.com/dnncha
+
 .. _Elizabeth DuPre: https://elizabeth-dupre.com/
 
 .. _Elvis Dohmatob: https://dohmatob.github.io/
