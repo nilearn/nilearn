@@ -115,6 +115,12 @@ authors:
     family-names: Idrobo
     website: https://github.com/ahoyosid
     affiliation: Rakuten, France
+  - given-names: Aniket
+    family-names: Singh Yadav
+    website: https://github.com/Aniketsy
+    orcid: https://orcid.org/0009-0004-4883-3797
+    affiliation: Galgotias University, India
+    email: singhyadavaniket43@gmail.com
   - given-names: Anne-Sophie
     family-names: Kieslinger
     website: https://github.com/askieslinger
@@ -259,6 +265,9 @@ authors:
     website: https://github.com/DimitriPapadopoulos
     affiliation: NeuroSpin, CEA, Université Paris-Saclay, Gif-sur-Yvette, France
     orcid: https://orcid.org/0000-0002-1242-8990
+  - given-names: Donncha
+    family-names: O'Toole
+    website: https://github.com/dnncha
   - given-names: Elizabeth
     family-names: DuPre
     website: https://elizabeth-dupre.com/
@@ -750,6 +759,9 @@ authors:
     family-names: Meudec
     website: https://github.com/RaphaelMeudec
     affiliation: Inria, Saclay, France
+  - given-names: Reyyi
+    family-names: Shreyas
+    website: https://github.com/reyyishreyas
   - given-names: Rishika
     family-names: Kapil
     website: https://github.com/RishikaKaps
@@ -893,6 +905,9 @@ authors:
   - given-names: Vasco
     family-names: Diogo
     website: https://github.com/vascosa
+  - given-names: Venish
+    family-names: Paneliya
+    website: https://github.com/VenishPaneliya
   - given-names: Victoria
     family-names: Shevchenko
     website: https://github.com/victoris93
@@ -910,6 +925,9 @@ authors:
     family-names: Fritsch
     website: https://github.com/VirgileFritsch
     affiliation: Inria, Saclay, France
+  - given-names: Wolfgang
+    family-names: Aura
+    website: https://github.com/wolfgang-aura
   - given-names: Xichun
     family-names: Xu
     website: https://github.com/XichunXu

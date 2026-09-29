@@ -318,14 +318,6 @@ table
 # We can get a latex table from a Pandas Dataframe
 # for display and publication purposes.
 #
-# .. note::
-#
-#   This requires to have jinja2 installed:
-#
-#     .. code-block:: bash
-#
-#        pip install jinja2
-#
 print(table.to_latex())
 
 # %%

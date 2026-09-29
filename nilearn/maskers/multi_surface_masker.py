@@ -1,5 +1,7 @@
 """Extract data from multiple 2D surface objects."""
 
+from typing import Self
+
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -8,7 +10,6 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import check_params
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.base_masker import mask_logger
@@ -33,7 +34,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -93,7 +94,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         self,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         high_variance_confounds=False,
@@ -131,7 +132,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         self.n_jobs = n_jobs
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -213,14 +214,12 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
-        input_type = (
-            imgs.data._dtype
-            if isinstance(imgs, SurfaceImage)
-            else imgs[0].data._dtype
-        )
-        target_dtype = get_target_dtype(input_type, self.dtype)
-        if target_dtype is None:
-            target_dtype = imgs.data._dtype
+        target_dtype = self._get_target_dtype(imgs)
 
         output = self._clean(output, confounds, sample_mask)
-        return output.astype(target_dtype)
+
+        # target_dtype is None: no explicit dtype was requested,
+        # so keep the dtype produced by the extraction/cleaning pipeline
+        # (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return output if target_dtype is None else output.astype(target_dtype)

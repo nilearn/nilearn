@@ -1,3 +1,12 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#    "numpy",
+#    "pandas",
+#    "templateflow",
+#    "rich"
+# ]
+# ///
 """Test generating NiftiLabelsMasker report.
 
 This is done with ALL Nilearn deterministic atlases:

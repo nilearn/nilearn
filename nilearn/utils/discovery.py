@@ -1,21 +1,20 @@
 """Utilities to discover nilearn objects."""
 
+from __future__ import annotations
+
 import inspect
 import pkgutil
 from collections.abc import Callable
 from importlib import import_module
 from operator import itemgetter
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.utils._testing import ignore_warnings
 
-from nilearn._base import NilearnBaseEstimator
-from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.param_validation import check_parameter_in_allowed
-from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
-from nilearn.maskers._mixin import _MultiMixin
-from nilearn.maskers.base_masker import BaseMasker, _BaseSurfaceMasker
+if TYPE_CHECKING:
+    from nilearn._base import NilearnBaseEstimator
 
 ROOT = str(Path(__file__).parent.parent)  # nilearn package
 
@@ -111,11 +110,18 @@ def all_estimators(
     >>> from nilearn.utils import all_estimators
     >>> estimators = all_estimators()
     >>> len(estimators)
-    33
+    31
     >>> estimators[0]
-    ('BaseGLM', <class 'nilearn.glm._base.BaseGLM'>)
+    ('CanICA', <class 'nilearn.decomposition.canica.CanICA'>)
 
     """
+    # lazy import to avoid circular imports from nilearn._base
+    from nilearn._base import NilearnBaseEstimator
+    from nilearn._utils.param_validation import check_parameter_in_allowed
+    from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
+    from nilearn.maskers._mixin import _MultiMixin
+    from nilearn.maskers.base_masker import BaseMasker, _BaseSurfaceMasker
+
     # TODO: add GLM?
     allowed_filters = {
         "classifier": _ClassifierMixin,
@@ -132,8 +138,16 @@ def all_estimators(
         c
         for c in all_classes
         if (
-            issubclass(c[1], NilearnBaseEstimator)
-            and c[0] != "NilearnBaseEstimator"
+            issubclass(c[-1], NilearnBaseEstimator)
+            and (
+                c[0]
+                not in [
+                    "NilearnBaseEstimator",
+                    "BaseMasker",
+                    "BaseGLM",
+                    "BaseSpaceNet",
+                ]
+            )
         )
     ]
 
@@ -192,7 +206,7 @@ def all_functions() -> list[tuple[str, Callable]]:
     >>> functions = all_functions()
     >>>
     >>> print(f"Nilearn's API has {len(functions)} public functions.")
-    Nilearn's API has 172 public functions.
+    Nilearn's API has 170 public functions.
 
     """
     all_functions = []
@@ -258,6 +272,10 @@ def all_displays(type_filter=None) -> list[tuple[str, type]]:
     Nilearn's API has 27 display functions.
 
     """
+    # lazy import to avoid circular imports from nilearn._base
+    from nilearn._utils.helpers import is_matplotlib_installed
+    from nilearn._utils.param_validation import check_parameter_in_allowed
+
     if not is_matplotlib_installed():
         return []
     from nilearn.plotting.displays import BaseAxes, BaseSlicer

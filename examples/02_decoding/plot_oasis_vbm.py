@@ -39,7 +39,7 @@ to limit the memory usage.
 """
 
 # Use a single variable to control the verbosity of the script.
-verbose = 0
+verbose = 1
 
 # Several of Nilearn's estimators (like the DecoderRegressor we use here)
 # accept a ``n_jobs=<some_high_value>``
@@ -85,7 +85,6 @@ from sklearn.feature_selection import VarianceThreshold
 from nilearn.maskers import NiftiMasker
 
 nifti_masker = NiftiMasker(
-    standardize=None,
     smoothing_fwhm=2,
     memory="nilearn_cache",  # cache options
     verbose=verbose,
@@ -202,7 +201,6 @@ from nilearn.image import get_data
 from nilearn.mass_univariate import permuted_ols
 
 gm_maps_masked = NiftiMasker(
-    standardize=None,
     memory="nilearn_cache",  # cache options
     verbose=verbose,
 ).fit_transform(gray_matter_map_filenames)

@@ -1,11 +1,13 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#    "docstring_parser",
+#    "rich",
+# ]
+# ///
 """Check if some words are not linked to the glossary.
 
 Check rst files in doc, py files in examples and py files in nilearn.
-
-requirements:
-
-docstring_parser
-rich
 
 """
 

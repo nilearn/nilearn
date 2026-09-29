@@ -18,7 +18,7 @@ module.exports.fullTest = (file, clip, tolerance = 1000, timeout = 5000) => {
     beforeAll(async () => {
       page = await __BROWSER__.newPage()
 
-      await page.goto('http://localhost:8080/' + file)
+      await page.goto('http://localhost:8080/' + 'generated/html/' + file)
       await new Promise(resolve => setTimeout(resolve, timeout / 2))
     }, timeout)
 
@@ -30,7 +30,7 @@ module.exports.fullTest = (file, clip, tolerance = 1000, timeout = 5000) => {
       'visual regression test ' + file,
       async () => {
         // take a screenshot of the page
-        const fileCurrent = buildFilePNG(file, '', '')
+        const fileCurrent = buildFilePNG(file, 'generated/', '')
         await page.screenshot({ clip, path: fileCurrent })
 
         // archive a copy of the screenshot as future reference, if specified
@@ -42,7 +42,7 @@ module.exports.fullTest = (file, clip, tolerance = 1000, timeout = 5000) => {
           // Compare the current and reference snapshots.
           // Trigger an error if there is any difference
           // and create a difference image
-          const fileDiff = buildFilePNG(file, '', '_diff')
+          const fileDiff = buildFilePNG(file, 'generated/', '_diff')
           const imgCurrent = PNG.sync.read(fs.readFileSync(fileCurrent))
           const imgReference = PNG.sync.read(fs.readFileSync(fileReference))
           const { width, height } = imgCurrent

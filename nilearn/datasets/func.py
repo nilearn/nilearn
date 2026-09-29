@@ -779,7 +779,6 @@ def fetch_localizer_contrasts(
 
     See Also
     --------
-    nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_button_task
 
     """
@@ -991,6 +990,13 @@ def fetch_localizer_calculation_task(
 ) -> Bunch[str, Any]:
     """Fetch calculation task contrast maps from the localizer.
 
+    .. nilearn_deprecated:: 0.15.0
+
+        ``fetch_localizer_calculation_task`` will be removed
+        in version 0.17.0.
+        Use :func:`~nilearn.datasets.fetch_localizer_contrasts`
+        with ``contrasts=["calculation (auditory and visual cue)"]``
+        instead.
 
     Parameters
     ----------
@@ -1023,6 +1029,20 @@ def fetch_localizer_calculation_task(
 
     """
     check_params(locals())
+
+    # TODO (nilearn >= 0.17.0) remove the function
+    warnings.warn(
+        category=FutureWarning,
+        message=(
+            "'fetch_localizer_calculation_task' is deprecated "
+            "and will be removed in Nilearn 0.17.0.\n"
+            "Use 'fetch_localizer_contrasts' instead:\n"
+            "fetch_localizer_contrasts("
+            "['calculation (auditory and visual cue)'], "
+            "n_subjects=...)"
+        ),
+        stacklevel=find_stack_level(),
+    )
 
     data = fetch_localizer_contrasts(
         ["calculation (auditory and visual cue)"],
@@ -1070,7 +1090,6 @@ def fetch_localizer_button_task(
 
     See Also
     --------
-    nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_contrasts
 
 
@@ -1333,7 +1352,7 @@ def fetch_abide_pcp(
     # field. This can be
     # done simply with pandas but we don't want such dependency ATM
     # pheno = pandas.read_csv(path_csv).to_records()
-    with path_csv.open() as pheno_f:
+    with path_csv.open(encoding="utf-8") as pheno_f:
         pheno = [f"i{pheno_f.readline()}"]
 
         # This regexp replaces commas between double quotes
@@ -2026,7 +2045,9 @@ def load_nki(
 
 
 @fill_doc
-def _fetch_development_fmri_participants(data_dir, url, verbose):
+def _fetch_development_fmri_participants(
+    data_path: Path, url: Url, verbose: Verbose
+):
     """Use in fetch_development_fmri function.
 
     This function helps in downloading and loading participants data from .tsv
@@ -2037,8 +2058,10 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
 
     Parameters
     ----------
-    %(data_dir)s
+    data_path : :obj:`pathlib.Path` where the data will be downloaded.
+
     %(url)s
+
     %(verbose)s
 
     Returns
@@ -2050,16 +2073,11 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
     """
     check_params(locals())
 
-    dataset_name = "development_fmri"
-    data_dir = get_dataset_dir(
-        dataset_name, data_dir=data_dir, verbose=verbose
-    )
-
     if url is None:
         url = "https://osf.io/yr3av/download"
 
     files = [("participants.tsv", url, {"move": "participants.tsv"})]
-    path_to_participants = fetch_files(data_dir, files, verbose=verbose)[0]
+    path_to_participants = fetch_files(data_path, files, verbose=verbose)[0]
 
     # Load path to participants
     names = [
@@ -2076,7 +2094,11 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
 
 @fill_doc
 def _fetch_development_fmri_functional(
-    participants, data_dir, url, resume, verbose
+    participants: pd.DataFrame,
+    data_path: Path,
+    url: Url,
+    resume: Resume,
+    verbose: Verbose,
 ):
     """Help to fetch_development_fmri.
 
@@ -2090,9 +2112,13 @@ def _fetch_development_fmri_functional(
     participants : pandas.DataFrame
         Should contain column participant_id which represents subjects id. The
         number of files are fetched based on ids in this column.
-    %(data_dir)s
+
+    data_path : :obj:`pathlib.Path` where the data will be downloaded.
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -2105,11 +2131,6 @@ def _fetch_development_fmri_functional(
 
     """
     check_params(locals())
-
-    dataset_name = "development_fmri"
-    data_dir = get_dataset_dir(
-        dataset_name, data_dir=data_dir, verbose=verbose
-    )
 
     if url is None:
         # Download from the relevant OSF project, using hashes generated
@@ -2151,7 +2172,7 @@ def _fetch_development_fmri_functional(
             )
         ]
         path_to_regressor = fetch_files(
-            data_dir, regressor_file, verbose=verbose
+            data_path, regressor_file, verbose=verbose
         )[0]
         regressors.append(path_to_regressor)
         # Download bold images
@@ -2164,7 +2185,7 @@ def _fetch_development_fmri_functional(
             )
         ]
         path_to_func = fetch_files(
-            data_dir, func_file, resume=resume, verbose=verbose
+            data_path, func_file, resume=resume, verbose=verbose
         )[0]
         funcs.append(path_to_func)
     return funcs, regressors
@@ -2204,9 +2225,13 @@ def fetch_development_fmri(
         purpose of having realistic examples. Depending on your research
         question, other confounds might be more appropriate.
         If False, returns all :term:`fMRIPrep` confounds.
+
     %(data_dir)s
+
     %(resume)s
+
     %(verbose)s
+
     age_group : :obj:`str`, default='both'
         Which age group to fetch
 
@@ -2256,7 +2281,7 @@ def fetch_development_fmri(
     check_params(locals())
 
     dataset_name = "development_fmri"
-    data_dir = get_dataset_dir(
+    data_path = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     keep_confounds = [
@@ -2282,7 +2307,7 @@ def fetch_development_fmri(
 
     # Participants data: ids, demographics, etc
     participants = _fetch_development_fmri_participants(
-        data_dir=data_dir, url=None, verbose=verbose
+        data_path=data_path, url=None, verbose=verbose
     )
 
     adult_count, child_count = _filter_func_regressors_by_participants(
@@ -2311,7 +2336,7 @@ def fetch_development_fmri(
 
     funcs, regressors = _fetch_development_fmri_functional(
         participants,
-        data_dir=data_dir,
+        data_path=data_path,
         url=None,
         resume=resume,
         verbose=verbose,
@@ -2548,7 +2573,7 @@ def fetch_ds000030_urls(
         resume=True,
     )
     urls_path = downloaded_file_path[0]
-    with Path(urls_path).open() as json_file:
+    with Path(urls_path).open(encoding="utf-8") as json_file:
         urls = json.load(json_file)
 
     return urls_path, urls

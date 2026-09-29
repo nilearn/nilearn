@@ -358,7 +358,6 @@ fmri_glm = FirstLevelModel(
     t_r=subject_data.t_r,
     smoothing_fwhm=4,
     noise_model="ar1",
-    standardize=False,
     hrf_model="spm",
     drift_model="cosine",
     high_pass=0.01,

@@ -165,11 +165,7 @@ def test_check_unsupported_estimator(estimator):
     then raise the error.
     """
     with pytest.raises(ValueError, match="Invalid estimator"):
-        validate_estimator(
-            _BaseDecoder(
-                estimator=estimator, standardize="zscore_sample"
-            ).estimator
-        )
+        validate_estimator(_BaseDecoder(estimator=estimator).estimator)
 
     expected_warning = (
         "Use a custom estimator at your own risk "
@@ -177,8 +173,4 @@ def test_check_unsupported_estimator(estimator):
     )
     custom_estimator = RandomForestClassifier()
     with pytest.warns(UserWarning, match=expected_warning):
-        validate_estimator(
-            _BaseDecoder(
-                estimator=custom_estimator, standardize="zscore_sample"
-            ).estimator
-        )
+        validate_estimator(_BaseDecoder(estimator=custom_estimator).estimator)

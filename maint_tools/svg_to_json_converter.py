@@ -159,7 +159,7 @@ class SVGToJSONConverter:
         """Save to JSON."""
         json_content = self.to_json()
 
-        with Path(filename).open("w") as f:
+        with Path(filename).open("w", encoding="utf-8") as f:
             f.write(json_content)
 
 

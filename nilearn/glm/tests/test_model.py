@@ -655,9 +655,8 @@ def test_vcov_default_does_not_warn():
     """Test that the call which used to warn no longer does.
 
     Only the default is pinned here. ``uniform=False`` is deliberately
-    left unpinned, because it is scheduled to warn from 0.15.0 and a
-    test asserting silence would have to be deleted to let that
-    happen.
+    left unpinned so a future deprecation can add a warning without
+    changing this default-path test.
     """
     with warnings.catch_warnings():
         warnings.simplefilter("error", FutureWarning)
@@ -989,9 +988,8 @@ def test_compute_contrast_does_not_warn():
 
     It is the only caller of ``vcov`` outside this module. Nothing in
     ``vcov`` warns now, so there is no leak left for this to catch
-    today; it is here for the ``uniform=False`` warning scheduled for
-    0.15.0, which would reach a user of ``compute_contrast`` who could
-    do nothing about it.
+    today; it is here to catch a future ``uniform=False`` warning
+    leaking through ``compute_contrast`` to users who cannot control it.
     """
     labels = np.zeros(Y_3_COLUMNS_UNRELATED.shape[1])
     results = {0.0: OLSModel(X_CORRELATED).fit(Y_3_COLUMNS_UNRELATED)}

@@ -63,7 +63,7 @@ task_data = index_img(func_filename, task_mask)
 #
 # The classifier used here is a Support Vector Classifier (SVC).
 # We use :class:`~nilearn.decoding.Decoder`
-# with a ``svc_l1`` estimator because it is intra subject.
+# with a ``"svc_l1"`` estimator because it is intra subject.
 # The mask of the region of interest is passed directly to the Decoder.
 #
 # We will be doing a 'leave one run out' for cross validation
@@ -71,7 +71,7 @@ task_data = index_img(func_filename, task_mask)
 # and passing the run labels at fit time.
 #
 # We will use :class:`~nilearn.decoding.Decoder`
-# with a "dummy_classifier" to estimate a baseline.
+# with a ``"dummy_classifier"`` to estimate a baseline.
 #
 
 import numpy as np

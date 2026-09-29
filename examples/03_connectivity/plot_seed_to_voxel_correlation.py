@@ -24,11 +24,11 @@ numpy array, corresponding to the data inside the mask.
 #
 # We will work with the first subject
 # of the brain development :term:`fMRI` data set.
-# dataset.func is a list of filenames. We select the 1st (0-based)
-# subject by indexing with [0]).
-from nilearn import datasets, plotting
+# dataset.func is a list of filenames.
+# We select the 1st (0-based) subject by indexing with [0]).
+from nilearn.datasets import fetch_development_fmri
 
-dataset = datasets.fetch_development_fmri(n_subjects=1)
+dataset = fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 confound_filename = dataset.confounds[0]
 
@@ -180,10 +180,12 @@ print(
 # we need to create an in memory Nifti image object.
 # Furthermore, we can display the location of the seed with a sphere and
 # set the cross to the center of the seed region of interest.
+from nilearn.plotting import plot_stat_map
+
 seed_to_voxel_correlations_img = brain_masker.inverse_transform(
     seed_to_voxel_correlations.T
 )
-display = plotting.plot_stat_map(
+display = plot_stat_map(
     seed_to_voxel_correlations_img,
     threshold=0.5,
     vmax=1,

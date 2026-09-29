@@ -110,7 +110,7 @@ def _fit_axes(axes) -> None:
         axes.set_position(new_position)
 
 
-def _sanitize_figure_and_axes(figure, axes) -> tuple[Figure, Axes, bool]:
+def _sanitize_figure_and_axes(figure, axes) -> tuple[Figure, Axes]:
     """Help for plot_matrix.
 
     Returns
@@ -121,10 +121,6 @@ def _sanitize_figure_and_axes(figure, axes) -> tuple[Figure, Axes, bool]:
     axes : :class:`matplotlib.axes.Axes`
         The axes to plot on.
 
-    own_fig : :obj:`bool`
-        Whether the figure was created here
-        rather than passed in by the caller.
-
     """
     if axes is not None and figure is not None:
         raise ValueError(
@@ -132,14 +128,11 @@ def _sanitize_figure_and_axes(figure, axes) -> tuple[Figure, Axes, bool]:
             f"You gave 'figure={figure}, axes={axes}'."
         )
     if figure is not None:
-        if isinstance(figure, plt.Figure):
+        if isinstance(figure, Figure):
             fig = figure
-            if hasattr(fig, "set_layout_engine"):  # can be removed w/mpl 3.5
-                fig.set_layout_engine("constrained")
         else:
             fig = plt.figure(figsize=figure, layout="constrained")
         axes = plt.gca()
-        own_fig = True
     elif axes is None:
         fig, axes = plt.subplots(
             1,
@@ -147,16 +140,14 @@ def _sanitize_figure_and_axes(figure, axes) -> tuple[Figure, Axes, bool]:
             figsize=(7, 5),
             layout="constrained",
         )
-        own_fig = True
     else:
         fig = axes.figure
-        own_fig = False
-    return fig, axes, own_fig
+    return fig, axes
 
 
 def _sanitize_inputs_plot_matrix(
     mat_shape, tri, labels, reorder, figure, axes
-) -> tuple[list | None, str | bool, Figure, Axes, bool]:
+) -> tuple[list | None, str | bool, Figure, Axes]:
     """Help for plot_matrix.
 
     This function makes sure the inputs to plot_matrix are valid.
@@ -175,16 +166,12 @@ def _sanitize_inputs_plot_matrix(
     axes : :class:`matplotlib.axes.Axes`
         The axes to plot on.
 
-    own_fig : :obj:`bool`
-        Whether the figure was created here
-        rather than passed in by the caller.
-
     """
     sanitize_tri(tri)
     labels = sanitize_labels(mat_shape, labels)
     reorder = sanitize_reorder(reorder)
-    fig, axes, own_fig = _sanitize_figure_and_axes(figure, axes)
-    return labels, reorder, fig, axes, own_fig
+    fig, axes = _sanitize_figure_and_axes(figure, axes)
+    return labels, reorder, fig, axes
 
 
 @fill_doc
@@ -192,8 +179,8 @@ def plot_matrix(
     mat,
     title: Title = None,
     labels=None,
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     colorbar: ColorBar = True,
     cmap=DEFAULT_DIVERGING_CMAP,
     tri: Literal["full", "lower", "diag"] = "full",
@@ -243,9 +230,9 @@ def plot_matrix(
     tri : {'full', 'lower', 'diag'}, default='full'
         Which triangular part of the matrix to plot:
 
-            - 'lower': Plot the lower part
-            - 'diag': Plot the lower part with the diagonal
-            - 'full': Plot the full matrix
+        - 'lower': Plot the lower part
+        - 'diag': Plot the lower part with the diagonal
+        - 'full': Plot the full matrix
 
 
     auto_fit : :obj:`bool`, default=True
@@ -272,9 +259,26 @@ def plot_matrix(
     display : :class:`matplotlib.axes.Axes`
         Axes image.
 
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>>
+        >>> from nilearn.plotting import plot_matrix, show
+        >>>
+        >>> rng =  np.random.default_rng(0)
+        >>> matrix = rng.normal(size=(10, 10))
+        >>> vmax = np.max(np.abs(matrix.ravel()))
+        >>>
+        >>> fig = plot_matrix(matrix, vmax=vmax, vmin=-vmax)
+        >>>
+        >>> show()
+
     """
     check_params(locals())
-    labels, reorder_method, fig, axes, _ = _sanitize_inputs_plot_matrix(
+    labels, reorder_method, fig, axes = _sanitize_inputs_plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
     if reorder_method:
@@ -317,7 +321,7 @@ def plot_contrast_matrix(
     contrast_def,
     design_matrix,
     colorbar: ColorBar = True,
-    axes=None,
+    axes: Axes | None = None,
     output_file: OutputFile = None,
 ) -> Axes:
     """Create plot for :term:`contrast` definition.
@@ -397,7 +401,7 @@ def plot_contrast_matrix(
 def plot_design_matrix(
     design_matrix,
     rescale: bool = True,
-    axes=None,
+    axes: Axes | None = None,
     output_file: OutputFile = None,
 ) -> Axes:
     """Plot a design matrix.
@@ -520,6 +524,26 @@ def plot_event(
     -------
     figure : :class:`matplotlib.figure.Figure`
         Plot Figure object.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import pandas as pd
+        >>>
+        >>> from nilearn.plotting import plot_event, show
+        >>>
+        >>> trial_type = ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
+        >>> onset = [0, 70, 100, 10, 30, 90, 30, 40, 60]
+        >>> duration =  [1, 5, 3] * 3
+        >>> model_event = pd.DataFrame({"onset": onset,
+        ...                             "duration": duration,
+        ...                             "trial_type": trial_type})
+        >>>
+        >>> fig = plot_event(model_event)
+        >>>
+        >>> show()
 
     """
     model_event = check_and_load_tables(model_event, "model_event")

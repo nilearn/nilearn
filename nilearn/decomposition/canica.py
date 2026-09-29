@@ -53,7 +53,7 @@ class CanICA(_MultiPCA):
 
     %(random_state)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(standardize_confounds)s
 
@@ -134,7 +134,7 @@ class CanICA(_MultiPCA):
         threshold="auto",
         n_init=10,
         random_state=None,
-        standardize=True,
+        standardize="zscore_sample",
         standardize_confounds=True,
         detrend=True,
         low_pass=None,

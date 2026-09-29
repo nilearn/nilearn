@@ -8,6 +8,7 @@ import warnings
 from typing import Any, ClassVar
 
 import numpy as np
+from nibabel import Nifti1Image
 from scipy import sparse
 from sklearn import neighbors
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
@@ -17,7 +18,6 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn.datasets import load_mni152_template
 from nilearn.image import load_img, resample_img
 from nilearn.image.image import (
@@ -244,7 +244,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
-    radius : :obj:`float`, default=None
+    radius : :obj:`float` | None, default=None
         Indicates, in millimeters, the radius for the sphere around the seed.
         By default signal is extracted on a single voxel.
 
@@ -255,18 +255,24 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     allow_overlap : :obj:`bool`, default=False
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
+
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
+
     %(detrend)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
     %(dtype)s
@@ -323,7 +329,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_img=None,
         allow_overlap=False,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         high_variance_confounds=False,
         detrend=False,
@@ -513,6 +519,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     )
                 else:
                     resampl_imgs = imgs
+
                 # Store 1 timepoint to pass to reporter
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
         elif self.reports:  # imgs not provided to fit
@@ -642,19 +649,39 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         )
 
         imgs = load_img(imgs)
-        target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
-        if target_dtype is None:
-            target_dtype = img_data_dtype(imgs)
 
-        signals = signals.astype(target_dtype)
+        target_dtype = self._get_target_dtype(imgs)
+
+        if target_dtype is not None:
+            # if target_dtype is None here, self.dtype is None: no
+            # explicit dtype was requested, so keep the dtype produced by
+            # the extraction/cleaning pipeline (e.g. float after
+            # standardize) instead of forcing it back to the source
+            # image's dtype.
+            signals = signals.astype(target_dtype)
 
         if self.n_elements_ == 1:
             return signals
         else:
             return np.atleast_1d(signals)
 
+    def get_feature_names_out(self, input_features=None) -> list[str]:
+        """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features : default=None
+            Only for sklearn API compatibility.
+        """
+        del input_features
+        radius_suffix = ""
+        if self.radius is not None:
+            radius_suffix = f"; r={np.round(self.radius, decimals=1)}mm"
+        seeds = np.round(np.asarray(self.seeds), decimals=1)
+        return [str(tuple(x)) + radius_suffix for x in seeds.tolist()]
+
     @fill_doc
-    def inverse_transform(self, region_signals):
+    def inverse_transform(self, region_signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from spheres signals.
 
         Any mask given at initialization is taken into account. Throws an error

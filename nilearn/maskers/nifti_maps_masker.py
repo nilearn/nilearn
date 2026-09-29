@@ -5,14 +5,13 @@ from copy import deepcopy
 from typing import Any, ClassVar
 
 import numpy as np
+from nibabel import Nifti1Image
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
 )
@@ -21,6 +20,7 @@ from nilearn.image import (
     clean_img,
     get_data,
     index_img,
+    new_img_like,
     resample_img,
 )
 from nilearn.image.image import check_same_fov
@@ -38,10 +38,9 @@ from nilearn.masking import load_mask_img
 class _ExtractionFunctor:
     func_name = "nifti_maps_masker_extractor"
 
-    def __init__(self, maps_img_, mask_img_, keep_masked_maps):
+    def __init__(self, maps_img_, mask_img_):
         self.maps_img_ = maps_img_
         self.mask_img_ = mask_img_
-        self.keep_masked_maps = keep_masked_maps
 
     def __call__(self, imgs):
         from nilearn.regions import signal_extraction
@@ -50,7 +49,6 @@ class _ExtractionFunctor:
             imgs,
             self.maps_img_,
             mask_img=self.mask_img_,
-            keep_masked_maps=self.keep_masked_maps,
         )
 
 
@@ -90,7 +88,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -122,8 +120,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
           resampled to the shape and affine of ``maps_img``
         - ``None`` means no resampling: if shapes and affines do not match,
           a :obj:`ValueError` is raised.
-
-    %(keep_masked_maps)s
 
     %(memory)s
 
@@ -189,7 +185,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_img=None,
         allow_overlap=True,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         high_variance_confounds=False,
         detrend=False,
@@ -198,7 +194,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        keep_masked_maps=False,
         memory=None,
         memory_level=0,
         verbose=0,
@@ -236,8 +231,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self.reports = reports
         self.cmap = cmap
-
-        self.keep_masked_maps = keep_masked_maps
 
         self._reset_report()
 
@@ -450,6 +443,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     "No map left after applying mask to the maps image."
                 )
 
+        # TODO throw warning if some maps were dropped at fit time
+        # due to masking or resampling
+
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._reporting_data = {
@@ -549,10 +545,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         imgs_ = check_niimg(imgs, atleast_4d=True)
 
-        target_dtype = get_target_dtype(img_data_dtype(imgs_), self.dtype)
-        if target_dtype is None:
-            target_dtype = img_data_dtype(imgs_)
-
         if self.resampling_target is None:
             images = {"maps": maps_img_, "data": imgs_}
             if mask_img_ is not None:
@@ -628,10 +620,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     target_affine=ref_img.affine,
                 )
 
-            # Remove imgs_ from memory before loading the same image
-            # in filter_and_extract.
-            del imgs_
-
         if not self.allow_overlap:
             # Check if there is an overlap.
 
@@ -649,6 +637,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     "resampling."
                 )
 
+        target_dtype = self._get_target_dtype(imgs_)
+
+        # Remove imgs_ from memory before loading the same image
+        # in filter_and_extract.
+        del imgs_
+
         target_shape = None
         target_affine = None
         if self.resampling_target != "data":
@@ -662,7 +656,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         sklearn_output_config = getattr(self, "_sklearn_output_config", None)
 
-        region_signals, _ = self._cache(
+        region_signals, extracted_maps = self._cache(
             filter_and_extract,
             ignore=["verbose", "memory", "memory_level"],
         )(
@@ -671,7 +665,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             _ExtractionFunctor(
                 maps_img_,
                 mask_img_,
-                self.keep_masked_maps,
             ),
             # Pre-treatments
             params,
@@ -685,10 +678,26 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             sklearn_output_config=sklearn_output_config,
         )
 
-        return region_signals.astype(target_dtype)
+        # we update some attributes
+        # that may have been changed by resampling or masking
+        if len(extracted_maps) != self.n_elements_:
+            self.n_elements_ = len(extracted_maps)
+            maps_data = get_data(maps_img_)[:, :, :, extracted_maps]
+            self.maps_img_ = new_img_like(self.maps_img_, maps_data)
+            self._reporting_data["maps_image"] = self.maps_img_
+
+        # if target_dtype is still None, self.dtype is None: no explicit
+        # dtype was requested, so keep the dtype produced by the
+        # extraction/cleaning pipeline (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return (
+            region_signals
+            if target_dtype is None
+            else region_signals.astype(target_dtype)
+        )
 
     @fill_doc
-    def inverse_transform(self, region_signals):
+    def inverse_transform(self, region_signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from region signals.
 
         Any mask given at initialization is taken into account.

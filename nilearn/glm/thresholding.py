@@ -33,7 +33,11 @@ from nilearn.nilearn_typing import (
     NonNullScalar,
     Scalar,
 )
-from nilearn.surface.surface import SurfaceImage, check_surf_img
+from nilearn.surface.surface import (
+    SurfaceImage,
+    check_surf_img,
+    find_surface_clusters,
+)
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
 
@@ -204,16 +208,6 @@ def cluster_level_inference(
     .. footbibliography::
 
     """
-    # TODO (nilearn >= 0.15.0) remove
-    if threshold == 3.0:
-        warnings.warn(
-            "\nFrom nilearn version>=0.15, "
-            "the default 'threshold' will be set to "
-            f"{DEFAULT_Z_THRESHOLD}.",
-            FutureWarning,
-            stacklevel=find_stack_level(),
-        )
-
     original_threshold = threshold
     if not isinstance(threshold, list):
         threshold = [threshold]
@@ -287,7 +281,10 @@ def _cluster_level_inference_surface(
         ).ravel()
 
         for threshold_ in sorted(threshold):
-            label_map, n_labels = label(stat_map > threshold_)
+            clusters, label_map = find_surface_clusters(
+                stat_img.mesh.parts[hemi], stat_map > threshold_
+            )
+            n_labels = len(clusters)
             labels = label_map[masker.mask_img_.data.parts[hemi] > 0]
 
             for label_ in range(1, n_labels + 1):
@@ -499,17 +496,7 @@ def threshold_stats_img(
     """
     if height_control is None:
         if threshold is None:
-            threshold = 3.0
-
-        # TODO (nilearn >= 0.15.0) remove
-        if threshold == 3.0:
-            warnings.warn(
-                "\nFrom nilearn version>=0.15, "
-                "the default 'threshold' will be set to "
-                f"{DEFAULT_Z_THRESHOLD}.",
-                FutureWarning,
-                stacklevel=find_stack_level(),
-            )
+            threshold = DEFAULT_Z_THRESHOLD
 
     elif threshold is not None:
         threshold = float(threshold)

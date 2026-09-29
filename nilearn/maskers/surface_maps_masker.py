@@ -3,7 +3,7 @@ brain regions.
 """
 
 import warnings
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Self
 
 import numpy as np
 from scipy import linalg
@@ -20,7 +20,6 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -67,7 +66,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -149,7 +148,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         mask_img=None,
         allow_overlap=True,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         high_variance_confounds=False,
@@ -186,7 +185,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._reset_report()
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -209,6 +208,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._reset_report()
 
         if imgs is not None:
+            mask_logger("load_data", img=imgs, verbose=self.verbose)
+
             self._check_imgs(imgs)
 
             if isinstance(imgs, SurfaceImage) and any(
@@ -355,20 +356,22 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 maps_data, img_data
             )[0].T
 
-        input_type = (
-            imgs.data._dtype
-            if isinstance(imgs, SurfaceImage)
-            else imgs[0].data._dtype
-        )
-        target_dtype = get_target_dtype(input_type, self.dtype)
-        if target_dtype is None:
-            target_dtype = imgs.data._dtype
+        target_dtype = self._get_target_dtype(imgs)
 
         region_signals = self._clean(region_signals, confounds, sample_mask)
-        return region_signals.astype(target_dtype)
+
+        # target_dtype is None: no explicit dtype was requested,
+        # so keep the dtype produced by the extraction/cleaning pipeline
+        # (e.g. float after standardize)
+        # instead of forcing it back to the source image's dtype.
+        return (
+            region_signals
+            if target_dtype is None
+            else region_signals.astype(target_dtype)
+        )
 
     @fill_doc
-    def inverse_transform(self, region_signals):
+    def inverse_transform(self, region_signals) -> SurfaceImage:
         """Compute :term:`vertex` signals from region signals.
 
         Parameters
@@ -419,7 +422,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         vertex_signals = vertex_signals.T
 
         # split the signal into hemispheres
-        vertex_signals = {
+        data = {
             "left": vertex_signals[
                 : self.maps_img.data.parts["left"].shape[0], :
             ],
@@ -427,8 +430,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 self.maps_img.data.parts["left"].shape[0] :, :
             ],
         }
-
-        imgs = SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
+        imgs = SurfaceImage(mesh=self.maps_img.mesh, data=data)
 
         return self._post_process_inverse_transform(
             region_signals, imgs, return_1D

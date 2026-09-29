@@ -64,7 +64,8 @@ run_label = behavioral["chunks"][condition_mask]
 # Importing a classifier
 # ......................
 # We can import many predictive models from scikit-learn that can be used in a
-# decoding pipelines. They all support a ``.fit()`` method.
+# decoding pipelines.
+# They all support a ``.fit()`` method.
 # Let's define a Support Vector Classifier
 # (or :sklearn:`SVC <modules/svm.html>`).
 

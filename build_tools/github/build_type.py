@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # /// script
-# requires-python = ">=3.10"
+# requires-python = ">=3.11"
 # dependencies = [
 #   "rich"
 # ]
@@ -28,6 +28,7 @@ import builtins
 import contextlib
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 with contextlib.suppress(builtins.BaseException):
@@ -170,6 +171,26 @@ try:
         yield
         Path("merge.txt").unlink()
 
+    @pytest.fixture
+    def mock_git_diff(monkeypatch):
+        """Stub out the real 'git merge-base' / 'git diff' calls.
+
+        Without this, 'changed_files' in 'main()' reflects whatever the
+        local checkout actually diffs against 'upstream/main', so these
+        tests would pass or fail depending on unrelated files touched by
+        the branch they run on instead of only the commit message under
+        test.
+        """
+        real_run = run
+
+        def fake_run(cmd, *args, **kwargs):
+            if cmd.startswith(("git merge-base", "git diff --name-only")):
+                return ""
+            return real_run(cmd, *args, **kwargs)
+
+        monkeypatch.setattr(sys.modules[__name__], "run", fake_run)
+        yield
+
     @pytest.mark.parametrize(
         "commit_msg, expected_in_pattern",
         [
@@ -195,6 +216,7 @@ try:
         commit_msg,
         gitlog,  # noqa: ARG001
         merge,  # noqa: ARG001
+        mock_git_diff,  # noqa: ARG001
         expected_in_pattern,
         clean_up,  # noqa: ARG001
     ):
@@ -232,6 +254,7 @@ try:
         commit_msg,
         gitlog,  # noqa: ARG001
         merge,  # noqa: ARG001
+        mock_git_diff,  # noqa: ARG001
         expected_in_pattern,
         clean_up,  # noqa: ARG001
     ):

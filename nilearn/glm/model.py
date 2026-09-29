@@ -99,6 +99,66 @@ def _uniform_covariance_stack(cov, matrix, column, dispersion) -> np.ndarray:
     return block * np.ravel(dispersion)[:, np.newaxis, np.newaxis]
 
 
+class TContrastResults:
+    """Results from a t :term:`contrast` of coefficients in a parametric model.
+
+    The class does nothing.
+    It is a container for the results from T :term:`contrasts<contrast>`,
+    and returns the T-statistics when np.asarray is called.
+
+    """
+
+    def __init__(self, t, sd, effect, df_den=None):
+        if df_den is None:
+            df_den = np.inf
+        self.t = t
+        self.sd = sd
+        self.effect = effect
+        self.df_den = df_den
+
+    def __array__(self):
+        return np.asarray(self.t)
+
+    def __str__(self) -> str:
+        return (
+            "<T contrast: "
+            f"effect={self.effect}, "
+            f"sd={self.sd}, "
+            f"t={self.t}, "
+            f"df_den={self.df_den}>"
+        )
+
+
+class FContrastResults:
+    """Results from an F :term:`contrast` of coefficients \
+       in a parametric model.
+
+    The class does nothing.
+    It is a container for the results from F :term:`contrasts<contrast>`,
+    and returns the F-statistics when np.asarray is called.
+    """
+
+    def __init__(self, effect, covariance, F, df_num, df_den=None):
+        if df_den is None:
+            df_den = np.inf
+        self.effect = effect
+        self.covariance = covariance
+        self.F = F
+        self.df_den = df_den
+        self.df_num = df_num
+
+    def __array__(self):
+        return np.asarray(self.F)
+
+    def __str__(self) -> str:
+        return (
+            "<F contrast: "
+            f"F={self.F!r}, "
+            f"df_den={self.df_den}, "
+            f"df_num={self.df_num}>"
+        )
+
+
 class LikelihoodModelResults:
     """Class to contain results from likelihood models.
 
@@ -191,7 +251,7 @@ default=None
             returns the statistic for that regressor alone, without
             the regressor axis.
 
-            .. nilearn_versionchanged:: 0.14.1
+            .. nilearn_versionchanged:: 0.15.0
                 For a model fitted on several columns of data, the
                 per-column axis is kept instead of being dropped. Asking
                 for several regressors at once used to raise, or to
@@ -275,10 +335,9 @@ default=None
             ``matrix`` of rank 3 or more raises rather than returning
             something of another rank. False gives
             the older shapes listed below, which depend on the
-            arguments; it warns from 0.15.0 and goes in 0.16.0. None
-            means True.
+            arguments. None means True.
 
-            .. nilearn_versionadded:: 0.14.1
+            .. nilearn_versionadded:: 0.15.0
 
         Returns
         -------
@@ -296,7 +355,7 @@ default=None
             and a 0-d value when a single regressor meets a scalar
             dispersion.
 
-            .. nilearn_versionchanged:: 0.14.1
+            .. nilearn_versionchanged:: 0.15.0
                 Every call that returns gives
                 ``(n_dispersion, dim, dim)``, instead of a shape that
                 depended on which arguments were given. A selector that
@@ -309,11 +368,6 @@ default=None
                 covariance matrix raises, instead of broadcasting the
                 dispersions along the columns of the covariance
                 matrix.
-
-            .. nilearn_deprecated:: 0.14.1
-                ``uniform=False``, and with it the argument-dependent
-                shapes, will warn from 0.15.0 and be removed in
-                0.16.0.
 
         Returns the variance/covariance matrix of a linear contrast of the
         estimates of theta, multiplied by `dispersion` which will often be an
@@ -332,25 +386,14 @@ default=None
         if dispersion is None:
             dispersion = self.dispersion
 
-        # The commit that added this keyword documented None as meaning
-        # False and warning. The warning is gone, so None now means the
-        # default rather than the deprecated branch. The keyword has not
-        # shipped, so this reverses a docstring rather than a release.
+        # None means the default uniform shape. The keyword first ships
+        # in 0.15.0, so this does not change a released call.
         if uniform is None:
             uniform = True
 
-        # TODO (nilearn >= 0.15.0) warn on uniform=False, so the removal
-        # is not the first notice anyone gets. All seven in-tree callers
-        # ask for it and the suite runs with -W error::FutureWarning, so
-        # they need a path that skips the warning before it can be added.
-        # TODO (nilearn >= 0.16.0) drop the branch below and keep taking
-        # the keyword, since 0.14.1 leaves uniform=True writable and
-        # removing the argument would be a TypeError with no second
-        # warning. uniform=False should raise there, not be ignored, or
-        # the shape flips silently for whoever opted out. The callers
-        # need rewriting rather than just losing the keyword: on the
-        # uniform shape they broadcast into extra axes instead of
-        # raising, so getting it wrong is silent.
+        # Before deprecating the legacy shape, migrate the in-tree callers
+        # to the uniform shape and add a warning for external callers.
+        # Removing this branch first would silently change their results.
         if uniform:
             return _uniform_covariance_stack(
                 self.cov, matrix, column, dispersion
@@ -403,7 +446,9 @@ default=None
             else:
                 return tmp[:, :, np.newaxis] * dispersion
 
-    def Tcontrast(self, matrix, store=("t", "effect", "sd"), dispersion=None):  # noqa: N802
+    def Tcontrast(  # noqa : N802
+        self, matrix, store=("t", "effect", "sd"), dispersion=None
+    ) -> TContrastResults:
         """Compute a Tcontrast for a row vector `matrix`.
 
         To get the t-statistic for a single column, use the 't' method.
@@ -441,12 +486,14 @@ default=None
         if "t" in store or "effect" in store:
             effect = np.dot(matrix, self.theta)
         if "effect" in store:
+            assert effect is not None
             st_effect = np.squeeze(effect)
         if "t" in store or "sd" in store:
             sd = np.sqrt(
                 self.vcov(matrix=matrix, dispersion=dispersion, uniform=False)
             )
         if "sd" in store:
+            assert sd is not None
             st_sd = np.squeeze(sd)
         if "t" in store:
             st_t = np.squeeze(effect * positive_reciprocal(sd))
@@ -454,7 +501,9 @@ default=None
             effect=st_effect, t=st_t, sd=st_sd, df_den=self.df_residuals
         )
 
-    def Fcontrast(self, matrix, dispersion=None, invcov=None):  # noqa: N802
+    def Fcontrast(  # noqa : N802
+        self, matrix, dispersion=None, invcov=None
+    ) -> FContrastResults:
         """Compute an F contrast for a :term:`contrast` matrix ``matrix``.
 
         Here, ``matrix`` M is assumed to be non-singular. More precisely
@@ -559,7 +608,7 @@ default=None
             data, where each row contains [lower, upper] for the given
             entry in `cols`
 
-            .. nilearn_versionchanged:: 0.14.1
+            .. nilearn_versionchanged:: 0.15.0
                 For a model fitted on several columns of data, the
                 per-column axis is kept instead of being dropped. A
                 1-D boolean mask in ``cols`` now selects regressors, as
@@ -621,63 +670,3 @@ default=None
             lower.append(self.theta[i] - half_width)
             upper.append(self.theta[i] + half_width)
         return np.asarray(list(zip(lower, upper, strict=False)))
-
-
-class TContrastResults:
-    """Results from a t :term:`contrast` of coefficients in a parametric model.
-
-    The class does nothing.
-    It is a container for the results from T :term:`contrasts<contrast>`,
-    and returns the T-statistics when np.asarray is called.
-
-    """
-
-    def __init__(self, t, sd, effect, df_den=None):
-        if df_den is None:
-            df_den = np.inf
-        self.t = t
-        self.sd = sd
-        self.effect = effect
-        self.df_den = df_den
-
-    def __array__(self):
-        return np.asarray(self.t)
-
-    def __str__(self):
-        return (
-            "<T contrast: "
-            f"effect={self.effect}, "
-            f"sd={self.sd}, "
-            f"t={self.t}, "
-            f"df_den={self.df_den}>"
-        )
-
-
-class FContrastResults:
-    """Results from an F :term:`contrast` of coefficients \
-       in a parametric model.
-
-    The class does nothing.
-    It is a container for the results from F :term:`contrasts<contrast>`,
-    and returns the F-statistics when np.asarray is called.
-    """
-
-    def __init__(self, effect, covariance, F, df_num, df_den=None):
-        if df_den is None:
-            df_den = np.inf
-        self.effect = effect
-        self.covariance = covariance
-        self.F = F
-        self.df_den = df_den
-        self.df_num = df_num
-
-    def __array__(self):
-        return np.asarray(self.F)
-
-    def __str__(self):
-        return (
-            "<F contrast: "
-            f"F={self.F!r}, "
-            f"df_den={self.df_den}, "
-            f"df_num={self.df_num}>"
-        )

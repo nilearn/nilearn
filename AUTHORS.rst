@@ -65,6 +65,7 @@ Some other past or present contributors are:
 * `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
 * `Andrew Chen`_
 * `Andrés Hoyos Idrobo`_: Rakuten, France
+* `Aniket Singh Yadav`_: Galgotias University, India
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
 * `Anton Karpov`_
 * `Anupriya Kumari`_: Indian Institute of Technology, Roorkee, India
@@ -98,6 +99,7 @@ Some other past or present contributors are:
 * `Demian Wassermann`_: Inria, Saclay, France
 * `Derek Pisner`_: St. Petersburg, FL
 * `Dimitri Papadopoulos Orfanos`_: NeuroSpin, CEA, Université Paris-Saclay, Gif-sur-Yvette, France
+* `Donncha O'Toole`_
 * `Elizabeth DuPre`_: Stanford University, Stanford, California, USA
 * `Elvis Dohmatob`_: Facebook AI Research (FAIR)
 * `Eric Larson`_: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
@@ -205,6 +207,7 @@ Some other past or present contributors are:
 * `Prakhar Jain`_: RV College of Engineering, Bangalore, India
 * `Rahul Brito`_
 * `Raphael Meudec`_: Inria, Saclay, France
+* `Reyyi Shreyas`_
 * `Rishika Kapil`_: Thapar Institute of Engineering and Technology
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
 * `Robert Williamson`_
@@ -238,10 +241,12 @@ Some other past or present contributors are:
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_
+* `Venish Paneliya`_
 * `Victoria Shevchenko`_: Inria Saclay, Université Paris Cité, France
 * `Victoria McCray`_: Northeastern University, USA
 * `Vincent Michel`_: https://www.logilab.fr/
 * `Virgile Fritsch`_: Inria, Saclay, France
+* `Wolfgang Aura`_
 * `Xichun Xu`_: Oregon State University, Corvallis, Oregon, USA
 * `Yaroslav Halchenko`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Yasmin Mzayek`_: Inria, Saclay, France

@@ -6,7 +6,7 @@ import operator
 import time
 import warnings
 from pathlib import Path
-from typing import Literal, overload
+from typing import Literal, Self, overload
 
 import numpy as np
 import pandas as pd
@@ -618,7 +618,9 @@ class SecondLevelModel(BaseGLM):
         self._reset_report()
 
     @fill_doc
-    def fit(self, second_level_input, confounds=None, design_matrix=None):
+    def fit(
+        self, second_level_input, confounds=None, design_matrix=None
+    ) -> Self:
         """Fit the second-level :term:`GLM`.
 
         1. create design matrix
@@ -637,8 +639,8 @@ class SecondLevelModel(BaseGLM):
         check_params(self.__dict__)
         self.second_level_input_ = None
         self.confounds_ = None
-        self.labels_ = None
-        self.results_ = None
+        self.labels_: np.ndarray | None = None
+        self.results_: dict | None = None
 
         self._fit_cache()
 
@@ -692,6 +694,7 @@ class SecondLevelModel(BaseGLM):
                 self.second_level_input_, self.design_matrix_
             )
 
+        masker_type: Literal["nii", "surface", "multi_nii", "multi_surface"]
         masker_type = "nii"
         if not self._is_volume_glm() or isinstance(sample_map, SurfaceImage):
             masker_type = "surface"
