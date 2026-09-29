@@ -244,7 +244,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
-    radius : :obj:`float`, default=None
+    radius : :obj:`float` | None, default=None
         Indicates, in millimeters, the radius for the sphere around the seed.
         By default signal is extracted on a single voxel.
 
@@ -255,18 +255,24 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     allow_overlap : :obj:`bool`, default=False
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
+
     %(smoothing_fwhm)s
 
     %(standardize_none)s
 
     %(standardize_confounds)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
+
     %(detrend)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
     %(dtype)s
@@ -658,6 +664,21 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             return signals
         else:
             return np.atleast_1d(signals)
+
+    def get_feature_names_out(self, input_features=None) -> list[str]:
+        """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features : default=None
+            Only for sklearn API compatibility.
+        """
+        del input_features
+        radius_suffix = ""
+        if self.radius is not None:
+            radius_suffix = f"; r={np.round(self.radius, decimals=1)}mm"
+        seeds = np.round(np.asarray(self.seeds), decimals=1)
+        return [str(tuple(x)) + radius_suffix for x in seeds.tolist()]
 
     @fill_doc
     def inverse_transform(self, region_signals) -> Nifti1Image:
