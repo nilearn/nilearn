@@ -3,7 +3,7 @@
 import pytest
 
 from nilearn._base import NilearnBaseEstimator
-from nilearn._estimator_checks.nilearn_estimator_checks import (
+from nilearn._estimator_checks.nilearn_checks import (
     check_img_estimator_dict_unchanged,
     check_img_estimator_fit_check_is_fitted,
 )
