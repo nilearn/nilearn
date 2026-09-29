@@ -1730,29 +1730,37 @@ def test_plot_predicted_signal_and_residuals_no_matplotlib(fitted_model):
         )
 
     assert isinstance(result, pd.DataFrame)
-    assert set(result.columns) == {"observed", "predicted", "residuals"}
+    assert set(result.columns) == {
+        "(1, 1, 1); r=3.0mm observed",
+        "(1, 1, 1); r=3.0mm predicted",
+        "(1, 1, 1); r=3.0mm residuals",
+    }
 
 
 def test_get_predicted_signal_and_residuals(fitted_model):
     """_get_predicted_signal_and_residuals works without matplotlib."""
-    df = fitted_model._get_predicted_signal_and_residuals(coords=(1, 1, 1))
+    df, _ = fitted_model._get_predicted_signal_and_residuals(coords=(1, 1, 1))
 
     assert isinstance(df, pd.DataFrame)
-    assert set(df.columns) == {"observed", "predicted", "residuals"}
+    assert df.columns.to_list() == [
+        "(1, 1, 1); r=3.0mm observed",
+        "(1, 1, 1); r=3.0mm predicted",
+        "(1, 1, 1); r=3.0mm residuals",
+    ]
 
 
 def test_get_predicted_signal_and_residuals_multiple_coords(fitted_model):
     """_get_predicted_signal_and_residuals works with multiple coords."""
-    df = fitted_model._get_predicted_signal_and_residuals(
+    df, _ = fitted_model._get_predicted_signal_and_residuals(
         coords=[(1, 1, 1), (7, 7, 7)], radius=1.0
     )
 
     assert isinstance(df, pd.DataFrame)
-    assert set(df.columns) == {
-        "observed_0",
-        "predicted_0",
-        "residuals_0",
-        "observed_1",
-        "predicted_1",
-        "residuals_1",
-    }
+    assert df.columns.to_list() == [
+        "(1, 1, 1); r=1.0mm observed",
+        "(1, 1, 1); r=1.0mm predicted",
+        "(1, 1, 1); r=1.0mm residuals",
+        "(7, 7, 7); r=1.0mm observed",
+        "(7, 7, 7); r=1.0mm predicted",
+        "(7, 7, 7); r=1.0mm residuals",
+    ]
