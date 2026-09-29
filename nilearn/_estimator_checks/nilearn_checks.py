@@ -182,7 +182,6 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
         yield (clone(estimator), check_fit_returns_self)
         yield (clone(estimator), check_img_estimator_dtypes)
         yield (clone(estimator), check_img_estimator_dtypes_transform)
-        yield (clone(estimator), check_img_estimator_clean_dtype)
         yield (clone(estimator), check_img_estimator_dtype_bool)
         yield (clone(estimator), check_img_estimator_dict_unchanged)
         yield (clone(estimator), check_img_estimator_dont_overwrite_parameters)
@@ -196,6 +195,9 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
         yield (clone(estimator), check_img_estimator_standardization)
         yield (clone(estimator), check_img_estimator_verbose)
         yield (clone(estimator), check_nilearn_methods_sample_order_invariance)
+
+        if hasattr(estimator, "transform") and hasattr(estimator, "dtype"):
+            yield (clone(estimator), check_img_estimator_clean_dtype)
 
         if hasattr(estimator, "inverse_transform"):
             yield (
@@ -1776,11 +1778,6 @@ def check_img_estimator_clean_dtype(estimator_orig) -> None:
     parameters above (or that accepts ``confounds`` at transform time)
     is checked.
     """
-    if not hasattr(estimator_orig, "transform") or not hasattr(
-        estimator_orig, "dtype"
-    ):
-        return
-
     clean_attrs = (
         "standardize",
         "detrend",
