@@ -197,8 +197,6 @@ root_package = "nilearn"
 
 [[tool.importlinter.contracts]]
 ignore_imports = [
-    "nilearn.*.tests.* -> nilearn._utils.estimator_checks",  # allowed in tests
-    "nilearn._utils.estimator_checks -> nilearn.glm.*",  # allowed in tests
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
@@ -233,8 +231,6 @@ type = "layers"
 
 [[tool.importlinter.contracts]]
 ignore_imports = [
-    "nilearn.*.tests.* -> nilearn._utils.estimator_checks",  # allowed in tests
-    "nilearn._utils.estimator_checks -> nilearn.glm.*",  # allowed in tests
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
