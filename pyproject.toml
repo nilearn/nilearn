@@ -185,7 +185,8 @@ version-file = "nilearn/_version.py"
 exclude = [
     "nilearn/plotting/tests/baseline",
     "nilearn/maskers/tests/baseline",
-    "nilearn/glm/tests/baseline"
+    "nilearn/glm/tests/baseline",
+    "nilearn/_estimator_checks"
 ]
 packages = ["nilearn"]
 
