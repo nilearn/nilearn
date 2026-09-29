@@ -90,7 +90,6 @@ def test_ar_degenerate(X, Y):
     assert results.df_residuals == 31
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "model_cls, kwargs", [(OLSModel, {}), (ARModel, {"rho": 0.4})]
 )
