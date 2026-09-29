@@ -30,11 +30,17 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Use mesh faces, rather than adjacent vertex indices, when computing clusters for surface cluster-level inference (:gh:`6608` by `Donncha O'Toole`_).
+
 - :bdg-primary:`Doc` Use run-aware cross-validation in the Haxby multiclass decoding example to avoid splitting samples from the same run between training and validation sets (:gh:`6591` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-primary:`Doc` Fix documented defaults that did not match the signatures in :func:`~nilearn.datasets.fetch_atlas_smith_2009`, :func:`~nilearn.datasets.fetch_atlas_difumo`, :func:`~nilearn.datasets.fetch_atlas_schaefer_2018` and in several private helpers (:gh:`6582` by `Venish Paneliya`_).
 
 - :bdg-primary:`Doc` Replace the removed boolean values of ``standardize`` in code examples of the user guide and in the ``FirstLevelModel.standardize_`` docstring (:gh:`6597` by `Reyyi Shreyas`_).
+
+- :bdg-dark:`Code` Fix :meth:`~nilearn.decoding.Decoder.fit` logging ``The decoding model will be trained on N features`` twice per fit (:gh:`6614` by `Reyyi Shreyas`_).
+
+- :bdg-dark:`Code` Fix residual variance of :class:`~nilearn.glm.OLSModel` and :class:`~nilearn.glm.ARModel` being divided by the number of design columns instead of the design rank, which made t and F statistics too small for rank-deficient designs in :class:`~nilearn.glm.first_level.FirstLevelModel` and :class:`~nilearn.glm.second_level.SecondLevelModel` (:gh:`6611` by `Wolfgang Aura`_).
 
 
 Enhancements
@@ -48,6 +54,7 @@ Enhancements
 
 - :bdg-success:`API` :class:`~nilearn.utils.InputTags` is now part of the public API in :mod:`nilearn.utils`, so that third-party estimators can declare whether they accept Nifti and / or surface images (:gh:`6563` by `Aniket Singh Yadav`_).
 
+- :bdg-dark:`Code` Name columns of signals extracted as dataframes by :meth:`~maskers.NiftiSpheresMasker.transform` (:gh:`6599` by `Rémi Gau`_).
 
 Changes
 -------
