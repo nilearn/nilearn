@@ -1522,6 +1522,14 @@ class FirstLevelModel(BaseGLM):
                 "when initializing the `FirstLevelModel`-object."
             )
 
+        # Get observed, predicted, and residual time series
+        y_pred = self._get_element_wise_model_attribute(
+            "predicted", result_as_time_series=True
+        )
+        resid = self._get_element_wise_model_attribute(
+            "residuals", result_as_time_series=True
+        )
+
         if masker is None:
             if coords is None:
                 raise ValueError(
@@ -1533,29 +1541,20 @@ class FirstLevelModel(BaseGLM):
             masker = NiftiSpheresMasker(seeds=coords, radius=radius)
         if not masker.__sklearn_is_fitted__():
             masker.fit()
-        # Get observed, predicted, and residual time series
-        y_pred = self._get_element_wise_model_attribute(
-            "predicted", result_as_time_series=True
-        )
-        resid = self._get_element_wise_model_attribute(
-            "residuals", result_as_time_series=True
-        )
 
         # Extract time series for the observed, predicted, and residuals
         predicted_ts = masker.transform(y_pred[0])
         residuals_ts = masker.transform(resid[0])
         observed_ts = predicted_ts + residuals_ts
 
-        n_regions = predicted_ts.shape[1]
-
+        region_names = masker.get_feature_names_out()
         data = {}
-        for i in range(n_regions):
-            suffix = "" if n_regions == 1 else f"_{i}"
-            data[f"observed{suffix}"] = observed_ts[:, i]
-            data[f"predicted{suffix}"] = predicted_ts[:, i]
-            data[f"residuals{suffix}"] = residuals_ts[:, i]
+        for i in range(len(region_names)):
+            data[f"{region_names[i]} observed"] = observed_ts[:, i]
+            data[f"{region_names[i]} predicted"] = predicted_ts[:, i]
+            data[f"{region_names[i]} residuals"] = residuals_ts[:, i]
 
-        return pd.DataFrame(data)
+        return pd.DataFrame(data), masker
 
     def plot_predicted_signal_and_residuals(
         self,
@@ -1605,7 +1604,7 @@ class FirstLevelModel(BaseGLM):
         and residuals are only stored in that mode.
 
         """
-        timeseries_df = self._get_predicted_signal_and_residuals(
+        timeseries_df, masker = self._get_predicted_signal_and_residuals(
             coords=coords, masker=masker, radius=radius
         )
         if not is_matplotlib_installed():
@@ -1617,16 +1616,21 @@ class FirstLevelModel(BaseGLM):
             )
             return timeseries_df, None
 
-        n_regions = sum(1 for c in timeseries_df.columns if "observed" in c)
+        region_names = masker.get_feature_names_out()
 
         figs = []
-        for i in range(n_regions):
-            suffix = "" if n_regions == 1 else f"_{i}"
+        for i in range(len(region_names)):
             fig = self._plotting_pred_and_res(
-                observed_ts=timeseries_df[f"observed{suffix}"].values,
-                predicted_ts=timeseries_df[f"predicted{suffix}"].values,
-                residuals_ts=timeseries_df[f"residuals{suffix}"].values,
-                title_ref=f"Region {i}" if n_regions > 1 else None,
+                observed_ts=timeseries_df[
+                    f"{region_names[i]} observed"
+                ].values,
+                predicted_ts=timeseries_df[
+                    f"{region_names[i]} predicted"
+                ].values,
+                residuals_ts=timeseries_df[
+                    f"{region_names[i]} residuals"
+                ].values,
+                title_ref=region_names[i] if len(region_names) > 1 else None,
                 figsize=figsize,
                 close=not show,
             )
@@ -1634,7 +1638,7 @@ class FirstLevelModel(BaseGLM):
                 fig.show()
             figs.append(fig)
 
-        return timeseries_df, figs if n_regions > 1 else figs[0]
+        return timeseries_df, figs if len(region_names) > 1 else figs[0]
 
 
 def _check_events_file_uses_tab_separators(events_files):

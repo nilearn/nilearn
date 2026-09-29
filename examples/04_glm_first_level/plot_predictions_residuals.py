@@ -104,73 +104,11 @@ report = masker.generate_report()
 report
 
 # %%
-# Plot predicted and actual time series for 6 most significant clusters
-# ---------------------------------------------------------------------
-import matplotlib.pyplot as plt
-
-# colors for each of the clusters
-colors = ["blue", "navy", "purple", "magenta", "olive", "teal"]
-
-# get the predicted time series for each cluster, along with the residuals
-time_series_df, _ = fmri_glm.plot_predicted_signal_and_residuals(
-    coords=coords, masker=masker, show=False
-)
-
-# plot the time series and corresponding locations
-fig1, axs1 = plt.subplots(2, 6)
-for i in range(6):
-    # plotting time series
-    axs1[0, i].set_title(f"Cluster peak {coords[i]}\n")
-    axs1[0, i].plot(time_series_df[f"observed_{i}"], c=colors[i], lw=2)
-    axs1[0, i].plot(time_series_df[f"predicted_{i}"], c="orange", lw=2)
-    axs1[0, i].set_xlabel("Time")
-    axs1[0, i].set_ylabel("Signal intensity", labelpad=0)
-    # plotting image below the time series
-    roi_img = plot_stat_map(
-        z_map,
-        cut_coords=[coords[i][2]],
-        threshold=3.1,
-        figure=fig1,
-        axes=axs1[1, i],
-        display_mode="z",
-        colorbar=False,
-        bg_img=mean_img,
-    )
-    roi_img.add_markers([coords[i]], colors[i], 300)
-fig1.set_size_inches(24, 14)
-
-show()
-
-
-# %%
-# Get residuals
-# -------------
-
-resid = time_series_df[[f"residuals_{i}" for i in range(6)]].to_numpy()
-
-
-# %%
-# Plot distribution of residuals
-# ------------------------------
-# Note that residuals are not really distributed normally.
-fig2, axs2 = plt.subplots(2, 3, constrained_layout=True)
-
-axs2 = axs2.flatten()
-for i in range(6):
-    axs2[i].set_title(f"Cluster peak {coords[i]}\n")
-    axs2[i].hist(resid[:, i], color=colors[i])
-    print(f"Mean residuals: {resid[:, i].mean()}")
-
-fig2.set_size_inches(12, 7)
-
-show()
-
-# %%
-# Plot predicted vs observed time series together
-# -----------------------------------------------
-# We can actually plot the predicted and observed time series together for a
-# more direct comparison.
-_, fig = fmri_glm.plot_predicted_signal_and_residuals(
+# Plot predicted and time series of the most significant clusters
+# ---------------------------------------------------------------
+# We can plot the predicted and observed time series together
+# for a more direct comparison.
+time_series_df, fig = fmri_glm.plot_predicted_signal_and_residuals(
     coords=coords[0:2], masker=masker, show=True
 )
 
