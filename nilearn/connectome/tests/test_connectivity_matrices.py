@@ -598,6 +598,7 @@ def test_connectivity_measure_errors():
         )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
 )
@@ -622,6 +623,7 @@ def test_connectivity_measure_generic(
         assert is_spd(covs[k], decimal=7)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
 )
@@ -890,6 +892,7 @@ def test_connectivity_measure_check_inverse_transformation_discard_diag(
             conn_measure.inverse_transform(vectorized_connectivities)
 
 
+@pytest.mark.slow
 def test_connectivity_measure_inverse_transform_tangent(
     signals,
 ):
