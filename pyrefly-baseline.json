@@ -1,21 +1,6 @@
 {
   "errors": [
     {
-      "path": "nilearn/_utils/bids.py",
-      "name": "not-iterable",
-      "concise_description": "Type `None` is not iterable"
-    },
-    {
-      "path": "nilearn/_utils/bids.py",
-      "name": "bad-argument-type",
-      "concise_description": "Argument `float | int` is not assignable to parameter `value` with type `int` in function `list.index`"
-    },
-    {
-      "path": "nilearn/_utils/data_gen.py",
-      "name": "not-iterable",
-      "concise_description": "Type `None` is not iterable"
-    },
-    {
       "path": "nilearn/_utils/estimator_checks.py",
       "name": "bad-argument-type",
       "concise_description": "Argument `tuple[Unknown, Unknown]` is not assignable to parameter `object` with type `list[Unknown]` in function `list.append`"
@@ -71,26 +56,6 @@
       "concise_description": "Expected an iterable, got `Unknown | None`"
     },
     {
-      "path": "nilearn/glm/_base.py",
-      "name": "bad-assignment",
-      "concise_description": "`None` is not assignable to dict key `prefix` with type `str`"
-    },
-    {
-      "path": "nilearn/glm/_base.py",
-      "name": "bad-assignment",
-      "concise_description": "`None` is not assignable to dict key `prefix` with type `str`"
-    },
-    {
-      "path": "nilearn/glm/_base.py",
-      "name": "bad-assignment",
-      "concise_description": "`None` is not assignable to dict key `prefix` with type `str`"
-    },
-    {
-      "path": "nilearn/glm/_base.py",
-      "name": "bad-assignment",
-      "concise_description": "`None` is not assignable to dict key `prefix` with type `str`"
-    },
-    {
       "path": "nilearn/glm/first_level/first_level.py",
       "name": "bad-return",
       "concise_description": "Returned type `tuple[ndarray | ndarray[Unknown], dict[float, RegressionResults] | dict[Any, Unknown]]` is not assignable to declared return type `tuple[ndarray, dict[float | str, RegressionResults]]`"
@@ -104,21 +69,6 @@
       "path": "nilearn/glm/first_level/first_level.py",
       "name": "bad-argument-type",
       "concise_description": "Argument `Unknown | None` is not assignable to parameter `x` with type `Buffer | SupportsIndex | SupportsInt | SupportsTrunc | str` in function `int.__new__`"
-    },
-    {
-      "path": "nilearn/image/image.py",
-      "name": "not-iterable",
-      "concise_description": "Type `Path` is not iterable"
-    },
-    {
-      "path": "nilearn/image/image.py",
-      "name": "bad-argument-type",
-      "concise_description": "Argument `Iterable[Unknown] | SurfaceImage | Unknown` is not assignable to parameter `imgs` with type `SurfaceImage` in function `_compute_surface_mean`"
-    },
-    {
-      "path": "nilearn/image/image.py",
-      "name": "not-iterable",
-      "concise_description": "Type `SurfaceImage` is not iterable"
     },
     {
       "path": "nilearn/image/image.py",
@@ -169,26 +119,6 @@
       "path": "nilearn/masking.py",
       "name": "unsupported-operation",
       "concise_description": "`>` is not supported between `None` and `float`"
-    },
-    {
-      "path": "nilearn/mass_univariate/permuted_least_squares.py",
-      "name": "missing-attribute",
-      "concise_description": "Object of class `NoneType` has no attribute `inverse_transform`"
-    },
-    {
-      "path": "nilearn/mass_univariate/permuted_least_squares.py",
-      "name": "missing-attribute",
-      "concise_description": "Object of class `NoneType` has no attribute `mask_img_`"
-    },
-    {
-      "path": "nilearn/mass_univariate/permuted_least_squares.py",
-      "name": "missing-attribute",
-      "concise_description": "Object of class `NoneType` has no attribute `mask_img_`"
-    },
-    {
-      "path": "nilearn/mass_univariate/permuted_least_squares.py",
-      "name": "missing-attribute",
-      "concise_description": "Object of class `NoneType` has no attribute `mask_img_`"
     },
     {
       "path": "nilearn/plotting/displays/_axes.py",

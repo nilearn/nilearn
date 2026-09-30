@@ -21,11 +21,11 @@ from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import InputTags
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
 from nilearn.surface import SurfaceImage
+from nilearn.utils.tags import InputTags
 
 
 def _compute_weights(X, mask_img):

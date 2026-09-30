@@ -7,7 +7,9 @@ from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.colors import ListedColormap
+from matplotlib.figure import Figure
 from matplotlib.transforms import Bbox
 
 from nilearn._utils.docs import fill_doc
@@ -18,7 +20,15 @@ from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, get_data, new_img_like, reorder_img
 from nilearn.image.image import _check_fov
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
-from nilearn.nilearn_typing import NiimgLike, OutputFile
+from nilearn.nilearn_typing import (
+    BlackBg,
+    CbarTickFormat,
+    ColorBar,
+    NiimgLike,
+    OutputFile,
+    Transparency,
+    TransparencyRange,
+)
 from nilearn.plotting._engine_utils import create_colorbar_for_fig
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
@@ -60,8 +70,8 @@ class BaseSlicer:
     def __init__(
         self,
         cut_coords,
-        axes=None,
-        black_bg=False,
+        axes: Axes | None = None,
+        black_bg: BlackBg = False,
         brain_color=(0.5, 0.5, 0.5),
         **kwargs,
     ):
@@ -84,7 +94,7 @@ class BaseSlicer:
             "top": 0.05 * bb.height,
             "bottom": 0.05 * bb.height,
         }
-        self._init_axes(**kwargs)
+        self._init_axes(**kwargs)  # type: ignore[attr-defined]
 
     @property
     def brain_color(self):
@@ -231,11 +241,11 @@ class BaseSlicer:
         img,
         threshold=None,
         cut_coords=None,
-        figure=None,
-        axes=None,
-        black_bg=False,
+        figure: Figure | None = None,
+        axes: Axes | None = None,
+        black_bg: BlackBg = False,
         leave_space=False,
-        colorbar=False,
+        colorbar: ColorBar = False,
         brain_color=(0.5, 0.5, 0.5),
         **kwargs,
     ):
@@ -287,10 +297,10 @@ class BaseSlicer:
 
         cut_coords = cls.find_cut_coords(img, threshold, cut_coords)
 
-        if isinstance(axes, plt.Axes) and figure is None:
+        if isinstance(axes, Axes) and figure is None:
             figure = axes.figure
 
-        if not isinstance(figure, plt.Figure):
+        if not isinstance(figure, Figure):
             # Make sure that we have a figure
             figsize = cls._default_figsize[:]
 
@@ -306,7 +316,8 @@ class BaseSlicer:
             if leave_space:
                 figsize[0] += 3.4
             figure = plt.figure(figure, figsize=figsize, facecolor=facecolor)
-        if isinstance(axes, plt.Axes):
+
+        if isinstance(axes, Axes):
             assert axes.figure is figure, (
                 "The axes passed are not in the figure"
             )
@@ -406,12 +417,12 @@ class BaseSlicer:
         self,
         img,
         threshold=1e-6,
-        colorbar=False,
-        cbar_tick_format=DEFAULT_TICK_FORMAT,
+        colorbar: ColorBar = False,
+        cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
         cbar_vmin=None,
         cbar_vmax=None,
-        transparency=None,
-        transparency_range=None,
+        transparency: Transparency = None,
+        transparency_range: TransparencyRange = None,
         **kwargs,
     ) -> None:
         """Plot a 3D map in all the views.
@@ -458,6 +469,7 @@ class BaseSlicer:
             if the specified threshold is a negative number
 
         """
+        check_params(locals())
         check_threshold_not_negative(threshold)
 
         if colorbar and self._colorbar:
@@ -1872,7 +1884,7 @@ class BaseStackedSlicer(BaseSlicer):
         ------
         ValueError
             If `cut_coords` is not a number or a sequence of :obj:`float` or
-            :obj:`int` or `None`.
+            :obj:`int` or ``None``.
 
         """
         if cut_coords is None:
@@ -2444,7 +2456,7 @@ class MosaicSlicer(BaseSlicer):
 
         cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
                      :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
-                     `None`, default=None
+                     ``None``, default=None
             The world coordinates of the points where the cuts are performed.
 
             If `cut_coords` is not provided, 7 coordinates of cuts are
@@ -2632,7 +2644,7 @@ class MosaicSlicer(BaseSlicer):
         Parameters
         ----------
         cut_coords : :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
-                     `None`, default=None
+                     ``None``, default=None
             The positions of the crosses to draw.
             If ``None`` is passed, the ``MosaicSlicer``'s cut coordinates are
             used.

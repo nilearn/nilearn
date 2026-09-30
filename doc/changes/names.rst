@@ -103,6 +103,8 @@
 
 .. _Dimitri Papadopoulos Orfanos: https://github.com/DimitriPapadopoulos
 
+.. _Donncha O'Toole: https://github.com/dnncha
+
 .. _Elizabeth DuPre: https://elizabeth-dupre.com/
 
 .. _Elvis Dohmatob: https://dohmatob.github.io/
@@ -317,6 +319,8 @@
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
+.. _Reyyi Shreyas: https://github.com/reyyishreyas
+
 .. _Rishika Kapil: https://github.com/RishikaKaps
 
 .. _Robert Luke: https://github.com/rob-luke
@@ -392,6 +396,8 @@
 .. _Vincent Michel: https://github.com/vmichel
 
 .. _Virgile Fritsch: https://github.com/VirgileFritsch
+
+.. _Wolfgang Aura: https://github.com/wolfgang-aura
 
 .. _Xichun Xu: https://github.com/XichunXu
 

@@ -602,10 +602,10 @@ def test_fetch_files_overwrite(
 
     assert request_mocker.url_count == 1
     assert fil.exists()
-    assert not fil.read_text()
+    assert not fil.read_text(encoding="utf-8")
 
     # Modify content
-    fil.write_text("some content")
+    fil.write_text("some content", encoding="utf-8")
 
     # Don't overwrite existing file.
     fil = Path(

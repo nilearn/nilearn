@@ -1,39 +1,12 @@
+import string
+
 import numpy as np
 import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn.maskers import SurfaceLabelsMasker
-from nilearn.maskers.tests.conftest import sklearn_surf_label_img
 from nilearn.surface import SurfaceImage
-
-ESTIMATORS_TO_CHECK = [
-    SurfaceLabelsMasker(sklearn_surf_label_img()),
-    SurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
-]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
 
 
 def test_fit(surf_label_img):
@@ -714,3 +687,20 @@ def test_error_wrong_strategy(surf_label_img):
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, strategy="foo")
     with pytest.raises(ValueError, match="'strategy' must be one of"):
         masker.fit()
+
+
+def test_transform_as_dataframe_with_labels(
+    surf_three_labels_img, surf_img_2d, rng
+):
+    """Ensure proper name of dataframe columns."""
+    labels = rng.choice(
+        list(string.ascii_lowercase), size=(2,), replace=False
+    ).tolist()
+    masker = SurfaceLabelsMasker(
+        labels_img=surf_three_labels_img, labels=labels
+    ).fit()
+    masker.set_output(transform="pandas")
+
+    s = masker.transform(surf_img_2d(5))
+
+    assert s.columns.tolist() == labels

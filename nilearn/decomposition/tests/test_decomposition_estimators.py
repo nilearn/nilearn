@@ -4,12 +4,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_equal, assert_raises
 from sklearn import clone
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.decomposition import CanICA, DictLearning
 from nilearn.decomposition._multi_pca import _MultiPCA
@@ -20,27 +15,6 @@ from nilearn.decomposition.tests.conftest import (
     check_decomposition_estimator,
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-
-ESTIMATORS_TO_CHECK = [DictLearning(), CanICA()]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.flaky(reruns=10, reruns_delay=1)
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 @pytest.mark.slow
@@ -281,6 +255,7 @@ def test_transform_errors(
         est.transform(canica_data, confounds=confounds)
 
 
+@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
@@ -385,6 +360,7 @@ def test_single_subject_file(data_type, canica_img, estimator, tmp_path):
     est.transform(tmp_file)
 
 
+@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])

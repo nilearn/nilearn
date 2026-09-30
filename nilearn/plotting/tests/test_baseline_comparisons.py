@@ -478,6 +478,21 @@ def test_plot_surf_surface_colorbar_plotly(
 
 
 @pytest.mark.mpl_image_compare(tolerance=5)
+@mpl.rc_context({"axes.autolimit_mode": "data"})
+def test_plot_surf_colorbar_no_overlapping_ticks():
+    """Check colorbar tick labels do not overlap when 0 is close to vmin.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/6595
+    """
+    surf_img = load_fsaverage_data(
+        mesh="fsaverage5",
+        mesh_type="inflated",
+        data_type="thickness",
+    )
+    return plot_surf(surf_map=surf_img, title="fsaverage thickness")
+
+
+@pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("bg_on_data", [True, False])
 @pytest.mark.parametrize("symmetric_cmap", [True, False])
 @pytest.mark.parametrize("colorbar", [True, False])

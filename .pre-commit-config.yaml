@@ -50,6 +50,12 @@ repos:
         args: [--toml, pyproject.toml]
         additional_dependencies: [tomli]
 
+-   repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.29.0
+    hooks:
+    -   id: zizmor
+        args: [--fix=unsafe-only]
+
     # Format YAML files
 -   repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
     rev: 0.2.3
