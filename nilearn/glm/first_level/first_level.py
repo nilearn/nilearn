@@ -54,10 +54,7 @@ from nilearn.interfaces.bids.query import (
 )
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
-from nilearn.maskers import (
-    NiftiMasker,
-    SurfaceMasker,
-)
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import intersect_masks
 from nilearn.nilearn_typing import HrfModel, NiimgLike, Tr
@@ -1040,11 +1037,9 @@ class FirstLevelModel(BaseGLM):
         self._reporting_data = {
             "trial_types": [],
             "noise_model": self.noise_model,
-            "hrf_model": (
-                "finite impulse response"
-                if self.hrf_model == "fir"
-                else self.hrf_model
-            ),
+            "hrf_model": "finite impulse response"
+            if self.hrf_model == "fir"
+            else self.hrf_model,
             "drift_model": drift_model_str,
         }
 
