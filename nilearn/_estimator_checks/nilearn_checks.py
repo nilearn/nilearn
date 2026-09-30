@@ -1156,6 +1156,8 @@ def check_img_estimator_pickle(estimator_orig) -> None:
 
     check_methods = ["transform"]
 
+    input_data: list[Any | tuple[Any, Any]] = []
+
     input_data = [X] if isinstance(estimator, SearchLight) else [[X]]
 
     for method in ["predict", "decision_function"]:
