@@ -719,8 +719,6 @@ def check_refit(estimator_orig) -> None:
         return
 
     estimator = fit_estimator(estimator)
-
-    set_random_state(estimator)
     if isinstance(estimator, (NiftiLabelsMasker, SurfaceLabelsMasker)):
         # for label maskers, n_elements_ is a property
         # so we need to hack around
