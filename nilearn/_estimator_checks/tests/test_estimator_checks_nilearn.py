@@ -195,6 +195,11 @@ def test_check_estimator_count():
     )
 
 
+def test_expected_check_function_count():
+    """Test if the number of expected checks is correct."""
+    assert len(nilearn_check_estimator(estimators=_estimators())) == 1634
+
+
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=1, reruns_delay=2)
 @pytest.mark.parametrize(
@@ -204,8 +209,3 @@ def test_check_estimator_count():
 def test_check_estimator_nilearn(estimator, name, check):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
     check(estimator)
-
-
-def test_checks():
-    """Test if the number of expected checks is correct."""
-    assert len(nilearn_check_estimator(estimators=_estimators())) == 1634
