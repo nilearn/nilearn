@@ -685,7 +685,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             Coordinates of the voxel(s) or region center(s).
             Ignored if ``masker`` is provided.
 
-        mask : A Niimglike, :class:`~surface.SurfaceImage`, \
+        mask : A Niimg-like, :class:`~nilearn.surface.SurfaceImage`, \
                class:`~maskers.NiftiSpheresMasker`,  \
                class:`~maskers.NiftiLabelsMasker`,  \
                class:`~maskers.SurfaceLabelsMasker`,  \
@@ -812,7 +812,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             Coordinates of the voxel(s) or region center(s).
             Ignored if ``masker`` is provided.
 
-        mask : A Niimglike, :class:`~surface.SurfaceImage`, \
+        mask : A Niimg-like, :class:`~nilearn.surface.SurfaceImage`, \
                class:`~maskers.NiftiSpheresMasker`,  \
                class:`~maskers.NiftiLabelsMasker`,  \
                class:`~maskers.SurfaceLabelsMasker`,  \
