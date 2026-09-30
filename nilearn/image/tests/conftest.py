@@ -7,7 +7,7 @@ from nilearn import image
 
 
 @pytest.fixture
-def img_4d_ones_eye_default_header(img_4d_ones_eye):
+def img_4d_ones_eye_default_header(img_4d_ones_eye) -> Nifti1Image:
     """Return a 4D Nifti1Image with default header.
 
     The header is created by new_img_like and is not modified. The image is
@@ -21,7 +21,7 @@ def img_4d_ones_eye_default_header(img_4d_ones_eye):
 
 
 @pytest.fixture
-def img_4d_ones_eye_tr2(img_4d_ones_eye):
+def img_4d_ones_eye_tr2(img_4d_ones_eye) -> Nifti1Image:
     """Return a 4D Nifti1Image with otherwise default header, except TR 2.0.
 
     The header is the default one created by new_img_like, but the TR is
@@ -35,7 +35,7 @@ def img_4d_ones_eye_tr2(img_4d_ones_eye):
 
 
 @pytest.fixture
-def img_4d_mni_tr2(img_4d_mni):
+def img_4d_mni_tr2(img_4d_mni) -> Nifti1Image:
     """Return a 4D Nifti1Image with MNI affine and header, and TR 2.0.
 
     The header has the MNI affine, and the TR is changed to 2.0. The image is

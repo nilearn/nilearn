@@ -54,7 +54,7 @@ def is_spd(M: np.ndarray, decimal: int = 15) -> bool:
 
     Returns
     -------
-    answer : boolean
+    answer : :obj:`bool`
         True if matrix is symmetric positive definite, False otherwise.
 
     """

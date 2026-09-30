@@ -7,7 +7,8 @@ from typing import Any, Literal, get_args, get_origin
 
 import numpy as np
 
-import nilearn.typing as nilearn_typing
+from nilearn import nilearn_typing
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 
 
@@ -17,7 +18,7 @@ def check_threshold(
     percentile_func,
     name: str = "threshold",
     two_sided: bool = True,
-):
+) -> float:
     """Check if the given threshold is in correct format and within the limit.
 
     If threshold is string, this function returns score of the data calculated
@@ -87,7 +88,9 @@ def check_threshold(
             "or a string finishing with a percent sign"
         )
 
-    if threshold >= 0:
+    threshold = float(threshold)
+
+    if threshold >= 0.0:
         data = abs(data) if two_sided else np.extract(data >= 0, data)
 
         if percentile:
@@ -121,7 +124,7 @@ def check_threshold(
                 stacklevel=find_stack_level(),
             )
 
-    return threshold
+    return float(threshold)
 
 
 def check_run_sample_masks(n_runs: int, sample_masks: Any):
@@ -173,6 +176,8 @@ TYPE_MAPS = {
     "annotate": nilearn_typing.Annotate,
     "border_size": nilearn_typing.BorderSize,
     "bg_on_data": nilearn_typing.BgOnData,
+    "black_bg": nilearn_typing.BlackBg,
+    "cbar_tick_format": nilearn_typing.CbarTickFormat,
     "colorbar": nilearn_typing.ColorBar,
     "cluster_threshold": nilearn_typing.ClusterThreshold,
     "connected": nilearn_typing.Connected,
@@ -183,8 +188,6 @@ TYPE_MAPS = {
     "force_resample": nilearn_typing.ForceResample,
     "high_pass": nilearn_typing.HighPass,
     "hrf_model": nilearn_typing.HrfModel,
-    "keep_masked_labels": nilearn_typing.KeepMaskedLabels,
-    "keep_masked_maps": nilearn_typing.KeepMaskedMaps,
     "low_pass": nilearn_typing.LowPass,
     "lower_cutoff": nilearn_typing.LowerCutoff,
     "memory": nilearn_typing.MemoryLike,
@@ -192,8 +195,10 @@ TYPE_MAPS = {
     "n_jobs": nilearn_typing.NJobs,
     "n_perm": nilearn_typing.NPerm,
     "opening": nilearn_typing.Opening,
+    "output_file": nilearn_typing.OutputFile,
     "radiological": nilearn_typing.Radiological,
     "random_state": nilearn_typing.RandomState,
+    "resampling_interpolation": nilearn_typing.ResamplingInterpolation,
     "resolution": nilearn_typing.Resolution,
     "resume": nilearn_typing.Resume,
     "screening_percentile": nilearn_typing.ScreeningPercentile,
@@ -277,17 +282,31 @@ def check_params(fn_dict) -> None:
 def check_is_of_allowed_type(
     value: Any, type_to_check: tuple[Any] | Any, parameter_name: str
 ) -> None:
+    """Check that value is of requested type.
+
+    Ignore truthy / falsy so that:
+
+    check_is_of_allowed_type(True, (int), "foo") will fail.
+
+    """
     if not isinstance(type_to_check, tuple):
         type_to_check = (type_to_check,)
-    if not isinstance(value, type_to_check):
-        type_to_check_str = ", ".join([str(x) for x in type_to_check])
-        error_msg = (
-            f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
-            f"Got: '{value.__class__.__name__}'"
-        )
+    type_to_check_str = ", ".join([str(x) for x in type_to_check])
+    error_msg = (
+        f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
+        f"Got: '{value.__class__.__name__}'"
+    )
+    flat_types: list = []
+    for t in type_to_check:
+        args = get_args(t)
+        flat_types.extend(args or [t])
+    if (bool not in flat_types and isinstance(value, bool)) or not isinstance(
+        value, type_to_check
+    ):
         raise TypeError(error_msg)
 
 
+@fill_doc
 def check_reduction_strategy(strategy: str) -> None:
     """Check that the provided strategy is supported.
 

@@ -60,6 +60,8 @@ sym_links_datasets:
 	-rm -rf modules/description/
 	mkdir -p modules/description
 	cd ../nilearn/datasets/description && cp -l *.rst ../../../doc/modules/description
+	# fsaverage figures to doc folder
+	cp ../nilearn/plotting/tests/baseline/test_surface_fs_data_*-fsaverage*.png modules/description
 
 sym_links:
 	# Make sym-links to share the cache across various example directories

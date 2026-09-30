@@ -10,8 +10,8 @@ Input and output: neuroimaging data representation
 
 .. _loading_data:
 
-Inputing data: file names or image objects
-===========================================
+Inputting data: file names or image objects
+============================================
 
 File names and objects, 3D and 4D images
 -----------------------------------------

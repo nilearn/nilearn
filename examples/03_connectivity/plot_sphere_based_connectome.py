@@ -56,6 +56,7 @@ masker = NiftiSpheresMasker(
     radius=8,
     detrend=True,
     standardize_confounds=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
     t_r=dataset.t_r,
@@ -73,6 +74,11 @@ masker = NiftiSpheresMasker(
 func_filename = dataset.func[0]
 confounds_filename = dataset.confounds[0]
 
+# We also use set the output to be a pandas dataframe
+# instead of the default numpy array.
+
+time_series = masker.set_output(transform="pandas")
+
 time_series = masker.fit_transform(
     func_filename, confounds=[confounds_filename]
 )
@@ -89,17 +95,21 @@ report
 # %%
 # Display time series
 # -------------------
-import matplotlib.pyplot as plt
+from nilearn.plotting import show
 
-plt.figure(constrained_layout=True)
+columns_name_mapping = {
+    x: labels[i] for i, x in enumerate(time_series.columns)
+}
+time_series = time_series.rename(columns=columns_name_mapping)
 
-for time_serie, label in zip(time_series.T, labels, strict=False):
-    plt.plot(time_serie, label=label)
+time_series.plot(
+    title="Default Mode Network Time Series",
+    xlabel="Scan number",
+    ylabel="Normalized signal",
+)
 
-plt.title("Default Mode Network Time Series")
-plt.xlabel("Scan number")
-plt.ylabel("Normalized signal")
-plt.legend()
+show()
+
 
 # %%
 # Compute partial correlation matrix
@@ -113,9 +123,9 @@ from nilearn.connectome import ConnectivityMeasure
 connectivity_measure = ConnectivityMeasure(
     kind="partial correlation", verbose=1
 )
-partial_correlation_matrix = connectivity_measure.fit_transform([time_series])[
-    0
-]
+partial_correlation_matrix = connectivity_measure.fit_transform(
+    [time_series.to_numpy()]
+)[0]
 
 # %%
 # Display connectome
@@ -152,15 +162,17 @@ show()
 # for more details.
 from nilearn.plotting import view_connectome
 
-view = view_connectome(partial_correlation_matrix, dmn_coords)
+view = view_connectome(
+    partial_correlation_matrix, dmn_coords, node_labels=labels
+)
 
 # In a notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 view
 
 # %%
-
 # uncomment this to open the plot in a web browser:
+#
 # view.open_in_browser()
 
 # %%
@@ -204,6 +216,7 @@ spheres_masker = NiftiSpheresMasker(
     radius=5.0,
     detrend=True,
     standardize_confounds=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
     t_r=dataset.t_r,
@@ -244,7 +257,8 @@ print(f"Covariance matrix has shape {matrix.shape}.")
 #
 # We use `:func: nilearn.plotting.plot_matrix`
 # to visualize our correlation matrix
-# and display the graph of connections with `nilearn.plotting.plot_connectome`.
+# and display the graph of connections
+# with :func:`~nilearn.plotting.plot_connectome`.
 from nilearn.plotting import plot_matrix
 
 plot_matrix(
@@ -273,7 +287,7 @@ plot_connectome(
 # %%
 # Sometimes, the information in the correlation matrix is overwhelming and
 # aggregating edge strength from the graph would help. Use the function
-# `nilearn.plotting.plot_markers` to visualize this information.
+# :func:`~nilearn.plotting.plot_markers` to visualize this information.
 from nilearn.plotting import plot_markers
 
 # calculate normalized, absolute strength for each node
@@ -344,6 +358,7 @@ spheres_masker = NiftiSpheresMasker(
     radius=4.5,
     detrend=True,
     standardize_confounds=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
     t_r=dataset.t_r,

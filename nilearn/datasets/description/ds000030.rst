@@ -1,0 +1,35 @@
+.. _ds000030:
+
+ds000030
+========
+
+Access
+------
+See :func:`nilearn.datasets.fetch_openneuro_dataset`.
+
+Notes
+-----
+This dataset is the "UCLA Consortium for Neuropsychiatric Phenomics LA5c" dataset
+:footcite:p:`Poldrack2016`.
+
+This data focused on understanding the dimensional structure of memory
+and cognitive control (response inhibition) functions
+in both healthy individuals (130 subjects)
+and individuals with neuropsychiatric disorders
+including schizophrenia (50 subjects), bipolar disorder (49 subjects),
+and attention deficit/hyperactivity disorder (43 subjects).
+The dataset includes an extensive set of task-based fMRI assessments,
+resting fMRI, structural MRI, and high angular resolution diffusion MRI.
+
+References
+----------
+
+.. footbibliography::
+
+For more information on this dataset,
+see also https://openneuro.org/datasets/ds000030
+
+
+License
+-------
+CC0

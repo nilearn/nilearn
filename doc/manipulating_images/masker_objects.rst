@@ -192,7 +192,7 @@ preparation::
          high_variance_confounds=False, low_pass=None, mask_args=None,
          mask_img=None, mask_strategy='background',
          memory=None, memory_level=1, reports=True,
-         runs=None, smoothing_fwhm=None, standardize=False,
+         runs=None, smoothing_fwhm=None, standardize=None,
          standardize_confounds=True, t_r=None,
          target_affine=None, target_shape=None, verbose=0)
 
@@ -260,7 +260,7 @@ properties, before conversion to :term:`voxel` signals.
     It is not activated by default in :class:`NiftiMasker` but is recommended
     in almost all scenarios.
 
-  * More complex confounds, measured during the acquision, can be removed
+  * More complex confounds, measured during the acquisition, can be removed
     by passing them to :meth:`NiftiMasker.transform`. If the dataset
     provides a confounds file, just pass its path to the masker. For
     :term:`fMRIPrep` outputs, one can use

@@ -107,7 +107,7 @@ class OrthoProjector(OrthoSlicer):
         node_coords,
         node_color,
         node_kwargs,
-    ):
+    ) -> None:
         """Perform the input checks and raise different types of errors.
 
         ``_check_inputs_add_graph`` is called inside the method ``add_graph``.
@@ -228,7 +228,7 @@ class OrthoProjector(OrthoSlicer):
             nodes at one.
 
         %(colorbar)s
-            Default=False.
+            default=False.
         """
         # set defaults
         edge_kwargs = edge_kwargs or {}

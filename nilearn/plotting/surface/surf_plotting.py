@@ -1,6 +1,7 @@
 """Functions for surface visualization."""
 
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -9,6 +10,14 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, get_data
+from nilearn.nilearn_typing import (
+    CbarTickFormat,
+    ColorBar,
+    OutputFile,
+    Title,
+    Vmax,
+    Vmin,
+)
 from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
@@ -44,22 +53,22 @@ def plot_surf(
     bg_map=None,
     hemi=DEFAULT_HEMI,
     view=None,
-    engine=DEFAULT_ENGINE,
+    engine: Literal["matplotlib", "plotly"] = DEFAULT_ENGINE,
     cmap=None,
-    symmetric_cmap=None,
-    colorbar=True,
+    symmetric_cmap: bool | None = None,
+    colorbar: ColorBar = True,
     avg_method=None,
     threshold=None,
     alpha=None,
-    bg_on_data=False,
-    vmin=None,
-    vmax=None,
+    bg_on_data: bool = False,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     cbar_vmin=None,
     cbar_vmax=None,
-    cbar_tick_format="auto",
-    title=None,
+    cbar_tick_format: CbarTickFormat = "auto",
+    title: Title = None,
     title_font_size=None,
-    output_file=None,
+    output_file: OutputFile = None,
     axes=None,
     figure=None,
 ):
@@ -70,7 +79,7 @@ def plot_surf(
     Parameters
     ----------
     %(surf_mesh)s
-        If `None` is passed, then ``surf_map`` must be a
+        If ``None`` is passed, then ``surf_map`` must be a
         :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
         :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
@@ -82,7 +91,7 @@ def plot_surf(
         .annot, .label) or a Numpy array with a value for each :term:`vertex`
         of the `surf_mesh`, or a :obj:`~nilearn.surface.SurfaceImage`
         instance.
-        If `None` is passed for ``surf_mesh``, then ``surf_map`` must be a
+        If ``None`` is passed for ``surf_mesh``, then ``surf_map`` must be a
         :obj:`~nilearn.surface.SurfaceImage` instance and its mesh will be
         used for plotting.
 
@@ -125,7 +134,7 @@ def plot_surf(
                 kaleido.get_chrome_sync()
 
     %(cmap)s
-        If `None`, ``matplotlib`` default will be chosen.
+        If ``None``, ``matplotlib`` default will be chosen.
 
     symmetric_cmap : :obj:`bool`, default=None
         Whether to use a symmetric colormap or not.
@@ -135,15 +144,16 @@ def plot_surf(
             engine.
 
         When using ``plotly`` as engine, ``symmetric_cmap`` will default to
-        `False` if `None` is passed.
+        `False` if ``None`` is passed.
 
         .. nilearn_versionadded:: 0.9.0
 
         .. nilearn_versionchanged:: 0.12.0
             Default value changed to None.
+            If  ``None`` is passed, it will default to ``False``.
 
     %(colorbar)s
-        Default=True.
+        default=True.
 
     %(avg_method)s
 
@@ -152,10 +162,10 @@ def plot_surf(
             engine.
 
         When using ``matplotlib`` as engine, ``avg_method`` will default to
-        ``"mean"`` if `None` is passed.
+        ``"mean"`` if ``None`` is passed.
 
     %(threshold)s
-        Default=None
+        default=None
 
     alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
@@ -168,7 +178,7 @@ def plot_surf(
             engine.
 
         When using ``matplotlib`` as engine, ``alpha`` will default to `"auto"`
-        if `None` is passed.
+        if ``None`` is passed.
 
     %(bg_on_data)s
 
@@ -178,7 +188,7 @@ def plot_surf(
 
     cbar_vmin : :obj:`float` or None, default=None
         Lower bound for the colorbar.
-        If `None`, the value will be set from the data.
+        If ``None``, the value will be set from the data.
 
         .. note::
             This option is currently only implemented for the ``matplotlib``
@@ -186,14 +196,14 @@ def plot_surf(
 
     cbar_vmax : :obj:`float` or None, default=None
         Upper bound for the colorbar.
-        If `None`, the value will be set from the data.
+        If ``None``, the value will be set from the data.
 
         .. note::
             This option is currently only implemented for the ``matplotlib``
             engine.
 
     %(cbar_tick_format)s
-        Default="auto" which will select:
+        default="auto" which will select:
 
         - `'%%.2g'` (scientific notation) with ``matplotlib`` engine.
         - `'.1f'` (rounded floats) with ``plotly`` engine.
@@ -210,7 +220,7 @@ def plot_surf(
             engine.
 
         When using ``plotly`` as engine, ``title_font_size`` will default to
-        `18` if `None` is passed.
+        `18` if ``None`` is passed.
 
         .. nilearn_versionadded:: 0.9.0
 
@@ -220,7 +230,7 @@ def plot_surf(
         The axes instance to plot to. The projection must be `"3d"` (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': "3d"})`,
         where axes should be passed.).
-        If `None`, a new axes is created.
+        If ``None``, a new axes is created.
 
         .. note::
             This option is currently only implemented for the ``matplotlib``
@@ -254,6 +264,24 @@ def plot_surf(
         brain surfaces.
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_surf, show
+        >>> from nilearn.datasets import load_fsaverage_data
+        >>>
+        >>> surf_img = load_fsaverage_data(
+        ...     mesh="fsaverage5",
+        ...     mesh_type="inflated",
+        ...     data_type="thickness",
+        ... )
+        >>>
+        >>> fig = plot_surf(surf_map=surf_img, title="fsaverage thickness")
+        >>>
+        >>> show()
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -301,8 +329,8 @@ def plot_surf_contours(
     colors=None,
     legend=False,
     cmap="tab20",
-    title=None,
-    output_file=None,
+    title: Title = None,
+    output_file: OutputFile = None,
     axes=None,
     figure=None,
     **kwargs,
@@ -342,12 +370,13 @@ def plot_surf_contours(
     levels : :obj:`list` of :obj:`int`, or None, default=None
         A list of indices of the regions that are to be outlined.
         Every index needs to correspond to one index in ``roi_map``.
-        If `None`, all regions in ``roi_map`` are used.
+        If ``None``, all regions in ``roi_map`` are used.
 
     labels : :obj:`list` of :obj:`str` or None, or None, default=None
         A list of labels for the individual regions of interest.
-        Provide `None` as list entry to skip showing the label of that region.
-        If `None`, no labels are used.
+        Provide ``None`` as list entry
+        to skip showing the label of that region.
+        If ``None``, no labels are used.
 
     colors : :obj:`list` of matplotlib color names or RGBA values, or None, \
         default=None
@@ -357,7 +386,7 @@ def plot_surf_contours(
         Whether to plot a legend of region's labels.
 
     %(cmap)s
-        Default='tab20'.
+        default='tab20'.
 
     %(title)s
 
@@ -367,7 +396,7 @@ def plot_surf_contours(
         The axes instance to plot to. The projection must be `"3d"` (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': "3d"})`,
         where axes should be passed.).
-        If `None`, uses axes from figure if available, else creates new axes.
+        If ``None``, uses axes from figure if available, else creates new axes.
 
     %(figure)s
 
@@ -416,20 +445,20 @@ def plot_surf_stat_map(
     bg_map=None,
     hemi=DEFAULT_HEMI,
     view=None,
-    engine=DEFAULT_ENGINE,
+    engine: Literal["matplotlib", "plotly"] = DEFAULT_ENGINE,
     cmap=DEFAULT_DIVERGING_CMAP,
-    colorbar=True,
+    colorbar: ColorBar = True,
     avg_method=None,
     threshold=None,
     alpha=None,
-    bg_on_data=False,
-    vmin=None,
-    vmax=None,
+    bg_on_data: bool = False,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     symmetric_cbar="auto",
-    cbar_tick_format="auto",
-    title=None,
+    cbar_tick_format: CbarTickFormat = "auto",
+    title: Title = None,
     title_font_size=None,
-    output_file=None,
+    output_file: OutputFile = None,
     axes=None,
     figure=None,
     **kwargs,
@@ -503,7 +532,7 @@ def plot_surf_stat_map(
         .. note::
             This function uses a symmetric colorbar for the statistical map.
 
-        Default=True.
+        default=True.
 
     %(avg_method)s
 
@@ -517,7 +546,7 @@ def plot_surf_stat_map(
         .. nilearn_versionadded:: 0.10.3
 
     %(threshold)s
-        Default=None
+        default=None
 
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not the stat_map).
@@ -538,10 +567,10 @@ def plot_surf_stat_map(
     %(symmetric_cbar)s
 
     %(cbar_tick_format)s
-        Default="auto" which will select:
+        default="auto" which will select:
 
-            - '%%.2g' (scientific notation) with ``matplotlib`` engine.
-            - '.1f' (rounded floats) with ``plotly`` engine.
+        - '%%.2g' (scientific notation) with ``matplotlib`` engine.
+        - '.1f' (rounded floats) with ``plotly`` engine.
 
         .. nilearn_versionadded:: 0.7.1
 
@@ -581,6 +610,29 @@ def plot_surf_stat_map(
     nilearn.plotting.plot_surf: For brain surface visualization.
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_surf_stat_map, show
+        >>> from nilearn.datasets import load_fsaverage_data
+        >>>
+        >>> surf_img = load_fsaverage_data(
+        ...     mesh="fsaverage5",
+        ...     mesh_type="inflated",
+        ...     data_type="thickness",
+        ... )
+        >>>
+        >>> fig = plot_surf_stat_map(
+        ...     stat_map=surf_img,
+        ...     title="fsaverage thickness",
+        ...     vmin=0,
+        ...     cmap="inferno",
+        ... )
+        >>>
+        >>> show()
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -639,16 +691,16 @@ def plot_img_on_surf(
     hemispheres=None,
     views=None,
     cmap=DEFAULT_DIVERGING_CMAP,
-    colorbar=True,
+    colorbar: ColorBar = True,
     threshold=None,
-    bg_on_data=False,
-    inflate=False,
-    vmin=None,
-    vmax=None,
+    bg_on_data: bool = False,
+    inflate: bool = False,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     symmetric_cbar="auto",
-    cbar_tick_format="%i",
-    title=None,
-    output_file=None,
+    cbar_tick_format: CbarTickFormat = "%i",
+    title: Title = None,
+    output_file: OutputFile = None,
     **kwargs,
 ):
     """Plot multiple views of plot_surf_stat_map \
@@ -692,17 +744,17 @@ def plot_img_on_surf(
         Will default to ``['lateral', 'medial']`` if ``None`` is passed.
 
     %(cmap)s
-        Default="RdBu_r".
+        default="RdBu_r".
 
     %(colorbar)s
 
         .. note::
             This function uses a symmetric colorbar for the statistical map.
 
-        Default=True.
+        default=True.
 
     %(threshold)s
-        Default=None
+        default=None
 
     %(bg_on_data)s
 
@@ -738,6 +790,20 @@ def plot_img_on_surf(
 
     nilearn.plotting.plot_surf_stat_map : For info on kwargs options
         accepted by plot_img_on_surf.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_img_on_surf, show
+        >>> from nilearn.datasets import load_sample_motor_activation_image
+        >>>
+        >>> motor_activation_image = load_sample_motor_activation_image()
+        >>>
+        >>> fig = plot_img_on_surf(motor_activation_image)
+        >>>
+        >>> show()
 
     """
     check_params(locals())
@@ -814,19 +880,19 @@ def plot_surf_roi(
     bg_map=None,
     hemi=DEFAULT_HEMI,
     view=None,
-    engine=DEFAULT_ENGINE,
+    engine: Literal["matplotlib", "plotly"] = DEFAULT_ENGINE,
     cmap="gist_ncar",
-    colorbar=True,
+    colorbar: ColorBar = True,
     avg_method=None,
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    vmin=None,
-    vmax=None,
-    cbar_tick_format="auto",
-    title=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
+    cbar_tick_format: CbarTickFormat = "auto",
+    title: Title = None,
     title_font_size=None,
-    output_file=None,
+    output_file: OutputFile = None,
     axes=None,
     figure=None,
     **kwargs,
@@ -904,10 +970,10 @@ def plot_surf_roi(
 
 
     %(cmap_lut)s
-        Default='gist_ncar'.
+        default='gist_ncar'.
 
     %(colorbar)s
-        Default=True
+        default=True
 
     %(avg_method)s
 
@@ -919,7 +985,7 @@ def plot_surf_roi(
         `avg_method` will default to ``"median"`` if ``None`` is passed.
 
     %(threshold)s
-        Default=None
+        default=None
 
         .. note::
             By default, the regions that are labeled 0 are not thresholded.
@@ -944,7 +1010,7 @@ def plot_surf_roi(
     %(vmax)s
 
     %(cbar_tick_format)s
-        Default="auto" which defaults to integers format:
+        default="auto" which defaults to integers format:
 
             - "%%i" for ``matplotlib`` engine.
             - "." for ``plotly`` engine.

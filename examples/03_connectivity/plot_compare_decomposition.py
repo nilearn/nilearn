@@ -3,10 +3,10 @@ Deriving spatial maps from group fMRI data using ICA and Dictionary Learning
 ============================================================================
 
 Various approaches exist to derive spatial maps or networks from
-group fmr data. The methods extract distributed brain regions that
+group :term:`fMRI` data. The methods extract distributed brain regions that
 exhibit similar :term:`BOLD` fluctuations over time. Decomposition
 methods allow for generation of many independent maps simultaneously
-without the need to provide a priori information (e.g. seeds or priors.)
+without the need to provide a priori information (e.g. seeds or priors).
 
 This example will apply two popular decomposition methods, :term:`ICA` and
 :term:`Dictionary learning`, to :term:`fMRI` data measured while children
@@ -63,29 +63,29 @@ with warnings.catch_warnings():
     warnings.filterwarnings(action="ignore", category=ConvergenceWarning)
     canica.fit(func_filenames)
 
-# Retrieve the independent components in brain space. Directly
-# accessible through attribute `components_img_`.
-canica_components_img = canica.components_img_
-# components_img is a Nifti Image object, and can be saved to a file with
-# the following lines:
-from pathlib import Path
-
-output_dir = Path.cwd() / "results" / "plot_compare_decomposition"
-output_dir.mkdir(exist_ok=True, parents=True)
-print(f"Output will be saved to: {output_dir}")
-canica_components_img.to_filename(output_dir / "canica_resting_state.nii.gz")
-
 
 # %%
-# To visualize we plot the outline of all components on one figure
+# Visualize the results
+# .....................
+#
+# To visualize,
+# we retrieve the independent components in brain space
+# directly accessible through attribute `components_img_`.
+# We then plot the outline of all ICA components on one figure.
 from nilearn.plotting import plot_prob_atlas
 
-# Plot all ICA components together
+canica_components_img = canica.components_img_
+
 plot_prob_atlas(canica_components_img, title="All ICA components")
 
 
 # %%
-# Finally, we plot the map for each :term:`ICA` component separately
+# Finally, we plot the map for each :term:`ICA` component separately.
+#
+# .. note::
+#
+#   The following code block will generate many figures.
+#
 from nilearn.image import iter_img
 from nilearn.plotting import plot_stat_map, show
 
@@ -100,8 +100,8 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
         colorbar=False,
     )
 
-
 show()
+
 
 # %%
 # Compare :term:`CanICA` to dictionary learning
@@ -111,7 +111,7 @@ show()
 # and usually cleaner than :term:`ICA`. Here, we will compare networks built
 # with :term:`CanICA` to networks built with :term:`Dictionary learning`.
 #
-# For more detailse see :footcite:t:`Mensch2016`.
+# For more details see :footcite:t:`Mensch2016`.
 #
 
 
@@ -130,22 +130,15 @@ dict_learning = DictLearning(
     n_jobs=2,
 )
 
-print("[Example] Fitting dictionary learning model")
 dict_learning.fit(func_filenames)
-print("[Example] Saving results")
-# Grab extracted components umasked back to Nifti image.
-# Note: For older versions, less than 0.4.1. components_img_
-# is not implemented. See Note section above for details.
-dictlearning_components_img = dict_learning.components_img_
-dictlearning_components_img.to_filename(
-    output_dir / "dictionary_learning_resting_state.nii.gz"
-)
 
 
 # %%
 # Visualize the results
+# .....................
 #
 # First plot all DictLearning components together
+dictlearning_components_img = dict_learning.components_img_
 plot_prob_atlas(
     dictlearning_components_img, title="All DictLearning components"
 )
@@ -153,6 +146,11 @@ plot_prob_atlas(
 
 # %%
 # One plot of each component
+#
+# .. note::
+#
+#   The following code block will generate many figures.
+#
 
 for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
     plot_stat_map(
@@ -165,13 +163,16 @@ for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
         colorbar=False,
     )
 
+
 # %%
-# Estimate explained variance per component and plot using matplotlib
+# Estimate explained variance per component and plot using matplotlib.
 #
-# The fitted object `dict_learning` can be used
-# to calculate the score per component
+# The fitted object ``dict_learning`` can be used
+# to calculate the score per component.
 scores = dict_learning.score(func_filenames, per_component=True)
 
+
+# %%
 # Plot the scores
 import numpy as np
 from matplotlib import pyplot as plt
@@ -188,14 +189,16 @@ plt.gca().xaxis.set_major_formatter(FormatStrFormatter("%.3f"))
 
 show()
 
+
 # %%
 # .. note::
 #
-#     To see how to extract subject-level timeseries' from regions
+#     To see how to extract subject-level timeseries from regions
 #     created using :term:`Dictionary learning`, see :ref:`example Regions
 #     extraction using dictionary learning and functional connectomes
 #     <sphx_glr_auto_examples_03_connectivity\
 #     _plot_extract_regions_dictlearning_maps.py>`.
+
 
 # %%
 # References

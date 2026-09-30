@@ -7,12 +7,13 @@ on: [status]
 jobs:
     circleci_artifacts_redirector_job:
         runs-on: ubuntu-latest
+        if: "${{ github.event.context == 'ci/circleci: host_docs' }}"
         name: Run CircleCI artifacts redirector
         permissions:
             statuses: write
         steps:
         -   name: GitHub Action step
-            uses: scientific-python/circleci-artifacts-redirector-action@v1
+            uses: scientific-python/circleci-artifacts-redirector-action@5d358ff96e96429a5c64a969bb4a574555439f4f # v1
             with:
                 repo-token: ${{ secrets.GITHUB_TOKEN }}
                 api-token: ${{ secrets.CIRCLE_CI_TOKEN }}

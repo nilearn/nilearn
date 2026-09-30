@@ -44,7 +44,7 @@ from nilearn.datasets.tests._testing import list_to_archive
 
 
 @pytest.fixture(autouse=True)
-def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
+def temp_nilearn_data_dir(tmp_path_factory, monkeypatch) -> None:
     """Monkeypatch user home directory and NILEARN_DATA env variable.
 
     This ensures that tests that use nilearn.datasets will not load datasets
@@ -66,7 +66,7 @@ def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def request_mocker(monkeypatch):
+def request_mocker(monkeypatch) -> "Sender":
     """Monkeypatch requests and urllib functions for sending requests.
 
     This ensures that test functions do not retrieve data from the network, but

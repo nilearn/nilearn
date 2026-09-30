@@ -33,23 +33,19 @@ Design matrix: event-based and time series-based
 Event-based
 -----------
 
-To create an event-based design matrix, information about the trial type, onset time and duration of the
+To create an event-based design matrix,
+information about the trial type, onset time, and duration of the
 events in the experiment are necessary.
-This can be provided by the user, or be part of the dataset
-if using a :term:`BIDS`-compatible dataset or one of the nilearn dataset fetcher functions like
-:func:`nilearn.datasets.fetch_spm_multimodal_fmri`,
-:func:`nilearn.datasets.fetch_language_localizer_demo_dataset`...
+This can be provided by the user, or included as part of the dataset
+if using a :term:`BIDS`-compatible dataset or one of the nilearn
+dataset fetcher functions such as
+:func:`nilearn.datasets.fetch_spm_multimodal_fmri` or
+:func:`nilearn.datasets.fetch_language_localizer_demo_dataset`.
 
 .. note::
 
     Events with a duration of 0 seconds will be modeled by a 'delta function'
     of infinitesimal small duration.
-
-Refer to the examples below for usage under the different scenarios:
-  * User-defined: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_design_matrix.py`
-  * Using an OpenNEURO dataset: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_bids_features.py`
-  * Using nilearn fetcher functions: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_spm_multimodal_faces.py`
-  * Advanced beta series models: :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py`
 
 To ascertain that the sequence of events provided to the first level model is accurate, Nilearn provides an
 event visualization function called :func:`nilearn.plotting.plot_event()`.
@@ -73,6 +69,80 @@ This is generally a good practice to follow before proceeding with the analysis:
 
 .. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_design_matrix_001.png
    :target: ../auto_examples/04_glm_first_level/plot_design_matrix.html#sphx-glr-auto-examples-04-glm-first-level-models-plot-design-matrix-py
+
+
+Beta-series
+...........
+
+Beta-series models fit trial-wise conditions, which allow users to create
+"time series" of these trial-wise maps, which can be substituted for the
+typical time series used in :term:`resting-state`
+:term:`functional connectivity` analyses.
+
+Generally, these models are most useful for event-related task designs,
+while other modeling approaches,
+such as Psychophysiological Interactions (PPIs),
+tend to perform better in block designs, depending on the type of analysis.
+See :footcite:t:`Cisler2014` for more information about this idea
+in the context of :term:`functional connectivity` analyses.
+
+Two of the most well-known beta-series modeling methods are
+Least Squares-All (LSA) (:footcite:t:`Rissman2004`) and
+Least Squares-Separate (LSS)
+(:footcite:t:`Mumford2012,Turner2012`).
+
+In LSA, a single :term:`GLM` is run, in which each trial of each condition of
+interest is separated out as its own column within the design matrix.
+By contrast, in LSS, each trial of each condition of interest has its
+own :term:`GLM`,
+in which the targeted trial receives its own column within the design matrix,
+but everything else remains the same as the standard model.
+Trials are then looped across, with many GLMs are fitted,
+and the :term:`Parameter Estimate` map extracted from each :term:`GLM`
+are used to build the LSS beta-series.
+
+.. image:: ../auto_examples/07_advanced/images/sphx_glr_plot_beta_series_004.png
+   :target: ../auto_examples/07_advanced/plot_beta_series.html#sphx-glr-auto-examples-07-advanced-plot-beta-series-py
+
+
+.. topic:: Choosing the right beta-series model for your analysis
+
+    We have chosen not to systematically reproduce analyses comparing beta-series
+    modeling approaches in Nilearn's documentation;
+    however, we do incorporate recommendations from the literature.
+    Rather than taking these recommendations at face value, please refer back
+    to the original publications and any potential updates to the literature,
+    when possible.
+
+    First, as mentioned above, according to :footcite:t:`Cisler2014`,
+    beta-series models are most appropriate for event-related task designs.
+    For block designs, a PPI model is better suited---at least for
+    functional connectivity analyses.
+
+    Other factors to consider when choosing between LSA and LSS are discussed in
+    :footcite:t:`Mumford2012` and :footcite:t:`Abdulrahman2016`.
+    In particular, :footcite:t:`Mumford2012` suggests that LSS is better
+    suited for fast event-related designs (i.e., ones with short inter-trial
+    intervals),
+    while :footcite:t:`Abdulrahman2016` finds that LSA performs better
+    than LSS when trial variability is greater than scan noise,
+    even in fast designs.
+
+    Thus,
+    the decision between LSA and LSS should be based on at least
+    three factors: inter-trial variability, scan noise,
+    and stimulus onset timing.
+
+
+For more examples on event-related designs, see the examples below for detailed usage
+under the different scenarios:
+
+* User-defined: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_design_matrix.py`
+* Using a :term:`BIDS`-formatted
+  dataset from `OpenNeuro <https://openneuro.org>`_:
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_bids_features.py`
+* Using nilearn fetcher functions: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_spm_multimodal_faces.py`
+* Beta-series models: :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py`
 
 
 Time series-based

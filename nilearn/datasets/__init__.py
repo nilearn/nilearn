@@ -20,8 +20,7 @@ from nilearn.datasets.atlas import (
     fetch_coords_power_2011,
     fetch_coords_seitzman_2018,
 )
-
-from .func import (
+from nilearn.datasets.func import (
     fetch_abide_pcp,
     fetch_adhd,
     fetch_development_fmri,
@@ -45,12 +44,12 @@ from .func import (
     patch_openneuro_dataset,
     select_from_index,
 )
-from .neurovault import (
+from nilearn.datasets.neurovault import (
     fetch_neurovault,
     fetch_neurovault_auditory_computation_task,
     fetch_neurovault_ids,
 )
-from .struct import (
+from nilearn.datasets.struct import (
     GM_MNI152_FILE_PATH,
     MNI152_FILE_PATH,
     WM_MNI152_FILE_PATH,
@@ -67,7 +66,7 @@ from .struct import (
     load_mni152_wm_mask,
     load_mni152_wm_template,
 )
-from .utils import get_data_dirs
+from nilearn.datasets.utils import get_data_dirs
 
 __all__ = [
     "GM_MNI152_FILE_PATH",  # not in the doc or used in the codebase

@@ -9,7 +9,6 @@ import numpy as np
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.tags import is_glm
 from nilearn.maskers import (
     MultiNiftiMasker,
     MultiSurfaceMasker,
@@ -17,26 +16,27 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers._mixin import _MultiMixin
+from nilearn.utils.tags import is_glm
 
 
 def get_params(
-    cls: type[
+    class_type: type[
         NiftiMasker | SurfaceMasker | MultiNiftiMasker | MultiSurfaceMasker
     ],
     instance: NilearnBaseEstimator,
-    ignore: None | list[str] = None,
+    ignore: list[str] | None = None,
 ) -> dict[str, Any]:
     """Retrieve the initialization parameters corresponding to a class.
 
     This helper function retrieves the parameters of function __init__ for
-    class 'cls' and returns the value for these parameters in object
+    class 'class_type' and returns the value for these parameters in object
     'instance'.
     When using a composition pattern (e.g. with a NiftiMasker class),
     it is useful to forward parameters from one instance to another.
 
     Parameters
     ----------
-    cls : class
+    class_type : class
         The class that gives us the list of parameters we are interested in.
 
     instance : object, instance of NilearnBaseEstimator
@@ -55,7 +55,7 @@ def get_params(
     if ignore is not None:
         _ignore.update(ignore)
 
-    param_names = cls._get_param_names()
+    param_names = class_type._get_param_names()
 
     params = {}
     for param_name in param_names:
@@ -90,7 +90,7 @@ def check_embedded_masker(
 
     Parameters
     ----------
-    instance : object, instance of NilearnBaseEstimator
+    estimator : object, instance of NilearnBaseEstimator
         The object that gives us the values of the parameters
 
     masker_type : {"multi_nii", "nii", "surface", "multi_surface"}
@@ -200,12 +200,5 @@ def check_embedded_masker(
     if mask is not None and hasattr(mask, "mask_img_"):
         # Allow free fit of returned mask
         masker_instance.mask_img = mask.mask_img_
-
-    # TODO (nilearn >= 0.15.0) remove if and elif
-    # avoid some FutureWarning the user cannot affect
-    if masker_instance.standardize is False:
-        masker_instance.standardize = None
-    elif masker_instance.standardize is True:
-        masker_instance.standardize = "zscore_sample"
 
     return masker_instance

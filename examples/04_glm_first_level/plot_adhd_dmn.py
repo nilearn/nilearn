@@ -34,6 +34,10 @@ from nilearn.maskers import NiftiSpheresMasker
 # Prepare data and analysis parameters
 # ------------------------------------
 # Prepare the data.
+#
+# For more information
+# see the :ref:`dataset description <adhd_dataset>`.
+#
 adhd_dataset = fetch_adhd(n_subjects=1)
 
 # Prepare seed
@@ -47,6 +51,7 @@ seed_masker = NiftiSpheresMasker(
     [pcc_coords],
     radius=10,
     detrend=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
     t_r=adhd_dataset.t_r,

@@ -4,65 +4,17 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    check_estimator,
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn._utils.helpers import is_windows_platform
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
-
-ESTIMATORS_TO_CHECK = [NiftiSpheresMasker(seeds=[(1, 1, 1)])]
-
-if SKLEARN_LT_1_6:
-
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def test_seed_extraction(rng, affine_eye):
     """Test seed extraction."""
     data = rng.random((3, 3, 3, 5))
     img = Nifti1Image(data, affine_eye)
-    masker = NiftiSpheresMasker([(1, 1, 1)], standardize=None)
+    masker = NiftiSpheresMasker([(1, 1, 1)])
 
     # Test the fit
     masker.fit()
@@ -73,6 +25,27 @@ def test_seed_extraction(rng, affine_eye):
     assert_array_equal(s[:, 0], data[1, 1, 1])
 
 
+@pytest.mark.ai_generated
+def test_seed_extraction_as_dataframe(rng, affine_eye):
+    """Test seed extraction: ensure proper name of dataframe columns."""
+    masker = NiftiSpheresMasker([(1, 1.598645, -1 / 3), (5, 5, 5)])
+    masker.set_output(transform="pandas")
+
+    data = rng.random((20, 20, 20, 5))
+    img = Nifti1Image(data, affine_eye)
+
+    s = masker.fit_transform(img)
+
+    assert s.columns.to_list() == ["(1.0, 1.6, -0.3)", "(5.0, 5.0, 5.0)"]
+
+    # same but with a radius and testing proper rounding
+    masker = NiftiSpheresMasker([(1, 1, 1), (5, 5, 5)], radius=2.55)
+    masker.set_output(transform="pandas")
+    s = masker.fit_transform(img)
+
+    assert s.columns.to_list() == ["(1, 1, 1); r=2.6mm", "(5, 5, 5); r=2.6mm"]
+
+
 def test_sphere_extraction(rng, affine_eye):
     """Test sphere extraction."""
     seed = (1, 1, 1)
@@ -81,7 +54,7 @@ def test_sphere_extraction(rng, affine_eye):
 
     img = Nifti1Image(data, affine_eye)
 
-    masker = NiftiSpheresMasker([seed], radius=1, standardize=None)
+    masker = NiftiSpheresMasker([seed], radius=1)
 
     masker.fit()
 
@@ -102,9 +75,7 @@ def test_sphere_extraction(rng, affine_eye):
     mask_img[1, :, :] = 1
     mask_img = Nifti1Image(mask_img, affine_eye)
 
-    masker = NiftiSpheresMasker(
-        [seed], radius=1, mask_img=mask_img, standardize=None
-    )
+    masker = NiftiSpheresMasker([seed], radius=1, mask_img=mask_img)
     masker.fit()
     s = masker.transform(img)
 
@@ -126,7 +97,7 @@ def test_anisotropic_sphere_extraction(rng, affine_eye):
 
     img = Nifti1Image(data, affine_eye)
 
-    masker = NiftiSpheresMasker([seed], radius=1, standardize=None)
+    masker = NiftiSpheresMasker([seed], radius=1)
 
     # Test the fit
     masker.fit()
@@ -147,9 +118,7 @@ def test_anisotropic_sphere_extraction(rng, affine_eye):
 
     mask_img = Nifti1Image(mask_img, affine=affine_2)
 
-    masker = NiftiSpheresMasker(
-        [seed], radius=1, mask_img=mask_img, standardize=None
-    )
+    masker = NiftiSpheresMasker([seed], radius=1, mask_img=mask_img)
     masker.fit()
     s = masker.transform(img)
 
@@ -173,22 +142,22 @@ def test_overlap(rng, affine_eye):
     seeds = [(0, 0, 0), (2, 2, 2)]
 
     overlapping_masker = NiftiSpheresMasker(
-        seeds, radius=1, allow_overlap=True, standardize=None
+        seeds, radius=1, allow_overlap=True
     )
     overlapping_masker.fit_transform(fmri_img)
 
     overlapping_masker = NiftiSpheresMasker(
-        seeds, radius=2, allow_overlap=True, standardize=None
+        seeds, radius=2, allow_overlap=True
     )
     overlapping_masker.fit_transform(fmri_img)
 
     noverlapping_masker = NiftiSpheresMasker(
-        seeds, radius=1, allow_overlap=False, standardize=None
+        seeds, radius=1, allow_overlap=False
     )
     noverlapping_masker.fit_transform(fmri_img)
 
     noverlapping_masker = NiftiSpheresMasker(
-        seeds, radius=2, allow_overlap=False, standardize=None
+        seeds, radius=2, allow_overlap=False
     )
 
     with pytest.raises(ValueError, match="Overlap detected"):
@@ -211,10 +180,7 @@ def test_small_radius(rng):
     seed = (1.4, 1.4, 1.4)
 
     masker = NiftiSpheresMasker(
-        [seed],
-        radius=0.1,
-        mask_img=Nifti1Image(mask, affine),
-        standardize=None,
+        [seed], radius=0.1, mask_img=Nifti1Image(mask, affine)
     )
     spheres_data = masker.fit_transform(Nifti1Image(data, affine))
     masker.inverse_transform(spheres_data)
@@ -224,10 +190,7 @@ def test_small_radius(rng):
     mask[1, 1, 0] = 1
 
     masker = NiftiSpheresMasker(
-        [seed],
-        radius=0.1,
-        mask_img=Nifti1Image(mask, affine),
-        standardize=None,
+        [seed], radius=0.1, mask_img=Nifti1Image(mask, affine)
     )
 
     with pytest.raises(ValueError, match="These spheres are empty"):
@@ -240,10 +203,7 @@ def test_small_radius(rng):
 
     # Inverse transform should still work with a masker larger radius
     masker = NiftiSpheresMasker(
-        [seed],
-        radius=1.6,
-        mask_img=Nifti1Image(mask, affine),
-        standardize=None,
+        [seed], radius=1.6, mask_img=Nifti1Image(mask, affine)
     )
     masker.fit(Nifti1Image(data, affine))
     masker.inverse_transform(spheres_data)
@@ -263,28 +223,25 @@ def test_is_nifti_spheres_masker_give_nans(rng, affine_eye):
 
     # Interaction of seed with nans
     seed = [(7, 7, 7)]
-    masker = NiftiSpheresMasker(seeds=seed, radius=2.0, standardize=None)
+    masker = NiftiSpheresMasker(seeds=seed, radius=2.0)
 
     assert not np.isnan(np.sum(masker.fit_transform(img)))
 
     # When mask_img is provided, the seed interacts within the brain, so no nan
     mask = np.ones((9, 9, 9))
     mask_img = Nifti1Image(mask, affine_eye)
-    masker = NiftiSpheresMasker(
-        seeds=seed, radius=2.0, mask_img=mask_img, standardize=None
-    )
+    masker = NiftiSpheresMasker(seeds=seed, radius=2.0, mask_img=mask_img)
 
     assert not np.isnan(np.sum(masker.fit_transform(img)))
 
 
-@pytest.mark.slow
 def test_inverse_transform(rng, affine_eye):
     """Applying the sphere_extraction example from above backwards."""
     data = rng.random((3, 3, 3, 5))
 
     img = Nifti1Image(data, affine_eye)
 
-    masker = NiftiSpheresMasker([(1, 1, 1)], radius=1, standardize=None)
+    masker = NiftiSpheresMasker([(1, 1, 1)], radius=1)
 
     # Test the fit
     masker.fit()
@@ -299,9 +256,7 @@ def test_inverse_transform(rng, affine_eye):
     mask_img[1, :, :] = 1
     mask_img = Nifti1Image(mask_img, affine_eye)
 
-    masker = NiftiSpheresMasker(
-        [(1, 1, 1)], radius=1, mask_img=mask_img, standardize=None
-    )
+    masker = NiftiSpheresMasker([(1, 1, 1)], radius=1, mask_img=mask_img)
     masker.fit()
     s = masker.transform(img)
 

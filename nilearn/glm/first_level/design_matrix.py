@@ -48,6 +48,7 @@ from nilearn.glm.first_level.hemodynamic_models import (
     compute_regressor,
     orthogonalize,
 )
+from nilearn.nilearn_typing import HrfModel
 from nilearn.signal import create_cosine_drift
 
 ######################################################################
@@ -134,6 +135,7 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     return drift, names
 
 
+@fill_doc
 def _convolve_regressors(
     events,
     hrf_model,
@@ -234,16 +236,16 @@ def _convolve_regressors(
 def make_first_level_design_matrix(
     frame_times,
     events=None,
-    hrf_model="glover",
+    hrf_model: HrfModel = "glover",
     drift_model="cosine",
     high_pass=0.01,
     drift_order=1,
     fir_delays=None,
-    add_regs=None,
+    add_regs: np.ndarray | pd.DataFrame | None = None,
     add_reg_names=None,
     min_onset=-24,
     oversampling=50,
-):
+) -> pd.DataFrame:
     """Generate a design matrix from the input parameters.
 
     Parameters
@@ -327,6 +329,36 @@ def make_first_level_design_matrix(
         holding the computed design matrix, the index being the frames_times
         and each column a regressor.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pandas import DataFrame
+    >>> from nilearn.glm.first_level import make_first_level_design_matrix
+    >>> frame_times = np.arange(9)
+    >>> onsets = np.arange(9)
+    >>> duration = np.ones(9)
+    >>> trial_type = [
+    ...  "ET_0", "ET_0", "ET_0", "ET_1", "ET_1", "ET_1", "ET_2", "ET_2", "ET_2"
+    ... ]
+    >>> events = DataFrame({
+    ...     "trial_type": trial_type,
+    ...     "onset": onsets,
+    ...     "duration": duration})
+    >>> design_matrix = make_first_level_design_matrix(
+    ...     frame_times,
+    ...     events)
+    >>> design_matrix.round(decimals=3)
+        ET_0   ET_1   ET_2  constant
+    0  0.000  0.000  0.000       1.0
+    1  0.001  0.000  0.000       1.0
+    2  0.022  0.000  0.000       1.0
+    3  0.135  0.000  0.000       1.0
+    4  0.378  0.001  0.000       1.0
+    5  0.688  0.022  0.000       1.0
+    6  0.910  0.135  0.000       1.0
+    7  0.934  0.378  0.001       1.0
+    8  0.771  0.688  0.022       1.0
+
     """
     check_params(locals())
     if fir_delays is None:
@@ -335,20 +367,21 @@ def make_first_level_design_matrix(
     # check that additional regressor specification is correct
     n_add_regs = 0
     if add_regs is not None:
+        add_regs_as_array: np.ndarray
         if isinstance(add_regs, pd.DataFrame):
-            add_regs_ = add_regs.to_numpy()
+            add_regs_as_array = add_regs.to_numpy()
             add_reg_names = add_regs.columns.tolist()
         else:
-            add_regs_ = np.atleast_2d(add_regs)
+            add_regs_as_array = np.atleast_2d(add_regs)
 
-        if np.any(np.isnan(add_regs_.ravel())):
+        if np.any(np.isnan(add_regs_as_array.ravel())):
             raise ValueError("Extra regressors contain NaN values.")
 
-        n_add_regs = add_regs_.shape[1]
-        assert add_regs_.shape[0] == np.size(frame_times), (
+        n_add_regs = add_regs_as_array.shape[1]
+        assert add_regs_as_array.shape[0] == np.size(frame_times), (
             "Incorrect specification of additional regressors: "
-            f"length of regressors provided: {add_regs_.shape[0]}, number of "
-            f"time-frames: {np.size(frame_times)}."
+            f"length of regressors provided: {add_regs_as_array.shape[0]}, "
+            f"number of time-frames: {np.size(frame_times)}."
         )
 
     # check that additional regressor names are well specified
@@ -368,17 +401,25 @@ def make_first_level_design_matrix(
     if events is not None:
         events = check_and_load_tables(events, "events")[0]
         # create the condition-related regressors
-        if isinstance(hrf_model, str):
-            hrf_model = hrf_model.lower()
+        hrf_model_ = (
+            hrf_model.lower() if isinstance(hrf_model, str) else hrf_model
+        )
         matrix, names = _convolve_regressors(
-            events, hrf_model, frame_times, fir_delays, min_onset, oversampling
+            events=events,
+            hrf_model=hrf_model_,
+            frame_times=frame_times,
+            fir_delays=fir_delays,
+            min_onset=min_onset,
+            oversampling=oversampling,
         )
 
     # step 2: additional regressors
     if add_regs is not None:
         # add user-supplied regressors and corresponding names
         matrix = (
-            np.hstack((matrix, add_regs)) if matrix is not None else add_regs
+            np.hstack((matrix, add_regs_as_array))
+            if matrix is not None
+            else add_regs_as_array
         )
         names += add_reg_names
 
@@ -401,13 +442,15 @@ def make_first_level_design_matrix(
     return design_matrix
 
 
-def check_design_matrix(design_matrix):
+def check_design_matrix(
+    design_matrix: pd.DataFrame,
+) -> tuple[pd.Index, np.ndarray, list[str]]:
     """Check that the provided DataFrame is indeed a valid design matrix \
     descriptor, and returns a triplet of fields.
 
     Parameters
     ----------
-    design matrix : :obj:`pandas.DataFrame`
+    design_matrix : :obj:`pandas.DataFrame`
         Describes a design matrix.
 
     Returns
@@ -421,6 +464,27 @@ def check_design_matrix(design_matrix):
     names : array of shape (n_events,), dtype='f'
         Per-event onset time (in seconds)
 
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from nilearn.glm.first_level import check_design_matrix
+    >>>
+    >>> # Create a mock design matrix.
+    >>> design_matrix = pd.DataFrame(
+    ...     data={"col1": [1, 2], "col2": [3, 4]},
+    ...     index=[3, 4],
+    ... )
+    >>>
+    >>> # Check the design matrix.
+    >>> frame_times, matrix, names = check_design_matrix(design_matrix)
+    >>> frame_times
+    Index([3, 4], dtype='int64')
+    >>> matrix
+    array([[1, 3],
+           [2, 4]])
+    >>> names
+    ['col1', 'col2']
+
     """
     if len(design_matrix.columns) == 0:
         raise ValueError("The design_matrix dataframe cannot be empty.")
@@ -430,7 +494,9 @@ def check_design_matrix(design_matrix):
     return frame_times, matrix, names
 
 
-def make_second_level_design_matrix(subjects_label, confounds=None):
+def make_second_level_design_matrix(
+    subjects_label, confounds=None
+) -> pd.DataFrame:
     """Set up a second level design.
 
     Construct a design matrix with an intercept and subject specific confounds.

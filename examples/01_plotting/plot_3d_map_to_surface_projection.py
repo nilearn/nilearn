@@ -293,6 +293,11 @@ show()
 # :func:`~nilearn.plotting.view_surf` or
 # :func:`~nilearn.plotting.view_img_on_surf` that give
 # more interactive visualizations in a web browser.
+#
+# For :func:`~nilearn.plotting.view_surf`,
+# there are 2 available plotting engines:
+# plotly (the default) and niivue.
+#
 # See :ref:`interactive-surface-plotting` for more details.
 from nilearn.plotting import view_surf
 
@@ -303,6 +308,7 @@ view = view_surf(
     bg_map=fsaverage_sulcal,
     hemi=hemi,
     title="3D visualization in a web browser",
+    engine="plotly",
 )
 
 # In a notebook, if ``view`` is the output of a cell,
@@ -312,6 +318,20 @@ view
 # If plotly is not installed or the code is run in script mode,
 # it is still possible to have interactive visualization in the
 # browser by uncommenting the below line.
+# view.open_in_browser()
+
+# %%
+# Now let's see it with niivue.
+view = view_surf(
+    surf_mesh=fsaverage_meshes["inflated"],
+    surf_map=surface_image,
+    threshold="90%",
+    bg_map=fsaverage_sulcal,
+    hemi=hemi,
+    title="3D visualization in a web browser",
+    engine="niivue",
+)
+view
 # view.open_in_browser()
 
 # %%

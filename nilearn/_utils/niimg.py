@@ -8,11 +8,13 @@ from warnings import warn
 import numpy as np
 from nibabel import Nifti1Image, is_proxy, load, spatialimages
 
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.numpy_conversions import get_target_dtype
 
 
-def _get_data(img) -> np.ndarray:
+def _get_data(img: Nifti1Image) -> np.ndarray:
     # copy-pasted from
     # https://github.com/nipy/nibabel/blob/de44a10/nibabel/dataobj_images.py#L204
     #
@@ -45,11 +47,11 @@ def safe_get_data(
     img : Nifti image/object
         Image to get data.
 
-    ensure_finite : bool
+    ensure_finite : :obj:`bool`
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
-    copy_data : bool, default=False
+    copy_data : :obj:`bool`, default=False
         If true, the returned data is a copy of the img data.
 
     Returns
@@ -74,7 +76,7 @@ def has_non_finite(data: np.ndarray) -> tuple[bool, np.ndarray]:
     Besides boolean value, return the mask.
     """
     non_finite_mask = ~np.isfinite(data)
-    has_not_finite = non_finite_mask.any()
+    has_not_finite = bool(non_finite_mask.any())
     return has_not_finite, non_finite_mask
 
 
@@ -96,32 +98,7 @@ def ensure_finite_data(
     return data
 
 
-def _get_target_dtype(dtype, target_dtype):
-    """Return a new dtype if conversion is needed.
-
-    Parameters
-    ----------
-    dtype : dtype
-        Data type of the original data
-
-    target_dtype : {None, dtype, "auto"}
-        If None, no conversion is required. If a type is provided, the
-        function will check if a conversion is needed. The "auto" mode will
-        automatically convert to int32 if dtype is discrete and float32 if it
-        is continuous.
-
-    Returns
-    -------
-    dtype : dtype
-        The data type toward which the original data should be converted.
-    """
-    if target_dtype is None:
-        return None
-    if target_dtype == "auto":
-        target_dtype = np.int32 if dtype.kind == "i" else np.float32
-    return None if target_dtype == dtype else target_dtype
-
-
+@fill_doc
 def load_niimg(niimg, dtype=None):
     """Load a niimg, check if it is a nibabel SpatialImage and cast if needed.
 
@@ -154,7 +131,7 @@ def load_niimg(niimg, dtype=None):
     # avoid loading data if dtype is None
     if dtype is not None:
         img_data = _get_data(niimg)
-        target_dtype = _get_target_dtype(img_data.dtype, dtype)
+        target_dtype = get_target_dtype(img_data.dtype, dtype)
 
         if target_dtype is not None:
             copy_header = niimg.header is not None
@@ -180,9 +157,13 @@ def is_binary_niimg(
         See :ref:`extracting_data`.
         Image to test.
 
+    block_size : :obj:`int`, default = 1_000_000
+
+    accept_non_finite : :obj:`bool`, default = True
+
     Returns
     -------
-    is_binary : Boolean
+    is_binary : :obj:`bool`
         True if binary, False otherwise.
 
     """
@@ -227,40 +208,48 @@ def repr_niimgs(niimgs, shorten=True):
     Parameters
     ----------
     niimgs : image or collection of images
-        nibabel SpatialImage to repr.
+        nibabel SpatialImage or SurfaceImage to repr.
 
-    shorten : boolean, default=True
+    shorten : :obj:`bool`, default=True
         If True, filenames with more than 20 characters will be
         truncated, and lists of more than 3 file names will be
         printed with only first and last element.
 
     Returns
     -------
-    repr : str
+    repr : :obj:`str`
         String representation of the image.
     """
     # Simple string case
     if isinstance(niimgs, (str, Path)):
         return _short_repr(niimgs, shorten=shorten)
+
+    # SurfaceImage imports repr_niimgs, so import locally to avoid a cycle.
+    from nilearn.surface.surface import SurfaceImage
+
+    if isinstance(niimgs, SurfaceImage):
+        return repr(niimgs)
+
     # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
         # Maximum number of elements to be displayed
         # Note: should be >= 3 to make sense...
         list_max_display = 3
-        if shorten and len(niimgs) > list_max_display:
-            tmp = ",\n         ...\n ".join(
-                repr_niimgs(niimg, shorten=shorten)
-                for niimg in [niimgs[0], niimgs[-1]]
-            )
-            return f"[{tmp}]"
-        elif len(niimgs) > list_max_display:
-            tmp = ",\n ".join(
-                repr_niimgs(niimg, shorten=shorten) for niimg in niimgs
-            )
-            return f"[{tmp}]"
+        if len(niimgs) > list_max_display:
+            if shorten:
+                tmp = ",\n         ...\n ".join(
+                    repr_niimgs(niimg, shorten=shorten)
+                    for niimg in [niimgs[0], niimgs[-1]]
+                )
+            else:
+                tmp = ",\n ".join(
+                    repr_niimgs(niimg, shorten=shorten) for niimg in niimgs
+                )
+            return f"[\n {tmp},\n]"
         else:
             tmp = [repr_niimgs(niimg, shorten=shorten) for niimg in niimgs]
-            return f"[{', '.join(tmp)}]"
+            return f"[\n {', '.join(tmp)},\n]"
+
     # Nibabel objects have a 'get_filename'
     try:
         filename = niimgs.get_filename()

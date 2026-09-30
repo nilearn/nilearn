@@ -187,21 +187,21 @@ def random_walker(
         consecutive integers, the labels array will be transformed so that
         labels are consecutive.
 
-    beta : float, default=130
+    beta : :obj:`float`, default=130
         Penalization coefficient for the random walker motion
         (the greater `beta`, the more difficult the diffusion).
 
-    tol : float, default=1e-3
+    tol : :obj:`float`, default=1e-3
         Tolerance to achieve when solving the linear system, in
         cg' mode.
 
-    copy : bool, default=True
+    copy : :obj:`bool`, default=True
         If copy is False, the `labels` array will be overwritten with
         the result of the segmentation. Use copy=False if you want to
         save on memory.
 
     spacing : iterable of floats, default=None
-        Spacing between voxels in each spatial dimension. If `None`, then
+        Spacing between voxels in each spatial dimension. If ``None``, then
         the spacing between pixels/voxels in each dimension is assumed 1.
 
     Returns

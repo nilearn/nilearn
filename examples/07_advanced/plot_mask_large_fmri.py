@@ -51,6 +51,10 @@ file paths.
 # Here we will create a "large" fMRI image by fetching 6 subjects'
 # fMRI images via the :func:`~nilearn.datasets.fetch_adhd`
 # function, concatenating them and then saving to a file.
+#
+# For more information
+# see the :ref:`dataset description <adhd_dataset>`.
+#
 
 from pathlib import Path
 
@@ -126,7 +130,7 @@ mask_paths = create_masks(fmri_path, N_REGIONS)
 # This is the most user-friendly way to extract data from an fMRI image as it
 # makes it easy to standardize, smooth, detrend, etc. the data.
 #
-# We will first wrap the :func:`nilearn.maskers.NiftiMasker.fit_transform`
+# We will first wrap the :meth:`~nilearn.maskers.NiftiMasker.fit_transform`
 # within a function so that it is more readable and easier to use.
 # We will then define another function that would mask the fMRI image using
 # multiple masks in parallel using the :mod:`joblib` package. As mentioned

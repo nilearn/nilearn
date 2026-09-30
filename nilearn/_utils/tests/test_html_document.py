@@ -38,7 +38,10 @@ def test_open_in_browser(monkeypatch):
     monkeypatch.setattr(webbrowser, "open", opener)
     doc = html_document.HTMLDocument("hello")
     doc.open_in_browser()
-    assert opener.content == b"hello"
+    assert opener.content == (
+        b'<iframe srcdoc="hello" width="800" '
+        b'height="800" frameBorder="0"></iframe>'
+    )
 
 
 @pytest.mark.thread_unsafe
@@ -58,7 +61,10 @@ def test_open_in_browser_file(tmp_path, monkeypatch):
     file_path = tmp_path / "doc.html"
     doc = html_document.HTMLDocument("hello")
     doc.open_in_browser(file_name=str(file_path))
-    assert file_path.read_text("utf-8") == "hello"
+    assert file_path.read_text("utf-8") == (
+        '<iframe srcdoc="hello" width="800" '
+        'height="800" frameBorder="0"></iframe>'
+    )
     opener.assert_called_once_with(f"file://{file_path}")
 
 

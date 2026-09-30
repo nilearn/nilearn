@@ -10,7 +10,10 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._assets import get_template
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting._engine_utils import colorscale, to_color_strings
 from nilearn.plotting.js_plotting_utils import encode, mesh_to_plotly
@@ -106,6 +109,7 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
     return to_color_strings(colors)
 
 
+@fill_doc
 def _prepare_lines_metadata(
     adjacency_matrix, coords, threshold, cmap, symmetric_cmap
 ):
@@ -124,7 +128,7 @@ def _prepare_lines_metadata(
         If it is a number only connections of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%", and only connections of amplitude above the
+        e.g. "25.3%%", and only connections of amplitude above the
         given percentile will be shown.
 
     %(cmap)s
@@ -218,7 +222,7 @@ def _get_connectome(
     }
 
 
-def _make_connectome_html(connectome_info):
+def _make_connectome_html(connectome_info) -> ConnectomeView:
     plot_info = {"connectome": connectome_info}
     mesh = fetch_surf_fsaverage()
     for hemi in ["pial_left", "pial_right"]:
@@ -241,7 +245,7 @@ def view_connectome(
     node_coords,
     edge_threshold=None,
     edge_cmap=DEFAULT_DIVERGING_CMAP,
-    symmetric_cmap=True,
+    symmetric_cmap: bool = True,
     linewidth=6.0,
     node_color="auto",
     node_size=3.0,
@@ -250,7 +254,8 @@ def view_connectome(
     colorbar_fontsize=25,
     title=None,
     title_fontsize=25,
-):
+    node_labels=None,
+) -> ConnectomeView:
     """Insert a 3d plot of a connectome into an HTML page.
 
     Parameters
@@ -269,7 +274,7 @@ def view_connectome(
         If it is a number only connections of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%%", and only connections of amplitude above the
+        e.g. "25.3%%", and only the edges with a abs(value) above
         given percentile will be shown.
 
     edge_cmap : :obj:`str` or matplotlib colormap, default="RdBu_r"
@@ -298,6 +303,12 @@ def view_connectome(
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
+    node_labels : :obj:`list` of :obj:`str` of len=(n_nodes)\
+        or None, default=None
+        Labels for the nodes.
+
+        .. nilearn_versionadded:: 0.14.0
+
     Returns
     -------
     ConnectomeView : plot of the connectome.
@@ -323,6 +334,7 @@ def view_connectome(
     """
     check_params(locals())
     node_coords = np.asarray(node_coords)
+    n_nodes = node_coords.shape[0]
 
     connectome_info = _get_connectome(
         adjacency_matrix,
@@ -339,6 +351,18 @@ def view_connectome(
     connectome_info["cbar_fontsize"] = colorbar_fontsize
     connectome_info["title"] = title
     connectome_info["title_fontsize"] = title_fontsize
+
+    if node_labels is None:
+        node_labels = [""] * n_nodes
+    else:
+        check_is_of_allowed_type(node_labels, (list), "node_labels")
+        if len(node_labels) != n_nodes:
+            raise ValueError(
+                f"'node_labels' has {len(node_labels)} items, "
+                f"but {n_nodes} were expected."
+            )
+
+    connectome_info["marker_labels"] = node_labels
     return _make_connectome_html(connectome_info)
 
 
@@ -350,7 +374,7 @@ def view_markers(
     marker_labels=None,
     title=None,
     title_fontsize=25,
-):
+) -> ConnectomeView:
     """Insert a 3d plot of markers in a brain into an HTML page.
 
     Parameters

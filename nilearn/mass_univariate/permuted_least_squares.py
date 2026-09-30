@@ -16,7 +16,11 @@ from nilearn import image
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level, readable_time
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
@@ -28,6 +32,7 @@ from nilearn.mass_univariate._utils import (
 )
 
 
+@fill_doc
 def _permuted_ols_on_chunk(
     scores_original_data,
     tested_vars,
@@ -92,11 +97,11 @@ def _permuted_ols_on_chunk(
     n_perm_chunk : int, default=10000
         Number of permutations to be performed.
 
-    intercept_test : boolean, default=True
+    intercept_test : :obj:`bool`, default=True
         Change the permutation scheme (swap signs for intercept,
         switch labels otherwise). See :footcite:t:`Fisher1935`.
 
-    two_sided_test : boolean, default=True
+    two_sided_test : :obj:`bool`, default=True
         If True, performs an unsigned t-test. Both positive and negative
         effects are considered; the null hypothesis is that the effect is zero.
         If False, only positive effects are considered as relevant. The null
@@ -308,8 +313,7 @@ def permuted_ols(
     masker=None,
     tfce=False,
     threshold=None,
-    output_type="dict",
-):
+) -> dict[str, np.ndarray]:
     """Massively univariate group analysis with permuted OLS.
 
     Tested variates are independently fitted to target variates descriptors
@@ -341,7 +345,16 @@ def permuted_ols(
     Parameters
     ----------
     tested_vars : array-like, shape=(n_samples, n_regressors)
-        Explanatory variates, fitted and tested independently from each others.
+        Numerical or boolean labels for explanatory variates; fitted and tested
+        independently of each other.
+
+        .. note::
+
+            ``permuted_ols`` can support a wide range of analysis designs,
+            depending on the numerical labels in ``tested_var``.
+            For example, if you wished to perform a one-sample test,
+            you could simply provide an array of ones
+            (e.g., ``np.ones(n_samples)``).
 
     target_vars : array-like, shape=(n_samples, n_descriptors)
         :term:`fMRI` data to analyze according
@@ -402,83 +415,10 @@ def permuted_ols(
 
         .. nilearn_versionadded:: 0.9.2
 
-    output_type : {'legacy', 'dict'}, default="dict"
-        Determines how outputs should be returned.
-        The two options are:
-
-        -   'legacy': return a pvals, score_orig_data, and h0_fmax.
-        -   'dict': return a dictionary containing output arrays.
-            Additionally, if ``tfce`` is True or ``threshold`` is not None,
-            ``output_type`` will automatically be set to 'dict'.
-
-        .. nilearn_deprecated:: 0.9.2
-
-            This parameter will be removed completely in nilearn>= 0.15.
-
-        .. nilearn_versionadded:: 0.9.2
-
-        .. nilearn_versionchanged:: 0.13.0
-
-            The default was changed to ``'dict'``.
-
     Returns
     -------
-    pvals : array-like, shape=(n_regressors, n_descriptors)
-        Negative log10 p-values associated with the significance test of the
-        n_regressors explanatory variates against the n_descriptors target
-        variates. Family-wise corrected p-values.
-
-        .. note::
-
-            This is returned if ``output_type`` == 'legacy'.
-
-        .. nilearn_deprecated:: 0.9.2
-
-            The 'legacy' option for ``output_type`` is deprecated.
-            The default value will change to 'dict' in 0.13,
-            and the ``output_type`` parameter will be removed in 0.15.
-
-    score_orig_data : numpy.ndarray, shape=(n_regressors, n_descriptors)
-        t-statistic associated with the significance test of the n_regressors
-        explanatory variates against the n_descriptors target variates.
-        The ranks of the scores into the h0 distribution correspond to the
-        p-values.
-
-        .. note::
-
-            This is returned if ``output_type`` == 'legacy'.
-
-        .. nilearn_deprecated:: 0.9.2
-
-            The 'legacy' option for ``output_type`` is deprecated.
-            The default value will change to 'dict' in 0.13,
-            and the ``output_type`` parameter will be removed in 0.15.
-
-    h0_fmax : array-like, shape=(n_regressors, n_perm)
-        Distribution of the (max) t-statistic under the null hypothesis
-        (obtained from the permutations). Array is sorted.
-
-        .. note::
-
-            This is returned if ``output_type`` == 'legacy'.
-
-        .. nilearn_deprecated:: 0.9.2
-
-            The 'legacy' option for ``output_type`` is deprecated.
-            The default value will change to 'dict' in 0.13,
-            and the ``output_type`` parameter will be removed in 0.15.
-
-        .. nilearn_versionchanged:: 0.9.2
-
-            Return H0 for all regressors, instead of only the first one.
-
     outputs : :obj:`dict`
         Output arrays, organized in a dictionary.
-
-        .. note::
-
-            This is returned if ``output_type`` == 'dict'.
-            This will be the default output starting in version 0.13.
 
         .. nilearn_versionadded:: 0.9.2
 
@@ -580,14 +520,52 @@ def permuted_ols(
     ----------
     .. footbibliography::
 
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>>
+        >>> from matplotlib import pyplot as plt
+        >>>
+        >>> from nilearn.mass_univariate import permuted_ols
+        >>>
+        >>> n_samples = 1000
+        >>> seed = 42
+        >>> target_var = np.random.RandomState(seed).randn(n_samples, 1)
+        >>> tested_var = np.ones(n_samples, dtype="f8").reshape((-1, 1))
+        >>>
+        >>> output = permuted_ols(tested_var,
+        ...                       target_var,
+        ...                       model_intercept=False,
+        ...                       n_perm=2000,
+        ...                       random_state=seed,
+        ... )
+        >>>
+        >>> _, ax = plt.subplots()
+        >>> _ = ax.hist(output["h0_max_t"][0], bins=100)
+        >>> _ = ax.plot([output["t"][0], output["t"][0]],
+        ...              [0, 60],
+        ...              color="r",
+        ...              linewidth=3,
+        ... )
+        >>> _ = ax.text(x=output["t"][0][0],
+        ...              y=61,
+        ...              s=f"-log(p) = {output['logp_max_t'][0]}",
+        ...              size=14,
+        ... )
+        >>> _ = ax.set(xlabel="t-statistic",
+        ...            title="Distribution max t-statistic under $H_0$")
+        >>> plt.show()
+
     """
     check_params(locals())
-    _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars)
+    _check_inputs_permuted_ols(n_jobs, target_vars)
 
-    n_jobs, output_type, target_vars, tested_vars = (
-        _sanitize_inputs_permuted_ols(
-            n_jobs, output_type, tfce, threshold, target_vars, tested_vars
-        )
+    n_jobs, target_vars, tested_vars = _sanitize_inputs_permuted_ols(
+        n_jobs, target_vars, tested_vars
     )
 
     # initialize the seed of the random generator
@@ -710,7 +688,12 @@ def permuted_ols(
     bin_struct = generate_binary_structure(3, 1)
 
     tfce_original_data = None
+
     if tfce:
+        masker = _ensure_masker(
+            masker, "A masker must be provided if tfce is True."
+        )
+
         scores_4d = masker.inverse_transform(
             scores_original_data.T
         ).get_fdata()
@@ -730,13 +713,17 @@ def permuted_ols(
 
     # 0 or negative number of permutations => original data scores only
     if n_perm <= 0:
-        if output_type == "legacy":
-            return np.asarray([]), scores_original_data.T, np.asarray([])
-
         out = {"t": scores_original_data.T}
-        if tfce:
+        if tfce and tfce_original_data is not None:
             out["tfce"] = tfce_original_data.T
         return out
+
+    if tfce or threshold is not None:
+        masker = _ensure_masker(
+            masker,
+            "A masker must be provided if tfce is True "
+            "or threshold is not None.",
+        )
 
     # Permutations
     # parallel computing units perform a reduced number of permutations each
@@ -801,9 +788,6 @@ def permuted_ols(
 
     vfwe_pvals = (n_perm + 1 - vfwe_scores_as_ranks) / float(1 + n_perm)
 
-    if output_type == "legacy":
-        return (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
-
     outputs = {
         "t": scores_original_data.T,
         "logp_max_t": -np.log10(vfwe_pvals),
@@ -867,9 +851,19 @@ def _compute_t_stat_threshold(
     )
 
 
-def _check_inputs_permuted_ols(
-    n_jobs, tfce, masker, threshold, target_vars
-) -> None:
+def _ensure_masker(
+    masker: NiftiMasker | MultiNiftiMasker | None, message: str
+) -> NiftiMasker | MultiNiftiMasker:
+    """Raise if ``masker`` is None, otherwise return it fitted."""
+    if masker is None:
+        raise ValueError(message)
+    check_is_of_allowed_type(masker, (NiftiMasker, MultiNiftiMasker), "masker")
+    if not masker.__sklearn_is_fitted__():
+        masker.fit()
+    return masker
+
+
+def _check_inputs_permuted_ols(n_jobs, target_vars) -> None:
     # invalid according to joblib's conventions
     if n_jobs == 0:
         raise ValueError(
@@ -878,14 +872,6 @@ def _check_inputs_permuted_ols(
             "or -1 for all CPUs, "
             "or a negative number (-i) for 'all but (i-1)' CPUs "
             "(joblib conventions)."
-        )
-    # check that masker is provided if it is needed
-    if tfce and not masker:
-        raise ValueError("A masker must be provided if tfce is True.")
-
-    if (threshold is not None) and (masker is None):
-        raise ValueError(
-            "If 'threshold' is not None, masker must be defined as well."
         )
 
     # make target_vars F-ordered to speed-up computation
@@ -896,44 +882,21 @@ def _check_inputs_permuted_ols(
         )
 
 
-def _sanitize_inputs_permuted_ols(
-    n_jobs, output_type, tfce, threshold, target_vars, tested_vars
-):
+def _sanitize_inputs_permuted_ols(n_jobs, target_vars, tested_vars):
+    tested_vars = np.asanyarray(tested_vars)
+    if not (
+        np.issubdtype(tested_vars.dtype, np.number)
+        or np.issubdtype(tested_vars.dtype, np.bool_)
+    ):
+        raise TypeError(
+            "'tested_vars' must contain numerical or boolean values."
+        )
+
     # check n_jobs (number of CPUs)
     if n_jobs < 0:
         n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
     else:
         n_jobs = min(n_jobs, joblib.cpu_count())
-
-    # Resolve the output_type as well
-    if tfce and output_type == "legacy":
-        warnings.warn(
-            'If "tfce" is set to True, "output_type" must be set to "dict". '
-            "Overriding.",
-            stacklevel=find_stack_level(),
-        )
-        output_type = "dict"
-
-    if (threshold is not None) and (output_type == "legacy"):
-        warnings.warn(
-            "If 'threshold' is not None, 'output_type' must be set to 'dict'. "
-            "Overriding.",
-            stacklevel=find_stack_level(),
-        )
-        output_type = "dict"
-
-    if output_type == "legacy":
-        # TODO (nilearn >= 0.15.0)
-        warnings.warn(
-            category=FutureWarning,
-            message=(
-                "The 'output_type' parameter for 'permuted_ols' is "
-                "deprecated. "
-                "It will be removed in version 0.15.\n"
-                'Change its value to "dict" to silence this warning.'
-            ),
-            stacklevel=find_stack_level(),
-        )
 
     target_vars = np.asfortranarray(target_vars)  # efficient for chunking
 
@@ -949,7 +912,7 @@ def _sanitize_inputs_permuted_ols(
     if tested_vars.ndim == 1:
         tested_vars = np.atleast_2d(tested_vars).T
 
-    return n_jobs, output_type, target_vars, tested_vars
+    return n_jobs, target_vars, tested_vars
 
 
 def _prepare_output_permuted_ols(

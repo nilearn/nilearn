@@ -2,17 +2,80 @@
    nilearn.plotting.image.img_plotting.get_colorbar_and_data_ranges.
 """
 
+import warnings
+from unittest.mock import patch
+
 import numpy as np
 import pytest
 
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
+    set_mpl_backend,
 )
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Test requires matplotlib to be installed.",
+)
+@patch("matplotlib.use")
+@patch("matplotlib.get_backend", side_effect=["backend_1", "backend_2"])
+def test_should_raise_warning_if_backend_changes(*_):
+    """Check backend values returned by matplotlib.get_backend are different.
+    Warning should be raised to inform user of the backend switch.
+    """
+    with pytest.warns(UserWarning, match="Backend changed to backend_2..."):
+        set_mpl_backend()
+
+
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Test requires matplotlib to be installed.",
+)
+@patch("matplotlib.use")
+@patch("matplotlib.get_backend", side_effect=["backend_1", "backend_1"])
+def test_should_not_raise_warning_if_backend_is_not_changed(*_):
+    """Check backend values returned by matplotlib.get_backend are identical.
+    Warning should not be raised.
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        set_mpl_backend()
+
+
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Test requires matplotlib to be installed.",
+)
+@patch(
+    "matplotlib.use", side_effect=[Exception("Failed to switch backend"), True]
+)
+def test_should_switch_to_agg_backend_if_current_backend_fails(use_mock):
+    """Check first call to `matplotlib.use` raises an exception,
+    hence the default Agg backend should be triggered.
+    """
+    set_mpl_backend()
+
+    assert use_mock.call_count == 2
+    # Check that the most recent call to `matplotlib.use` has arg `Agg`
+    use_mock.assert_called_with("Agg")
+
+
+@pytest.mark.thread_unsafe
+@patch("matplotlib.__version__", "0.0.0")
+def test_should_raise_import_error_for_version_check(matplotlib_pyplot):  # noqa: ARG001
+    """Check error version mpl."""
+    with pytest.raises(ImportError, match="A matplotlib version of at least"):
+        set_mpl_backend()
+
+
 @pytest.fixture
-def data_pos_neg():
+def data_pos_neg() -> np.ndarray:
     """Fixture for data with both positive and negative values."""
     # min: -0.5, max: 3.0
     return np.array(
@@ -21,21 +84,21 @@ def data_pos_neg():
 
 
 @pytest.fixture
-def data_pos(data_pos_neg):
+def data_pos(data_pos_neg) -> np.ndarray:
     """Fixture for data with only positive values."""
     # min: 0.5, max: 3.0
     return np.abs(data_pos_neg)
 
 
 @pytest.fixture
-def data_neg(data_pos_neg):
+def data_neg(data_pos_neg) -> np.ndarray:
     """Fixture for data with only negative values."""
     # min: -3, max: -0.5
     return -np.abs(data_pos_neg)
 
 
 @pytest.fixture
-def data_masked(data_pos_neg):
+def data_masked(data_pos_neg) -> np.ma.MaskedArray:
     """Fixture for data with masked values."""
     # min: -0.5, max: 1.5
     return np.ma.masked_greater(data_pos_neg, 2.0)

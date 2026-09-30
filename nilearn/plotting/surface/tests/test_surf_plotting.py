@@ -114,7 +114,11 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
-@pytest.mark.slow
+@pytest.mark.skipif(
+    not is_kaleido_installed(),
+    reason="This test is run only if kaleido is installed.",
+)
+@pytest.mark.single_process
 @pytest.mark.thread_unsafe
 def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
     """Test nilearn.plotting.surface.surf_plotting.plot_surf function with
@@ -292,7 +296,7 @@ def test_plot_surf_error_when_kaleido_missing(
     """Test if nilearn.plotting.surface.surf_plotting.plot_surf raises
     ImportError when engine is 'plotly' and kaleido is not installed.
     """
-    with pytest.raises(ImportError, match="Saving figures"):
+    with pytest.raises(RuntimeError, match="Kaleido and Google Chrome are"):
         # Plot with non None output file
         plot_surf(
             in_memory_mesh,
@@ -351,6 +355,7 @@ def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_avg_method_errors(
     matplotlib_pyplot, in_memory_mesh, bg_map
 ):
@@ -434,6 +439,7 @@ def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
     assert display.axes[0].title._text == "Test title"
 
 
+@pytest.mark.thread_unsafe
 def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
     """Test error msg for invalid axes."""
     _, axes = matplotlib_pyplot.subplots()
@@ -441,6 +447,7 @@ def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
         plot_surf_stat_map(stat_map=surf_img_1d, axes=axes)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_contours(
     matplotlib_pyplot, in_memory_mesh, parcellation, surf_mask_1d
 ):
@@ -659,6 +666,7 @@ def test_plot_surf_stat_map_with_threshold(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_vmax(plt, engine, in_memory_mesh, bg_map):
     """Smoke test when vmax is specified to
     nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
@@ -928,6 +936,7 @@ def test_plot_surf_roi_error(engine, rng, in_memory_mesh, surf_roi_data):
         plot_surf_roi(in_memory_mesh, roi_map=surf_roi_data, engine=engine)
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_roi_matplotlib_specific(
     matplotlib_pyplot, surface_image_roi
 ):
@@ -1065,6 +1074,8 @@ def test_plot_surf_roi_default_arguments(
     # To avoid extra warnings
     if engine == "plotly":
         avg_method = None
+    else:
+        symmetric_cmap = None
 
     plot_surf_roi(
         surface_image_roi.mesh,
@@ -1194,6 +1205,7 @@ def test_plot_img_on_surf_inflate(matplotlib_pyplot, img_3d_mni):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("surf_mesh", ["fsaverage5", fetch_surf_fsaverage()])
 def test_plot_img_on_surf_surf_mesh(matplotlib_pyplot, img_3d_mni, surf_mesh):
     """Smoke test for nilearn.plotting.surface.plot_img_on_surf for surf_mesh
@@ -1207,6 +1219,7 @@ def test_plot_img_on_surf_surf_mesh(matplotlib_pyplot, img_3d_mni, surf_mesh):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_img_on_surf_surf_mesh_low_alpha(matplotlib_pyplot, img_3d_mni):
     """Check that low alpha value do not cause floating point error.
 

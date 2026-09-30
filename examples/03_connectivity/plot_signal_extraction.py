@@ -50,6 +50,7 @@ masker = NiftiLabelsMasker(
     labels_img=atlas_filename,
     lut=look_up_table,
     standardize_confounds=True,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     verbose=1,
 )

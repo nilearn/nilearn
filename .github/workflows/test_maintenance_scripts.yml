@@ -1,0 +1,74 @@
+---
+# Runs pytest on maint_tools, build_tools and (a couple of files from)
+# asv_benchmarks folders.
+#
+###
+name: test maintenance scripts
+
+on:
+    push:
+        branches:
+        -   main
+        paths:
+        -   maint_tools/**/*
+        -   build_tools/**/*
+        -   asv_benchmarks/check_dependencies_in_sync.py
+        -   asv_benchmarks/asv.conf.json
+        -   pyproject.toml
+        -   .github/workflows/test_maintenance_scripts.yml
+    pull_request:
+        branches:
+        -   '*'
+        paths:
+        -   maint_tools/**/*
+        -   build_tools/**/*
+        -   asv_benchmarks/check_dependencies_in_sync.py
+        -   asv_benchmarks/asv.conf.json
+        -   pyproject.toml
+        -   .github/workflows/test_maintenance_scripts.yml
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+# Force to use color
+env:
+    FORCE_COLOR: true
+
+permissions:
+    contents: read
+
+jobs:
+
+    test_maintenance_scripts:
+
+        name: test maintenance scripts
+
+        runs-on: ubuntu-latest
+
+        steps:
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                fetch-depth: 0
+                persist-credentials: false
+
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
+        -   name: Setup python
+            uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+            with:
+                python-version: 3.14
+
+        -   name: Install tox
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+
+        -   name: Merge with upstream
+            # build_tools/github/build_type.py's tests exercise its real
+            # main(), which shells out to "git merge-base ... upstream/main":
+            # a fresh checkout only has "origin", not "upstream", set up.
+            shell: bash -el {0}
+            run: ./build_tools/github/merge_upstream.sh
+
+        -   name: Run test suite
+            run: tox run -e test_maint_tools

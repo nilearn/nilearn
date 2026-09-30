@@ -1,6 +1,6 @@
 """Functions for surface manipulation."""
 
-from .surface import (
+from nilearn.surface.surface import (
     FileMesh,
     InMemoryMesh,
     PolyData,

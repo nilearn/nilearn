@@ -13,7 +13,7 @@ def match_headers_keys(source, target, except_keys):
         Source image to compare headers with.
     target : Nifti1Image
         Target image to compare headers from.
-    except_keys : list of str
+    except_keys : :obj:`list` of str
         List of keys that should from comparison.
     """
     for key in source.header:

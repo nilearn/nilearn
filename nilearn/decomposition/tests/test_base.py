@@ -40,7 +40,6 @@ def test_fast_svd(n_features):
     )
 
 
-@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 @pytest.mark.parametrize(

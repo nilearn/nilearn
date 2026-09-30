@@ -11,6 +11,7 @@ from numpy.testing import (
     assert_equal,
 )
 from scipy import stats
+from sklearn import clone
 
 from nilearn.conftest import _rng
 from nilearn.maskers import NiftiMasker
@@ -39,7 +40,7 @@ def _tfce_design():
 
     mask_img = Nifti1Image(np.ones((3, 3, 3)), np.eye(4))
     masker = NiftiMasker(mask_img)
-    masker.fit(mask_img)
+    masker.fit()
 
     n_descriptors = np.prod(mask_img.shape)
     n_regressors = 1  # tested_var is 1D
@@ -97,7 +98,7 @@ def masker(affine_eye) -> NiftiMasker:
     """Return a default masker."""
     mask_img = Nifti1Image(np.ones((5, 5, 5)), affine_eye)
     masker = NiftiMasker(mask_img)
-    masker.fit(mask_img)
+    masker.fit()
     return masker
 
 
@@ -222,7 +223,6 @@ def check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse):
     assert_array_less(np.diff(all_mse.mean(1)), 0)
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("model_intercept", [True, False])
 def test_permuted_ols_check_h0_noeffect_labelswap_centered(model_intercept):
     """Check distributions of permutations when tested vars are centered."""
@@ -240,7 +240,6 @@ def test_permuted_ols_check_h0_noeffect_labelswap_centered(model_intercept):
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
 
 
-@pytest.mark.slow
 def test_permuted_ols_check_h0_noeffect_labelswap_uncentered():
     """Check distributions of permutations when tested vars are uncentered."""
     # create dummy design with no effect
@@ -256,7 +255,6 @@ def test_permuted_ols_check_h0_noeffect_labelswap_uncentered():
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
 
 
-@pytest.mark.slow
 def test_permuted_ols_check_h0_noeffect_signswap():
     """Check that h0 is close to the theoretical distribution \
     for permuted OLS with sign swap.
@@ -634,7 +632,6 @@ def test_two_sided_recover_positive_and_negative_effects():
     )
 
 
-@pytest.mark.slow
 def test_tfce_smoke_legacy_smoke():
     """Check tfce output of dict with or without permutations."""
     (
@@ -645,8 +642,7 @@ def test_tfce_smoke_legacy_smoke():
         n_regressors,
     ) = _tfce_design()
 
-    # no permutations and output_type is "dict", so check for "t" and
-    # "tfce" maps
+    # check for "t" and "tfce" maps
     out = permuted_ols(
         tested_var,
         target_var,
@@ -693,12 +689,11 @@ def test_tfce_smoke_legacy_smoke():
     assert out["h0_max_tfce"].size == n_perm
 
 
-@pytest.mark.slow
 def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     """Test combinations of parameters related to cluster-level inference."""
     target_var, tested_var = cluster_level_design
 
-    # no permutations and output_type is "dict", so check for "t" map
+    # no permutations so check for "t" map
     out = permuted_ols(
         tested_var,
         target_var,
@@ -738,14 +733,64 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     assert out["h0_max_mass"].size == n_perm
 
 
+@pytest.mark.ai_generated
+def test_permuted_ols_no_masker_no_tfce_no_threshold(design):
+    """Check default call with no masker, tfce, or threshold does not error.
+
+    Regression test: masker was unconditionally fitted before running
+    permutations even when not required (masker=None, tfce=False,
+    threshold=None), raising an AttributeError.
+    """
+    target_var, tested_var, *_ = design
+
+    out = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        n_perm=N_PERM,
+        random_state=0,
+    )
+
+    assert isinstance(out, dict)
+    assert "t" in out
+
+
+def test_unfitted_masker(cluster_level_design, masker):
+    """Pass unfitted masker does not raise an error."""
+    target_var, tested_var = cluster_level_design
+
+    # cloning to pass an unfitted masker
+    masker = clone(masker)
+
+    permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        n_perm=N_PERM,
+        random_state=0,
+        threshold=0.001,
+        masker=masker,
+    )
+
+
+def test_invalid_masker(cluster_level_design):
+    """Test invalid masker."""
+    target_var, tested_var = cluster_level_design
+
+    with pytest.raises(TypeError, match="'masker' must be of type"):
+        permuted_ols(
+            tested_var,
+            target_var,
+            tfce=True,
+            masker="foo",
+        )
+
+
 def test_sanitize_inputs_permuted_ols(design):
     """Smoke test for input sanitization."""
     target_vars, tested_vars, *_ = design
     _sanitize_inputs_permuted_ols(
         n_jobs=-1,
-        output_type="dict",
-        tfce=False,
-        threshold=None,
         target_vars=target_vars,
         tested_vars=tested_vars,
     )
@@ -776,65 +821,6 @@ def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
         match="perform more permutations",
     ):
         permuted_ols(tested_var, target_var, n_perm=1, masker=masker, n_jobs=2)
-
-
-def test_cluster_level_parameters_warnings(cluster_level_design, masker):
-    """Test combinations of parameters related to cluster-level inference."""
-    target_var, tested_var = cluster_level_design
-
-    # masker is defined, but threshold is not.
-    # no cluster-level inference is performed, but there's a warning.
-    with pytest.warns(
-        FutureWarning,
-        match="'output_type'.*is deprecated",
-    ):
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=N_PERM,
-            random_state=0,
-            masker=masker,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, tuple)
-
-    # threshold is defined, but output_type is "legacy".
-    # raise a warning, and get a dictionary.
-    with pytest.warns(
-        Warning,
-        match="If 'threshold' is not None",
-    ):
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=0,
-            random_state=0,
-            threshold=0.001,
-            masker=masker,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, dict)
-
-    # output_type is "legacy".
-    # raise a deprecation warning, but get the standard output.
-    with pytest.warns(FutureWarning, match="will be removed in version"):
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=N_PERM,
-            random_state=0,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, tuple)
 
 
 def test_permuted_ols_no_covar_warning(rng):
@@ -894,43 +880,6 @@ def test_permuted_ols_with_multiple_constants_and_covars_warnings(design):
         )
 
 
-def test_tfce_smoke_legacy_warnings():
-    """Check that requesting a legacy output throws a warning."""
-    target_var, tested_var, masker, *_ = _tfce_design()
-
-    # tfce is True, but output_type is "legacy".
-    # raise a warning, and get a dictionary.
-    with pytest.warns(UserWarning, match="Overriding."):
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=0,
-            random_state=0,
-            masker=masker,
-            tfce=True,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, dict)
-
-    # output_type is "legacy".
-    # raise a deprecation warning, but get the standard output.
-    with pytest.warns(FutureWarning, match="will be removed in version"):
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=N_PERM,
-            random_state=0,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, tuple)
-
-
 def test_permuted_ols_no_covar_n_job_error(dummy_design):
     """Check that an invalid n_jobs value will raise a ValueError."""
     target_var, tested_var, *_ = dummy_design
@@ -956,6 +905,28 @@ def test_permuted_ols_target_vars_error(dummy_design):
             tested_var,
             target_var.ravel(),  # must be 2D
         )
+
+
+def test_permuted_ols_non_numerical_tested_vars_error(dummy_design):
+    """Check that tested variables contain numerical values."""
+    target_var, *_ = dummy_design
+    tested_var = np.resize(["face", "house"], target_var.shape[0])
+
+    with pytest.raises(
+        TypeError,
+        match="'tested_vars' must contain numerical or boolean values",
+    ):
+        permuted_ols(tested_var, target_var, n_perm=0)
+
+
+def test_permuted_ols_boolean_tested_vars(dummy_design):
+    """Check that boolean tested variables are supported."""
+    target_var, *_ = dummy_design
+    tested_var = np.resize([True, False], target_var.shape[0])
+
+    output = permuted_ols(tested_var, target_var, n_perm=0)
+
+    assert output["t"].shape == (1, target_var.shape[1])
 
 
 def test_permuted_ols_type_n_perm(dummy_design):
@@ -989,7 +960,9 @@ def test_cluster_level_parameters_error_no_masker(cluster_level_design):
     # but masker is not defined.
     with pytest.raises(
         ValueError,
-        match=r"If 'threshold' is not None, masker must be defined as well.",
+        match=(
+            "masker must be provided if tfce is True or threshold is not None"
+        ),
     ):
         permuted_ols(
             tested_var,

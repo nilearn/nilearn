@@ -7,16 +7,28 @@ from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.colors import ListedColormap
+from matplotlib.figure import Figure
 from matplotlib.transforms import Bbox
 
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data, is_binary_niimg, safe_get_data
 from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, get_data, new_img_like, reorder_img
 from nilearn.image.image import _check_fov
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
+from nilearn.nilearn_typing import (
+    BlackBg,
+    CbarTickFormat,
+    ColorBar,
+    NiimgLike,
+    OutputFile,
+    Transparency,
+    TransparencyRange,
+)
 from nilearn.plotting._engine_utils import create_colorbar_for_fig
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
@@ -29,7 +41,6 @@ from nilearn.plotting.displays._utils import (
 )
 from nilearn.plotting.displays.edge_detect import edge_map
 from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
-from nilearn.typing import NiimgLike
 
 
 @fill_doc
@@ -59,8 +70,8 @@ class BaseSlicer:
     def __init__(
         self,
         cut_coords,
-        axes=None,
-        black_bg=False,
+        axes: Axes | None = None,
+        black_bg: BlackBg = False,
         brain_color=(0.5, 0.5, 0.5),
         **kwargs,
     ):
@@ -83,7 +94,7 @@ class BaseSlicer:
             "top": 0.05 * bb.height,
             "bottom": 0.05 * bb.height,
         }
-        self._init_axes(**kwargs)
+        self._init_axes(**kwargs)  # type: ignore[attr-defined]
 
     @property
     def brain_color(self):
@@ -118,6 +129,7 @@ class BaseSlicer:
         raise NotImplementedError()
 
     @classmethod
+    @fill_doc
     def _check_cut_coords_in_bounds(cls, img, cut_coords) -> None:
         """
         Check if the cut coordinates is within the image bounds.
@@ -180,6 +192,7 @@ class BaseSlicer:
         raise NotImplementedError()
 
     @classmethod
+    @fill_doc
     def _sanitize_cut_coords(cls, cut_coords):
         """Sanitize the cut coordinates.
 
@@ -199,6 +212,7 @@ class BaseSlicer:
         raise NotImplementedError()
 
     @classmethod
+    @fill_doc
     def _get_coords_in_bounds(cls, bounds, cut_coords):
         """Return a list that has boolean values corresponding to each cut
         coordinate indicating if it is within the bounds of its direction or
@@ -206,7 +220,7 @@ class BaseSlicer:
 
         Parameters
         ----------
-        bounds:
+        bounds :
             valid bounds for the cut coordinates
 
         %(cut_coords)s
@@ -227,11 +241,11 @@ class BaseSlicer:
         img,
         threshold=None,
         cut_coords=None,
-        figure=None,
-        axes=None,
-        black_bg=False,
+        figure: Figure | None = None,
+        axes: Axes | None = None,
+        black_bg: BlackBg = False,
         leave_space=False,
-        colorbar=False,
+        colorbar: ColorBar = False,
         brain_color=(0.5, 0.5, 0.5),
         **kwargs,
     ):
@@ -259,7 +273,7 @@ class BaseSlicer:
             If ``True``, leave space between the plots.
 
         %(colorbar)s
-            Default=False.
+            default=False.
 
         %(brain_color)s
 
@@ -283,10 +297,10 @@ class BaseSlicer:
 
         cut_coords = cls.find_cut_coords(img, threshold, cut_coords)
 
-        if isinstance(axes, plt.Axes) and figure is None:
+        if isinstance(axes, Axes) and figure is None:
             figure = axes.figure
 
-        if not isinstance(figure, plt.Figure):
+        if not isinstance(figure, Figure):
             # Make sure that we have a figure
             figsize = cls._default_figsize[:]
 
@@ -302,7 +316,8 @@ class BaseSlicer:
             if leave_space:
                 figsize[0] += 3.4
             figure = plt.figure(figure, figsize=figsize, facecolor=facecolor)
-        if isinstance(axes, plt.Axes):
+
+        if isinstance(axes, Axes):
             assert axes.figure is figure, (
                 "The axes passed are not in the figure"
             )
@@ -402,12 +417,12 @@ class BaseSlicer:
         self,
         img,
         threshold=1e-6,
-        colorbar=False,
-        cbar_tick_format=DEFAULT_TICK_FORMAT,
+        colorbar: ColorBar = False,
+        cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
         cbar_vmin=None,
         cbar_vmax=None,
-        transparency=None,
-        transparency_range=None,
+        transparency: Transparency = None,
+        transparency_range: TransparencyRange = None,
         **kwargs,
     ) -> None:
         """Plot a 3D map in all the views.
@@ -426,9 +441,9 @@ class BaseSlicer:
                 threshold (in absolute value) are plotted as transparent.
 
         %(colorbar)s
-            Default=False.
+            default=False.
 
-        cbar_tick_format : str, default="%%.2g" (scientific notation)
+        cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
             Ex: use "%%i" to display as integers.
 
@@ -454,6 +469,7 @@ class BaseSlicer:
             if the specified threshold is a negative number
 
         """
+        check_params(locals())
         check_threshold_not_negative(threshold)
 
         if colorbar and self._colorbar:
@@ -779,12 +795,13 @@ class BaseSlicer:
         return transparency, transparency_affine
 
     @classmethod
+    @fill_doc
     def _threshold(cls, data, threshold=None, vmin=None, vmax=None):
         """Threshold the data.
 
         Parameters
         ----------
-        data: ndarray
+        data : ndarray
             data to be thresholded
 
         %(threshold)s
@@ -1101,12 +1118,14 @@ class BaseSlicer:
         """
         plt.close(self.frame_axes.figure.number)
 
-    def savefig(self, filename, dpi=None, **kwargs) -> None:
+    # TODO (nilearn >= 0.17.0) remove decorator
+    @rename_parameters({"filename": "output_file"}, end_version="0.17.0")
+    def savefig(self, output_file: OutputFile, dpi=None, **kwargs) -> None:
         """Save the figure to a file.
 
         Parameters
         ----------
-        filename : :obj:`str`
+        output_file : :obj:`str` or :obj:`pathlib.Path`
             The file name to save to. Its extension determines the
             file type, typically '.png', '.svg' or '.pdf'.
 
@@ -1118,9 +1137,18 @@ class BaseSlicer:
             :func:`matplotlib.pyplot.savefig`.
 
         """
+        check_params(locals())
+
+        if output_file is None:
+            raise ValueError(
+                "You must provide an output file name to save the figure."
+            )
+
+        output_file = Path(output_file)
+        output_file.parent.mkdir(exist_ok=True, parents=True)
         facecolor = edgecolor = "k" if self._black_bg else "w"
         self.frame_axes.figure.savefig(
-            filename,
+            output_file,
             dpi=dpi,
             facecolor=facecolor,
             edgecolor=edgecolor,
@@ -1856,7 +1884,7 @@ class BaseStackedSlicer(BaseSlicer):
         ------
         ValueError
             If `cut_coords` is not a number or a sequence of :obj:`float` or
-            :obj:`int` or `None`.
+            :obj:`int` or ``None``.
 
         """
         if cut_coords is None:
@@ -2428,7 +2456,7 @@ class MosaicSlicer(BaseSlicer):
 
         cut_coords : :obj:`int`, sequence of :obj:`float` or :obj:`int` or \
                      :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
-                     `None`, default=None
+                     ``None``, default=None
             The world coordinates of the points where the cuts are performed.
 
             If `cut_coords` is not provided, 7 coordinates of cuts are
@@ -2616,7 +2644,7 @@ class MosaicSlicer(BaseSlicer):
         Parameters
         ----------
         cut_coords : :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`> or \
-                     `None`, default=None
+                     ``None``, default=None
             The positions of the crosses to draw.
             If ``None`` is passed, the ``MosaicSlicer``'s cut coordinates are
             used.
@@ -2688,37 +2716,3 @@ def get_slicer(display_mode):
 
     """
     return get_create_display_fun(display_mode, SLICERS)
-
-
-def save_figure_if_needed(fig, output_file):
-    """Save figure if an output file value is given.
-
-    Create output path if required.
-
-    Parameters
-    ----------
-    fig: figure, axes, or display instance
-
-    output_file: str, Path or None
-
-    Returns
-    -------
-    None if ``output_file`` is None, ``fig`` otherwise.
-
-    """
-    if output_file is None:
-        return fig
-
-    output_file = Path(output_file)
-    output_file.parent.mkdir(exist_ok=True, parents=True)
-
-    if not isinstance(fig, (plt.Figure, BaseSlicer)):
-        fig = fig.figure
-
-    fig.savefig(output_file)
-    if isinstance(fig, plt.Figure):
-        plt.close(fig)
-    else:
-        fig.close()
-
-    return None

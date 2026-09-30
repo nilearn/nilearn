@@ -46,7 +46,7 @@ utils                   --- Utilities
 """
 
 try:
-    from ._version import __version__
+    from nilearn._version import __version__
 except ImportError:
     __version__ = "0+unknown"
 

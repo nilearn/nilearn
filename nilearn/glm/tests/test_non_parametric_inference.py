@@ -16,16 +16,14 @@ from nilearn._utils.data_gen import (
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import non_parametric_inference
+from nilearn.glm.tests.conftest import SHAPE, fake_fmri_data
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.reporting import get_clusters_table
 
-from .conftest import SHAPE, fake_fmri_data
-
 N_PERM = 5
 
 
-@pytest.mark.slow
 def test_with_flm_objects(shape_3d_default):
     """See https://github.com/nilearn/nilearn/issues/3579 ."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -53,7 +51,6 @@ def test_with_flm_objects(shape_3d_default):
     )
 
 
-@pytest.mark.slow
 def test_with_paths(tmp_path, n_subjects):
     """Ensure non_parametric_inference can work with paths."""
     mask_file, fmri_files, _ = write_fake_fmri_data_and_design(
@@ -101,12 +98,7 @@ def test_warning(n_subjects):
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     c1 = np.eye(len(X.columns))[0]
 
-    masker = NiftiMasker(
-        mask,
-        smoothing_fwhm=2.0,
-        # TODO (nilearn >= 0.15) remove standardize=None
-        standardize=None,
-    )
+    masker = NiftiMasker(mask, smoothing_fwhm=2.0)
     with pytest.warns(
         UserWarning,
         match="Parameter 'smoothing_fwhm' of the masker overridden",
@@ -121,7 +113,6 @@ def test_warning(n_subjects):
         )
 
 
-@pytest.mark.slow
 def test_fmri_inputs_errors(
     rng, confounds, shape_3d_default, shape_4d_default
 ):
@@ -161,7 +152,7 @@ def test_fmri_inputs_errors(
 
     # test wrong input errors
     # test first level model
-    with pytest.raises(TypeError, match="second_level_input must be"):
+    with pytest.raises(TypeError, match="'second_level_input' must be"):
         non_parametric_inference(flm)
 
     # test list of less than two niimgs
@@ -179,7 +170,6 @@ def test_fmri_inputs_errors(
         non_parametric_inference("random string object")
 
 
-@pytest.mark.slow
 def test_permutation_computation(n_subjects):
     """Test non_parametric_inference."""
     func_img, mask = fake_fmri_data()
@@ -194,7 +184,6 @@ def test_permutation_computation(n_subjects):
     assert get_data(neg_log_pvals_img).shape == SHAPE[:3]
 
 
-@pytest.mark.slow
 def test_tfce(n_subjects):
     """Test non-parametric inference with TFCE inference."""
     shapes = [SHAPE] * n_subjects
@@ -219,7 +208,6 @@ def test_tfce(n_subjects):
     assert get_data(out["logp_max_tfce"]).shape == shapes[0][:3]
 
 
-@pytest.mark.slow
 def test_cluster_level(n_subjects):
     """Test non-parametric inference with cluster-level inference."""
     func_img, mask = fake_fmri_data()
@@ -246,7 +234,6 @@ def test_cluster_level(n_subjects):
     assert get_data(out["logp_max_t"]).shape == SHAPE[:3]
 
 
-@pytest.mark.slow
 def test_cluster_level_with_covariates(shape_3d_default, rng, n_subjects):
     """Test non-parametric inference with cluster-level inference in \
     the context of covariates.
@@ -281,14 +268,18 @@ def test_cluster_level_with_covariates(shape_3d_default, rng, n_subjects):
     neg_log_pval = -np.log10(stats.t.sf(get_data(out["t"]), df=df))
     logp_unc = new_img_like(out["t"], neg_log_pval)
     logp_unc_cluster_sizes = list(
-        get_clusters_table(logp_unc, -np.log10(unc_pval))["Cluster Size (mm3)"]
+        get_clusters_table(
+            logp_unc,
+            -np.log10(unc_pval),
+            return_label_maps=True,
+        )[0]["Cluster Size (mm3)"]
     )
 
     # Calculate corrected cluster sizes
     logp_max_cluster_sizes = list(
-        get_clusters_table(out["logp_max_size"], unc_pval)[
-            "Cluster Size (mm3)"
-        ]
+        get_clusters_table(
+            out["logp_max_size"], unc_pval, return_label_maps=True
+        )[0]["Cluster Size (mm3)"]
     )
 
     # Compare cluster sizes
@@ -297,7 +288,6 @@ def test_cluster_level_with_covariates(shape_3d_default, rng, n_subjects):
     assert logp_unc_cluster_sizes == logp_max_cluster_sizes
 
 
-@pytest.mark.slow
 def test_cluster_level_with_single_covariates(
     shape_3d_default, rng, n_subjects
 ):
@@ -326,7 +316,6 @@ def test_cluster_level_with_single_covariates(
     )
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("second_level_contrast", [None, "intercept", [1]])
 def test_contrast_computation(second_level_contrast, n_subjects):
     """Smoke test for contrast computation with \
@@ -347,7 +336,6 @@ def test_contrast_computation(second_level_contrast, n_subjects):
     )
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "second_level_contrast", [[1, 0], "r1", "r1-r2", [-1, 1]]
 )
@@ -364,13 +352,12 @@ def test_contrast_formula(second_level_contrast, rng, n_subjects):
     )
 
 
-@pytest.mark.slow
 def test_contrast_computation_errors(rng, n_subjects):
     """Test invalid contrast values."""
     func_img, mask = fake_fmri_data()
 
     # asking for contrast before model fit gives error
-    with pytest.raises(TypeError, match="second_level_input must be either"):
+    with pytest.raises(TypeError, match="'second_level_input' must be either"):
         non_parametric_inference(
             second_level_input=None,
             second_level_contrast="intercept",
@@ -454,11 +441,7 @@ def test_with_surface_images_2d_mask(surf_img_2d, surf_mask_1d, n_subjects):
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
-    masker = SurfaceMasker(
-        surf_mask_1d,
-        # TODO (nilearn >= 0.15) remove standardize=None
-        standardize=None,
-    )
+    masker = SurfaceMasker(surf_mask_1d)
 
     non_parametric_inference(
         second_level_input=second_level_input,

@@ -198,7 +198,7 @@ def test_irrelevant_input(tmp_path, fmriprep_version):
             file_nii, denoise_strategy="simple", ica_aroma="full"
         )
     # invalid strategy
-    with pytest.raises(KeyError, match="blah"):
+    with pytest.raises(ValueError, match="blah"):
         load_confounds_strategy(file_nii, denoise_strategy="blah")
 
 

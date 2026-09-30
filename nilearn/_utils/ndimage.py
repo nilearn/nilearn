@@ -97,10 +97,10 @@ def peak_local_max(
         `min_distance`). To find the maximum number of peaks, use
         `min_distance=1`.
 
-    threshold_abs : float, default=0
+    threshold_abs : :obj:`float`, default=0
         Minimum intensity of peaks.
 
-    threshold_rel : float, default=0.1
+    threshold_rel : :obj:`float`, default=0.1
         Minimum intensity of peaks calculated as `max(image) * threshold_rel`.
 
     num_peaks : int, default=np.inf
@@ -150,7 +150,7 @@ def peak_local_max(
 
     if coordinates.shape[0] > num_peaks:
         intensities = image.flat[
-            np.ravel_multi_index(coordinates.transpose(), image.shape)
+            np.ravel_multi_index(tuple(coordinates.transpose()), image.shape)
         ]
         idx_maxsort = np.argsort(intensities)[::-1]
         coordinates = coordinates[idx_maxsort][:num_peaks]

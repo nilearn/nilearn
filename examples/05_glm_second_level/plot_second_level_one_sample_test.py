@@ -144,7 +144,7 @@ neg_log_pval = math_img(
 #   :func:`~nilearn.mass_univariate.permuted_ols`
 #   is that the one-sample test in non_parametric_inference/permuted_ols
 #   assumes that the distribution is symmetric about 0,
-#   which is is weaker than the SecondLevelModel's assumption that
+#   which is weaker than the SecondLevelModel's assumption that
 #   the null distribution is Gaussian and centered about 0.
 #
 # .. important::
@@ -169,6 +169,7 @@ out_dict = non_parametric_inference(
     smoothing_fwhm=8.0,
     n_jobs=2,
     threshold=0.001,
+    random_state=0,  # to ensure reproducible results
     verbose=1,
 )
 
