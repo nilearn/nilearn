@@ -186,7 +186,8 @@ exclude = [
     "nilearn/plotting/tests/baseline",
     "nilearn/maskers/tests/baseline",
     "nilearn/glm/tests/baseline",
-    "nilearn/_estimator_checks"
+    "nilearn/_estimator_checks",
+    "nilearn/tests"
 ]
 packages = ["nilearn"]
 
