@@ -255,6 +255,7 @@ def test_transform_errors(
         est.transform(canica_data, confounds=confounds)
 
 
+@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
@@ -359,6 +360,7 @@ def test_single_subject_file(data_type, canica_img, estimator, tmp_path):
     est.transform(tmp_file)
 
 
+@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
