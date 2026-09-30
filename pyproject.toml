@@ -5,10 +5,10 @@ requires = ["hatchling", "hatch-vcs", "setuptools-scm!=9.0.0"]
 [dependency-groups]
 # A combination of dependencies useful for developers
 dev = [
-    { include-group = "test" },
-    { include-group = "doc" },
-    { include-group = "style" },
-    { include-group = "rich" },
+    {include-group = "test"},
+    {include-group = "doc"},
+    {include-group = "style"},
+    {include-group = "rich"},
     "docstring_parser",
     "tox>=4",
     "tox-uv"
@@ -52,7 +52,7 @@ min = [
     "jinja2==3.1.6"
 ]
 min_plotting = [
-    { include-group = "min" },
+    {include-group = "min"},
     "kaleido==1.1.0",
     "matplotlib==3.8.0",
     "plotly==6.1.1"
@@ -62,7 +62,7 @@ rich = ["rich>=12.0.0"]
 # Applying style guide
 style = ['prek']
 test = [
-    { include-group = "test_common" },
+    {include-group = "test_common"},
     "coverage>=7.0.0",
     "lxml>=6.0.0",
     "pytest-cov>=7.0.0",
@@ -83,14 +83,14 @@ test_common = [
 # Running test for free threaded python
 # requires fewer extensions
 test_free_threaded = [
-    { include-group = "test_common" },
+    {include-group = "test_common"},
     "pytest-run-parallel>=0.8.2"
 ]
 # For running baseline image comparison tests (requires matplotlib)
 test_mpl = ["pytest-mpl>=0.18.0"]
 
 [project]
-authors = [{ name = "Nilearn developers" }]
+authors = [{name = "Nilearn developers"}]
 classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
@@ -128,7 +128,7 @@ dynamic = ["version"]
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 maintainers = [
-    { name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr" }
+    {name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}
 ]
 name = "nilearn"
 readme = "README.rst"
