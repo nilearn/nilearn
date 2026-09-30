@@ -42,7 +42,12 @@ from nilearn.glm.first_level.first_level import (
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.image import get_data, iter_img, new_img_like
-from nilearn.maskers import NiftiMasker, NiftiSpheresMasker, SurfaceMasker
+from nilearn.maskers import (
+    NiftiLabelsMasker,
+    NiftiMasker,
+    NiftiSpheresMasker,
+    SurfaceMasker,
+)
 from nilearn.masking import intersect_masks
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_polymesh_equal
@@ -1762,15 +1767,14 @@ def test_plot_predicted_signal_and_residuals_mask_img(
 
     We do it both with volume and surface data.
     """
-    df, _ = fitted_model.plot_predicted_signal_and_residuals(
-        mask=fitted_model.mask_img_
-    )
+    mask = NiftiLabelsMasker(fitted_model.mask_img_, labels=["Whole brain"])
+    df, _ = fitted_model.plot_predicted_signal_and_residuals(mask=mask)
 
     assert all(isinstance(x, pd.DataFrame) for x in df)
     assert df[0].columns.to_list() == [
-        "1; observed",
-        "1; predicted",
-        "1; residuals",
+        "Whole brain; observed",
+        "Whole brain; predicted",
+        "Whole brain; residuals",
     ]
 
     img, des = surface_glm_data(5)
