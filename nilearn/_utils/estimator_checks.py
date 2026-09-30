@@ -704,7 +704,7 @@ def check_doc_link(estimator_orig) -> None:
 def check_refit(estimator_orig) -> None:
     """Check that estimator can be refitted with data that does not match n_elements_.
 
-    Easier to change n_elements_after a first fit.
+    Easier to change n_elements_ after a first fit.
     """
     if not hasattr(estimator_orig, "transform"):
         return
