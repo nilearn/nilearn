@@ -5,8 +5,8 @@ import itertools
 from packaging.version import parse
 from sklearn.base import BaseEstimator
 
-from nilearn._utils.tags import InputTags
 from nilearn._version import __version__
+from nilearn.utils.tags import InputTags
 
 
 class _NilearnHTMLDocumentationLinkMixin:

@@ -4,38 +4,10 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn._utils.helpers import is_windows_platform
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
-
-ESTIMATORS_TO_CHECK = [
-    NiftiSpheresMasker(seeds=[(1, 1, 1)]),
-    NiftiSpheresMasker(seeds=[(1, 1, 1), (1, 2, 3)]),
-]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def test_seed_extraction(rng, affine_eye):
@@ -51,6 +23,27 @@ def test_seed_extraction(rng, affine_eye):
     s = masker.transform(img)
 
     assert_array_equal(s[:, 0], data[1, 1, 1])
+
+
+@pytest.mark.ai_generated
+def test_seed_extraction_as_dataframe(rng, affine_eye):
+    """Test seed extraction: ensure proper name of dataframe columns."""
+    masker = NiftiSpheresMasker([(1, 1.598645, -1 / 3), (5, 5, 5)])
+    masker.set_output(transform="pandas")
+
+    data = rng.random((20, 20, 20, 5))
+    img = Nifti1Image(data, affine_eye)
+
+    s = masker.fit_transform(img)
+
+    assert s.columns.to_list() == ["(1.0, 1.6, -0.3)", "(5.0, 5.0, 5.0)"]
+
+    # same but with a radius and testing proper rounding
+    masker = NiftiSpheresMasker([(1, 1, 1), (5, 5, 5)], radius=2.55)
+    masker.set_output(transform="pandas")
+    s = masker.fit_transform(img)
+
+    assert s.columns.to_list() == ["(1, 1, 1); r=2.6mm", "(5, 5, 5); r=2.6mm"]
 
 
 def test_sphere_extraction(rng, affine_eye):

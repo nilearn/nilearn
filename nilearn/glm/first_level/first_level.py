@@ -7,7 +7,7 @@ import csv
 import inspect
 import time
 from pathlib import Path
-from typing import Any, Literal, Self, get_args
+from typing import TYPE_CHECKING, Any, Literal, Self, get_args
 from warnings import warn
 
 import numpy as np
@@ -57,7 +57,7 @@ from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import intersect_masks
-from nilearn.nilearn_typing import NiimgLike, Tr
+from nilearn.nilearn_typing import HrfModel, NiimgLike, Tr
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 
@@ -509,7 +509,7 @@ class FirstLevelModel(BaseGLM):
         self,
         t_r=None,
         slice_time_ref=0.0,
-        hrf_model="glover",
+        hrf_model: HrfModel = "glover",
         drift_model="cosine",
         high_pass=0.01,
         drift_order=1,
@@ -654,11 +654,16 @@ class FirstLevelModel(BaseGLM):
         else:
             if events is None:
                 raise ValueError("events or design matrices must be provided")
+
             if self.t_r is None:
                 raise ValueError(
                     "t_r not given to FirstLevelModel object"
                     " to compute design from events"
                 )
+            else:
+                _check_repetition_time(self.t_r)
+
+            _check_slice_time_ref(self.slice_time_ref)
 
             # Check that events and confounds files match number of runs
             # and can be loaded as DataFrame.
@@ -837,6 +842,10 @@ class FirstLevelModel(BaseGLM):
                 x for x in tmp["trial_type"] if x
             )
 
+        # for type narrowing
+        if TYPE_CHECKING:
+            assert self.t_r is not None
+
         start_time = self.slice_time_ref * self.t_r
         end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
         frame_times = np.linspace(start_time, end_time, n_scans)
@@ -973,11 +982,6 @@ class FirstLevelModel(BaseGLM):
         """
         check_params(self.__dict__)
         #  check attributes passed at construction
-        if self.t_r is not None:
-            _check_repetition_time(self.t_r)
-
-        if self.slice_time_ref is not None:
-            _check_slice_time_ref(self.slice_time_ref)
 
         if self.fir_delays is None:
             self.fir_delays_ = [0]
@@ -1492,6 +1496,8 @@ def _check_repetition_time(t_r) -> None:
 
 def _check_slice_time_ref(slice_time_ref) -> None:
     """Check that slice_time_ref is a number between 0 and 1."""
+    if slice_time_ref is None:
+        return
     check_is_of_allowed_type(
         slice_time_ref, (float, int, np.floating, np.integer), "slice_time_ref"
     )
@@ -1511,7 +1517,7 @@ def first_level_from_bids(
     img_filters=None,
     t_r=None,
     slice_time_ref=None,
-    hrf_model="glover",
+    hrf_model: HrfModel = "glover",
     drift_model="cosine",
     high_pass=0.01,
     drift_order=1,
@@ -1916,8 +1922,8 @@ def first_level_from_bids(
             "Note this may lead to the wrong model specification.",
             stacklevel=find_stack_level(),
         )
-    if slice_time_ref is not None:
-        _check_slice_time_ref(slice_time_ref)
+
+    _check_slice_time_ref(slice_time_ref)
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)

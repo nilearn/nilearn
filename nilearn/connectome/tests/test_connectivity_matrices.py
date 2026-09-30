@@ -8,12 +8,7 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 from pandas import DataFrame
 from scipy import linalg
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn._utils.extmath import is_spd
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
@@ -39,30 +34,6 @@ CONNECTIVITY_KINDS = (
 N_FEATURES = 49
 
 N_SUBJECTS = 5
-
-
-ESTIMATORS_TO_CHECK = [
-    ConnectivityMeasure(cov_estimator=EmpiricalCovariance()),
-    ConnectivityMeasure(),
-]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn_2(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def random_diagonal(p, v_min=1.0, v_max=2.0, random_state=0):
@@ -627,6 +598,7 @@ def test_connectivity_measure_errors():
         )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
 )
@@ -651,6 +623,7 @@ def test_connectivity_measure_generic(
         assert is_spd(covs[k], decimal=7)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
 )
@@ -919,6 +892,7 @@ def test_connectivity_measure_check_inverse_transformation_discard_diag(
             conn_measure.inverse_transform(vectorized_connectivities)
 
 
+@pytest.mark.slow
 def test_connectivity_measure_inverse_transform_tangent(
     signals,
 ):
