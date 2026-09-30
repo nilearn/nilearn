@@ -42,10 +42,22 @@ from nilearn.glm.first_level.first_level import (
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.image import get_data, iter_img, new_img_like
-from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.maskers import NiftiMasker, NiftiSpheresMasker, SurfaceMasker
 from nilearn.masking import intersect_masks
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_polymesh_equal
+
+
+@pytest.fixture
+def fitted_model():
+    """Return a fitted FirstLevelModel on fake data."""
+    shapes, rk = [(10, 10, 10, 20)], 1
+    mask, fmri_imgs, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
+    )
+    model = FirstLevelModel(minimize_memory=False, mask_img=mask)
+    model.fit(fmri_imgs, design_matrices=design_matrices)
+    return model
 
 
 def test_glm_fit_unfitted_masker(shape_4d_default):
@@ -1705,19 +1717,6 @@ def test_generate_report_threshold_unused(threshold):
         )
 
 
-# ------- Tests for plot_predicted_signal_and_residuals ----------------------
-@pytest.fixture
-def fitted_model():
-    """Return a fitted FirstLevelModel on fake data."""
-    shapes, rk = [(10, 10, 10, 20)], 1
-    mask, fmri_imgs, design_matrices = generate_fake_fmri_data_and_design(
-        shapes, rk
-    )
-    model = FirstLevelModel(minimize_memory=False, mask_img=mask)
-    model.fit(fmri_imgs, design_matrices=design_matrices)
-    return model
-
-
 @pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="This test is run only if matplotlib is not installed.",
@@ -1725,42 +1724,32 @@ def fitted_model():
 def test_plot_predicted_signal_and_residuals_no_matplotlib(fitted_model):
     """Return only DataFrame with a warning if matplotlib is not installed."""
     with pytest.warns(ImportWarning, match="matplotlib is required"):
-        result = fitted_model.plot_predicted_signal_and_residuals(
+        result, fig = fitted_model.plot_predicted_signal_and_residuals(
             coords=(1, 1, 1)
         )
 
-    assert isinstance(result, pd.DataFrame)
-    assert set(result.columns) == {
-        "(1, 1, 1); r=3.0mm observed",
-        "(1, 1, 1); r=3.0mm predicted",
-        "(1, 1, 1); r=3.0mm residuals",
+    assert all(isinstance(x, pd.DataFrame) for x in result)
+    assert set(result[0].columns) == {
+        "(1, 1, 1); r=3.0mm; observed",
+        "(1, 1, 1); r=3.0mm; predicted",
+        "(1, 1, 1); r=3.0mm; residuals",
     }
+    assert fig is None
 
 
-def test_get_predicted_signal_and_residuals(fitted_model):
-    """_get_predicted_signal_and_residuals works without matplotlib."""
-    df, _ = fitted_model._get_predicted_signal_and_residuals(coords=(1, 1, 1))
+def test_plot_predicted_signal_and_residuals_multiple_coords(fitted_model):
+    """Test with multiple coords via NiftiSpheresMasker."""
+    masker = NiftiSpheresMasker([(1, 1, 1), (7, 7, 7)], radius=1.0)
+    df, _ = fitted_model.plot_predicted_signal_and_residuals(masker=masker)
 
-    assert isinstance(df, pd.DataFrame)
-    assert df.columns.to_list() == [
-        "(1, 1, 1); r=3.0mm observed",
-        "(1, 1, 1); r=3.0mm predicted",
-        "(1, 1, 1); r=3.0mm residuals",
+    assert all(isinstance(x, pd.DataFrame) for x in df)
+    assert df[0].columns.to_list() == [
+        "(1, 1, 1); r=1.0mm; observed",
+        "(1, 1, 1); r=1.0mm; predicted",
+        "(1, 1, 1); r=1.0mm; residuals",
     ]
-
-
-def test_get_predicted_signal_and_residuals_multiple_coords(fitted_model):
-    """_get_predicted_signal_and_residuals works with multiple coords."""
-    df, _ = fitted_model._get_predicted_signal_and_residuals(
-        coords=[(1, 1, 1), (7, 7, 7)], radius=1.0
-    )
-
-    assert isinstance(df, pd.DataFrame)
-    assert df.columns.to_list() == [
-        "(1, 1, 1); r=1.0mm observed",
-        "(1, 1, 1); r=1.0mm predicted",
-        "(1, 1, 1); r=1.0mm residuals",
-        "(7, 7, 7); r=1.0mm observed",
-        "(7, 7, 7); r=1.0mm predicted",
-        "(7, 7, 7); r=1.0mm residuals",
+    assert df[1].columns.to_list() == [
+        "(7, 7, 7); r=1.0mm; observed",
+        "(7, 7, 7); r=1.0mm; predicted",
+        "(7, 7, 7); r=1.0mm; residuals",
     ]
