@@ -204,3 +204,8 @@ def test_check_estimator_count():
 def test_check_estimator_nilearn(estimator, name, check):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
     check(estimator)
+
+
+def test_checks():
+    """Test if the number of expected checks is correct."""
+    assert len(nilearn_check_estimator(estimators=_estimators())) == 1634
