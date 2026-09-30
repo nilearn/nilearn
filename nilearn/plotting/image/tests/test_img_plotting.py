@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn.conftest import _affine_mni
 from nilearn.datasets import load_mni152_template
 from nilearn.image import get_data, reorder_img
 from nilearn.plotting import (
@@ -36,18 +35,6 @@ PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
 
 
 PLOTTING_FUNCS_3D = ALL_PLOTTING_FUNCS.difference(PLOTTING_FUNCS_4D)
-
-
-def _add_nans_to_img(img, affine_mni=None) -> Nifti1Image:
-    """Add nans in test image data."""
-    if affine_mni is None:
-        affine_mni = _affine_mni()
-    data = get_data(img)
-    data[6, 5, 1] = np.nan
-    data[1, 5, 2] = np.nan
-    data[1, 3, 2] = np.nan
-    data[6, 5, 2] = np.inf
-    return Nifti1Image(data, affine_mni)
 
 
 def test_mni152template_is_reordered():
@@ -176,11 +163,12 @@ def test_invalid_cut_coords_with_display_mode(
         )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-def test_plot_with_nans(plot_func, img_3d_mni):
+def test_plot_with_nans(plot_func, img_3d_mni, add_nans_to_img):
     """Smoke test for plotting functions with nans in data image."""
-    plot_func(_add_nans_to_img(img_3d_mni))
+    plot_func(add_nans_to_img(img_3d_mni))
 
 
 @pytest.mark.thread_unsafe
@@ -194,11 +182,14 @@ def test_plotting_functions_with_cmaps(plot_func, cmap, img_3d_mni):
     plt.close()
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_anat, plot_roi, plot_stat_map])
-def test_plotting_functions_with_nans_in_bg_img(plot_func, img_3d_mni):
+def test_plotting_functions_with_nans_in_bg_img(
+    plot_func, img_3d_mni, add_nans_to_img
+):
     """Smoke test for plotting functions with nans in background image."""
-    bg_img = _add_nans_to_img(img_3d_mni)
+    bg_img = add_nans_to_img(img_3d_mni)
     if plot_func is plot_anat:
         plot_func(bg_img)
     else:
