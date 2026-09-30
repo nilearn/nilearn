@@ -55,7 +55,13 @@ from nilearn.interfaces.bids.query import (
 )
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
-from nilearn.maskers import NiftiMasker, NiftiSpheresMasker, SurfaceMasker
+from nilearn.maskers import (
+    NiftiLabelsMasker,
+    NiftiMasker,
+    NiftiSpheresMasker,
+    SurfaceLabelsMasker,
+    SurfaceMasker,
+)
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import intersect_masks
 from nilearn.nilearn_typing import HrfModel, NiimgLike, Tr
@@ -1429,11 +1435,11 @@ class FirstLevelModel(BaseGLM):
             The predicted time series.
         residuals_ts : array-like
             The residuals time series.
-        title_ref : str, default = None
+        title_ref : str or None, default = None
             Reference string for the title of the plots.
-        figsize : tuple, default = (10,8)
+        figsize : tuple of int, default = (10,8)
             Size of the figure.
-        close : bool, defaault = True
+        close : bool, default = True
             Whether to close the figure after creation.
 
         Returns
@@ -1446,7 +1452,7 @@ class FirstLevelModel(BaseGLM):
         # Generate a time axis
         n_timepoints = len(observed_ts)
         time_axis = np.arange(n_timepoints)
-        x_label = "Time"
+        x_label = "Time (TR)"
 
         fig, axes = plt.subplots(3, 1, figsize=figsize)
 
@@ -1471,14 +1477,16 @@ class FirstLevelModel(BaseGLM):
 
         # Center the y-axis around zero
         max_abs_residual = np.max(np.abs(residuals_ts))
-        axes[1].set_ylim(-max_abs_residual * 1.1, max_abs_residual * 1.1)
+        if max_abs_residual == 0:
+            max_abs_residual = 1
+        axes[1].set_ylim(max_abs_residual * -1.1, max_abs_residual * 1.1)
 
         # Plot histogram of residuals
         axes[2].hist(residuals_ts, bins=30, color="green", alpha=0.7)
         axes[2].set_title("Histogram of Residuals")
         axes[2].set_xlabel("Residuals")
         axes[2].set_ylabel("Frequency")
-        axes[2].set_xlim(-max_abs_residual * 1.1, max_abs_residual * 1.1)
+        axes[2].set_xlim(max_abs_residual * -1.1, max_abs_residual * 1.1)
 
         if title_ref is not None:
             fig.suptitle(f"{title_ref}", fontsize=16)
@@ -1489,22 +1497,14 @@ class FirstLevelModel(BaseGLM):
         return fig
 
     def _get_predicted_signal_and_residuals(
-        self, coords=None, masker=None, radius: float = 3.0
+        self, coords=None, mask=None, radius: float = 3.0
     ) -> tuple[list[pd.DataFrame], list[str]]:
         """Return observed, predicted and residuals time series as a
         list of DataFrames.
 
         Parameters
         ----------
-        coords : tuple, or list of tuples of coordinates, default = None
-            Coordinates of the voxel(s) or region center(s).
-            Ignored if `masker` is provided.
-        masker : NiftiLabelsMasker or NiftiSpheresMasker, default = None
-            Custom masker used to extract the time series.
-            If None, a :class:`~nilearn.maskers.NiftiSpheresMasker` is created
-            from ``coords`` and ``radius``.
-        radius : float, default = 3.0
-            Radius of the sphere(s) if `masker` is None.
+        See plot_predicted_signal_and_residuals.
 
         Returns
         -------
@@ -1521,32 +1521,48 @@ class FirstLevelModel(BaseGLM):
         if self.minimize_memory:
             raise ValueError(
                 "To plot predicted signal and residuals, "
-                "the `FirstLevelModel`-object needs to store "
+                "the GLM model object needs to store "
                 "there attributes. "
-                "To do so, set `minimize_memory` to `False` "
-                "when initializing the `FirstLevelModel`-object."
+                "To do so, set 'minimize_memory' to 'False' "
+                "when initializing the GLM model."
             )
 
-        if masker is not None and coords is not None:
+        if mask is not None and coords is not None:
             warn(
                 (
-                    "You provided both 'masker' and 'coords'. "
-                    "Only 'masker' will be used."
+                    "You provided both 'mask' and 'coords'. "
+                    "Only 'mask' will be used."
                 ),
                 UserWarning,
                 stacklevel=2,
             )
             coords = None
 
-        if masker is None:
+        if mask is None:
             if coords is None:
-                raise ValueError(
-                    "Either 'masker' or 'coords' must be provided."
-                )
+                raise ValueError("Either 'mask' or 'coords' must be provided.")
             # Allow a single coordinate tuple to be passed
             if isinstance(coords[0], (int, float)):
                 coords = [coords]
             masker = NiftiSpheresMasker(seeds=coords, radius=radius)
+        else:
+            check_is_of_allowed_type(
+                mask,
+                (
+                    NiimgLike,
+                    SurfaceImage,
+                    NiftiSpheresMasker,
+                    NiftiLabelsMasker,
+                    SurfaceLabelsMasker,
+                ),
+                "mask",
+            )
+            if isinstance(mask, NiimgLike):
+                masker = NiftiLabelsMasker(mask)
+            elif isinstance(mask, SurfaceImage):
+                masker = SurfaceLabelsMasker(mask)
+            else:
+                masker = mask
         if not masker.__sklearn_is_fitted__():
             masker.fit()
 
@@ -1574,7 +1590,7 @@ class FirstLevelModel(BaseGLM):
     def plot_predicted_signal_and_residuals(
         self,
         coords=None,
-        masker=None,
+        mask=None,
         radius=3.0,
         figsize=(10, 8),
         show=False,
@@ -1582,8 +1598,7 @@ class FirstLevelModel(BaseGLM):
         """Plot the predicted time series and residuals for a voxel \
         or small region.
 
-        The :term:`GLM` must be fitted and have the computed design
-        matrix(ces).
+        The model must be fitted.
 
         Parameters
         ----------
@@ -1591,15 +1606,25 @@ class FirstLevelModel(BaseGLM):
                 or None, default = None
             Coordinates of the voxel(s) or region center(s).
             Ignored if ``masker`` is provided.
-        masker : NiftiLabelsMasker or NiftiSpheresMasker or None, \
-                 default = None
-            Custom masker used to extract the time series.
-            If None, a :class:`~nilearn.maskers.NiftiSpheresMasker`
+
+        mask : A Niimglike, :class:`~surface.SurfaceImage`, \
+               class:`~maskers.NiftiSpheresMasker`,  \
+               class:`~maskers.NiftiLabelsMasker`,  \
+               class:`~maskers.SurfaceLabelsMasker`,  \
+               or None, default = None
+            If a SurfaceImage is passed, it will be used
+            to instantiate a SurfaceLabelsMasker.
+            If a Niimglike is passed, it will be used
+            to instantiate a NiftiLabelsMasker.
+            If None, a NiftiSpheresMasker
             centered on ``coords`` with radius ``radius`` is created.
+
         radius : :obj:`float`, default = 3.0
             Radius of the sphere if ``masker`` is None.
+
         figsize : :obj:`tuple`, default = (10, 8)
             Size of the figure.
+
         show : :obj:`bool`, default = False
             Whether to display the figure.
 
@@ -1622,15 +1647,14 @@ class FirstLevelModel(BaseGLM):
         """
         timeseries_dfs, region_names = (
             self._get_predicted_signal_and_residuals(
-                coords=coords, masker=masker, radius=radius
+                coords=coords, mask=mask, radius=radius
             )
         )
         if not is_matplotlib_installed():
             warn(
-                "Matplotlib is not installed. "
-                "Returning the time series DataFrame only.",
+                "Matplotlib is not installed. No figure will be returned.",
                 ImportWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             return timeseries_dfs, None
 

@@ -52,10 +52,10 @@ from nilearn.surface.utils import assert_polymesh_equal
 def fitted_model():
     """Return a fitted FirstLevelModel on fake data."""
     shapes, rk = [(10, 10, 10, 20)], 1
-    mask, fmri_imgs, design_matrices = generate_fake_fmri_data_and_design(
+    _mask, fmri_imgs, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
     )
-    model = FirstLevelModel(minimize_memory=False, mask_img=mask)
+    model = FirstLevelModel(minimize_memory=False)
     model.fit(fmri_imgs, design_matrices=design_matrices)
     return model
 
@@ -1723,9 +1723,9 @@ def test_generate_report_threshold_unused(threshold):
 )
 def test_plot_predicted_signal_and_residuals_no_matplotlib(fitted_model):
     """Return only DataFrame with a warning if matplotlib is not installed."""
-    with pytest.warns(ImportWarning, match="matplotlib is required"):
+    with pytest.warns(ImportWarning, match="Matplotlib is not installed"):
         result, fig = fitted_model.plot_predicted_signal_and_residuals(
-            coords=(1, 1, 1)
+            coords=1
         )
 
     assert all(isinstance(x, pd.DataFrame) for x in result)
@@ -1740,7 +1740,7 @@ def test_plot_predicted_signal_and_residuals_no_matplotlib(fitted_model):
 def test_plot_predicted_signal_and_residuals_multiple_coords(fitted_model):
     """Test with multiple coords via NiftiSpheresMasker."""
     masker = NiftiSpheresMasker([(1, 1, 1), (7, 7, 7)], radius=1.0)
-    df, _ = fitted_model.plot_predicted_signal_and_residuals(masker=masker)
+    df, _ = fitted_model.plot_predicted_signal_and_residuals(mask=masker)
 
     assert all(isinstance(x, pd.DataFrame) for x in df)
     assert df[0].columns.to_list() == [
@@ -1753,3 +1753,71 @@ def test_plot_predicted_signal_and_residuals_multiple_coords(fitted_model):
         "(7, 7, 7); r=1.0mm; predicted",
         "(7, 7, 7); r=1.0mm; residuals",
     ]
+
+
+def test_plot_predicted_signal_and_residuals_mask_img(
+    fitted_model, surface_glm_data
+):
+    """Test passing mask img to rely on a label masker.
+
+    We do it both with volume and surface data.
+    """
+    df, _ = fitted_model.plot_predicted_signal_and_residuals(
+        mask=fitted_model.mask_img_
+    )
+
+    assert all(isinstance(x, pd.DataFrame) for x in df)
+    assert df[0].columns.to_list() == [
+        "1; observed",
+        "1; predicted",
+        "1; residuals",
+    ]
+
+    img, des = surface_glm_data(5)
+    model = FirstLevelModel()
+    model.fit(img, design_matrices=des)
+
+    df, _ = fitted_model.plot_predicted_signal_and_residuals(
+        mask=fitted_model.mask_img_
+    )
+
+    assert all(isinstance(x, pd.DataFrame) for x in df)
+    assert df[0].columns.to_list() == [
+        "1; observed",
+        "1; predicted",
+        "1; residuals",
+    ]
+
+
+def test_plot_predicted_signal_and_residuals_warnings(fitted_model):
+    """Test warnings."""
+    masker = NiftiSpheresMasker([(1, 1, 1)], radius=1.0)
+    coords = [(1, 1, 1)]
+    with pytest.warns(
+        UserWarning, match="You provided both 'mask' and 'coords'"
+    ):
+        fitted_model.plot_predicted_signal_and_residuals(
+            mask=masker, coords=coords
+        )
+
+
+def test_plot_predicted_signal_and_residuals_minimize_memory_error(
+    fitted_model,
+):
+    """Test minimize_memory errors."""
+    with pytest.raises(ValueError, match="set 'minimize_memory' to 'False'"):
+        fitted_model.minimize_memory = True
+        fitted_model.plot_predicted_signal_and_residuals(coords=[(1, 1, 1)])
+
+
+def test_plot_predicted_signal_and_residuals_errors(fitted_model):
+    """Test plot_predicted_signal_and_residuals errors."""
+    with pytest.raises(
+        ValueError, match="Either 'mask' or 'coords' must be provided"
+    ):
+        fitted_model.plot_predicted_signal_and_residuals(
+            coords=None, mask=None
+        )
+
+    with pytest.raises(TypeError, match="'mask' must be of type"):
+        fitted_model.plot_predicted_signal_and_residuals(mask=1)
