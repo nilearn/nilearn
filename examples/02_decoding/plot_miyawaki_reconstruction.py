@@ -1,6 +1,6 @@
 """
-Reconstruction of visual stimuli from Miyawaki et al. 2008
-==========================================================
+Reconstruction of visual stimuli
+================================
 
 This example reproduces the experiment presented in :footcite:t:`Miyawaki2008`.
 

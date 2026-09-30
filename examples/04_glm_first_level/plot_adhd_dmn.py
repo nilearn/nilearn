@@ -1,6 +1,6 @@
 """
-Default Mode Network extraction of ADHD dataset
-===============================================
+Default Mode Network extraction
+===============================
 
 This example shows a full step-by-step workflow of fitting a :term:`GLM`
 to signal extracted from a seed on the Posterior Cingulate Cortex

@@ -1,6 +1,6 @@
 """
-Decoding with FREM: face vs house vs chair object recognition
-=============================================================
+Decoding with fast ensembling of regularized models
+===================================================
 
 This example uses fast ensembling of regularized models (FREM) to decode
 a face vs house vs chair discrimination task

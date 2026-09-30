@@ -1,6 +1,6 @@
 """
-FREM on Jimura et al "mixed gambles" dataset
-============================================
+Regression with fast ensembling of regularized models
+=====================================================
 
 In this example, we use fast ensembling of regularized models (FREM) to
 solve a regression problem, predicting the gain level corresponding to each

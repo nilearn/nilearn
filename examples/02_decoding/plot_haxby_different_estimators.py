@@ -1,9 +1,9 @@
 """
-Different classifiers in decoding the Haxby dataset
-===================================================
+Comparing classifiers in decoding
+=================================
 
-Here we compare different classifiers on a visual object recognition
-decoding task.
+Here we compare different classifiers on the visual object discrimination
+decoding task of the Haxby dataset.
 """
 
 # %%

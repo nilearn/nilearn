@@ -1,6 +1,6 @@
 """
-Encoding models for visual stimuli from Miyawaki et al. 2008
-============================================================
+Encoding models for visual stimuli
+==================================
 
 This example partly reproduces the encoding model presented
 in :footcite:t:`Miyawaki2008`.

@@ -1,6 +1,6 @@
 """
-Massively univariate analysis of a motor task from the Localizer dataset
-========================================================================
+Massively univariate analysis of a motor task
+=============================================
 
 This example compares results obtained with a massively univariate
 analysis (:func:`~nilearn.mass_univariate.permuted_ols`)
@@ -27,18 +27,17 @@ The example is structured as follows:
    This model explicitly tests whether or not a voxel responds differently
    under different conditions of a visual task.
 
-"""
 
-# %%
-# .. admonition:: dataset
-#
-#    We use the ``left button press (auditory cue)`` task contrast maps
-#    from the :ref:`Brainomics Localizer dataset <brainomics_maps>`.
-#    This dataset includes external, behavioral variates (``ext_vars``);
-#    we therefore evaluate the association between a behavioral variate
-#    that measures the speed of pseudo-word reading (``pseudo``)
-#    and the :term:`contrast` map values, at every :term:`voxel`.
-#
+.. admonition:: dataset
+
+   We use the ``left button press (auditory cue)`` task contrast maps
+   from the :ref:`Brainomics Localizer dataset <brainomics_maps>`.
+   This dataset includes external, behavioral variates (``ext_vars``);
+   we therefore evaluate the association between a behavioral variate
+   that measures the speed of pseudo-word reading (``pseudo``)
+   and the :term:`contrast` map values, at every :term:`voxel`.
+
+"""
 
 # %%
 # Load Localizer contrast

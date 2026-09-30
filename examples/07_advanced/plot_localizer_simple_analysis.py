@@ -1,6 +1,6 @@
 """
-Massively univariate analysis of a calculation task from the Localizer dataset
-==============================================================================
+Massively univariate analysis of a calculation task
+===================================================
 
 This example shows how to perform a standard
 :term:`ANOVA` with `scikit-learn <https://scikit-learn.org>`_ and Nilearn.

@@ -1,6 +1,6 @@
 """
-Regions Extraction of Default Mode Networks using Smith Atlas
-=============================================================
+Regions Extraction of Default Mode Networks
+===========================================
 
 This simple example shows how to extract regions from Smith atlas
 resting state networks.

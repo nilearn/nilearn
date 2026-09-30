@@ -1,6 +1,6 @@
 """
-Voxel-Based Morphometry on Oasis dataset
-========================================
+Voxel-Based Morphometry: Regression
+===================================
 
 This example uses Voxel-Based Morphometry (:term:`VBM`)
 to study the relationship between aging and gray matter density.

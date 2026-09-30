@@ -1,6 +1,6 @@
 """
-Massively univariate analysis of a visual task from the Haxby dataset
-=====================================================================
+Massively univariate analysis of a visual task
+==============================================
 
 To determine whether or not a voxel responds differently under different
 conditions of a visual task, we use a permuted
