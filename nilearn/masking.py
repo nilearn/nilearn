@@ -272,16 +272,14 @@ def intersect_masks(
     grp_mask: np.ndarray | None = None
 
     # load all masks once
-    loaded_mask_imgs: list[Nifti1Image] = [
-        check_niimg_3d(x) for x in mask_imgs
-    ]
+    loaded_images: list[Nifti1Image] = [check_niimg_3d(x) for x in mask_imgs]
 
     kwargs = {"raise_error": True}
     check_same_fov(*mask_imgs, **kwargs)
 
-    _, ref_affine = load_mask_img(loaded_mask_imgs[0], allow_empty=True)
+    _, ref_affine = load_mask_img(loaded_images[0], allow_empty=True)
 
-    for this_mask in loaded_mask_imgs:
+    for this_mask in loaded_images:
         mask, _ = load_mask_img(this_mask, allow_empty=True)
 
         if grp_mask is None:
