@@ -20,7 +20,6 @@ from nilearn.image import (
     clean_img,
     get_data,
     index_img,
-    new_img_like,
     resample_img,
 )
 from nilearn.image.image import check_same_fov
@@ -43,13 +42,14 @@ class _ExtractionFunctor:
         self.mask_img_ = mask_img_
 
     def __call__(self, imgs):
-        from nilearn.regions import signal_extraction
+        from nilearn.regions.signal_extraction import img_to_signals_maps
 
-        return signal_extraction.img_to_signals_maps(
+        region_signals, extracted_maps, masked_atlas = img_to_signals_maps(
             imgs,
             self.maps_img_,
             mask_img=self.mask_img_,
         )
+        return region_signals, (extracted_maps, masked_atlas)
 
 
 @fill_doc
@@ -516,6 +516,14 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
             .. nilearn_versionadded:: 0.8.0
 
+        Attributes
+        ----------
+        region_atlas_ : Niimg-like object
+            Regions definition as maps after applying the mask
+            and resampling.
+
+            .. nilearn_versionadded:: 0.15.0dev
+
         Returns
         -------
         %(signals_transform_nifti)s
@@ -656,7 +664,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         sklearn_output_config = getattr(self, "_sklearn_output_config", None)
 
-        region_signals, extracted_maps = self._cache(
+        region_signals, (extracted_maps, masked_atlas) = self._cache(
             filter_and_extract,
             ignore=["verbose", "memory", "memory_level"],
         )(
@@ -678,13 +686,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             sklearn_output_config=sklearn_output_config,
         )
 
-        # we update some attributes
-        # that may have been changed by resampling or masking
-        if len(extracted_maps) != self.n_elements_:
-            self.n_elements_ = len(extracted_maps)
-            maps_data = get_data(maps_img_)[:, :, :, extracted_maps]
-            self.maps_img_ = new_img_like(self.maps_img_, maps_data)
-            self._reporting_data["maps_image"] = self.maps_img_
+        self.n_elements_ = len(extracted_maps)
+        self.region_atlas_ = masked_atlas
+        self._reporting_data["maps_image"] = masked_atlas
 
         # if target_dtype is still None, self.dtype is None: no explicit
         # dtype was requested, so keep the dtype produced by the
@@ -719,9 +723,15 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         mask_logger("inverse_transform", verbose=self.verbose)
 
+        maps_img_ = (
+            self.region_atlas_
+            if hasattr(self, "region_atlas_")
+            else self.maps_img_
+        )
+
         img = signal_extraction.signals_to_img_maps(
             region_signals,
-            self.maps_img_,
+            maps_img_,
             mask_img=self.mask_img_,
         )
 
