@@ -5,11 +5,21 @@ from nilearn
 on the nilearn 'estimators' (maskers, decoders, ...).
 
 This module contains replacement checks for sklearn estimator checks for most
-cases known to fail for nilearn estimators.
-
-This module also contains several nilearn specific checks
+cases known to fail for nilearn estimators,
+and also several nilearn specific checks
 that have no equivalent in sklearn:
 for example report generation for the maskers.
+
+The set of checks for each estimator might differ.
+The module defines ``CHECK_SELECTOR`` to identify which checks apply to a
+certain estimator.
+``CHECK_SELECTOR`` is a list of tuples, where the first element of the tuple is
+a lambda function that defines the conditions to check on the estimator,
+and the second element is the list of checks for the estimator
+if the conditions in lambda function are satisfied.
+
+``CHECK_SELECTOR`` is used by ``nilearn_check_generator``
+to yield the checks for each estimator.
 
 Most of those checks have pytest dependencies
 and importing them will fail if pytest is not installed.
@@ -4421,15 +4431,8 @@ DECOMPOSITION_CHECKS = [
     check_warning_embedded_masker,
 ]
 
-
-# CHECK_SELECTOR is a list of tuples to select nilearn checks that apply to a
-# certain estimator.
-# The first element of the tuple is a lambda function that defines the
-# contiditions to check on the estimator, and
-# the second element is the list of checks to test the estimator for
-# if the conditions in lambda function are satisfied.
-# It is used by nilearn_check_generator to select the checks for the list of
-# estimators provided to this function.
+# List of tuples
+# (conditions to test on estimator, list of checks to apply)
 CHECK_SELECTOR = [
     (lambda e: True, COMMON_CHECKS),
     (lambda e: isinstance(e, CacheMixin), CACHE_MIXIN_CHECKS),
