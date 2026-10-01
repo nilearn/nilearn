@@ -64,7 +64,6 @@ from nilearn._utils.helpers import (
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.numpy_conversions import get_target_dtype
-from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn._utils.testing import is_ci, write_imgs_to_path
 from nilearn.conftest import (
     _affine_eye,
@@ -149,8 +148,6 @@ def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
     """Return a tuple in the form: (estimator, estimator_name, check_function)
     for each estimator in the ``estimators`` list.
     """
-    check_is_of_allowed_type(estimators, (list,), "estimators")
-
     checks_to_run = []
     for est in estimators:
         for e, check in nilearn_check_generator(estimator=est):
