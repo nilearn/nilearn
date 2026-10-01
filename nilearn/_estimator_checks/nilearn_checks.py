@@ -4414,6 +4414,12 @@ DECOMPOSITION_CHECKS = [
 ]
 
 
+# CHECK_SELECTOR is a list of tuples to select nilearn checks that apply to a
+# certain estimator.
+# The first element of the tuple is a lambda function that defines the
+# contiditions to check on the estimator, and
+# the second element is the list of checks to test the estimator for
+# if the conditions in lambda function are satisfied.
 CHECK_SELECTOR = [
     (lambda e: True, COMMON_CHECKS),
     (lambda e: isinstance(e, CacheMixin), CACHE_MIXIN_CHECKS),
