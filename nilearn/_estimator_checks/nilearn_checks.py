@@ -4278,7 +4278,7 @@ def check_multimasker_generate_report(estimator_orig) -> None:
 
 
 def _requires_y(estimator):
-    """Check if estimator expect target as input."""
+    """Check if estimator expects target as input."""
     tags = estimator.__sklearn_tags__()
     return getattr(tags.target_tags, "required", True)
 
