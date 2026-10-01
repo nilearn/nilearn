@@ -13,8 +13,8 @@ import scipy.linalg
 from joblib import Parallel, delayed
 from sklearn.covariance import empirical_covariance
 from sklearn.model_selection import check_cv
-from sklearn.utils import check_array
 from sklearn.utils.extmath import fast_logdet
+from sklearn.utils.validation import validate_data
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
@@ -647,8 +647,9 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
             )
 
         for x in subjects:
-            check_array(
-                x,
+            validate_data(
+                self,
+                X=x,
                 accept_sparse=False,
                 ensure_2d=True,
                 ensure_min_features=2,
@@ -1148,8 +1149,9 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         verbose = sanitize_verbose(self.verbose)
 
         for x in subjects:
-            check_array(
-                x,
+            validate_data(
+                self,
+                X=x,
                 accept_sparse=False,
                 ensure_2d=True,
                 ensure_min_features=2,
