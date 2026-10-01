@@ -147,7 +147,7 @@ order to learn simple parameters from it, such as its shape:
     # for decoding
     from nilearn.maskers import NiftiMasker
 
-    masker = NiftiMasker(mask_img=mask_filename, standardize=True)
+    masker = NiftiMasker(mask_img=mask_filename, standardize="zscore_sample")
 
     # We give the masker a filename and retrieve a 2D array ready
     # for machine learning with scikit-learn
