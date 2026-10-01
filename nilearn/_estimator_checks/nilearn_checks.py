@@ -4493,9 +4493,15 @@ CHECK_SELECTOR = [
 ]
 
 
+def _clone_estimator(estimator_orig):
+    estimator = clone(estimator_orig)
+    # sets random_state to 0 if parameter exists for the estimator
+    set_random_state(estimator)
+
+
 def _yield_checks(estimator, checks):
     for check in checks:
-        yield clone(estimator), check
+        yield _clone_estimator(estimator), check
 
 
 def nilearn_check_generator(estimator: NilearnBaseEstimator):
