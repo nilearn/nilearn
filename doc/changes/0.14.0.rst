@@ -15,6 +15,8 @@ Version 0.14.0
     We strongly recommended avoiding using this version (pin ``nilearn!=0.14.0`` or ``nilearn>0.14.0`` in your dependency tracking file) and ideally upgrading to version 0.14.1.
 
 
+.. _v0-14-0-highlights:
+
 HIGHLIGHTS
 ----------
 
@@ -61,6 +63,8 @@ HIGHLIGHTS
 - Accessing the maskers from ``nilearn.input_data`` is no longer possible, they now must be accessed via :mod:`~nilearn.maskers`.
 
 
+.. _v0-14-0-fixes:
+
 Fixes
 -----
 
@@ -106,6 +110,8 @@ Fixes
 
 - :bdg-info:`Plotting` Fix colors while plotting ROI contours with ``nilearn.plotting.plot_roi`` (:gh:`6245` by `Hande Gözükan`_).
 
+
+.. _v0-14-0-enhancements:
 
 Enhancements
 ------------
@@ -154,6 +160,8 @@ Enhancements
 
 - :bdg-info:`Plotting` Add ``node_labels`` parameter to :func:`~plotting.view_connectome` (:gh:`6153` by `Rishika Kapil`_).
 
+
+.. _v0-14-0-changes:
 
 Changes
 -------
