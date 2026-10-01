@@ -1,3 +1,9 @@
+"""Test nilearn._estimator_checks.nilearn_checks module.
+
+For each type of estimator, checks if `nilearn_check_generator` returns the
+correct checks.
+"""
+
 import pytest
 
 from nilearn._estimator_checks.nilearn_checks import (
@@ -288,6 +294,9 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
     [(e, COMMON_CHECKS) for e in [ReNA, HierarchicalKMeans]],
 )
 def test_nilearn_check_generator_common_checks(estimator, expected_checks):
+    """Test nilearn._estimator_checks.nilearn_checks.nilearn_check_generator
+    for correctness of returned checks for each estimator.
+    """
     checks_count = 0
     for check in nilearn_check_generator(estimator()):
         checks_count += 1
