@@ -4341,9 +4341,21 @@ IMAGE_INPUT_REG_CHECKS = [
     check_img_regressor_no_decision_function,
 ]
 
+# Checks for estimators that accept volume or surface image as input and
+# require y parameter for fit
 IMAGE_INPUT_REQUIRES_Y = [
     check_img_estimator_requires_y_none,
     check_inputs_length,
+]
+
+# Checks for estimators that accept volume or surface image as input and
+# implements transform function and has dtype parameter
+IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS = [check_img_estimator_clean_dtype]
+
+# Checks for estimators that accept volume or surface image as input and
+# implements inverse_transform function
+IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS = [
+    check_img_estimator_dtypes_inverse_transform
 ]
 
 # Checks that apply to all maskers
@@ -4382,6 +4394,10 @@ VOLUME_INPUT_MASKER_CHECKS = [
     check_nifti_masker_fit_with_3d_mask,
     check_nifti_masker_generate_report_after_fit_with_only_mask,
 ]
+
+NIFTIMASKER_CHECKS = [check_masker_shelving]
+
+MULTINIFTIMASKER_CHECKS = [check_multi_nifti_masker_shelving]
 
 # Checks that apply to all maskers which accept surface image as input
 SURFACE_INPUT_MASKER_CHECKS = [
@@ -4453,7 +4469,7 @@ CHECK_SELECTOR = [
             (accepts_volume(e) or accepts_surface(e))
             and hasattr(e, "inverse_transform")
         ),
-        [check_img_estimator_dtypes_inverse_transform],
+        IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS,
     ),
     (
         lambda e: (
@@ -4461,7 +4477,7 @@ CHECK_SELECTOR = [
             and hasattr(e, "transform")
             and hasattr(e, "dtype")
         ),
-        [check_img_estimator_clean_dtype],
+        IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS,
     ),
     (
         lambda e: (accepts_volume(e) or accepts_surface(e)) and _requires_y(e),
@@ -4485,13 +4501,13 @@ CHECK_SELECTOR = [
     # TODO enforce for other maskers
     (
         lambda e: isinstance(e, NiftiMasker),
-        [check_masker_shelving],
+        NIFTIMASKER_CHECKS,
     ),
     # MultiNiftiMasker
     # TODO enforce for other maskers
     (
         lambda e: isinstance(e, NiftiMasker) and isinstance(e, _MultiMixin),
-        [check_multi_nifti_masker_shelving],
+        MULTINIFTIMASKER_CHECKS,
     ),
     # ----------GLM----------
     # checks for glm estimators

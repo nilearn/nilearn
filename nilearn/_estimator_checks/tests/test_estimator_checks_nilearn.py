@@ -1,21 +1,149 @@
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
+from nibabel import Nifti1Image
+from sklearn.covariance import EmpiricalCovariance
 
 from nilearn._estimator_checks.nilearn_checks import (
     nilearn_check_estimator,
 )
-from nilearn._estimator_checks.tests.conftest import (
-    CONNECTOME,
-    DECODING,
-    DECOMPOSITION,
-    ESTIMATORS_TO_CHECK,
-    GLM,
-    MASKERS,
-    REGIONS,
+from nilearn._utils.data_gen import generate_maps
+from nilearn.conftest import (
+    _affine_eye,
+    _img_3d_mni,
+    _img_labels,
+    _img_maps,
+    _shape_3d_large,
+    _surf_maps_img,
+)
+from nilearn.connectome import (
+    ConnectivityMeasure,
+    GroupSparseCovariance,
+    GroupSparseCovarianceCV,
+)
+from nilearn.decoding import (
+    Decoder,
+    DecoderRegressor,
+    FREMClassifier,
+    FREMRegressor,
+    SearchLight,
+    SpaceNetClassifier,
+    SpaceNetRegressor,
+)
+from nilearn.decomposition import CanICA, DictLearning
+from nilearn.glm.first_level import FirstLevelModel
+from nilearn.glm.second_level import SecondLevelModel
+from nilearn.maskers import (
+    MultiNiftiLabelsMasker,
+    MultiNiftiMapsMasker,
+    MultiNiftiMasker,
+    MultiSurfaceLabelsMasker,
+    MultiSurfaceMapsMasker,
+    MultiSurfaceMasker,
+    NiftiLabelsMasker,
+    NiftiMapsMasker,
+    NiftiMasker,
+    NiftiSpheresMasker,
+    SurfaceLabelsMasker,
+    SurfaceMapsMasker,
+    SurfaceMasker,
+)
+from nilearn.maskers.tests.conftest import sklearn_surf_label_img  # TODO move
+from nilearn.regions import (
+    HierarchicalKMeans,
+    Parcellations,
+    RegionExtractor,
+    ReNA,
 )
 from nilearn.utils.discovery import all_estimators
+
+RANDOM_STATE = 0
+
+CONNECTOME = [
+    ConnectivityMeasure(),
+    ConnectivityMeasure(cov_estimator=EmpiricalCovariance()),
+    GroupSparseCovariance(),
+    GroupSparseCovarianceCV(),
+]
+
+DECODING = [
+    Decoder(
+        screening_percentile=100,
+        estimator_args={"random_state": RANDOM_STATE},
+    ),
+    FREMClassifier(
+        screening_percentile=100,
+        estimator_args={"random_state": RANDOM_STATE},
+    ),
+    SpaceNetClassifier(),
+    DecoderRegressor(screening_percentile=100),
+    FREMRegressor(screening_percentile=100),
+    SpaceNetRegressor(),
+    SearchLight(
+        mask_img=Nifti1Image(
+            np.ones((5, 5, 5), dtype=bool).astype("uint8"), np.eye(4)
+        ),
+        estimator_args={"random_state": RANDOM_STATE},
+    ),
+]
+
+DECOMPOSITION = [
+    DictLearning(random_state=RANDOM_STATE),
+    CanICA(random_state=RANDOM_STATE),
+]
+
+GLM = [
+    FirstLevelModel(random_state=RANDOM_STATE),
+    SecondLevelModel(),
+]
+
+MASKERS = [
+    NiftiMasker(),
+    NiftiLabelsMasker(labels_img=_img_labels()),
+    NiftiLabelsMasker(labels_img=_img_labels(n_regions=1)),
+    NiftiMapsMasker(maps_img=_img_maps(n_regions=2)),
+    NiftiMapsMasker(maps_img=_img_maps(n_regions=1)),
+    NiftiSpheresMasker(seeds=[(1, 1, 1)]),
+    NiftiSpheresMasker(seeds=[(1, 1, 1), (1, 2, 3)]),
+    MultiNiftiLabelsMasker(labels_img=_img_labels()),
+    MultiNiftiLabelsMasker(labels_img=_img_labels(n_regions=1)),
+    MultiNiftiMapsMasker(_img_maps(n_regions=2)),
+    MultiNiftiMapsMasker(_img_maps(n_regions=1)),
+    MultiNiftiMasker(),
+    SurfaceMasker(),
+    SurfaceLabelsMasker(sklearn_surf_label_img()),
+    SurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
+    SurfaceMapsMasker(_surf_maps_img()),
+    SurfaceMapsMasker(_surf_maps_img(n_regions=1)),
+    MultiSurfaceLabelsMasker(sklearn_surf_label_img()),
+    MultiSurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
+    MultiSurfaceMapsMasker(_surf_maps_img()),
+    MultiSurfaceMapsMasker(_surf_maps_img(n_regions=1)),
+    MultiSurfaceMasker(),
+]
+
+REGIONS = [
+    HierarchicalKMeans(n_clusters=2, random_state=RANDOM_STATE),
+    RegionExtractor(
+        maps_img=generate_maps(
+            shape=_shape_3d_large(),
+            n_regions=2,
+            rand_gen=42,
+            affine=_affine_eye(),
+        )[0]
+    ),
+    ReNA(mask_img=_img_3d_mni(), n_clusters=2),
+    Parcellations(method="kmeans", n_parcels=5, random_state=RANDOM_STATE),
+    Parcellations(method="ward", n_parcels=5, random_state=RANDOM_STATE),
+    Parcellations(method="rena", n_parcels=5, random_state=RANDOM_STATE),
+]
+
+
+ESTIMATORS_TO_CHECK = (
+    CONNECTOME + DECODING + DECOMPOSITION + GLM + MASKERS + REGIONS
+)
 
 
 def _estimators_to_test():
