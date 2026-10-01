@@ -151,20 +151,6 @@ def _clone_estimator(estimator_orig):
     return estimator
 
 
-def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
-    """Return a tuple in the form: (estimator, estimator_name, check_function)
-    for each estimator in the ``estimators`` list.
-    """
-    checks_to_run = []
-    for est in estimators:
-        checks_to_run.extend(
-            (_clone_estimator(est), est.__class__.__name__, check)
-            for check in nilearn_check_generator(estimator=est)
-        )
-
-    return checks_to_run
-
-
 def _not_fitted_error_message(estimator) -> str:
     return (
         f"This {estimator.__class__.__name__} instance is not fitted yet. "
@@ -4529,3 +4515,17 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
     for condition, checks in CHECK_SELECTOR:
         if condition(estimator):
             yield from checks
+
+
+def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
+    """Return a tuple in the form: (estimator, estimator_name, check_function)
+    for each estimator in the ``estimators`` list.
+    """
+    checks_to_run = []
+    for est in estimators:
+        checks_to_run.extend(
+            (_clone_estimator(est), est.__class__.__name__, check)
+            for check in nilearn_check_generator(estimator=est)
+        )
+
+    return checks_to_run
