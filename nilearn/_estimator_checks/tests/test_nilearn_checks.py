@@ -5,12 +5,12 @@ from nilearn._estimator_checks.nilearn_checks import (
     COMMON_CHECKS,
     DECOMPOSITION_CHECKS,
     GLM_CHECKS,
-    IMAGE_INPUT_CLAS_REG_COMMON_CHECKS,
-    IMAGE_INPUT_COMMON_CHECKS,
-    IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS,
-    IMAGE_INPUT_REG_CHECKS,
-    IMAGE_INPUT_REQUIRES_Y,
-    IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS,
+    IMG_INPUT_CLAS_REG_COMMON_CHECKS,
+    IMG_INPUT_COMMON_CHECKS,
+    IMG_INPUT_INVERSE_TRANSFORM_CHECKS,
+    IMG_INPUT_REG_CHECKS,
+    IMG_INPUT_REQUIRES_Y,
+    IMG_INPUT_TRANSFORM_DTYPE_CHECKS,
     MULTI_MASKER_CHECKS,
     MULTINIFTIMASKER_CHECKS,
     NIFTIMASKER_CHECKS,
@@ -124,7 +124,7 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             e,
             COMMON_CHECKS
             + CACHE_MIXIN_CHECKS
-            + IMAGE_INPUT_COMMON_CHECKS
+            + IMG_INPUT_COMMON_CHECKS
             + GLM_CHECKS,
         )
         for e in GLM
@@ -135,9 +135,9 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             e,
             COMMON_CHECKS
             + CACHE_MIXIN_CHECKS
-            + IMAGE_INPUT_COMMON_CHECKS
-            + IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS
-            + IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS
+            + IMG_INPUT_COMMON_CHECKS
+            + IMG_INPUT_TRANSFORM_DTYPE_CHECKS
+            + IMG_INPUT_INVERSE_TRANSFORM_CHECKS
             + DECOMPOSITION_CHECKS,
         )
         for e in DECOMPOSITION
@@ -152,10 +152,10 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             e,
             COMMON_CHECKS
             + CACHE_MIXIN_CHECKS
-            + IMAGE_INPUT_COMMON_CHECKS
+            + IMG_INPUT_COMMON_CHECKS
             + VOLUME_INPUT_MASKER_CHECKS
-            + IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS
-            + IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS
+            + IMG_INPUT_TRANSFORM_DTYPE_CHECKS
+            + IMG_INPUT_INVERSE_TRANSFORM_CHECKS
             + NON_MULTI_MASKER_CHECKS,
         )
         for e in VOLUME_MASKERS
@@ -167,10 +167,10 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             NiftiMasker,
             COMMON_CHECKS
             + CACHE_MIXIN_CHECKS
-            + IMAGE_INPUT_COMMON_CHECKS
+            + IMG_INPUT_COMMON_CHECKS
             + VOLUME_INPUT_MASKER_CHECKS
-            + IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS
-            + IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS
+            + IMG_INPUT_TRANSFORM_DTYPE_CHECKS
+            + IMG_INPUT_INVERSE_TRANSFORM_CHECKS
             + NON_MULTI_MASKER_CHECKS
             + NIFTIMASKER_CHECKS,
         )
@@ -181,10 +181,10 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             e,
             COMMON_CHECKS
             + CACHE_MIXIN_CHECKS
-            + IMAGE_INPUT_COMMON_CHECKS
+            + IMG_INPUT_COMMON_CHECKS
             + VOLUME_INPUT_MASKER_CHECKS
-            + IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS
-            + IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS
+            + IMG_INPUT_TRANSFORM_DTYPE_CHECKS
+            + IMG_INPUT_INVERSE_TRANSFORM_CHECKS
             + MULTI_MASKER_CHECKS,
         )
         for e in VOLUME_MULTI_MASKERS
@@ -196,10 +196,10 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             MultiNiftiMasker,
             COMMON_CHECKS
             + CACHE_MIXIN_CHECKS
-            + IMAGE_INPUT_COMMON_CHECKS
+            + IMG_INPUT_COMMON_CHECKS
             + VOLUME_INPUT_MASKER_CHECKS
-            + IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS
-            + IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS
+            + IMG_INPUT_TRANSFORM_DTYPE_CHECKS
+            + IMG_INPUT_INVERSE_TRANSFORM_CHECKS
             + MULTI_MASKER_CHECKS
             + NIFTIMASKER_CHECKS
             + MULTINIFTIMASKER_CHECKS,
@@ -211,10 +211,10 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             e,
             COMMON_CHECKS
             + CACHE_MIXIN_CHECKS
-            + IMAGE_INPUT_COMMON_CHECKS
+            + IMG_INPUT_COMMON_CHECKS
             + SURFACE_INPUT_MASKER_CHECKS
-            + IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS
-            + IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS
+            + IMG_INPUT_TRANSFORM_DTYPE_CHECKS
+            + IMG_INPUT_INVERSE_TRANSFORM_CHECKS
             + NON_MULTI_MASKER_CHECKS,
         )
         for e in SURFACE_MASKERS
@@ -225,10 +225,10 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             e,
             COMMON_CHECKS
             + CACHE_MIXIN_CHECKS
-            + IMAGE_INPUT_COMMON_CHECKS
+            + IMG_INPUT_COMMON_CHECKS
             + SURFACE_INPUT_MASKER_CHECKS
-            + IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS
-            + IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS
+            + IMG_INPUT_TRANSFORM_DTYPE_CHECKS
+            + IMG_INPUT_INVERSE_TRANSFORM_CHECKS
             + MULTI_MASKER_CHECKS,
         )
         for e in SURFACE_MULTI_MASKERS
@@ -239,9 +239,9 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             e,
             COMMON_CHECKS
             + CACHE_MIXIN_CHECKS
-            + IMAGE_INPUT_COMMON_CHECKS
-            + IMAGE_INPUT_CLAS_REG_COMMON_CHECKS
-            + IMAGE_INPUT_REQUIRES_Y,
+            + IMG_INPUT_COMMON_CHECKS
+            + IMG_INPUT_CLAS_REG_COMMON_CHECKS
+            + IMG_INPUT_REQUIRES_Y,
         )
         for e in DECODING_CLASSIFIERS
     ]
@@ -251,9 +251,9 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             e,
             COMMON_CHECKS
             + CACHE_MIXIN_CHECKS
-            + IMAGE_INPUT_COMMON_CHECKS
-            + IMAGE_INPUT_REG_CHECKS
-            + IMAGE_INPUT_REQUIRES_Y,
+            + IMG_INPUT_COMMON_CHECKS
+            + IMG_INPUT_REG_CHECKS
+            + IMG_INPUT_REQUIRES_Y,
         )
         for e in DECODING_REGRESSORS
     ]
@@ -263,10 +263,10 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             RegionExtractor,
             COMMON_CHECKS
             + CACHE_MIXIN_CHECKS
-            + IMAGE_INPUT_COMMON_CHECKS
+            + IMG_INPUT_COMMON_CHECKS
             + VOLUME_INPUT_MASKER_CHECKS
-            + IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS
-            + IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS
+            + IMG_INPUT_TRANSFORM_DTYPE_CHECKS
+            + IMG_INPUT_INVERSE_TRANSFORM_CHECKS
             + NON_MULTI_MASKER_CHECKS,
         )
     ]
@@ -277,9 +277,9 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             Parcellations,
             COMMON_CHECKS
             + CACHE_MIXIN_CHECKS
-            + IMAGE_INPUT_COMMON_CHECKS
-            + IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS
-            + IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS
+            + IMG_INPUT_COMMON_CHECKS
+            + IMG_INPUT_TRANSFORM_DTYPE_CHECKS
+            + IMG_INPUT_INVERSE_TRANSFORM_CHECKS
             + DECOMPOSITION_CHECKS,
         )
     ]

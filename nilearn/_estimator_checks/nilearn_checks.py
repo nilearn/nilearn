@@ -4302,7 +4302,7 @@ CACHE_MIXIN_CHECKS = [check_img_estimator_cache_warning]
 
 # Checks that apply to all estimators that accept volume or surface image as
 # input
-IMAGE_INPUT_COMMON_CHECKS = [
+IMG_INPUT_COMMON_CHECKS = [
     check_fit_returns_self,
     check_img_estimator_dtypes,
     check_img_estimator_dtypes_transform,
@@ -4323,7 +4323,7 @@ IMAGE_INPUT_COMMON_CHECKS = [
 
 # Checks that apply to all classifiers and regressors which accept volume or
 # surface image as input
-IMAGE_INPUT_CLAS_REG_COMMON_CHECKS = [
+IMG_INPUT_CLAS_REG_COMMON_CHECKS = [
     check_supervised_img_estimator_y_no_nan,
     check_decoder_empty_data_messages,
     check_decoder_compatibility_mask_image,
@@ -4336,25 +4336,25 @@ IMAGE_INPUT_CLAS_REG_COMMON_CHECKS = [
 ]
 
 # Checks for regressors which accept volume or surface image as input
-IMAGE_INPUT_REG_CHECKS = [
-    *IMAGE_INPUT_CLAS_REG_COMMON_CHECKS,
+IMG_INPUT_REG_CHECKS = [
+    *IMG_INPUT_CLAS_REG_COMMON_CHECKS,
     check_img_regressor_no_decision_function,
 ]
 
 # Checks for estimators that accept volume or surface image as input and
 # require y parameter for fit
-IMAGE_INPUT_REQUIRES_Y = [
+IMG_INPUT_REQUIRES_Y = [
     check_img_estimator_requires_y_none,
     check_inputs_length,
 ]
 
 # Checks for estimators that accept volume or surface image as input and
 # implements transform function and has dtype parameter
-IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS = [check_img_estimator_clean_dtype]
+IMG_INPUT_TRANSFORM_DTYPE_CHECKS = [check_img_estimator_clean_dtype]
 
 # Checks for estimators that accept volume or surface image as input and
 # implements inverse_transform function
-IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS = [
+IMG_INPUT_INVERSE_TRANSFORM_CHECKS = [
     check_img_estimator_dtypes_inverse_transform
 ]
 
@@ -4450,26 +4450,26 @@ CHECK_SELECTOR = [
     # ----------INPUT VOLUME OR SURFACE----------
     (
         lambda e: accepts_volume(e) or accepts_surface(e),
-        IMAGE_INPUT_COMMON_CHECKS,
+        IMG_INPUT_COMMON_CHECKS,
     ),
     (
         lambda e: (
             (accepts_volume(e) or accepts_surface(e)) and is_classifier(e)
         ),
-        IMAGE_INPUT_CLAS_REG_COMMON_CHECKS,
+        IMG_INPUT_CLAS_REG_COMMON_CHECKS,
     ),
     (
         lambda e: (
             (accepts_volume(e) or accepts_surface(e)) and is_regressor(e)
         ),
-        IMAGE_INPUT_REG_CHECKS,
+        IMG_INPUT_REG_CHECKS,
     ),
     (
         lambda e: (
             (accepts_volume(e) or accepts_surface(e))
             and hasattr(e, "inverse_transform")
         ),
-        IMAGE_INPUT_INVERSE_TRANSFORM_CHECKS,
+        IMG_INPUT_INVERSE_TRANSFORM_CHECKS,
     ),
     (
         lambda e: (
@@ -4477,11 +4477,11 @@ CHECK_SELECTOR = [
             and hasattr(e, "transform")
             and hasattr(e, "dtype")
         ),
-        IMAGE_INPUT_TRANSFORM_DTYPE_CHECKS,
+        IMG_INPUT_TRANSFORM_DTYPE_CHECKS,
     ),
     (
         lambda e: (accepts_volume(e) or accepts_surface(e)) and _requires_y(e),
-        IMAGE_INPUT_REQUIRES_Y,
+        IMG_INPUT_REQUIRES_Y,
     ),
     # ----------MASKERS----------
     (lambda e: is_masker(e) and accepts_volume(e), VOLUME_INPUT_MASKER_CHECKS),
