@@ -4460,7 +4460,7 @@ CHECK_SELECTOR = [
         SURFACE_INPUT_MASKER_CHECKS,
     ),
     (
-        lambda e: isinstance(e, _MultiMixin),
+        lambda e: is_masker(e) and isinstance(e, _MultiMixin),
         MULTI_MASKER_CHECKS,
     ),
     (
