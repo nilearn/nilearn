@@ -144,14 +144,23 @@ from nilearn.utils.tags import (
 NILEARN_DIR = Path(__file__).parents[1]
 
 
+def _clone_estimator(estimator_orig):
+    estimator = clone(estimator_orig)
+    # sets random_state to 0 if parameter exists for the estimator
+    set_random_state(estimator)
+    return estimator
+
+
 def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
     """Return a tuple in the form: (estimator, estimator_name, check_function)
     for each estimator in the ``estimators`` list.
     """
     checks_to_run = []
     for est in estimators:
-        for e, check in nilearn_check_generator(estimator=est):
-            checks_to_run.append((e, e.__class__.__name__, check))
+        checks_to_run.extend(
+            (_clone_estimator(est), est.__class__.__name__, check)
+            for check in nilearn_check_generator(estimator=est)
+        )
 
     return checks_to_run
 
@@ -4493,19 +4502,8 @@ CHECK_SELECTOR = [
 ]
 
 
-def _clone_estimator(estimator_orig):
-    estimator = clone(estimator_orig)
-    # sets random_state to 0 if parameter exists for the estimator
-    set_random_state(estimator)
-
-
-def _yield_checks(estimator, checks):
-    for check in checks:
-        yield _clone_estimator(estimator), check
-
-
 def nilearn_check_generator(estimator: NilearnBaseEstimator):
-    """Yield (estimator, check) tuples.
+    """Yield check that applies to estimator.
 
     This will yield only the nilearn specific checks
     for a nilearn estimator.
@@ -4514,4 +4512,4 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
     """
     for condition, checks in CHECK_SELECTOR:
         if condition(estimator):
-            yield from _yield_checks(estimator, checks)
+            yield from checks
