@@ -2,7 +2,7 @@
 
 import numbers
 import warnings
-from typing import Literal, get_args, overload
+from typing import TYPE_CHECKING, Literal, get_args, overload
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -188,7 +188,9 @@ def extrapolate_out_mask(data, mask, iterations=1):
 # Utilities to compute masks
 #
 @fill_doc
-def intersect_masks(mask_imgs, threshold=0.5, connected=True) -> Nifti1Image:
+def intersect_masks(
+    mask_imgs: list[NiimgLike], threshold: float = 0.5, connected: bool = True
+) -> Nifti1Image:
     """Compute intersection of several masks.
 
     Given a list of input mask images, generate the output image which
@@ -267,17 +269,19 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True) -> Nifti1Image:
             f"Got: {', '.join(mask_types)}."
         )
 
-    grp_mask = None
+    grp_mask: np.ndarray | None = None
 
     # load all masks once
-    mask_imgs = [check_niimg_3d(x) for x in mask_imgs]
+    loaded_mask_imgs: list[Nifti1Image] = [
+        check_niimg_3d(x) for x in mask_imgs
+    ]
 
     kwargs = {"raise_error": True}
     check_same_fov(*mask_imgs, **kwargs)
 
-    _, ref_affine = load_mask_img(mask_imgs[0], allow_empty=True)
+    _, ref_affine = load_mask_img(loaded_mask_imgs[0], allow_empty=True)
 
-    for this_mask in mask_imgs:
+    for this_mask in loaded_mask_imgs:
         mask, _ = load_mask_img(this_mask, allow_empty=True)
 
         if grp_mask is None:
@@ -290,6 +294,8 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True) -> Nifti1Image:
             # XXX should the masks be coerced to int before addition?
             grp_mask += mask
 
+    if TYPE_CHECKING:
+        assert isinstance(grp_mask, np.ndarray)
     grp_mask = grp_mask > (threshold * len(list(mask_imgs)))
 
     if np.any(grp_mask > 0) and connected:
