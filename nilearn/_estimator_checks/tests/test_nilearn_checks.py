@@ -288,11 +288,9 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
     [(e, COMMON_CHECKS) for e in [ReNA, HierarchicalKMeans]],
 )
 def test_nilearn_check_generator_common_checks(estimator, expected_checks):
-    checks_found = 0
-    checks_total = 0
+    checks_count = 0
     for check in nilearn_check_generator(estimator()):
-        checks_total += 1
-        checks_found += 1 if check in expected_checks else 0
+        checks_count += 1
+        assert check in expected_checks
 
-    assert checks_found == len(expected_checks)
-    assert checks_total == checks_found
+    assert checks_count == len(expected_checks)
