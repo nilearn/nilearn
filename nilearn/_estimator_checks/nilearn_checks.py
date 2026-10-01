@@ -4420,6 +4420,8 @@ DECOMPOSITION_CHECKS = [
 # contiditions to check on the estimator, and
 # the second element is the list of checks to test the estimator for
 # if the conditions in lambda function are satisfied.
+# It is used by nilearn_check_generator to select the checks for the list of
+# estimators provided to this function.
 CHECK_SELECTOR = [
     (lambda e: True, COMMON_CHECKS),
     (lambda e: isinstance(e, CacheMixin), CACHE_MIXIN_CHECKS),
