@@ -5,18 +5,12 @@ Statistical testing of a second-level analysis
 Perform a one-sample t-test on a bunch of images (a.k.a. second-level analysis
 in fMRI) and threshold the resulting statistical map.
 
-This example is based on the so-called localizer dataset.
-It shows activation related to a mental computation task, as opposed to
-narrative sentence reading/listening.
+.. admonition:: dataset
+
+    This example uses contrasts related to a mental computation task,
+    from the :ref:`Brainomics Localizer dataset <brainomics_maps>`.
 
 """
-
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`Brainomics Localizer dataset
-#    <brainomics_maps>`.
-#
 
 # %%
 # Prepare some images for a simple t test

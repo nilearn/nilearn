@@ -8,7 +8,7 @@ in experimental data and visualizing the results
 
 More specifically:
 
-1. A sample of n=16 visual activity fMRIs are downloaded.
+1. A list of subject-level :term:`fMRI` contrasts is downloaded.
 
 2. An unpaired, two-sample t-test is applied to the brain maps in order to
 see the effect of the contrast difference across subjects.
@@ -17,22 +17,20 @@ see the effect of the contrast difference across subjects.
 the effect of the contrast difference across subjects,
 considering subject intercepts
 
-The contrast is between responses to retinotopically distinct
-vertical versus horizontal checkerboards. At the individual level,
-these stimuli are sometimes used to map the borders of primary visual areas.
-At the group level, such a mapping is not possible. Yet, we may
-observe some significant effects in these areas.
+.. admonition:: dataset
+
+    This example uses contrasts for responses to retinotopically distinct
+    vertical versus horizontal checkerboards
+    from the :ref:`Brainomics Localizer dataset <brainomics_maps>`.
+
+    At the individual level,
+    these stimuli are sometimes used to map
+    the borders of primary visual areas.
+    At the group level, such a mapping is not possible.
+    Yet, we may observe some significant effects in these areas.
 
 """
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`Brainomics Localizer dataset
-#    <brainomics_maps>`.
-#
-
-# %%
 import pandas as pd
 
 from nilearn.datasets import fetch_localizer_contrasts
@@ -41,8 +39,7 @@ from nilearn.plotting import plot_design_matrix, plot_glass_brain, show
 # %%
 # Fetch dataset
 # -------------
-# We download a list of left vs right button press contrasts from a
-# localizer dataset.
+# We download the first-level contrasts from a 16 subjects.
 n_subjects = 16
 sample_vertical = fetch_localizer_contrasts(
     ["vertical checkerboard"],

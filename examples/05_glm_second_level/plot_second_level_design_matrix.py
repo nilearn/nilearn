@@ -9,15 +9,7 @@ design matrix typically holds the characteristics of each individual.
 This is used in a second-level analysis to assess the impact of these
 characteristics on brain signals.
 
-This example requires matplotlib.
-
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
-import matplotlib.pyplot as plt
 
 # %%
 # Create a simple experimental paradigm
@@ -51,6 +43,8 @@ design_matrix = make_second_level_design_matrix(
 
 # %%
 # Let's plot it.
+import matplotlib.pyplot as plt
+
 from nilearn.plotting import plot_design_matrix
 
 fig, ax1 = plt.subplots(1, 1, figsize=(3, 4), constrained_layout=True)
