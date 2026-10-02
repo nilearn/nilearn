@@ -1437,9 +1437,11 @@ y : None
 #
 
 # atlas_type
-docdict["atlas_type"] = """'atlas_type' : :obj:`str`
+atlas_type = """
         Type of atlas.
         See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
+docdict["atlas_type"] = f"""'atlas_type' : :obj:`str`
+        {atlas_type}"""
 
 docdict["base_decomposition_fit_attributes"] = """
 Attributes
@@ -1958,32 +1960,72 @@ The content of this registry is used:
 It must therefore not require downloading any data.
 """
 
-
 DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     "aal_atlas": Bunch(
         content=Bunch(
-            maps=Bunch(
-                type=str,
-                desc="fullpath to 3D nifti file containing label image",
-            ),
-            labels=Bunch(type=list[str], desc=labels),
+            atlas_type=Bunch(type=str, desc=atlas_type),
             indices=Bunch(
                 type=list[str],
-                desc="indices mapping ``labels`` to values "
-                "in the'``maps`` image",
+                desc=(
+                    "Indices mapping ``labels`` to values "
+                    "in the'``maps`` image. "
+                    "This list has 117 elements in "
+                    "version SPM 5, 8 and 12, and 167 elements "
+                    "in version 3v2. "
+                    "Since the values in the 'maps' image "
+                    "do not correspond to indices in ``labels``, "
+                    "but rather to values in ``indices``, "
+                    "the location of a label in the ``labels`` list "
+                    "does not necessary match the associated value "
+                    "in the image. "
+                    "Use the ``indices`` list to identify "
+                    "the appropriate image value for a given label."
+                ),
+            ),
+            labels=Bunch(
+                type=list[str],
+                desc=(
+                    f"{labels} "
+                    "There are 117 names in version SPM 5, 8, and 12, "
+                    "and 167 names in version 3v2."
+                ),
             ),
             lut=Bunch(type=pd.DataFrame, desc=lut),
+            maps=Bunch(
+                type=str,
+                desc=(
+                    "Fullpath to 3D nifti file containing label image. "
+                    "The image has shape ``(91, 109, 91)`` "
+                    "and contains 117 unique integer values "
+                    "defining the parcellation in version "
+                    "SPM 5, 8 and 12, and 167 unique integer values "
+                    "defining the parcellation in version 3v2."
+                ),
+            ),
+            template=Bunch(type=str, desc=template),
         ),
         license="unknown",
     ),
     "allen_rsn_2011_atlas": Bunch(
         content=Bunch(
+            atlas_type=Bunch(type=str, desc=atlas_type),
+            comps=Bunch(
+                type=str,
+                desc=(
+                    "fullpath to 4D nifti file "
+                    "containing the aggregate ICA components"
+                ),
+            ),
             maps=Bunch(
                 type=str,
                 desc=(
                     "path to 4D nifti file containing T-maps "
                     "of all 75 unthresholded components"
                 ),
+            ),
+            networks=Bunch(
+                type=list[list[str]],
+                desc="names for the 28 resting state networks",
             ),
             rsn28=Bunch(
                 type=str,
@@ -1993,10 +2035,6 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
                     "from Allen et al 2011"
                 ),
             ),
-            networks=Bunch(
-                type=list[list[str]],
-                desc="names for the 28 resting state networks",
-            ),
             rsn_indices=Bunch(
                 type=list[tuple[str, list[int]]],
                 desc=(
@@ -2004,13 +2042,7 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
                     "of the 28 resting state networks"
                 ),
             ),
-            comps=Bunch(
-                type=str,
-                desc=(
-                    "fullpath to 4D nifti file "
-                    "containing the aggregate ICA components"
-                ),
-            ),
+            template=Bunch(type=str, desc=template),
         ),
         license="unknown",
     ),
@@ -2019,10 +2051,10 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
             design_matrix1=Bunch(
                 type=pd.DataFrame, desc="Design matrix of run 1"
             ),
-            func1=Bunch(type=str, desc="fullpath to 4D nifti file of run 1"),
             design_matrix2=Bunch(
                 type=pd.DataFrame, desc="Design matrix of run 2"
             ),
+            func1=Bunch(type=str, desc="fullpath to 4D nifti file of run 1"),
             func2=Bunch(type=str, desc="fullpath to 4D nifti file of run 1"),
             mask=Bunch(type=str, desc="fullpath to 3D nifti mask"),
         ),
@@ -2043,22 +2075,20 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     ),
     "localizer_first_level": Bunch(
         content=Bunch(
-            t_r=Bunch(type=float, desc="repetition time in seconds"),
+            epi_img=Bunch(type=None, desc="fullpath the 4D BOLD nifti image"),
+            events=Bunch(
+                type=str,
+                desc="fullpath to a tsv file describing the paradigm",
+            ),
             slice_time_ref=Bunch(
                 type=float,
                 desc=(
                     "slice timing reference "
                     "used during slice timing correction"
                 ),
-                events=Bunch(
-                    type=str,
-                    desc="fullpath to a tsv file describing the paradigm",
-                ),
-                epi_img=Bunch(
-                    type=None, desc="fullpath the 4D BOLD nifti image"
-                ),
-                template=Bunch(type=str, desc=template),
             ),
+            t_r=Bunch(type=float, desc="repetition time in seconds"),
+            template=Bunch(type=str, desc=template),
         ),
         license="unknown",
     ),
@@ -2122,12 +2152,12 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     ),
     "talairach_atlas": Bunch(
         content=Bunch(
+            labels=Bunch(type=list[str], desc=labels),
+            lut=Bunch(type=pd.DataFrame, desc=lut),
             maps=Bunch(
                 type=Nifti1Image,
                 desc="Nifti1Image object containing the label image",
             ),
-            labels=Bunch(type=list[str], desc=labels),
-            lut=Bunch(type=pd.DataFrame, desc=lut),
         ),
         license="unknown",
     ),
@@ -2257,3 +2287,6 @@ def check_content_types(data, content) -> list[str]:
                 f"got '{type(data[key]).__name__}'"
             )
     return errors
+
+
+docdict["aal_atlas_content"] = content_to_rst("aal_atlas")

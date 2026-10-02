@@ -1467,40 +1467,7 @@ def fetch_atlas_aal(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        - 'maps': :obj:`str`
-            Path to nifti file containing the regions.
-            The image has shape ``(91, 109, 91)`` and contains
-            117 unique integer values defining the parcellation in version
-            SPM 5, 8 and 12, and 167 unique integer values defining the
-            parcellation in version 3v2. Please refer to the main description
-            to see how to link labels to regions IDs.
-
-        - %(labels)s
-            There are 117 names in version SPM 5, 8, and 12,
-            and 167 names in version 3v2.
-            Please refer to the main description
-            to see how to link labels to regions IDs.
-
-        - 'indices': :obj:`list` of :obj:`str`
-            Indices mapping 'labels'
-            to values in the 'maps' image.
-            This list has 117 elements in
-            version SPM 5, 8 and 12, and 167 elements in version 3v2.
-            Since the values in the 'maps' image do not correspond to
-            indices in ``labels``, but rather to values in ``indices``, the
-            location of a label in the ``labels`` list does not necessary
-            match the associated value in the image.
-            Use the ``indices``
-            list to identify the appropriate image value for a given label
-            (See main description above).
-
-        - %(description)s
-
-        - %(lut)s
-
-        - %(template)s
-
-        - %(atlas_type)s
+        %(aal_atlas_content)s
 
     Notes
     -----
