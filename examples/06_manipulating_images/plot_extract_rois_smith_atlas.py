@@ -1,6 +1,6 @@
 """
-Regions Extraction of Default Mode Networks using Smith Atlas
-=============================================================
+Regions Extraction of Default Mode Networks
+===========================================
 
 This simple example shows how to extract regions from Smith atlas
 resting state networks.
@@ -8,6 +8,12 @@ resting state networks.
 In particular, we show how Default Mode Network regions are extracted
 using :class:`~nilearn.regions.RegionExtractor` from regions module
 """
+
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Smith 2009 atlas <smith_2009_atlas>`.
+#
 
 # %%
 # Fetching the smith :term:`ICA` 10 RSN by importing datasets utilities

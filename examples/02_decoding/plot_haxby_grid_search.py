@@ -26,6 +26,12 @@ performance. See :sklearn:`modules/cross_validation.html`
 for an excellent explanation of how cross-validation works.
 """
 
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
+
 import warnings
 
 warnings.filterwarnings(

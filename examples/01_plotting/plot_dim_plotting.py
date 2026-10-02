@@ -14,6 +14,13 @@ display ROIs on top of a background image.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Brainomics Localizer dataset
+#    <brainomics_maps>`.
+#
+
+# %%
 # Retrieve the data: the localizer dataset with contrast maps
 # -----------------------------------------------------------
 

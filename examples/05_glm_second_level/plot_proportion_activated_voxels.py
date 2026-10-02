@@ -8,13 +8,19 @@ the so-called "All resolution inference" procedure
 in which the proportion of true discoveries in arbitrary clusters is estimated.
 The clusters can be defined from the input image, i.e. in a circular way, as
 the error control accounts for arbitrary cluster selection.
+
+.. admonition:: dataset
+
+    This example uses the the motor response
+    to left versus right button press task
+    from the :ref:`Brainomics Localizer dataset <brainomics_maps>`.
+
 """
 
 # %%
 # Fetch dataset
 # --------------
-# We download a list of left vs right button press contrasts from a
-# localizer dataset. Note that we fetch individual t-maps that represent the
+# Note that we fetch individual t-maps that represent the
 # :term:`BOLD` activity estimate divided
 # by the uncertainty about this estimate.
 from nilearn.datasets import fetch_localizer_contrasts

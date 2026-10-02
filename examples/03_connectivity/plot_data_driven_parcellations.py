@@ -27,6 +27,13 @@ and subsequently for classification tasks or to analyze data at a local level.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`development fMRI dataset
+#    <development_dataset>`.
+#
+
+# %%
 # Download a brain development fMRI dataset
 # -----------------------------------------
 #

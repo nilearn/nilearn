@@ -19,6 +19,12 @@ We use the Yeo atlas as an example for labeling regions,
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Yeo 2011 atlas <yeo_2011_atlas>`.
+#
+
+# %%
 # The original Yeo atlas
 # -----------------------
 

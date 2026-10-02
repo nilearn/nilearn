@@ -1,6 +1,6 @@
 """
-ROI-based decoding analysis in the Haxby dataset
-================================================
+ROI-based decoding analysis
+===========================
 
 In this script we reproduce the data analysis
 conducted by :footcite:t:`Haxby2001`.
@@ -15,6 +15,12 @@ three different masks:
 The masks were defined via a standard GLM-based analysis.
 
 """
+
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
 
 # We ignore some warnings that would otherwise
 # be thrown when reading images

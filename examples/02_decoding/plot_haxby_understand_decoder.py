@@ -17,6 +17,12 @@ image based on the subject's fMRI data from the Ventral Temporal cortex.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
+
+# %%
 # Load the Haxby dataset
 # ----------------------
 from nilearn import datasets

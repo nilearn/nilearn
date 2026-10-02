@@ -16,6 +16,12 @@ extract objects using a function
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Neurovault dataset <neurovault_dataset>`.
+#
+
+# %%
 # Fetching t-statistic image of localizer contrasts by loading from datasets
 # utilities
 from nilearn.datasets import fetch_neurovault_auditory_computation_task

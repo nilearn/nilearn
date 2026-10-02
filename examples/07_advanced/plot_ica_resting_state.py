@@ -19,6 +19,13 @@ tailored to :term:`fMRI` data, please refer to
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`development fMRI dataset
+#    <development_dataset>`.
+#
+
+# %%
 # Load the movie-watching dataset
 # -------------------------------
 # Here we use only single subject :term:`fMRI` timeseries

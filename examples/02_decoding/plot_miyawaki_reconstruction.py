@@ -1,6 +1,6 @@
 """
-Reconstruction of visual stimuli from Miyawaki et al. 2008
-==========================================================
+Reconstruction of visual stimuli
+================================
 
 This example reproduces the experiment presented in :footcite:t:`Miyawaki2008`.
 
@@ -16,6 +16,12 @@ a multiscale prediction on the images seen by the subject.
     :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
 
 """
+
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Miyawaki 2008 dataset <miyawaki_dataset>`.
+#
 
 # %%
 import sys

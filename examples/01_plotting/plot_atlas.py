@@ -9,6 +9,16 @@ to know which ones are shipped with Nilearn.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`Harvard-Oxford atlas <harvard_oxford_atlas>`
+#    - the :ref:`Juelich atlas <juelich_atlas>`
+#    - the :ref:`Yeo 2011 atlas <yeo_2011_atlas>`
+#
+
+# %%
 # Retrieving the atlas data
 # -------------------------
 

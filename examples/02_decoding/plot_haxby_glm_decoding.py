@@ -16,6 +16,12 @@ More specifically:
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
+
+# %%
 # Fetch example Haxby dataset
 # ---------------------------
 # We download the Haxby dataset

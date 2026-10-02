@@ -6,6 +6,12 @@ A simple example showing how to load an existing Nifti file and use
 basic nilearn functionalities.
 """
 
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
+
 # Let us use a Nifti file that is shipped with nilearn
 from nilearn.datasets import MNI152_FILE_PATH
 

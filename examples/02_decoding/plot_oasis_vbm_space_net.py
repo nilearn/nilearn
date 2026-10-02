@@ -1,6 +1,6 @@
 """
-Voxel-Based Morphometry on Oasis dataset with Space-Net prior
-=============================================================
+Voxel-Based Morphometry with Space-Net prior
+============================================
 
 Predicting age from gray-matter concentration maps from OASIS
 dataset. Note that age is a continuous variable, we use the regressor
@@ -14,6 +14,12 @@ here, and not the classification object.
     see the :ref:`dataset description <oasis_maps>`.
 
 """
+
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`OASIS VBM dataset <oasis_maps>`.
+#
 
 # %%
 # Load the Oasis :term:`VBM` dataset

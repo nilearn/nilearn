@@ -13,6 +13,18 @@ depends on the spatial extent of the effects that are expected.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`development fMRI dataset <development_dataset>`
+#    - the :ref:`fsaverage template <fs_average_template>`
+#    - a sample motor activation statistical map (`image 10426
+#      <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
+#      <neurovault_dataset>`)
+#
+
+# %%
 # Smoothing a mean EPI image
 # --------------------------
 # We start by loading a 4D image from the brain development functional dataset.

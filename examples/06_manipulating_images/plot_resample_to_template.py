@@ -10,6 +10,17 @@ could also be used to achieve this.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`ICBM 152 template <icbm_152_template>`
+#    - a sample motor activation statistical map (`image 10426
+#      <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
+#      <neurovault_dataset>`)
+#
+
+# %%
 # First we load the required datasets using the nilearn datasets module.
 from nilearn.datasets import (
     load_mni152_template,

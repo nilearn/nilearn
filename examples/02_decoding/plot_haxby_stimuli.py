@@ -1,10 +1,16 @@
 """
-Show stimuli of Haxby et al. dataset
-====================================
+Show stimuli of Haxby dataset
+=============================
 
 In this script we plot an overview of the stimuli used
 in :footcite:t:`Haxby2001`.
 """
+
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
 
 from nilearn._utils.helpers import check_matplotlib
 
