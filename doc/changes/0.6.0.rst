@@ -6,8 +6,6 @@ Version 0.6.0
 
 **Released December 2019**
 
-.. _v0-6-0-highlights:
-
 HIGHLIGHTS
 ----------
 
@@ -25,8 +23,6 @@ HIGHLIGHTS
  | - ``Scikit-learn -- v0.19``.
  | - ``Scipy -- v0.19``.
 
-.. _v0-6-0-new:
-
 NEW
 ---
 
@@ -42,8 +38,6 @@ NEW
 
 - :bdg-info:`Plotting` New function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
 
-.. _v0-6-0-enhancements:
-
 ENHANCEMENTS
 ------------
 
@@ -55,14 +49,10 @@ ENHANCEMENTS
 
 - :bdg-info:`Plotting` Function :func:`~plotting.view_surf` now accepts surface data provided as a file path (:gh:`2057` by `Jerome Dockes`_).
 
-.. _v0-6-0-changes:
-
 CHANGES
 -------
 
 - :bdg-info:`Plotting` Function :func:`~plotting.plot_img` now has explicit keyword arguments ``bg_img``, ``vmin`` and ``vmax`` to control the background image and the bounds of the colormap. These arguments were already accepted in ``kwargs`` but not documented before (:gh:`2157` by `Jerome Dockes`_).
-
-.. _v0-6-0-fixes:
 
 FIXES
 -----
@@ -78,8 +68,6 @@ FIXES
 Version 0.6.0rc
 ===============
 
-.. _v0-6-0rc-new:
-
 NEW
 ---
 .. warning::
@@ -91,16 +79,12 @@ NEW
   - :bdg-info:`Plotting` Function :func:`~plotting.view_markers` no longer accepts old parameter names. Instead of ``coord`` and ``color``, use ``marker_coords`` and ``marker_color`` respectively (:gh:`2255` by `Kshitij Chawla`_).
 
 
-.. _v0-6-0rc-changes:
-
 Changes
 -------
 
 - :bdg-success:`API` Class :class:`~maskers.NiftiLabelsMasker` now accepts an optional ``strategy`` parameter which allows it to change the function used to reduce values within each labeled ROI. Available functions include ``mean``, ``median``, ``minimum``, ``maximum``, ``standard_deviation`` and ``variance``. This change is also introduced in function :func:`~regions.img_to_signals_labels` (:gh:`2221` by `Daniel Gomez`_).
 
 - :bdg-dark:`Code` Add a warning to :class:`~regions.Parcellations` if the generated number of parcels does not match the requested number of parcels (:gh:`2240` by `Elizabeth DuPre`_).
-
-.. _v0-6-0rc-fixes:
 
 Fixes
 -----
@@ -118,8 +102,6 @@ Fixes
 - :bdg-dark:`Code` The argument ``version='det'`` in function :func:`~datasets.fetch_atlas_pauli_2017` now works as expected (:gh:`2235` by `Ryan Hammonds`_).
 
 - :bdg-secondary:`Maint` ``pip install nilearn`` now installs the necessary dependencies (:gh:`2214` by `Kshitij Chawla`_).
-
-.. _v0-6-0rc-contributors:
 
 Contributors
 ------------
@@ -154,14 +136,10 @@ Version 0.6.0b0
  | **We recommend upgrading to Python 3.6 .**
 
 
-.. _v0-6-0b0-new:
-
 NEW
 ---
 
 - :bdg-success:`API` New function :func:`~image.get_data` to replace the deprecated nibabel method ``Nifti1Image.get_data``. Now use ``nilearn.image.get_data(img)`` rather than ``img.get_data()``. This is because Nibabel is removing the ``get_data`` method. You may also consider using the Nibabel method ``nibabel.nifti1.Nifti1Image.get_fdata``, which returns the data cast to floating-point. See `BIAP8 <https://github.com/nipy/nibabel/wiki/BIAP8>`_. As a benefit, the :func:`~image.get_data` function works on niimg-like objects such as filenames (see :ref:`extracting_data`) (:gh:`2172` by `Jerome Dockes`_).
-
-.. _v0-6-0b0-changes:
 
 Changes
 -------
@@ -172,14 +150,10 @@ Changes
 
 - :bdg-dark:`Code` Function :func:`~datasets.fetch_neurovault` now does not filter out images that have their metadata field ``is_valid`` cleared by default (:gh:`2169` by `Jerome Dockes`_).
 
-.. _v0-6-0b0-fixes:
-
 Fixes
 -----
 
 - :bdg-info:`Plotting` Function :func:`~plotting.plot_connectome` now correctly displays marker size on 'l' and 'r' orientations, if an array or a list is passed to the function.
-
-.. _v0-6-0b0-contributors:
 
 Contributors
 ------------
@@ -195,8 +169,6 @@ Version 0.6.0a0
 ===============
 
 **Released October 2019**
-
-.. _v0-6-0a0-new:
 
 NEW
 ---
@@ -230,8 +202,6 @@ NEW
 
 - :bdg-info:`Plotting` New function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
 
-.. _v0-6-0a0-changes:
-
 Changes
 -------
 
@@ -249,8 +219,6 @@ Changes
 
 - :bdg-info:`Plotting` Function :func:`~plotting.view_connectome` now converts ``NaNs`` in the adjacency matrix to 0 (:gh:`2166` by `Jerome Dockes`_).
 
-
-.. _v0-6-0a0-fixes:
 
 Fixes
 -----
@@ -279,8 +247,6 @@ Fixes
 
 - :bdg-info:`Plotting` Function :func:`~plotting.plot_surf_roi` now takes ``vmin``, and ``vmax`` parameters (:gh:`2052` by `Ian Abenes`_).
 
-
-.. _v0-6-0a0-contributors:
 
 Contributors
 ------------
