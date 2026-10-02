@@ -341,12 +341,20 @@ class ReportMixin:
         )
 
         if self._has_report_data():
-            report_content["bg_base64"] = self._reporting_data["bg_base64"]
-            report_content["cm_base64"] = self._reporting_data["cm_base64"]
-            report_content["params"] = self._reporting_data["params"]
-            report_content["stat_map_base64"] = self._reporting_data[
-                "stat_map_base64"
-            ]
+            if self.__sklearn_tags__().estimator_type == "masker":
+                self._report_content["bg_base64"] = self._reporting_data[
+                    "bg_base64"
+                ]
+                self._report_content["cm_base64"] = self._reporting_data[
+                    "cm_base64"
+                ]
+                self._report_content["params"] = self._reporting_data["params"]
+                self._report_content["stat_map_base64"] = self._reporting_data[
+                    "stat_map_base64"
+                ]
+            else:
+                # TODO
+                ...
 
     @abc.abstractmethod
     def _model_attributes_to_dataframe(self, model):
