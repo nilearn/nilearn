@@ -47,6 +47,60 @@ DATASET_NAMES = {
 }
 
 
+@pytest.mark.parametrize(
+    ("n_subjects", "expected"),
+    [
+        (None, 6),
+        (2, 2),
+        ([1, 3], [1, 3]),
+        ((1, 3), (1, 3)),
+    ],
+)
+def test_validate_subjects(n_subjects, expected):
+    """Check valid subject selections."""
+    assert _utils._validate_subjects(n_subjects, 6) == expected
+
+
+def test_validate_subjects_above_maximum_uses_max():
+    """Use the maximum when a subject count exceeds it."""
+    with pytest.warns(UserWarning, match="Only 6 subjects are available"):
+        result = _utils._validate_subjects(
+            7,
+            max_subjects=6,
+            warning_message="Only 6 subjects are available.",
+        )
+
+    assert result == 6
+
+
+@pytest.mark.parametrize("n_subjects", [[], (), [0], [7]])
+def test_validate_subjects_invalid_selection(n_subjects):
+    """Reject empty and out-of-range subject selections."""
+    with pytest.raises(ValueError):
+        _utils._validate_subjects(n_subjects, max_subjects=6)
+
+
+@pytest.mark.parametrize("n_subjects", [True, 1.0, "1", {1}])
+def test_validate_subjects_invalid_type(n_subjects):
+    """Reject unsupported subject selection types."""
+    with pytest.raises(TypeError, match="'n_subjects' must be of type"):
+        _utils._validate_subjects(n_subjects, max_subjects=6)
+
+
+@pytest.mark.parametrize("n_subjects", [["1"], [True]])
+def test_validate_subjects_invalid_subject_id_type(n_subjects):
+    """Reject non-integer subject IDs."""
+    with pytest.raises(TypeError, match="'subject id' must be of type"):
+        _utils._validate_subjects(n_subjects, max_subjects=6)
+
+
+@pytest.mark.parametrize("n_subjects", [0, -1])
+def test_validate_subjects_invalid_count(n_subjects):
+    """Reject non-positive subject counts."""
+    with pytest.raises(ValueError, match="must be greater than zero"):
+        _utils._validate_subjects(n_subjects, max_subjects=6)
+
+
 @pytest.mark.parametrize("name", DATASET_NAMES)
 def test_get_dataset_descr(name):
     """Test function ``get_dataset_descr()``.

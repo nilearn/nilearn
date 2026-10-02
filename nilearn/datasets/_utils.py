@@ -23,11 +23,12 @@ from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import _has_rich, find_stack_level, readable_time
 from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
     check_parameter_in_allowed,
     check_params,
 )
 from nilearn.datasets.utils import get_data_dirs
-from nilearn.nilearn_typing import Verbose
+from nilearn.nilearn_typing import NSubject, Verbose
 
 _REQUESTS_TIMEOUT = (15.1, 61)
 PACKAGE_DIRECTORY = Path(__file__).absolute().parent
@@ -47,6 +48,39 @@ ALLOWED_MESH_TYPES = {
     "sphere",
     "flat",
 }
+
+
+def _validate_subjects(
+    n_subjects: NSubject,
+    max_subjects: int,
+    *,
+    warning_message: str | None = None,
+) -> int | list[int] | tuple[int, ...]:
+    """Validate and normalize a dataset subject selection."""
+    check_params({"n_subjects": n_subjects})
+
+    if n_subjects is None:
+        return max_subjects
+
+    if isinstance(n_subjects, (list, tuple)):
+        if not n_subjects:
+            raise ValueError("'n_subjects' cannot be an empty list or tuple.")
+        for subject_id in n_subjects:
+            check_is_of_allowed_type(subject_id, int, "subject id")
+            check_parameter_in_allowed(
+                subject_id, range(1, max_subjects + 1), "subject id"
+            )
+        return n_subjects
+
+    if n_subjects < 1:
+        raise ValueError("'n_subjects' must be greater than zero.")
+
+    if n_subjects <= max_subjects:
+        return n_subjects
+
+    if warning_message is not None:
+        warnings.warn(warning_message, stacklevel=find_stack_level())
+    return max_subjects
 
 
 def md5_hash(string):

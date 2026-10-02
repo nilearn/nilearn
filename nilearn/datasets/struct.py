@@ -21,6 +21,7 @@ from nilearn.datasets._utils import (
     ALLOWED_DATA_TYPES,
     ALLOWED_MESH_TYPES,
     PACKAGE_DIRECTORY,
+    _validate_subjects,
     fetch_files,
     get_dataset_descr,
     get_dataset_dir,
@@ -29,6 +30,7 @@ from nilearn.image import check_niimg, get_data, new_img_like, resampling
 from nilearn.nilearn_typing import (
     AvailableMeshes,
     DataDir,
+    NSubject,
     Resolution,
     Resume,
     Url,
@@ -653,7 +655,7 @@ def oasis_missing_subjects():
 
 @fill_doc
 def fetch_oasis_vbm(
-    n_subjects: int | None = None,
+    n_subjects: NSubject = None,
     dartel_version: bool = True,
     data_dir: DataDir = None,
     url: Url = None,
@@ -674,9 +676,7 @@ def fetch_oasis_vbm(
 
     Parameters
     ----------
-    n_subjects : :obj:`int` or None, default=None
-        The number of subjects to load. If None is given, all the
-        subjects are used.
+    %(n_subjects)s
 
     dartel_version : :obj:`bool`, default=True
         Whether or not to use data normalized with DARTEL instead of standard
@@ -707,28 +707,17 @@ def fetch_oasis_vbm(
     """
     check_params(locals())
 
-    # check number of subjects
-    if n_subjects is None:
-        n_subjects = 403 if dartel_version else 415
-    if dartel_version:  # DARTEL version has 13 identified outliers
-        if n_subjects > 403:
-            warnings.warn(
-                "Only 403 subjects are available in the "
-                "DARTEL-normalized version of the dataset. "
-                f"All of them will be used instead of the wanted {n_subjects}",
-                stacklevel=find_stack_level(),
-            )
-            n_subjects = 403
-    elif n_subjects > 415:
-        warnings.warn(
-            "Only 415 subjects are available in the "
-            "non-DARTEL-normalized version of the dataset. "
-            f"All of them will be used instead of the wanted {n_subjects}",
-            stacklevel=find_stack_level(),
-        )
-        n_subjects = 415
-    if n_subjects < 1:
-        raise ValueError(f"Incorrect number of subjects ({n_subjects})")
+    max_subjects = 403 if dartel_version else 415
+    normalization = "DARTEL" if dartel_version else "non-DARTEL"
+    n_subjects = _validate_subjects(
+        n_subjects,
+        max_subjects,
+        warning_message=(
+            f"Only {max_subjects} subjects are available in the "
+            f"{normalization}-normalized version of the dataset. "
+            f"All of them will be used instead of the wanted {n_subjects}."
+        ),
+    )
 
     # pick the archive corresponding to preprocessings type
     if url is None:
@@ -778,6 +767,7 @@ def fetch_oasis_vbm(
             282,
             287,
             309,
+            390,
             428,
         ]
         missing_subjects = sorted(missing_subjects + removed_outliers)
@@ -790,9 +780,9 @@ def fetch_oasis_vbm(
                 url_images,
                 opts,
             )
-            for s in range(1, 457)
+            for s in range(1, 458)
             if s not in missing_subjects
-        ][:n_subjects]
+        ]
         file_names_wm = [
             (
                 Path(
@@ -802,7 +792,7 @@ def fetch_oasis_vbm(
                 url_images,
                 opts,
             )
-            for s in range(1, 457)
+            for s in range(1, 458)
             if s not in missing_subjects
         ]
     else:
@@ -818,9 +808,9 @@ def fetch_oasis_vbm(
                 url_images,
                 opts,
             )
-            for s in range(1, 457)
+            for s in range(1, 458)
             if s not in missing_subjects
-        ][:n_subjects]
+        ]
         file_names_wm = [
             (
                 Path(
@@ -830,7 +820,7 @@ def fetch_oasis_vbm(
                 url_images,
                 opts,
             )
-            for s in range(1, 457)
+            for s in range(1, 458)
             if s not in missing_subjects
         ]
     file_names_extvars: list[tuple[str, str, dict]] = [
@@ -839,9 +829,14 @@ def fetch_oasis_vbm(
     file_names_dua: list[tuple[str, str, dict]] = [
         ("data_usage_agreement.txt", url_dua, {})
     ]
-    # restrict to user-specified number of subjects
-    file_names_gm = file_names_gm[:n_subjects]
-    file_names_wm = file_names_wm[:n_subjects]
+    subject_indices = (
+        range(n_subjects)
+        if isinstance(n_subjects, int)
+        else [subject_id - 1 for subject_id in n_subjects]
+    )
+    file_names_gm = [file_names_gm[index] for index in subject_indices]
+    file_names_wm = [file_names_wm[index] for index in subject_indices]
+    selected_subjects = len(file_names_gm)
 
     file_names = (
         file_names_gm + file_names_wm + file_names_extvars + file_names_dua
@@ -853,8 +848,8 @@ def fetch_oasis_vbm(
     files = fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
     # Build Bunch
-    gm_maps = files[:n_subjects]
-    wm_maps = files[n_subjects : (2 * n_subjects)]
+    gm_maps = files[:selected_subjects]
+    wm_maps = files[selected_subjects : (2 * selected_subjects)]
     ext_vars_file = files[-2]
     data_usage_agreement = files[-1]
 

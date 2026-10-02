@@ -82,7 +82,7 @@ show()
 # First let's fetch Haxby dataset for subject 1 and 2
 from nilearn.datasets import fetch_haxby
 
-haxby = fetch_haxby(subjects=[1, 2])
+haxby = fetch_haxby(n_subjects=[1, 2])
 
 # %%
 # Now we can find the anatomical images from both
