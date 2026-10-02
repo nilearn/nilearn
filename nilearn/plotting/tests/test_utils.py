@@ -402,7 +402,10 @@ def test_load_anat_black_bg_false_non_negative_data(img_3d_rand_eye):
 
 @pytest.mark.ai_generated
 def test_load_anat_black_bg_false_negative_data(img_3d_rand_eye):
-    """Test load_anat with black_bg=False when image data contains negative values."""
+    """Test load_anat with black_bg=False when image data
+
+    contains negative values.
+    """
     from nilearn.image import new_img_like
     from nilearn.plotting.image.utils import load_anat
 
@@ -419,18 +422,20 @@ def test_load_anat_black_bg_false_negative_data(img_3d_rand_eye):
 
 @pytest.mark.ai_generated
 def test_apply_dimming_coverage():
-    """Test _apply_dimming for both non-negative and negative initial vmin values."""
+    """Test _apply_dimming for both non-negative and negative
+
+    initial vmin values.
+    """
     from nilearn.plotting.image.utils import _apply_dimming
 
     # Non-negative orig_vmin (orig_vmin >= 0)
-    vmin, vmax = _apply_dimming(
+    vmin, _ = _apply_dimming(
         dim="auto", black_bg=False, vmin=0.0, vmax=100.0
     )
     assert vmin == 0.0
 
     # Negative orig_vmin (orig_vmin < 0)
-    vmin, vmax = _apply_dimming(
+    vmin, _vmax = _apply_dimming(
         dim="auto", black_bg=False, vmin=-10.0, vmax=100.0
     )
     assert vmin < -10.0
-
