@@ -2487,9 +2487,7 @@ def fetch_language_localizer_demo_dataset(
         str(path) for path in dataset_dir.rglob("*") if path.is_file()
     ]
 
-    description = Description.from_registry(
-        "language_localizer_demo", get_dataset_descr("language_localizer_demo")
-    )
+    description = Description.from_registry("language_localizer_demo")
     return Bunch(
         data_dir=str(dataset_dir),
         func=sorted(file_list),
@@ -2886,9 +2884,7 @@ def fetch_localizer_first_level(
     params = dict(list(zip(options, files, strict=False)))
     data = Bunch(**params)
 
-    description = Description.from_registry(
-        dataset_name, get_dataset_descr(dataset_name)
-    )
+    description = Description.from_registry(dataset_name)
 
     data.description = description
     data.t_r = 2.4
@@ -3180,9 +3176,7 @@ def fetch_spm_multimodal_fmri(
         # No. Download the data
         data = _download_data_spm_multimodal(dataset_dir, subject_dir, verbose)
 
-    data.description = Description.from_registry(
-        "spm_multimodal", get_dataset_descr("spm_multimodal")
-    )
+    data.description = Description.from_registry("spm_multimodal")
     data.t_r = 2
     return data
 
@@ -3258,7 +3252,7 @@ def fetch_fiac_first_level(
         _subject_data["mask"] = str(mask)
         return Bunch(**_subject_data)
 
-    description = Description.from_registry("fiac", get_dataset_descr("fiac"))
+    description = Description.from_registry("fiac")
 
     # maybe data_dir already contains the data ?
     data = _glob_fiac_data(verbose)

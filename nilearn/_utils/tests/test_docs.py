@@ -56,9 +56,8 @@ def test_description_directives_are_rendered(rst_file):
 @pytest.mark.parametrize("name", DATASET_DESCRIPTIONS)
 def test_description_from_registry(name):
     """Check descriptions built from the registry."""
-    description = Description.from_registry(name, "foo")
+    description = Description.from_registry(name)
 
-    assert description.long_description == "foo"
     assert description.documentation.endswith(
         f"/modules/description/{name}.html"
     )

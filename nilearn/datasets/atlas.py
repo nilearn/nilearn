@@ -1536,7 +1536,6 @@ def fetch_atlas_aal(
             data_dir, filenames, resume=resume, verbose=verbose
         )
 
-    fdescr = get_dataset_descr("aal_atlas")
     labels = ["Background"]
     indices = ["0"]
     if version in ("SPM12", "3v2"):
@@ -1558,12 +1557,11 @@ def fetch_atlas_aal(
                 _, label, index = line.strip().split("\t")
                 indices.append(index)
                 labels.append(label)
-        fdescr = fdescr.replace("SPM 12", version)
 
     return Atlas(
         maps=atlas_img,
         labels=labels,
-        description=Description.from_registry("aal_atlas", fdescr),
+        description=Description.from_registry("aal_atlas"),
         lut=generate_atlas_look_up_table(
             "fetch_atlas_aal",
             index=np.array([int(x) for x in indices]),
@@ -1942,9 +1940,7 @@ def fetch_atlas_allen_2011(
     params = [
         (
             "description",
-            Description.from_registry(
-                "allen_2011_atlas", get_dataset_descr("allen_2011_atlas")
-            ),
+            Description.from_registry("allen_2011_atlas"),
         ),
         ("atlas_type", atlas_type),
         ("rsn_indices", labels),
@@ -2195,9 +2191,7 @@ def fetch_atlas_talairach(
     return Atlas(
         maps=atlas_img,
         labels=labels,
-        description=Description.from_registry(
-            "talairach_atlas", get_dataset_descr("talairach_atlas")
-        ),
+        description=Description.from_registry("talairach_atlas"),
         lut=generate_atlas_look_up_table("fetch_atlas_talairach", name=labels),
         atlas_type=atlas_type,
         template="Talairach",

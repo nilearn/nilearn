@@ -1945,21 +1945,21 @@ def fill_doc(f: Callable) -> Callable:
     return f
 
 
-"""Structured descriptions of what dataset fetchers return.
+# Structured descriptions of what dataset fetchers return.
+#
+# The content of this registry is used:
+#
+# - by the fetchers, to build the ``description`` they return,
+# - by the dataset description pages (``nilearn/datasets/description/*.rst``)
+#   via the ``nilearn_dataset_content`` and ``nilearn_dataset_license``
+#   directives:
+#   rendered by a sphinx extension at doc build time
+#   (see ``doc/sphinxext/dataset_descriptions.py``)
+#   and by :func:`render_description_directives` at runtime.
+# - to fill the "return" section of the doc strings of the fetcheers
+#
+# It must therefore not require downloading any data.
 
-The content of this registry is used:
-
-- by the fetchers, to build the ``description`` they return,
-- by the dataset description pages (``nilearn/datasets/description/*.rst``)
-  via the ``nilearn_dataset_content`` and ``nilearn_dataset_license``
-  directives:
-  rendered by a sphinx extension at doc build time
-  (see ``doc/sphinxext/dataset_descriptions.py``)
-  and by :func:`render_description_directives` at runtime.
-- to fill the "return" section of the doc strings of the fetcheers
-
-It must therefore not require downloading any data.
-"""
 
 DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     "aal_atlas": Bunch(

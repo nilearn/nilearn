@@ -60,19 +60,17 @@ class Description(Bunch):
         self,
         documentation: str,
         content: Bunch,
-        long_description: str,
         license: str | None,
     ):
 
         super().__init__(
             documentation=documentation,
             content=content,
-            long_description=long_description,
             license=license,
         )
 
     @classmethod
-    def from_registry(cls, name: str, long_description: str):
+    def from_registry(cls, name: str):
         """Build the description of dataset ``name`` from the registry.
 
         See ``nilearn.datasets._descriptions.DATASET_DESCRIPTIONS``.
@@ -83,7 +81,6 @@ class Description(Bunch):
                 f"{documentation_url()}/modules/description/{name}.html"
             ),
             content=entry.content,
-            long_description=long_description,
             license=entry.license,
         )
 
