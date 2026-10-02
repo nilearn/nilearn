@@ -3,8 +3,6 @@
 Version 0.15.0dev
 =================
 
-.. _v0-15-0-highlights:
-
 HIGHLIGHTS
 ----------
 
@@ -29,8 +27,6 @@ HIGHLIGHTS
     - :bdg-dark:`Code`
 
 
-.. _v0-15-0-fixes:
-
 Fixes
 -----
 
@@ -48,10 +44,6 @@ Fixes
 
 - :bdg-dark:`Code` Fix residual variance of :class:`~nilearn.glm.OLSModel` and :class:`~nilearn.glm.ARModel` being divided by the number of design columns instead of the design rank, which made t and F statistics too small for rank-deficient designs in :class:`~nilearn.glm.first_level.FirstLevelModel` and :class:`~nilearn.glm.second_level.SecondLevelModel` (:gh:`6611` by `Wolfgang Aura`_).
 
-- :bdg-info:`Plotting` Fix :func:`~nilearn.plotting.plot_anat` with ``black_bg=False`` introducing spurious negative values into vmin for non-negative images (:gh:`6313`).
-
-
-.. _v0-15-0-enhancements:
 
 Enhancements
 ------------
@@ -65,8 +57,6 @@ Enhancements
 - :bdg-success:`API` :class:`~nilearn.utils.InputTags` is now part of the public API in :mod:`nilearn.utils`, so that third-party estimators can declare whether they accept Nifti and / or surface images (:gh:`6563` by `Aniket Singh Yadav`_).
 
 - :bdg-dark:`Code` Name columns of signals extracted as dataframes by :meth:`~maskers.NiftiSpheresMasker.transform` (:gh:`6599` by `Rémi Gau`_).
-
-.. _v0-15-0-changes:
 
 Changes
 -------

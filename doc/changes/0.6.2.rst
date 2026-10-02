@@ -6,8 +6,6 @@ Version 0.6.2
 
 **Released February 2020**
 
-.. _v0-6-2-enhancements:
-
 ENHANCEMENTS
 ------------
 
@@ -16,8 +14,6 @@ ENHANCEMENTS
 - :bdg-secondary:`Maint` Generated documentation now includes Binder links to launch examples interactively in the browser (:gh:`2300` by `Elizabeth DuPre`_).
 
 
-.. _v0-6-2-fixes:
-
 Fixes
 -----
 
@@ -25,14 +21,10 @@ Fixes
 
 - :bdg-secondary:`Maint` More robust matplotlib backend selection (:gh:`2302` by `Gael Varoquaux`_).
 
-.. _v0-6-2-changes:
-
 Changes
 -------
 
 - :bdg-danger:`Deprecation` Function ``nilearn.datasets.fetch_nyu_rest`` has been deprecated and will be removed in Nilearn ``0.8.0`` (:gh:`2308` by `Joshua Teves`_).
-
-.. _v0-6-2-contributors:
 
 Contributors
 ------------
