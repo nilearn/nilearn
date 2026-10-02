@@ -35,15 +35,15 @@ were already normalized to the same :term:`MNI` space.
 # and the confounds.tsv files.
 #
 # For more information
-# see the :ref:`dataset description <language_localizer_dataset>`.
+# see the :ref:`dataset description <_language_localizer_demo>`.
 #
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
 data = fetch_language_localizer_demo_dataset()
 
 # %%
-# Here is the location of the dataset on disk.
-data.data_dir
+# The dataset is organized in BIDS-like fashion on disk at this location.
+print(data.data_dir)
 
 # %%
 # Subject level models

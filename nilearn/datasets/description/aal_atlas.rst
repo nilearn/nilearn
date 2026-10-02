@@ -53,16 +53,12 @@ and :footcite:t:`Tzourio-Mazoyer2002`.
 
 Content
 -------
-    :"maps": :obj:`str`. path to nifti file containing regions.
-    :"labels": dict. labels dictionary with their region id as key and name as value
-    :"indices": :obj:`list` of :obj:`str` Indices mapping 'labels' to values in the 'maps' image.
-    :"lut": look up table for the regions
+.. nilearn_dataset_content:: aal
 
 References
 ----------
-
 .. footbibliography::
 
 License
 -------
-unknown
+.. nilearn_dataset_license:: aal

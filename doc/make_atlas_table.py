@@ -15,6 +15,7 @@ import pandas as pd
 from requests.exceptions import SSLError
 from urllib3.exceptions import MaxRetryError
 
+from nilearn._utils.docs import check_content_types
 from nilearn.datasets import (
     fetch_atlas_aal,
     fetch_atlas_allen_2011,
@@ -34,6 +35,7 @@ from nilearn.datasets import (
     load_fsaverage,
     load_fsaverage_data,
 )
+from nilearn.datasets._utils import Description
 from nilearn.maskers import (
     NiftiLabelsMasker,
     NiftiMapsMasker,
@@ -60,6 +62,18 @@ def _update_dict(dict_for_df, name, fn, data, doc_dir, output_file, n_rois=1):
     )
 
     return dict_for_df
+
+
+def _check_description(fn, params, data, errors):
+    """Check that the types of the data match those in their description.
+
+    Mismatches are appended to errors.
+    """
+    if not isinstance(data.description, Description):
+        return errors
+    for msg in check_content_types(data, data.description.content):
+        errors.append(f"{fn.__name__}({params}): {msg}")
+    return errors
 
 
 def _generate_markdown_file(filename, dict_for_df):
@@ -102,6 +116,10 @@ as this may lead to invalid results.
 
 DEBUG = False
 GENERATE_FIG = True
+
+# mismatches between the content of the fetchers' data
+# and their description
+description_errors = []
 
 doc_dir = Path(__file__).parent
 output_dir = doc_dir / "images"
@@ -182,6 +200,10 @@ for display_name, details in deterministic_atlases.items():
     except (SSLError, MaxRetryError, SSLCertVerificationError):
         continue
 
+    description_errors = _check_description(
+        fn, params, data, description_errors
+    )
+
     name = fn.__name__.replace("fetch_atlas_", "")
 
     extra_title = [f"{k}={v}" for k, v in params.items()]
@@ -227,6 +249,9 @@ for display_name, details in deterministic_atlases.items():
 fsaverage = load_fsaverage("fsaverage5")
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
 destrieux = fetch_atlas_surf_destrieux()
+description_errors = _check_description(
+    fetch_atlas_surf_destrieux, {}, destrieux, description_errors
+)
 destrieux_atlas = SurfaceImage(
     mesh=fsaverage["inflated"],
     data={
@@ -329,6 +354,10 @@ for display_name, details in probabilistic_atlases.items():
     except (SSLError, MaxRetryError, SSLCertVerificationError):
         continue
 
+    description_errors = _check_description(
+        fn, params, data, description_errors
+    )
+
     name = fn.__name__.replace("fetch_atlas_", "")
 
     extra_title = [f"{k}={v}" for k, v in params.items()]
@@ -370,3 +399,9 @@ for display_name, details in probabilistic_atlases.items():
         break
 
 _generate_markdown_file("probabilistic_atlases.md", dict_for_df)
+
+if description_errors:
+    raise TypeError(
+        "Content of fetched data does not match their description:\n- "
+        + "\n- ".join(description_errors)
+    )

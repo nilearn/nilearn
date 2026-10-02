@@ -33,6 +33,7 @@ from nilearn._utils.param_validation import (
 from nilearn.datasets._utils import (
     ALLOWED_MESH_TYPES,
     PACKAGE_DIRECTORY,
+    Description,
     fetch_files,
     fetch_single_file,
     filter_columns,
@@ -2426,7 +2427,7 @@ def fetch_language_localizer_demo_dataset(
     """Download language localizer demo dataset.
 
     For more information
-    see the :ref:`dataset description <language_localizer_dataset>`.
+    see the :ref:`dataset description <_language_localizer_demo>`.
 
     Parameters
     ----------
@@ -2491,7 +2492,9 @@ def fetch_language_localizer_demo_dataset(
         str(path) for path in dataset_dir.rglob("*") if path.is_file()
     ]
 
-    description = get_dataset_descr("language_localizer_demo")
+    description = Description.from_registry(
+        "language_localizer_demo", get_dataset_descr("language_localizer_demo")
+    )
     return Bunch(
         data_dir=str(dataset_dir),
         func=sorted(file_list),
@@ -2850,7 +2853,7 @@ def fetch_localizer_first_level(
     """Download a first-level localizer :term:`fMRI` dataset.
 
     For more information
-    see the :ref:`dataset description <localizer_first_level_dataset>`.
+    see the :ref:`dataset description <localizer_first_level>`.
 
     Parameters
     ----------
@@ -2899,7 +2902,10 @@ def fetch_localizer_first_level(
     params = dict(list(zip(options, files, strict=False)))
     data = Bunch(**params)
 
-    description = get_dataset_descr(dataset_name)
+    description = Description.from_registry(
+        dataset_name, get_dataset_descr(dataset_name)
+    )
+
     data.description = description
     data.t_r = 2.4
     data.slice_time_ref = 0.5
@@ -3154,7 +3160,7 @@ def fetch_spm_multimodal_fmri(
     """Fetcher for Multi-modal Face Dataset.
 
     For more information,
-    see the :ref:`dataset description <spm_multimodal_dataset>`.
+    see the :ref:`dataset description <spm_multimodal>`.
 
     Parameters
     ----------
@@ -3205,15 +3211,15 @@ def fetch_spm_multimodal_fmri(
     subject_id = "sub001"
     subject_dir = dataset_dir / subject_id
 
-    description = get_dataset_descr("spm_multimodal")
-
     # maybe data_dir already contains the data ?
     data = _glob_spm_multimodal_fmri_data(subject_dir, verbose)
     if data is None:
         # No. Download the data
         data = _download_data_spm_multimodal(dataset_dir, subject_dir, verbose)
 
-    data.description = description
+    data.description = Description.from_registry(
+        "spm_multimodal", get_dataset_descr("spm_multimodal")
+    )
     data.t_r = 2
     return data
 
@@ -3225,7 +3231,7 @@ def fetch_fiac_first_level(
     """Download a first-level fiac :term:`fMRI` dataset (2 runs).
 
     For more information
-    see the :ref:`dataset description <fiac_dataset>`.
+    see the :ref:`dataset description <fiac>`.
 
     Parameters
     ----------
@@ -3296,7 +3302,7 @@ def fetch_fiac_first_level(
         _subject_data["mask"] = str(mask)
         return Bunch(**_subject_data)
 
-    description = get_dataset_descr("fiac")
+    description = Description.from_registry("fiac", get_dataset_descr("fiac"))
 
     # maybe data_dir already contains the data ?
     data = _glob_fiac_data(verbose)
@@ -3321,7 +3327,8 @@ def fetch_fiac_first_level(
         return data
 
     data = _glob_fiac_data(verbose)
-    data.description = description
+    if data is not None:
+        data.description = description
     return data
 
 

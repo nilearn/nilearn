@@ -18,9 +18,15 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import requests
+from sklearn.utils import Bunch
 
+from nilearn._base import documentation_url
 from nilearn._utils import logger
-from nilearn._utils.docs import fill_doc
+from nilearn._utils.docs import (
+    DATASET_DESCRIPTIONS,
+    fill_doc,
+    render_description_directives,
+)
 from nilearn._utils.logger import _has_rich, find_stack_level, readable_time
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -47,6 +53,39 @@ ALLOWED_MESH_TYPES = {
     "sphere",
     "flat",
 }
+
+
+class Description(Bunch):
+    def __init__(
+        self,
+        documentation: str,
+        content: Bunch,
+        long_description: str,
+        license: str | None,
+    ):
+
+        super().__init__(
+            documentation=documentation,
+            content=content,
+            long_description=long_description,
+            license=license,
+        )
+
+    @classmethod
+    def from_registry(cls, name: str, long_description: str):
+        """Build the description of dataset ``name`` from the registry.
+
+        See ``nilearn.datasets._descriptions.DATASET_DESCRIPTIONS``.
+        """
+        entry = DATASET_DESCRIPTIONS[name]
+        return cls(
+            documentation=(
+                f"{documentation_url()}/modules/description/{name}.html"
+            ),
+            content=entry.content,
+            long_description=long_description,
+            license=entry.license,
+        )
 
 
 def md5_hash(string):
@@ -778,7 +817,7 @@ def get_dataset_descr(ds_name: str) -> str:
             stacklevel=find_stack_level(),
         )
 
-    return str(descr)
+    return render_description_directives(str(descr))
 
 
 def movetree(src, dst) -> None:

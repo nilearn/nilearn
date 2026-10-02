@@ -11,8 +11,15 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 
 # sourcery skip: merge-dict-assign
 
+import re
 import sys
+import types
+import typing
 from collections.abc import Callable
+
+import pandas as pd
+from nibabel import Nifti1Image
+from sklearn.utils import Bunch
 
 ##############################################################################
 #
@@ -1746,8 +1753,9 @@ docdict[
         """
 
 # atlas labels
-docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
-        List of the names of the regions."""
+labels = "List of the names of the regions."
+docdict["labels"] = f"""'labels' : :obj:`list` of :obj:`str`
+        {labels}"""
 
 # mask_img_ for most nifti maskers
 docdict[
@@ -1761,11 +1769,15 @@ docdict[
         (for example across timepoints) is finite value different from 0."""
 
 # look up table
-docdict["lut"] = """lut : :obj:`pandas.DataFrame`
+lut = """
         Act as a look up table (lut)
         with at least columns 'index' and 'name'.
         Formatted according to 'dseg.tsv' format from
-        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_.
+"""
+docdict["lut"] = f"""lut : :obj:`pandas.DataFrame`
+{lut}
+       """
 
 
 signals_transform = """signals : :obj:`numpy.ndarray`, \
@@ -1822,9 +1834,9 @@ docdict[
 
 
 # template
-docdict["template"] = """'template' : :obj:`str`
-        The standardized space of analysis
-        in which the atlas results are provided.
+template = "The standardized space of analysis in which the data is provided."
+docdict["template"] = f"""'template' : :obj:`str`
+        {template}
         When known it should be a valid template name
         taken from the spaces described in
         `the BIDS specification <https://bids-specification.readthedocs.io/en/latest/appendices/coordinate-systems.html#image-based-coordinate-systems>`_."""
@@ -1929,3 +1941,319 @@ def fill_doc(f: Callable) -> Callable:
             "Did you forget to escape a character with an extra '%'"
         ) from exp
     return f
+
+
+"""Structured descriptions of what dataset fetchers return.
+
+The content of this registry is used:
+
+- by the fetchers, to build the ``description`` they return,
+- by the dataset description pages (``nilearn/datasets/description/*.rst``)
+  via the ``nilearn_dataset_content`` and ``nilearn_dataset_license``
+  directives:
+  rendered by a sphinx extension at doc build time
+  (see ``doc/sphinxext/dataset_descriptions.py``)
+  and by :func:`render_description_directives` at runtime.
+
+It must therefore not require downloading any data.
+"""
+
+
+DATASET_DESCRIPTIONS: dict[str, Bunch] = {
+    "aal_atlas": Bunch(
+        content=Bunch(
+            maps=Bunch(
+                type=str,
+                desc="fullpath to 3D nifti file containing label image",
+            ),
+            labels=Bunch(type=list[str], desc=labels),
+            indices=Bunch(
+                type=list[str],
+                desc="indices mapping ``labels`` to values "
+                "in the'``maps`` image",
+            ),
+            lut=Bunch(type=pd.DataFrame, desc=lut),
+        ),
+        license="unknown",
+    ),
+    "allen_rsn_2011_atlas": Bunch(
+        content=Bunch(
+            maps=Bunch(
+                type=str,
+                desc=(
+                    "path to 4D nifti file containing T-maps "
+                    "of all 75 unthresholded components"
+                ),
+            ),
+            rsn28=Bunch(
+                type=str,
+                desc=(
+                    "fullpath to 4D nifti file containing "
+                    "the 28 resting state networks "
+                    "from Allen et al 2011"
+                ),
+            ),
+            networks=Bunch(
+                type=list[list[str]],
+                desc="names for the 28 resting state networks",
+            ),
+            rsn_indices=Bunch(
+                type=list[tuple[str, list[int]]],
+                desc=(
+                    "indices in the 'maps' file "
+                    "of the 28 resting state networks"
+                ),
+            ),
+            comps=Bunch(
+                type=str,
+                desc=(
+                    "fullpath to 4D nifti file "
+                    "containing the aggregate ICA components"
+                ),
+            ),
+        ),
+        license="unknown",
+    ),
+    "fiac": Bunch(
+        content=Bunch(
+            design_matrix1=Bunch(
+                type=pd.DataFrame, desc="Design matrix of run 1"
+            ),
+            func1=Bunch(type=str, desc="fullpath to 4D nifti file of run 1"),
+            design_matrix2=Bunch(
+                type=pd.DataFrame, desc="Design matrix of run 2"
+            ),
+            func2=Bunch(type=str, desc="fullpath to 4D nifti file of run 1"),
+            mask=Bunch(type=str, desc="fullpath to 3D nifti mask"),
+        ),
+        license="unknown",
+    ),
+    "language_localizer_demo": Bunch(
+        content=Bunch(
+            data_dir=Bunch(type=str, desc="Path to downloaded dataset"),
+            func=Bunch(
+                type=list[str],
+                desc=(
+                    "Absolute paths of downloaded files on disk. "
+                    "The data is organized in a BIDS like fashion."
+                ),
+            ),
+        ),
+        license="ODC-BY-SA",
+    ),
+    "localizer_first_level": Bunch(
+        content=Bunch(
+            t_r=Bunch(type=float, desc="repetition time in seconds"),
+            slice_time_ref=Bunch(
+                type=float,
+                desc=(
+                    "slice timing reference "
+                    "used during slice timing correction"
+                ),
+                events=Bunch(
+                    type=str,
+                    desc="fullpath to a tsv file describing the paradigm",
+                ),
+                epi_img=Bunch(
+                    type=None, desc="fullpath the 4D BOLD nifti image"
+                ),
+                template=Bunch(type=str, desc=template),
+            ),
+        ),
+        license="unknown",
+    ),
+    "spm_multimodal": Bunch(
+        content=Bunch(
+            anat=Bunch(
+                type=str,
+                desc=(
+                    "fullpath to 3D nifti image "
+                    "(in .img format) of the anatomical image"
+                ),
+            ),
+            func1=Bunch(
+                type=list[str],
+                desc=(
+                    "list of fullpath to 3D nifti image (in .img format) "
+                    "for the functional image of the run 1 "
+                    "(one file per time point)"
+                ),
+            ),
+            func2=Bunch(
+                type=list[str],
+                desc=(
+                    "list of fullpath to 3D nifti image (in .img format) "
+                    "for the functional image of the run 2 "
+                    "(one file per time point)"
+                ),
+            ),
+            events1=Bunch(
+                type=str,
+                desc=(
+                    "fullpath to a tsv file "
+                    "describing the paradigm of the run 1"
+                ),
+            ),
+            events2=Bunch(
+                type=str,
+                desc=(
+                    "fullpath to a tsv file "
+                    "describing the paradigm of the run 2"
+                ),
+            ),
+            slice_order=Bunch(
+                type=str,
+                desc=(
+                    "order in which the slices of the functional runs "
+                    "were acquired"
+                ),
+            ),
+            trials_ses1=Bunch(
+                type=str,
+                desc="fullpath to .mat file containing onsets for run 1",
+            ),
+            trials_ses2=Bunch(
+                type=str,
+                desc="fullpath to .mat file containing onsets for run 2",
+            ),
+            t_r=Bunch(type=float, desc="repetition time in seconds"),
+        ),
+        license="unknown",
+    ),
+    "talairach_atlas": Bunch(
+        content=Bunch(
+            maps=Bunch(
+                type=Nifti1Image,
+                desc="Nifti1Image object containing the label image",
+            ),
+            labels=Bunch(type=list[str], desc=labels),
+            lut=Bunch(type=pd.DataFrame, desc=lut),
+        ),
+        license="unknown",
+    ),
+}
+
+_DIRECTIVE_REGEX = re.compile(
+    r"^\.\. nilearn_dataset_(?P<kind>content|license):: *(?P<name>\S+) *$",
+    flags=re.MULTILINE,
+)
+
+
+def type_to_rst(type_) -> str:
+    """Render a type (or type hint) as restructured text."""
+    if isinstance(type_, str):
+        return type_
+    if type_ is None or type_ is type(None):
+        return "``None``"
+
+    origin = typing.get_origin(type_)
+    if origin is None:
+        if type_.__module__ == "builtins":
+            return f":obj:`{type_.__qualname__}`"
+        # use the top level package
+        # (e.g. pandas.DataFrame and not pandas.core.frame.DataFrame)
+        package = type_.__module__.split(".")[0]
+        return f":class:`{package}.{type_.__qualname__}`"
+
+    args = typing.get_args(type_)
+    if origin in (typing.Union, types.UnionType):
+        return " or ".join(type_to_rst(x) for x in args)
+    if not args:
+        return type_to_rst(origin)
+    if len(args) == 1:
+        return f"{type_to_rst(origin)} of {type_to_rst(args[0])}"
+    inner = ", ".join(type_to_rst(x) for x in args)
+    return f"{type_to_rst(origin)} of ({inner})"
+
+
+def content_to_rst(name: str) -> str:
+    """Render the content of the dataset ``name`` as a list."""
+    content = DATASET_DESCRIPTIONS[name].content
+    return "\n".join(
+        f"- ``{key}``: {type_to_rst(value.type)}. {value.desc}"
+        for key, value in content.items()
+    )
+
+
+def license_to_rst(name: str) -> str:
+    """Render the license of the dataset ``name``."""
+    return DATASET_DESCRIPTIONS[name].license or "unknown"
+
+
+_RENDERERS = {"content": content_to_rst, "license": license_to_rst}
+
+
+def render_description_directives(rst: str) -> str:
+    """Replace nilearn_dataset_* directives by their rendered content."""
+    return _DIRECTIVE_REGEX.sub(
+        lambda m: _RENDERERS[m["kind"]](m["name"]), rst
+    )
+
+
+def matches_type(value, type_) -> bool:
+    """Check if value matches a type (or type hint).
+
+    Types given as strings cannot be checked and are considered a match.
+    """
+    if isinstance(type_, str):
+        return True
+    if type_ is None or type_ is type(None):
+        return value is None
+
+    origin = typing.get_origin(type_)
+    if origin is None:
+        return isinstance(value, type_)
+
+    args = typing.get_args(type_)
+    if origin in (typing.Union, types.UnionType):
+        return any(matches_type(value, x) for x in args)
+    if not isinstance(value, origin):
+        return False
+    return not args or _container_items_match(value, origin, args)
+
+
+def _container_items_match(value, origin, args) -> bool:
+    """Check that the items of a container match the type arguments."""
+    if issubclass(origin, tuple):
+        if len(args) == 2 and args[1] is Ellipsis:
+            return all(matches_type(x, args[0]) for x in value)
+        return len(value) == len(args) and all(
+            matches_type(x, t) for x, t in zip(value, args, strict=True)
+        )
+    if issubclass(origin, dict):
+        key_type, value_type = args
+        return all(
+            matches_type(k, key_type) and matches_type(v, value_type)
+            for k, v in value.items()
+        )
+    # other containers: list, set...
+    return all(matches_type(x, args[0]) for x in value)
+
+
+def check_content_types(data, content) -> list[str]:
+    """Check that data returned by a fetcher matches its described content.
+
+    Parameters
+    ----------
+    data : :obj:`sklearn.utils.Bunch`
+        Data returned by a fetcher.
+
+    content : :obj:`sklearn.utils.Bunch`
+        Content of the description of the data:
+        see ``DATASET_DESCRIPTIONS``.
+
+    Returns
+    -------
+    :obj:`list` of :obj:`str`
+        Description of each mismatch. Empty if everything matches.
+    """
+    errors = []
+    for key, value in content.items():
+        if key not in data:
+            errors.append(f"'{key}' is described but missing from the data")
+        elif not matches_type(data[key], value.type):
+            errors.append(
+                f"'{key}' expected type '{value.type}', "
+                f"got '{type(data[key]).__name__}'"
+            )
+    return errors

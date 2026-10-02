@@ -27,6 +27,7 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
+    Description,
     fetch_files,
     fetch_single_file,
     get_dataset_descr,
@@ -1595,7 +1596,7 @@ def fetch_atlas_aal(
     return Atlas(
         maps=atlas_img,
         labels=labels,
-        description=fdescr,
+        description=Description.from_registry("aal", fdescr),
         lut=generate_atlas_look_up_table(
             "fetch_atlas_aal",
             index=np.array([int(x) for x in indices]),
@@ -1910,7 +1911,7 @@ def fetch_atlas_allen_2011(
     :term:`Probabilistic atlas` (dated 2011).
 
     For more information
-    see the :ref:`dataset description <allen_2011_atlas>`.
+    see the :ref:`dataset description <allen_rsn_2011_atlas>`.
 
     Parameters
     ----------
@@ -1972,7 +1973,7 @@ def fetch_atlas_allen_2011(
     if url is None:
         url = "https://osf.io/hrcku/download"
 
-    dataset_name = "allen_rsn_2011"
+    dataset_name = "allen_rsn_2011_atlas"
     keys = ("maps", "rsn28", "comps")
 
     opts = {"uncompress": True}
@@ -2006,13 +2007,17 @@ def fetch_atlas_allen_2011(
     fdescr = get_dataset_descr(dataset_name)
 
     params = [
-        ("description", fdescr),
+        (
+            "description",
+            Description.from_registry(dataset_name, fdescr),
+        ),
         ("atlas_type", atlas_type),
         ("rsn_indices", labels),
         ("networks", networks),
         ("template", "MNI152"),
         *list(zip(keys, sub_files, strict=False)),
     ]
+
     return Bunch(**dict(params))
 
 
@@ -2271,7 +2276,9 @@ def fetch_atlas_talairach(
     return Atlas(
         maps=atlas_img,
         labels=labels,
-        description=get_dataset_descr("talairach_atlas").format(level_name),
+        description=Description.from_registry(
+            "talairach_atlas", get_dataset_descr("talairach_atlas")
+        ),
         lut=generate_atlas_look_up_table("fetch_atlas_talairach", name=labels),
         atlas_type=atlas_type,
         template="Talairach",

@@ -10,6 +10,7 @@ import pandas as pd
 from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
+from nilearn.datasets._utils import Description
 from nilearn.surface.surface import PolyMesh, SurfaceImage
 
 
@@ -156,6 +157,9 @@ def check_type_fetcher(data):
     elif isinstance(data, (Bunch, dict)):
         for k, v in data.items():
             if k == "description":
+                if isinstance(v, Description):
+                    assert v.long_description != ""
+                    continue
                 assert isinstance(v, str)
                 assert v != ""
             if not check_type_fetcher(v):
