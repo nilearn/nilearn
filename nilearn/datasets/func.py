@@ -22,7 +22,7 @@ from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
 from nilearn._utils import logger
-from nilearn._utils.docs import fill_doc
+from nilearn._utils.docs import Description, fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import (
@@ -33,7 +33,6 @@ from nilearn._utils.param_validation import (
 from nilearn.datasets._utils import (
     ALLOWED_MESH_TYPES,
     PACKAGE_DIRECTORY,
-    Description,
     fetch_files,
     fetch_single_file,
     filter_columns,

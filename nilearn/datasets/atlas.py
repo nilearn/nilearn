@@ -19,7 +19,7 @@ from nilearn._utils.bids import (
     check_look_up_table,
     generate_atlas_look_up_table,
 )
-from nilearn._utils.docs import fill_doc
+from nilearn._utils.docs import Description, fill_doc
 from nilearn._utils.niimg import _get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -27,7 +27,6 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
-    Description,
     fetch_files,
     fetch_single_file,
     get_dataset_descr,

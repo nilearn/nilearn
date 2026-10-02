@@ -6,18 +6,17 @@ from sklearn.utils import Bunch
 
 from nilearn._utils.docs import (
     DATASET_DESCRIPTIONS,
+    Description,
     check_content_types,
     matches_type,
     type_to_rst,
 )
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
-    Description,
     get_dataset_descr,
 )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "type_, expected",
     [
@@ -38,7 +37,6 @@ def test_type_to_rst(type_, expected):
     assert type_to_rst(type_) == expected
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "rst_file",
     sorted((PACKAGE_DIRECTORY / "description").glob("*.rst")),
@@ -52,7 +50,6 @@ def test_description_directives_are_rendered(rst_file):
     assert ".. nilearn_dataset_" not in get_dataset_descr(rst_file.stem)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("name", DATASET_DESCRIPTIONS)
 def test_description_from_registry(name):
     """Check descriptions built from the registry."""
@@ -65,7 +62,6 @@ def test_description_from_registry(name):
         assert {"type", "desc"} <= set(value)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "value, type_, expected",
     [
@@ -90,7 +86,6 @@ def test_matches_type(value, type_, expected):
     assert matches_type(value, type_) is expected
 
 
-@pytest.mark.ai_generated
 def test_check_content_types():
     """Check mismatches between data and their described content."""
     content = Bunch(

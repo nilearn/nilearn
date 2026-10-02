@@ -18,7 +18,7 @@ import pandas as pd
 from requests.exceptions import SSLError
 from urllib3.exceptions import MaxRetryError
 
-from nilearn._utils.docs import check_content_types
+from nilearn._utils.docs import Description, check_content_types
 from nilearn.datasets import (
     fetch_atlas_aal,
     fetch_atlas_allen_2011,
@@ -38,7 +38,6 @@ from nilearn.datasets import (
     load_fsaverage,
     load_fsaverage_data,
 )
-from nilearn.datasets._utils import Description
 from nilearn.maskers import (
     NiftiLabelsMasker,
     NiftiMapsMasker,

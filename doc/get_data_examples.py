@@ -3,8 +3,7 @@
 import sys
 
 from nilearn import datasets
-from nilearn._utils.docs import check_content_types
-from nilearn.datasets._utils import Description
+from nilearn._utils.docs import Description, check_content_types
 
 # mismatches between the content of the fetchers' data
 # and their description

@@ -18,13 +18,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import requests
-from sklearn.utils import Bunch
 
-from nilearn._base import documentation_url
 from nilearn._utils import logger
 from nilearn._utils.docs import (
-    DATASET_DESCRIPTIONS,
-    fill_content_from_json,
     fill_doc,
     render_description_directives,
 )
@@ -54,37 +50,6 @@ ALLOWED_MESH_TYPES = {
     "sphere",
     "flat",
 }
-
-
-class Description(Bunch):
-    def __init__(
-        self,
-        documentation: str,
-        content: Bunch,
-        license: str | None,
-    ):
-
-        super().__init__(
-            documentation=documentation,
-            content=content,
-            license=license,
-        )
-
-    @classmethod
-    def from_registry(cls, name: str):
-        """Build the description of dataset ``name`` from the registry.
-
-        See ``nilearn.datasets._descriptions.DATASET_DESCRIPTIONS``.
-        """
-        entry = DATASET_DESCRIPTIONS[name]
-        content = fill_content_from_json(entry.content, f"{name}.json")
-        return cls(
-            documentation=(
-                f"{documentation_url()}/modules/description/{name}.html"
-            ),
-            content=content,
-            license=entry.license,
-        )
 
 
 def md5_hash(string):

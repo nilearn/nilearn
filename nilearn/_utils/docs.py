@@ -22,6 +22,8 @@ from pathlib import Path
 import pandas as pd
 from sklearn.utils import Bunch
 
+from nilearn._base import documentation_url
+
 ##############################################################################
 #
 # Parameters definitions
@@ -2152,6 +2154,37 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         license="unknown",
     ),
 }
+
+
+class Description(Bunch):
+    def __init__(
+        self,
+        documentation: str,
+        content: Bunch,
+        license: str | None,
+    ):
+
+        super().__init__(
+            documentation=documentation,
+            content=content,
+            license=license,
+        )
+
+    @classmethod
+    def from_registry(cls, name: str):
+        """Build the description of dataset ``name`` from the registry.
+
+        See ``nilearn.datasets._descriptions.DATASET_DESCRIPTIONS``.
+        """
+        entry = DATASET_DESCRIPTIONS[name]
+        content = fill_content_from_json(entry.content, f"{name}.json")
+        return cls(
+            documentation=(
+                f"{documentation_url()}/modules/description/{name}.html"
+            ),
+            content=content,
+            license=entry.license,
+        )
 
 
 _DIRECTIVE_REGEX = re.compile(
