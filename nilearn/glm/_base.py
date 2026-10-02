@@ -3,6 +3,7 @@ import warnings
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from nibabel import Nifti1Image
@@ -97,7 +98,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         check_is_fitted(self)
         return self.masker_.mask_img_
 
-    def _attributes_to_dict(self):
+    def _attributes_to_dict(self) -> dict[str, Any]:
         """Return dict with pertinent model attributes & information.
 
         Returns
