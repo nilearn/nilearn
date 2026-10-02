@@ -685,7 +685,7 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker, capsys):
     assert request_mocker.url_count == 1
     for key, fn in zip(keys, filenames, strict=False):
         assert bunch[key] == str(
-            tmp_path / "allen_rsn_2011" / "allen_rsn_2011" / fn
+            tmp_path / "allen_rsn_2011_atlas" / "allen_rsn_2011" / fn
         )
 
     check_fetcher_verbosity(fetch_atlas_allen_2011, capsys, data_dir=tmp_path)

@@ -1569,7 +1569,7 @@ def fetch_atlas_aal(
             data_dir, filenames, resume=resume, verbose=verbose
         )
 
-    fdescr = get_dataset_descr("aal")
+    fdescr = get_dataset_descr("aal_atlas")
     labels = ["Background"]
     indices = ["0"]
     if version in ("SPM12", "3v2"):

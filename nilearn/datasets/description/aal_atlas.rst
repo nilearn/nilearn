@@ -53,7 +53,7 @@ and :footcite:t:`Tzourio-Mazoyer2002`.
 
 Content
 -------
-.. nilearn_dataset_content:: aal
+.. nilearn_dataset_content:: aal_atlas
 
 References
 ----------
@@ -61,4 +61,4 @@ References
 
 License
 -------
-.. nilearn_dataset_license:: aal
+.. nilearn_dataset_license:: aal_atlas
