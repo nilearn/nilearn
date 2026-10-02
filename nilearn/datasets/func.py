@@ -2438,14 +2438,9 @@ def fetch_language_localizer_demo_dataset(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, keys are:
 
-        - ``'data_dir'``: :obj:`str` Path to downloaded dataset.
-
-        - ``'func'``: :obj:`list` of :obj:`str`,
-          Absolute paths of downloaded files on disk
-
-        - ``'description'`` : :obj:`str`, dataset description
+        %(language_localizer_demo_content)s
 
     Notes
     -----
@@ -2864,20 +2859,9 @@ def fetch_localizer_first_level(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, with the keys:
+        Dictionary-like object, keys are:
 
-        - epi_img: the input 4D image
-
-        - events: a csv file describing the paradigm
-
-        - description: data description
-
-        - t_r: repetition time of the function data in seconds
-
-        - slice_time_ref:
-            slice timing reference used during slice timing correction
-
-        - %(template)s
+        %(localizer_first_level)s
 
     Notes
     -----
@@ -3174,30 +3158,9 @@ def fetch_spm_multimodal_fmri(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are:
+        Dictionary-like object, keys are:
 
-        - 'func1' : :obj:`list` of :obj:`str`.
-          Paths to functional images for run 1
-
-        - 'func2' : :obj:`list` of :obj:`str`.
-          Paths to functional images for run 2
-
-        - 'events1' : :obj:`str`. Path to onsets TSV file for run 1
-
-        - 'events2' : :obj:`str`. Path to onsets TSV file for run 2
-
-        - 'trials_ses1' : :obj:`str`.
-          Path to .mat file containing onsets for run 1
-
-        - 'trials_ses1' : :obj:`str`.
-          Path to .mat file containing onsets for run 2
-
-        - 'anat' : :obj:`str`. Path to anat file
-
-        - 'description' : :obj:`str`. Description of the data
-
-        - 't_r' : :obj:`float`. Repetition time in seconds
-           of the functional images.
+        %(spm_multimodal)s
 
     Notes
     -----
@@ -3242,16 +3205,9 @@ def fetch_fiac_first_level(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are:
+        Dictionary-like object, keys are:
 
-        - 'design_matrix1': :obj:`pandas.DataFrame`.
-          Design matrix for run 1
-        - 'func1': :obj:`str`. Path to Nifti file of run 1
-        - 'design_matrix2': :obj:`pandas.DataFrame`.
-          Design matrix for run 2
-        - 'func2': :obj:`str`. Path to Nifti file of run 2
-        - 'mask': :obj:`str`. Path to mask file
-        - 'description': :obj:`str`. Data description
+         %(fiac_content)s
 
     Notes
     -----

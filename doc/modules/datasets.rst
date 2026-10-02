@@ -111,7 +111,7 @@ Probabilistic atlases
     description/power_2011.rst
     description/seitzman_2018.rst
     description/aal_atlas.rst
-    description/allen_rsn_2011_atlas.rst
+    description/allen_2011_atlas.rst
     description/basc_multiscale_2015.rst
     description/destrieux_surface.rst
     description/harvard_oxford.rst

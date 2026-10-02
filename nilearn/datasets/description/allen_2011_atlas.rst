@@ -1,4 +1,4 @@
-.. _allen_rsn_2011_atlas:
+.. _allen_2011_atlas:
 
 Allen 2011 atlas
 ================
@@ -30,7 +30,7 @@ Direct download link from OSF: https://osf.io/hrcku
 
 Content
 -------
-.. nilearn_dataset_content:: allen_rsn_2011_atlas
+.. nilearn_dataset_content:: allen_2011_atlas
 
 References
 ----------
@@ -38,4 +38,4 @@ References
 
 License
 -------
-.. nilearn_dataset_license:: allen_rsn_2011_atlas
+.. nilearn_dataset_license:: allen_2011_atlas

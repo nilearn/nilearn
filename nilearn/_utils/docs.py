@@ -1956,6 +1956,7 @@ The content of this registry is used:
   rendered by a sphinx extension at doc build time
   (see ``doc/sphinxext/dataset_descriptions.py``)
   and by :func:`render_description_directives` at runtime.
+- to fill the "return" section of the doc strings of the fetcheers
 
 It must therefore not require downloading any data.
 """
@@ -2006,7 +2007,7 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         ),
         license="unknown",
     ),
-    "allen_rsn_2011_atlas": Bunch(
+    "allen_2011_atlas": Bunch(
         content=Bunch(
             atlas_type=Bunch(type=str, desc=atlas_type),
             comps=Bunch(
@@ -2019,8 +2020,9 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
             maps=Bunch(
                 type=str,
                 desc=(
-                    "path to 4D nifti file containing T-maps "
-                    "of all 75 unthresholded components"
+                    "Fullpath to 4D nifti file containing T-maps "
+                    "of all 75 unthresholded components. "
+                    "The image has shape ``(53, 63, 46, 75)``."
                 ),
             ),
             networks=Bunch(
@@ -2030,16 +2032,23 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
             rsn28=Bunch(
                 type=str,
                 desc=(
-                    "fullpath to 4D nifti file containing "
+                    "Fullpath to 4D nifti file containing "
                     "the 28 resting state networks "
-                    "from Allen et al 2011"
+                    "from Allen et al 2011. "
+                    "The image has shape ``(53, 63, 46, 28)``."
                 ),
             ),
             rsn_indices=Bunch(
                 type=list[tuple[str, list[int]]],
                 desc=(
-                    "indices in the 'maps' file "
-                    "of the 28 resting state networks"
+                    "This maps the network names to the map indices. "
+                    "For example, the map indices for the 'Visual' network "
+                    "can be obtained:\n\n"
+                    " .. code-block:: python "
+                    "     "
+                    "    # Should return [46, 64, 67, 48, 39, 59]"
+                    "    dict(data.rsn_indices)['Visual]"
+                    "    "
                 ),
             ),
             template=Bunch(type=str, desc=template),
@@ -2152,16 +2161,30 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     ),
     "talairach_atlas": Bunch(
         content=Bunch(
-            labels=Bunch(type=list[str], desc=labels),
+            labels=Bunch(
+                type=list[str],
+                desc=(
+                    f"{labels}. "
+                    "The list starts with 'Background' "
+                    "(region ID 0 in the image)."
+                ),
+            ),
             lut=Bunch(type=pd.DataFrame, desc=lut),
             maps=Bunch(
                 type=Nifti1Image,
-                desc="Nifti1Image object containing the label image",
+                desc=(
+                    "Nifti1Image object containing the label image. "
+                    "The image has shape ``(141, 172, 110)`` "
+                    "and contains consecutive integer "
+                    "values from 0 to the number of regions, "
+                    "which are indices in the list of labels. "
+                ),
             ),
         ),
         license="unknown",
     ),
 }
+
 
 _DIRECTIVE_REGEX = re.compile(
     r"^\.\. nilearn_dataset_(?P<kind>content|license):: *(?P<name>\S+) *$",
@@ -2289,4 +2312,5 @@ def check_content_types(data, content) -> list[str]:
     return errors
 
 
-docdict["aal_atlas_content"] = content_to_rst("aal_atlas")
+for k in DATASET_DESCRIPTIONS:
+    docdict[f"{k}_content"] = content_to_rst(k)

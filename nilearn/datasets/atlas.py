@@ -1878,7 +1878,7 @@ def fetch_atlas_allen_2011(
     :term:`Probabilistic atlas` (dated 2011).
 
     For more information
-    see the :ref:`dataset description <allen_rsn_2011_atlas>`.
+    see the :ref:`dataset description <allen_2011_atlas>`.
 
     Parameters
     ----------
@@ -1895,38 +1895,7 @@ def fetch_atlas_allen_2011(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        - 'maps': :obj:`str`
-            Path to nifti file containing the
-            T-maps of all 75 unthresholded components.
-            The image has shape ``(53, 63, 46, 75)``.
-
-        - 'rsn28': :obj:`str`
-            Path to nifti file containing the
-            T-maps of 28 RSNs included in :footcite:t:`Allen2011`.
-            The image has shape ``(53, 63, 46, 28)``.
-
-        - 'networks': :obj:`list` of :obj:`list` of :obj:`str`
-            List containing the names for the 28 RSNs.
-
-        - 'rsn_indices': :obj:`list` of :obj:`tuple`, each tuple is a \
-          (:obj:`str`, :obj:`list` of :`int`).
-            This maps the network names to the map indices.
-            For example, the map indices for the 'Visual' network
-            can be obtained:
-
-            .. code-block:: python
-
-                # Should return [46, 64, 67, 48, 39, 59]
-                dict(data.rsn_indices)["Visual"]
-
-        - 'comps': :obj:`str`
-            Path to nifti file containing the aggregate :term:`ICA` components.
-
-        - %(description)s
-
-        - %(atlas_type)s
-
-        - %(template)s
+        %(allen_2011_atlas_content)s
 
     Notes
     -----
@@ -1940,7 +1909,6 @@ def fetch_atlas_allen_2011(
     if url is None:
         url = "https://osf.io/hrcku/download"
 
-    dataset_name = "allen_rsn_2011_atlas"
     keys = ("maps", "rsn28", "comps")
 
     opts = {"uncompress": True}
@@ -1965,18 +1933,18 @@ def fetch_atlas_allen_2011(
     filenames = [(Path("allen_rsn_2011", f), url, opts) for f in files]
 
     data_dir = get_dataset_dir(
-        dataset_name, data_dir=data_dir, verbose=verbose
+        "allen_rsn_2011_atlas", data_dir=data_dir, verbose=verbose
     )
     sub_files = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = get_dataset_descr(dataset_name)
-
     params = [
         (
             "description",
-            Description.from_registry(dataset_name, fdescr),
+            Description.from_registry(
+                "allen_2011_atlas", get_dataset_descr("allen_2011_atlas")
+            ),
         ),
         ("atlas_type", atlas_type),
         ("rsn_indices", labels),
@@ -2199,23 +2167,7 @@ def fetch_atlas_talairach(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`
-            The image has
-            shape ``(141, 172, 110)`` and contains consecutive integer
-            values from 0 to the number of regions, which are indices
-            in the list of labels.
-
-        - %(labels)s
-
-            The list starts with 'Background' (region ID 0 in the image).
-
-        - %(description)s
-
-        - %(lut)s
-
-        - %(template)s
-
-        - %(atlas_type)s
+        %(talairach_atlas_content)s
 
     References
     ----------
