@@ -74,9 +74,9 @@ show()
 
 
 # %%
-# Extract the largest clusters
-# ----------------------------
-# We can extract the 6 largest clusters surviving our threshold.
+# Extract the most significant clusters
+# -------------------------------------
+# We can extract the clusters surviving our threshold
 # and get the x, y, and z coordinates of their peaks.
 # We then extract the time series from a sphere around each coordinate.
 #
@@ -89,77 +89,30 @@ table, _ = get_clusters_table(
     cluster_threshold=20,
     return_label_maps=True,
 )
-table.set_index("Cluster ID", drop=True)
 print(table)
 
-coords = table.loc[range(1, 7), ["X", "Y", "Z"]].to_numpy()
+# %%
+# Find the coordinates of the peaks of the 6 most significant clusters.
+# Clusters are sorted by peak statistic and sub-peaks
+# (with a letter in their "Cluster ID", for example "1a") are excluded.
+is_main_peak = table["Cluster ID"].astype(str).str.isdigit()
+coords = table.loc[is_main_peak, ["X", "Y", "Z"]].head(6).to_numpy()
 print(coords)
 
-masker = NiftiSpheresMasker(coords, verbose=1)
-real_timeseries = masker.fit_transform(fmri_img)
-predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
+masker = NiftiSpheresMasker(coords, verbose=1).fit(mean_img)
 
-# %%
-# Let's have a look at the report to make sure
-# the spheres are well placed.
+# let's have a look at the report to make sure the spheres are well placed.
 report = masker.generate_report()
 report
 
 # %%
-# Plot predicted and actual time series for 6 most significant clusters
-# ---------------------------------------------------------------------
-import matplotlib.pyplot as plt
-
-# colors for each of the clusters
-colors = ["blue", "navy", "purple", "magenta", "olive", "teal"]
-# plot the time series and corresponding locations
-fig1, axs1 = plt.subplots(2, 6)
-for i in range(6):
-    # plotting time series
-    axs1[0, i].set_title(f"Cluster peak {coords[i]}\n")
-    axs1[0, i].plot(real_timeseries[:, i], c=colors[i], lw=2)
-    axs1[0, i].plot(predicted_timeseries[:, i], c="r", ls="--", lw=2)
-    axs1[0, i].set_xlabel("Time")
-    axs1[0, i].set_ylabel("Signal intensity", labelpad=0)
-    # plotting image below the time series
-    roi_img = plot_stat_map(
-        z_map,
-        cut_coords=[coords[i][2]],
-        threshold=3.1,
-        figure=fig1,
-        axes=axs1[1, i],
-        display_mode="z",
-        colorbar=False,
-        bg_img=mean_img,
-    )
-    roi_img.add_markers([coords[i]], colors[i], 300)
-fig1.set_size_inches(24, 14)
-
-show()
-
-
-# %%
-# Get residuals
-# -------------
-
-resid = masker.fit_transform(fmri_glm.residuals_[0])
-
-
-# %%
-# Plot distribution of residuals
-# ------------------------------
-# Note that residuals are not really distributed normally.
-fig2, axs2 = plt.subplots(2, 3, constrained_layout=True)
-
-axs2 = axs2.flatten()
-for i in range(6):
-    axs2[i].set_title(f"Cluster peak {coords[i]}\n")
-    axs2[i].hist(resid[:, i], color=colors[i])
-    print(f"Mean residuals: {resid[:, i].mean()}")
-
-fig2.set_size_inches(12, 7)
-
-show()
+# Plot predicted and time series of the most significant clusters
+# ---------------------------------------------------------------
+# We can plot the predicted and observed time series together
+# for a more direct comparison.
+time_series_dfs, figs = fmri_glm.plot_predicted_signal_and_residuals(
+    coords=coords[0:2], show=True
+)
 
 
 # %%
@@ -181,7 +134,7 @@ show()
 # we can use an F-test as shown in the next section.
 
 plot_stat_map(
-    fmri_glm.r_square[0],
+    fmri_glm.r_square_[0],
     bg_img=mean_img,
     threshold=0.1,
     display_mode="z",

@@ -42,10 +42,27 @@ from nilearn.glm.first_level.first_level import (
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.image import get_data, iter_img, new_img_like
-from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.maskers import (
+    NiftiLabelsMasker,
+    NiftiMasker,
+    NiftiSpheresMasker,
+    SurfaceMasker,
+)
 from nilearn.masking import intersect_masks
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_polymesh_equal
+
+
+@pytest.fixture
+def fitted_model():
+    """Return a fitted FirstLevelModel on fake data."""
+    shapes, rk = [(10, 10, 10, 20)], 1
+    _mask, fmri_imgs, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
+    )
+    model = FirstLevelModel(minimize_memory=False)
+    model.fit(fmri_imgs, design_matrices=design_matrices)
+    return model
 
 
 def test_glm_fit_unfitted_masker(shape_4d_default):
@@ -144,7 +161,7 @@ def test_explicit_fixed_effects(shape_3d_default):
     contrasts = [dic1["effect_size"], dic2["effect_size"]]
     variance = [dic1["effect_variance"], dic2["effect_variance"]]
 
-    (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _) = (
+    fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _ = (
         compute_fixed_effects(contrasts, variance, mask)
     )
 
@@ -204,7 +221,7 @@ def test_explicit_fixed_effects_without_mask(shape_3d_default):
     variance = [dic1["effect_variance"], dic2["effect_variance"]]
 
     # test without mask variable
-    (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _) = (
+    fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _ = (
         compute_fixed_effects(contrasts, variance)
     )
     assert_almost_equal(
@@ -570,7 +587,7 @@ def test_glm_ar_estimates(rng, ar_vals):
 
 def test_glm_ar_estimates_errors(rng):
     """Test Yule-Walker errors."""
-    (n, p) = (1, 500)
+    n, p = (1, 500)
     Y_orig = rng.standard_normal((p, n))
 
     with pytest.raises(TypeError, match="AR order must be an integer"):
@@ -1703,3 +1720,108 @@ def test_generate_report_threshold_unused(threshold):
             )
             == 1
         )
+
+
+@pytest.mark.skipif(
+    is_matplotlib_installed(),
+    reason="This test is run only if matplotlib is not installed.",
+)
+def test_plot_predicted_signal_and_residuals_no_matplotlib(fitted_model):
+    """Return only DataFrame with a warning if matplotlib is not installed."""
+    with pytest.warns(ImportWarning, match="Matplotlib is not installed"):
+        result, fig = fitted_model.plot_predicted_signal_and_residuals(
+            coords=1
+        )
+
+    assert all(isinstance(x, pd.DataFrame) for x in result)
+    assert set(result[0].columns) == {
+        "(1, 1, 1); r=3.0mm; observed",
+        "(1, 1, 1); r=3.0mm; predicted",
+        "(1, 1, 1); r=3.0mm; residuals",
+    }
+    assert fig is None
+
+
+def test_plot_predicted_signal_and_residuals_multiple_coords(fitted_model):
+    """Test with multiple coords via NiftiSpheresMasker."""
+    masker = NiftiSpheresMasker([(1, 1, 1), (7, 7, 7)], radius=1.0)
+    df, _ = fitted_model.plot_predicted_signal_and_residuals(mask=masker)
+
+    assert all(isinstance(x, pd.DataFrame) for x in df)
+    assert df[0].columns.to_list() == [
+        "(1, 1, 1); r=1.0mm; observed",
+        "(1, 1, 1); r=1.0mm; predicted",
+        "(1, 1, 1); r=1.0mm; residuals",
+    ]
+    assert df[1].columns.to_list() == [
+        "(7, 7, 7); r=1.0mm; observed",
+        "(7, 7, 7); r=1.0mm; predicted",
+        "(7, 7, 7); r=1.0mm; residuals",
+    ]
+
+
+def test_plot_predicted_signal_and_residuals_mask_img(
+    fitted_model, surface_glm_data
+):
+    """Test passing mask img to rely on a label masker.
+
+    We do it both with volume and surface data.
+    """
+    mask = NiftiLabelsMasker(fitted_model.mask_img_, labels=["Whole brain"])
+    df, _ = fitted_model.plot_predicted_signal_and_residuals(mask=mask)
+
+    assert all(isinstance(x, pd.DataFrame) for x in df)
+    assert df[0].columns.to_list() == [
+        "Whole brain; observed",
+        "Whole brain; predicted",
+        "Whole brain; residuals",
+    ]
+
+    img, des = surface_glm_data(5)
+    model = FirstLevelModel()
+    model.fit(img, design_matrices=des)
+
+    df, _ = fitted_model.plot_predicted_signal_and_residuals(
+        mask=fitted_model.mask_img_
+    )
+
+    assert all(isinstance(x, pd.DataFrame) for x in df)
+    assert df[0].columns.to_list() == [
+        "1; observed",
+        "1; predicted",
+        "1; residuals",
+    ]
+
+
+def test_plot_predicted_signal_and_residuals_warnings(fitted_model):
+    """Test warnings."""
+    masker = NiftiSpheresMasker([(1, 1, 1)], radius=1.0)
+    coords = [(1, 1, 1)]
+    with pytest.warns(
+        UserWarning, match="You provided both 'mask' and 'coords'"
+    ):
+        fitted_model.plot_predicted_signal_and_residuals(
+            mask=masker, coords=coords
+        )
+
+
+def test_plot_predicted_signal_and_residuals_minimize_memory_error(
+    fitted_model,
+):
+    """Test minimize_memory errors."""
+    with pytest.raises(ValueError, match="set 'minimize_memory' to 'False'"):
+        fitted_model.minimize_memory = True
+        fitted_model.plot_predicted_signal_and_residuals(coords=[(1, 1, 1)])
+
+
+def test_plot_predicted_signal_and_residuals_errors(fitted_model):
+    """Test plot_predicted_signal_and_residuals errors."""
+    with pytest.raises(
+        ValueError, match="Either 'mask' or 'coords' must be provided"
+    ):
+        fitted_model.plot_predicted_signal_and_residuals(
+            coords=None, mask=None
+        )
+
+    with pytest.raises(TypeError, match="'mask' must be of type"):
+        fitted_model.plot_predicted_signal_and_residuals(mask=1)
