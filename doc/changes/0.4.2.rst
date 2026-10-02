@@ -8,16 +8,12 @@ Version 0.4.2
 
 Few important bugs fix release for OHBM conference.
 
-.. _v0-4-2-changes:
-
 Changes
 -------
 
 - :bdg-info:`Plotting` Default colormaps for surface plotting functions have changed to be more consistent with slice plotting. :func:`~plotting.plot_surf_stat_map` now uses ``cold_hot``, as :func:`~plotting.plot_stat_map` does, and :func:`~plotting.plot_surf_roi` now uses ``gist_ncar``, as :func:`~plotting.plot_roi` does.
 
 - :bdg-info:`Plotting` Improve 3D surface plotting: lock the aspect ratio of the plots and reduce the whitespace around the plots.
-
-.. _v0-4-2-fixes:
 
 Fixes
 -----
