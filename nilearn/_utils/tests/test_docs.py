@@ -7,8 +7,8 @@ from sklearn.utils import Bunch
 from nilearn._utils.docs import (
     DATASET_DESCRIPTIONS,
     Description,
+    _matches_type,
     check_content_types,
-    matches_type,
     type_to_rst,
 )
 from nilearn.datasets._utils import (
@@ -83,7 +83,7 @@ def test_description_from_registry(name):
 )
 def test_matches_type(value, type_, expected):
     """Check type matching of values."""
-    assert matches_type(value, type_) is expected
+    assert _matches_type(value, type_) is expected
 
 
 def test_check_content_types():

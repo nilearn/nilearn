@@ -2013,14 +2013,6 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     "allen_2011_atlas": Bunch(
         content=Bunch(
             atlas_type=Bunch(type=str, desc=atlas_type),
-            comps=Bunch(type=str, desc=None),
-            maps=Bunch(type=str, desc=None),
-            networks=Bunch(type=list[list[str]], desc=None),
-            rsn28=Bunch(type=str, desc=None),
-            rsn_indices=Bunch(
-                type=list[tuple[str, list[int]]],
-                desc=None,
-            ),
             template=Bunch(type=str, desc=template),
         ),
         license="unknown",
@@ -2156,41 +2148,45 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
 }
 
 
-class Description(Bunch):
-    def __init__(
-        self,
-        documentation: str,
-        content: Bunch,
-        license: str | None,
-    ):
+def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
+    import nilearn as nil
 
-        super().__init__(
-            documentation=documentation,
-            content=content,
-            license=license,
-        )
+    pkg_dir = Path(nil.__file__).parent
 
-    @classmethod
-    def from_registry(cls, name: str):
-        """Build the description of dataset ``name`` from the registry.
+    json_file_path = pkg_dir / "datasets" / "description" / json_file
 
-        See ``nilearn.datasets._descriptions.DATASET_DESCRIPTIONS``.
-        """
-        entry = DATASET_DESCRIPTIONS[name]
-        content = fill_content_from_json(entry.content, f"{name}.json")
-        return cls(
-            documentation=(
-                f"{documentation_url()}/modules/description/{name}.html"
-            ),
-            content=content,
-            license=entry.license,
-        )
+    if not json_file_path.exists():
+        return content
+
+    with (pkg_dir / "datasets" / "description" / json_file).open("rb") as f:
+        metadata = json.load(f)
+
+    for key, value in metadata.items():
+        if key in content:
+            raise ValueError(
+                f"Cannot add {key} from {json_file} "
+                "to dataset description: key already present."
+            )
+        content[key] = Bunch(**value)
+        content[key].type = eval(content[key].type)
+
+    return content
 
 
-_DIRECTIVE_REGEX = re.compile(
-    r"^\.\. nilearn_dataset_(?P<kind>content|license):: *(?P<name>\S+) *$",
-    flags=re.MULTILINE,
-)
+for k in DATASET_DESCRIPTIONS:
+    DATASET_DESCRIPTIONS[k]["content"] = _fill_content_from_json(
+        DATASET_DESCRIPTIONS[k]["content"], f"{k}.json"
+    )
+
+
+def content_to_rst(name: str) -> str:
+    """Render the content of the dataset ``name`` as a list."""
+    content = DATASET_DESCRIPTIONS[name].content
+    tmp = []
+    for key, value in content.items():
+        tmp.append(f"- ``{key}``: {type_to_rst(value.type)}. {value.desc}")
+
+    return "\n".join(tmp)
 
 
 def type_to_rst(type_) -> str:
@@ -2220,34 +2216,14 @@ def type_to_rst(type_) -> str:
     return f"{type_to_rst(origin)} of ({inner})"
 
 
-def fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
-    if not any(v.desc is None for v in content.values()):
-        return content
-
-    import nilearn as nil
-
-    pkg_dir = Path(nil.__file__).parent
-
-    with (pkg_dir / "datasets" / "description" / json_file).open("rb") as f:
-        metadata = json.load(f)
-
-    for key, value in content.items():
-        desc = value.desc
-        if desc is None:
-            content[key].desc = metadata[key]
-
-    return content
+for k in DATASET_DESCRIPTIONS:
+    docdict[f"{k}_content"] = content_to_rst(k)
 
 
-def content_to_rst(name: str) -> str:
-    """Render the content of the dataset ``name`` as a list."""
-    content = DATASET_DESCRIPTIONS[name].content
-    content = fill_content_from_json(content, f"{name}.json")
-    tmp = []
-    for key, value in content.items():
-        tmp.append(f"- ``{key}``: {type_to_rst(value.type)}. {value.desc}")
-
-    return "\n".join(tmp)
+_DIRECTIVE_REGEX = re.compile(
+    r"^\.\. nilearn_dataset_(?P<kind>content|license):: *(?P<name>\S+) *$",
+    flags=re.MULTILINE,
+)
 
 
 def license_to_rst(name: str) -> str:
@@ -2265,7 +2241,7 @@ def render_description_directives(rst: str) -> str:
     )
 
 
-def matches_type(value, type_) -> bool:
+def _matches_type(value, type_) -> bool:
     """Check if value matches a type (or type hint).
 
     Types given as strings cannot be checked and are considered a match.
@@ -2281,7 +2257,7 @@ def matches_type(value, type_) -> bool:
 
     args = typing.get_args(type_)
     if origin in (typing.Union, types.UnionType):
-        return any(matches_type(value, x) for x in args)
+        return any(_matches_type(value, x) for x in args)
     if not isinstance(value, origin):
         return False
     return not args or _container_items_match(value, origin, args)
@@ -2291,18 +2267,18 @@ def _container_items_match(value, origin, args) -> bool:
     """Check that the items of a container match the type arguments."""
     if issubclass(origin, tuple):
         if len(args) == 2 and args[1] is Ellipsis:
-            return all(matches_type(x, args[0]) for x in value)
+            return all(_matches_type(x, args[0]) for x in value)
         return len(value) == len(args) and all(
-            matches_type(x, t) for x, t in zip(value, args, strict=True)
+            _matches_type(x, t) for x, t in zip(value, args, strict=True)
         )
     if issubclass(origin, dict):
         key_type, value_type = args
         return all(
-            matches_type(k, key_type) and matches_type(v, value_type)
+            _matches_type(k, key_type) and _matches_type(v, value_type)
             for k, v in value.items()
         )
     # other containers: list, set...
-    return all(matches_type(x, args[0]) for x in value)
+    return all(_matches_type(x, args[0]) for x in value)
 
 
 def check_content_types(data, content) -> list[str]:
@@ -2326,7 +2302,7 @@ def check_content_types(data, content) -> list[str]:
     for key, value in content.items():
         if key not in data:
             errors.append(f"'{key}' is described but missing from the data")
-        elif not matches_type(data[key], value.type):
+        elif not _matches_type(data[key], value.type):
             errors.append(
                 f"'{key}' expected type '{value.type}', "
                 f"got '{type(data[key]).__name__}'"
@@ -2334,5 +2310,31 @@ def check_content_types(data, content) -> list[str]:
     return errors
 
 
-for k in DATASET_DESCRIPTIONS:
-    docdict[f"{k}_content"] = content_to_rst(k)
+class Description(Bunch):
+    def __init__(
+        self,
+        documentation: str,
+        content: Bunch,
+        license: str | None,
+    ):
+
+        super().__init__(
+            documentation=documentation,
+            content=content,
+            license=license,
+        )
+
+    @classmethod
+    def from_registry(cls, name: str):
+        """Build the description of dataset ``name`` from the registry.
+
+        See ``nilearn.datasets._descriptions.DATASET_DESCRIPTIONS``.
+        """
+        entry = DATASET_DESCRIPTIONS[name]
+        return cls(
+            documentation=(
+                f"{documentation_url()}/modules/description/{name}.html"
+            ),
+            content=entry.content,
+            license=entry.license,
+        )
