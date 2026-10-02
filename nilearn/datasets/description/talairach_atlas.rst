@@ -43,7 +43,6 @@ References
 ----------
 .. footbibliography::
 
-
 License
 -------
 .. nilearn_dataset_license:: talairach_atlas
