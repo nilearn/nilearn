@@ -19,7 +19,7 @@ and only then run this tutorial example.
 .. seealso::
 
     For more information about the dataset
-    see its :ref:`description <localizer_first_level_dataset>`.
+    see its :ref:`description <localizer_first_level>`.
 """
 
 # %%

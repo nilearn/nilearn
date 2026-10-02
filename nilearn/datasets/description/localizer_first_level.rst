@@ -1,4 +1,4 @@
-.. _localizer_first_level_dataset:
+.. _localizer_first_level:
 
 localizer first level dataset
 =============================
@@ -34,12 +34,7 @@ Direct download link from OSF: https://osf.io/2bqxn
 
 Content
 -------
-The dataset includes
-    :'epi_img': the input 4D image
-    :'events': a csv file describing the paradigm
-    :'description': data description
-    :'t_r': repetition time of the function data in seconds
-    :'slice_time_ref': slice timing reference used during slice timing correction
+.. nilearn_dataset_content:: localizer_first_level
 
 References
 ----------
@@ -48,4 +43,4 @@ References
 
 License
 -------
-unknown
+.. nilearn_dataset_license:: localizer_first_level

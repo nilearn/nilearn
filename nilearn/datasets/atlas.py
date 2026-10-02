@@ -19,7 +19,7 @@ from nilearn._utils.bids import (
     check_look_up_table,
     generate_atlas_look_up_table,
 )
-from nilearn._utils.docs import fill_doc
+from nilearn._utils.docs import Description, fill_doc
 from nilearn._utils.niimg import _get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -1466,40 +1466,7 @@ def fetch_atlas_aal(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        - 'maps': :obj:`str`
-            Path to nifti file containing the regions.
-            The image has shape ``(91, 109, 91)`` and contains
-            117 unique integer values defining the parcellation in version
-            SPM 5, 8 and 12, and 167 unique integer values defining the
-            parcellation in version 3v2. Please refer to the main description
-            to see how to link labels to regions IDs.
-
-        - %(labels)s
-            There are 117 names in version SPM 5, 8, and 12,
-            and 167 names in version 3v2.
-            Please refer to the main description
-            to see how to link labels to regions IDs.
-
-        - 'indices': :obj:`list` of :obj:`str`
-            Indices mapping 'labels'
-            to values in the 'maps' image.
-            This list has 117 elements in
-            version SPM 5, 8 and 12, and 167 elements in version 3v2.
-            Since the values in the 'maps' image do not correspond to
-            indices in ``labels``, but rather to values in ``indices``, the
-            location of a label in the ``labels`` list does not necessary
-            match the associated value in the image.
-            Use the ``indices``
-            list to identify the appropriate image value for a given label
-            (See main description above).
-
-        - %(description)s
-
-        - %(lut)s
-
-        - %(template)s
-
-        - %(atlas_type)s
+        %(aal_atlas_content)s
 
     Notes
     -----
@@ -1568,7 +1535,6 @@ def fetch_atlas_aal(
             data_dir, filenames, resume=resume, verbose=verbose
         )
 
-    fdescr = get_dataset_descr("aal")
     labels = ["Background"]
     indices = ["0"]
     if version in ("SPM12", "3v2"):
@@ -1590,12 +1556,11 @@ def fetch_atlas_aal(
                 _, label, index = line.strip().split("\t")
                 indices.append(index)
                 labels.append(label)
-        fdescr = fdescr.replace("SPM 12", version)
 
     return Atlas(
         maps=atlas_img,
         labels=labels,
-        description=fdescr,
+        description=Description.from_registry("aal_atlas"),
         lut=generate_atlas_look_up_table(
             "fetch_atlas_aal",
             index=np.array([int(x) for x in indices]),
@@ -1927,38 +1892,7 @@ def fetch_atlas_allen_2011(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        - 'maps': :obj:`str`
-            Path to nifti file containing the
-            T-maps of all 75 unthresholded components.
-            The image has shape ``(53, 63, 46, 75)``.
-
-        - 'rsn28': :obj:`str`
-            Path to nifti file containing the
-            T-maps of 28 RSNs included in :footcite:t:`Allen2011`.
-            The image has shape ``(53, 63, 46, 28)``.
-
-        - 'networks': :obj:`list` of :obj:`list` of :obj:`str`
-            List containing the names for the 28 RSNs.
-
-        - 'rsn_indices': :obj:`list` of :obj:`tuple`, each tuple is a \
-          (:obj:`str`, :obj:`list` of :`int`).
-            This maps the network names to the map indices.
-            For example, the map indices for the 'Visual' network
-            can be obtained:
-
-            .. code-block:: python
-
-                # Should return [46, 64, 67, 48, 39, 59]
-                dict(data.rsn_indices)["Visual"]
-
-        - 'comps': :obj:`str`
-            Path to nifti file containing the aggregate :term:`ICA` components.
-
-        - %(description)s
-
-        - %(atlas_type)s
-
-        - %(template)s
+        %(allen_2011_atlas_content)s
 
     Notes
     -----
@@ -1972,7 +1906,6 @@ def fetch_atlas_allen_2011(
     if url is None:
         url = "https://osf.io/hrcku/download"
 
-    dataset_name = "allen_rsn_2011"
     keys = ("maps", "rsn28", "comps")
 
     opts = {"uncompress": True}
@@ -1997,22 +1930,24 @@ def fetch_atlas_allen_2011(
     filenames = [(Path("allen_rsn_2011", f), url, opts) for f in files]
 
     data_dir = get_dataset_dir(
-        dataset_name, data_dir=data_dir, verbose=verbose
+        "allen_rsn_2011_atlas", data_dir=data_dir, verbose=verbose
     )
     sub_files = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = get_dataset_descr(dataset_name)
-
     params = [
-        ("description", fdescr),
+        (
+            "description",
+            Description.from_registry("allen_2011_atlas"),
+        ),
         ("atlas_type", atlas_type),
         ("rsn_indices", labels),
         ("networks", networks),
         ("template", "MNI152"),
         *list(zip(keys, sub_files, strict=False)),
     ]
+
     return Bunch(**dict(params))
 
 
@@ -2227,23 +2162,7 @@ def fetch_atlas_talairach(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`
-            The image has
-            shape ``(141, 172, 110)`` and contains consecutive integer
-            values from 0 to the number of regions, which are indices
-            in the list of labels.
-
-        - %(labels)s
-
-            The list starts with 'Background' (region ID 0 in the image).
-
-        - %(description)s
-
-        - %(lut)s
-
-        - %(template)s
-
-        - %(atlas_type)s
+        %(talairach_atlas_content)s
 
     References
     ----------
@@ -2271,7 +2190,7 @@ def fetch_atlas_talairach(
     return Atlas(
         maps=atlas_img,
         labels=labels,
-        description=get_dataset_descr("talairach_atlas").format(level_name),
+        description=Description.from_registry("talairach_atlas"),
         lut=generate_atlas_look_up_table("fetch_atlas_talairach", name=labels),
         atlas_type=atlas_type,
         template="Talairach",

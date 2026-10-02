@@ -37,19 +37,12 @@ Direct download link from OSF: https://www.talairach.org/talairach.nii
 
 Content
 -------
-    :'maps': 3D Nifti image, values are integers corresponding to indices in the
-             list of labels.
-
-    :'labels': Annotations (see https://www.talairach.org/labels.html)
-
-    :'lut': color look up table
+.. nilearn_dataset_content:: talairach_atlas
 
 References
 ----------
-
 .. footbibliography::
-
 
 License
 -------
-unknown
+.. nilearn_dataset_license:: talairach_atlas

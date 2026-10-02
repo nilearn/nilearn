@@ -20,7 +20,10 @@ import pandas as pd
 import requests
 
 from nilearn._utils import logger
-from nilearn._utils.docs import fill_doc
+from nilearn._utils.docs import (
+    fill_doc,
+    render_description_directives,
+)
 from nilearn._utils.logger import _has_rich, find_stack_level, readable_time
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -778,7 +781,7 @@ def get_dataset_descr(ds_name: str) -> str:
             stacklevel=find_stack_level(),
         )
 
-    return str(descr)
+    return render_description_directives(str(descr))
 
 
 def movetree(src, dst) -> None:
