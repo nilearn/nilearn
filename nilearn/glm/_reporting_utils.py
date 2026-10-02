@@ -135,7 +135,7 @@ class GLMReportMixin(ReportMixin):
         plot_type: Literal["slice", "glass"] = "slice",
         cut_coords=None,
         display_mode=None,
-        report_dims=(1600, 800),
+        report_dims: tuple[int, int] | None = None,
     ) -> HTMLReport:
         """Generate an HTML report which shows all important aspects of a
         fitted :term:`GLM`.
@@ -270,12 +270,10 @@ class GLMReportMixin(ReportMixin):
             'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
             'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
 
-        report_dims : Sequence[:obj:`int`, :obj:`int`], default=(1600, 800)
-            Specifies width, height (in pixels) of report window within a
-            notebook.
-            Only applicable when inserting the report into a Jupyter
-            notebook. Can be set after report creation using report.width,
-            report.height.
+        report_dims : Sequence[:obj:`int`, :obj:`int`] or None, default=None
+            Specifies width, height (in pixels) of report window.
+            Can be set after report creation
+              using ``report.width``, ``report.height``.
 
         Returns
         -------
@@ -309,7 +307,9 @@ class GLMReportMixin(ReportMixin):
         )
         self._display_report_warnings()
         html_report = self._assemble_report()
-        html_report.resize(*report_dims)
+
+        if report_dims is not None:
+            html_report.resize(*report_dims)
 
         return html_report
 
