@@ -24,6 +24,7 @@ from nilearn._base import documentation_url
 from nilearn._utils import logger
 from nilearn._utils.docs import (
     DATASET_DESCRIPTIONS,
+    fill_content_from_json,
     fill_doc,
     render_description_directives,
 )
@@ -76,11 +77,12 @@ class Description(Bunch):
         See ``nilearn.datasets._descriptions.DATASET_DESCRIPTIONS``.
         """
         entry = DATASET_DESCRIPTIONS[name]
+        content = fill_content_from_json(entry.content, f"{name}.json")
         return cls(
             documentation=(
                 f"{documentation_url()}/modules/description/{name}.html"
             ),
-            content=entry.content,
+            content=content,
             license=entry.license,
         )
 

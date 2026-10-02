@@ -2052,7 +2052,7 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     ),
     "localizer_first_level": Bunch(
         content=Bunch(
-            epi_img=Bunch(type=None, desc="fullpath the 4D BOLD nifti image"),
+            epi_img=Bunch(type=str, desc="fullpath the 4D BOLD nifti image"),
             events=Bunch(
                 type=str,
                 desc="fullpath to a tsv file describing the paradigm",
@@ -2187,27 +2187,34 @@ def type_to_rst(type_) -> str:
     return f"{type_to_rst(origin)} of ({inner})"
 
 
-def content_to_rst(name: str) -> str:
-    """Render the content of the dataset ``name`` as a list."""
+def fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
+    if not any(v.desc is None for v in content.values()):
+        return content
+
     import nilearn as nil
 
     pkg_dir = Path(nil.__file__).parent
-    content = DATASET_DESCRIPTIONS[name].content
-    if any(v.desc is None for v in content.values()):
-        with (pkg_dir / "datasets" / "description" / f"{name}.json").open(
-            "rb"
-        ) as f:
-            metadata = json.load(f)
 
-    content_str = []
+    with (pkg_dir / "datasets" / "description" / json_file).open("rb") as f:
+        metadata = json.load(f)
+
     for key, value in content.items():
         desc = value.desc
         if desc is None:
-            desc = metadata[key]
-        content_str.append(f"- ``{key}``: {type_to_rst(value.type)}. {desc}")
-    content_str = "\n".join(content_str)
+            content[key].desc = metadata[key]
 
-    return content_str
+    return content
+
+
+def content_to_rst(name: str) -> str:
+    """Render the content of the dataset ``name`` as a list."""
+    content = DATASET_DESCRIPTIONS[name].content
+    content = fill_content_from_json(content, f"{name}.json")
+    tmp = []
+    for key, value in content.items():
+        tmp.append(f"- ``{key}``: {type_to_rst(value.type)}. {value.desc}")
+
+    return "\n".join(tmp)
 
 
 def license_to_rst(name: str) -> str:
