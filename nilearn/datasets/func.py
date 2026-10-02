@@ -2427,7 +2427,7 @@ def fetch_language_localizer_demo_dataset(
     """Download language localizer demo dataset.
 
     For more information
-    see the :ref:`dataset description <_language_localizer_demo>`.
+    see the :ref:`dataset description <language_localizer_demo>`.
 
     Parameters
     ----------

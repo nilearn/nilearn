@@ -1,8 +1,11 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
-#   "nilearn[min_plotting]",
+#    "nilearn",
 #    "tabulate"
+#    "kaleido==1.1.0",
+#    "matplotlib==3.8.0",
+#    "plotly==6.1.1"
 # ]
 # ///
 """Generate markdown files with table summarizing information about atlases."""

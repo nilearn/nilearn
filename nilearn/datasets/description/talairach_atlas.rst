@@ -41,7 +41,6 @@ Content
 
 References
 ----------
-
 .. footbibliography::
 
 

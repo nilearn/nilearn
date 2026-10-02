@@ -35,7 +35,7 @@ were already normalized to the same :term:`MNI` space.
 # and the confounds.tsv files.
 #
 # For more information
-# see the :ref:`dataset description <_language_localizer_demo>`.
+# see the :ref:`dataset description <language_localizer_demo>`.
 #
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 

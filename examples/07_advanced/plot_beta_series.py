@@ -22,7 +22,7 @@ task-based functional connectivity analysis.
 # and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 #
 # For more information
-# see the :ref:`dataset description <_language_localizer_demo>`.
+# see the :ref:`dataset description <language_localizer_demo>`.
 #
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids

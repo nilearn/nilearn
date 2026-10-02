@@ -1596,7 +1596,7 @@ def fetch_atlas_aal(
     return Atlas(
         maps=atlas_img,
         labels=labels,
-        description=Description.from_registry("aal", fdescr),
+        description=Description.from_registry("aal_atlas", fdescr),
         lut=generate_atlas_look_up_table(
             "fetch_atlas_aal",
             index=np.array([int(x) for x in indices]),
