@@ -395,6 +395,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             tmp.extend((np.asarray(spheres_to_be_displayed) + 1).tolist())
             self._report_content["displayed_maps"] = tmp
 
+            spheres_names = self.get_feature_names_out()
+            self._report_content["name_maps"] = [""] + [
+                f"Sphere {i + 1}<br>{spheres_names[i]}"
+                for i in spheres_to_be_displayed
+            ]
+
             img = self._reporting_data["images"]
             if img is None:
                 msg = (
