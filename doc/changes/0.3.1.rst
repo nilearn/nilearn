@@ -8,14 +8,10 @@ Version 0.3.1
 
 This is a minor release for BrainHack.
 
-.. _v0-3-1-highlights:
-
 Highlights
 ----------
 
 - :bdg-danger:`Deprecation` **Dropped support for scikit-learn older than 0.14.1** Minimum supported version is now ``0.15``.
-
-.. _v0-3-1-changes:
 
 Changes
 -------
@@ -23,8 +19,6 @@ Changes
 - :bdg-success:`API` Added argument ``smoothing_fwhm`` to :class:`~regions.RegionExtractor` to control smoothing according to the resolution of atlas images.
 
 - :bdg-danger:`Deprecation` The function ``sym_to_vec`` is deprecated and will be removed in release ``0.4``. Use function :func:`~connectome.sym_matrix_to_vec` instead.
-
-.. _v0-3-1-fixes:
 
 Fixes
 -----
@@ -34,8 +28,6 @@ Fixes
 - :bdg-dark:`Code` A workaround to handle non-native endianness in :class:`~nibabel.nifti1.Nifti1Image` passed to resampling the image.
 
 - :bdg-info:`Plotting` Fix plotting issues when non-finite values are present in background anatomical image.
-
-.. _v0-3-1-enhancements:
 
 Enhancements
 ------------
