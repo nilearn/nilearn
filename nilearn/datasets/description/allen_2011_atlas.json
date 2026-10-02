@@ -1,0 +1,7 @@
+{
+    "comps" : "Fullpath to 4D nifti file containing the aggregate ICA components.",
+    "maps" : "Fullpath to 4D nifti file containing T-maps of all 75 unthresholded components.\n    The image has shape ``(53, 63, 46, 75)``.",
+    "networks" : "Names for the 28 resting state networks.",
+    "rsn_indices": "This maps the network names to the map indices.\n    For example, the map indices for the 'Visual' network can be obtained with ``dict(data.rsn_indices)['Visual]``",
+    "rsn28": "Fullpath to 4D nifti file containing the 28 resting state networks from Allen et al 2011.\n    The image has shape ``(53, 63, 46, 28)``."
+}

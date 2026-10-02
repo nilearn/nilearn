@@ -2859,7 +2859,7 @@ def fetch_localizer_first_level(
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        %(localizer_first_level)s
+        %(localizer_first_level_content)s
 
     Notes
     -----
@@ -3156,7 +3156,7 @@ def fetch_spm_multimodal_fmri(
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        %(spm_multimodal)s
+        %(spm_multimodal_content)s
 
     Notes
     -----

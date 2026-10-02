@@ -11,14 +11,15 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 
 # sourcery skip: merge-dict-assign
 
+import json
 import re
 import sys
 import types
 import typing
 from collections.abc import Callable
+from pathlib import Path
 
 import pandas as pd
-from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
 ##############################################################################
@@ -2010,46 +2011,13 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     "allen_2011_atlas": Bunch(
         content=Bunch(
             atlas_type=Bunch(type=str, desc=atlas_type),
-            comps=Bunch(
-                type=str,
-                desc=(
-                    "fullpath to 4D nifti file "
-                    "containing the aggregate ICA components"
-                ),
-            ),
-            maps=Bunch(
-                type=str,
-                desc=(
-                    "Fullpath to 4D nifti file containing T-maps "
-                    "of all 75 unthresholded components. "
-                    "The image has shape ``(53, 63, 46, 75)``."
-                ),
-            ),
-            networks=Bunch(
-                type=list[list[str]],
-                desc="names for the 28 resting state networks",
-            ),
-            rsn28=Bunch(
-                type=str,
-                desc=(
-                    "Fullpath to 4D nifti file containing "
-                    "the 28 resting state networks "
-                    "from Allen et al 2011. "
-                    "The image has shape ``(53, 63, 46, 28)``."
-                ),
-            ),
+            comps=Bunch(type=str, desc=None),
+            maps=Bunch(type=str, desc=None),
+            networks=Bunch(type=list[list[str]], desc=None),
+            rsn28=Bunch(type=str, desc=None),
             rsn_indices=Bunch(
                 type=list[tuple[str, list[int]]],
-                desc=(
-                    "This maps the network names to the map indices. "
-                    "For example, the map indices for the 'Visual' network "
-                    "can be obtained:\n\n"
-                    " .. code-block:: python "
-                    "     "
-                    "    # Should return [46, 64, 67, 48, 39, 59]"
-                    "    dict(data.rsn_indices)['Visual]"
-                    "    "
-                ),
+                desc=None,
             ),
             template=Bunch(type=str, desc=template),
         ),
@@ -2171,7 +2139,7 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
             ),
             lut=Bunch(type=pd.DataFrame, desc=lut),
             maps=Bunch(
-                type=Nifti1Image,
+                type="nibabel.nifti1.Nifti1Image",
                 desc=(
                     "Nifti1Image object containing the label image. "
                     "The image has shape ``(141, 172, 110)`` "
@@ -2221,11 +2189,25 @@ def type_to_rst(type_) -> str:
 
 def content_to_rst(name: str) -> str:
     """Render the content of the dataset ``name`` as a list."""
+    import nilearn as nil
+
+    pkg_dir = Path(nil.__file__).parent
     content = DATASET_DESCRIPTIONS[name].content
-    return "\n".join(
-        f"- ``{key}``: {type_to_rst(value.type)}. {value.desc}"
-        for key, value in content.items()
-    )
+    if any(v.desc is None for v in content.values()):
+        with (pkg_dir / "datasets" / "description" / f"{name}.json").open(
+            "rb"
+        ) as f:
+            metadata = json.load(f)
+
+    content_str = []
+    for key, value in content.items():
+        desc = value.desc
+        if desc is None:
+            desc = metadata[key]
+        content_str.append(f"- ``{key}``: {type_to_rst(value.type)}. {desc}")
+    content_str = "\n".join(content_str)
+
+    return content_str
 
 
 def license_to_rst(name: str) -> str:
