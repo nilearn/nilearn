@@ -404,4 +404,3 @@ def test_load_anat_black_bg_false_non_negative_data():
     # plot_anat display colorbar should not have negative limits
     display = plot_anat(img, black_bg=False, colorbar=True)
     assert display._cbar.mappable.norm.vmin >= 0.0
-
