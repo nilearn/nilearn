@@ -381,26 +381,56 @@ def test_get_cbar_ticks_int_threshold_float():
 
 
 @pytest.mark.ai_generated
-def test_load_anat_black_bg_false_non_negative_data():
+def test_load_anat_black_bg_false_non_negative_data(img_3d_rand_eye):
     """Test load_anat and plot_anat with black_bg=False on non-negative data.
 
     Regression test for issue #6313: plot_anat with black_bg = False can
     introduce spurious negative values.
     """
-    import nibabel as nib
-
     from nilearn.plotting import plot_anat
     from nilearn.plotting.image.utils import load_anat
 
-    # Non-negative image data
-    data = np.random.RandomState(42).rand(10, 10, 10) * 100.0
-    img = nib.Nifti1Image(data, np.eye(4))
-
     # load_anat should not return negative vmin for non-negative data
-    _, _, vmin, vmax = load_anat(img, black_bg=False)
+    _, _, vmin, vmax = load_anat(img_3d_rand_eye, black_bg=False)
     assert vmin >= 0.0
     assert vmin <= vmax
 
     # plot_anat display colorbar should not have negative limits
-    display = plot_anat(img, black_bg=False, colorbar=True)
+    display = plot_anat(img_3d_rand_eye, black_bg=False, colorbar=True)
     assert display._cbar.mappable.norm.vmin >= 0.0
+
+
+@pytest.mark.ai_generated
+def test_load_anat_black_bg_false_negative_data(img_3d_rand_eye):
+    """Test load_anat with black_bg=False when image data contains negative values."""
+    from nilearn.image import new_img_like
+    from nilearn.plotting.image.utils import load_anat
+
+    # Image data with negative values
+    neg_img = new_img_like(
+        img_3d_rand_eye, img_3d_rand_eye.get_fdata() * 100.0 - 50.0
+    )
+
+    # When orig_vmin < 0, load_anat should allow negative vmin
+    _, _, vmin, vmax = load_anat(neg_img, black_bg=False)
+    assert vmin < 0.0
+    assert vmin <= vmax
+
+
+@pytest.mark.ai_generated
+def test_apply_dimming_coverage():
+    """Test _apply_dimming for both non-negative and negative initial vmin values."""
+    from nilearn.plotting.image.utils import _apply_dimming
+
+    # Non-negative orig_vmin (orig_vmin >= 0)
+    vmin, vmax = _apply_dimming(
+        dim="auto", black_bg=False, vmin=0.0, vmax=100.0
+    )
+    assert vmin == 0.0
+
+    # Negative orig_vmin (orig_vmin < 0)
+    vmin, vmax = _apply_dimming(
+        dim="auto", black_bg=False, vmin=-10.0, vmax=100.0
+    )
+    assert vmin < -10.0
+
