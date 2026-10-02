@@ -30,6 +30,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-success:`API` Fix ``t`` and ``conf_int`` of :class:`~glm.LikelihoodModelResults` losing the per-column-of-data axis, and stop the default ``vcov`` broadcasting several dispersion values along a covariance matrix: it now returns one matrix per value, and under ``uniform=False`` asking for several regressors at once while the dispersion carries several values on axes that overlap the block raises rather than broadcasting (:gh:`5354` by `Chi-Wei Lee`_).
+
 - :bdg-dark:`Code` Use mesh faces, rather than adjacent vertex indices, when computing clusters for surface cluster-level inference (:gh:`6608` by `Donncha O'Toole`_).
 
 - :bdg-primary:`Doc` Use run-aware cross-validation in the Haxby multiclass decoding example to avoid splitting samples from the same run between training and validation sets (:gh:`6591` by `Mohammad Sadeghi Hardengi`_).
@@ -60,6 +62,10 @@ Enhancements
 
 Changes
 -------
+
+- :bdg-success:`API` ``vcov`` of :class:`~glm.LikelihoodModelResults` now returns one covariance matrix per dispersion value, ``(n_dispersion, dim, dim)``, for every call that returns, instead of a shape that depended on which arguments it was given. Two kinds of argument raise instead of returning: a selector that cannot name one regressor at a time, a 2-D array or a 0-d boolean, and a ``matrix`` of rank 3 or more, which only got past the first product when its middle axis matched the number of regressors, and even then did not always return. ``uniform=False`` retains the older shapes without a warning in 0.15.0; no removal version has been set (:gh:`6480` by `Chi-Wei Lee`_).
+
+- :bdg-danger:`Deprecation` The ``other`` argument of ``vcov`` of :class:`~glm.LikelihoodModelResults` is removed. It was the right hand side of the ``matrix`` product, was documented as an alternative contrast specification followed by a question mark, and was passed nowhere in nilearn outside its own tests. With it gone, and with a ``matrix`` of higher rank now raising, every call that returns gives a square block. ``uniform`` is keyword only, so a fourth positional argument raises instead of being read as the argument that inherited its position (:gh:`6480` by `Chi-Wei Lee`_).
 
 - :bdg-danger:`Deprecation` The ``return_label_maps`` parameter of :func:`~reporting.get_clusters_table` is deprecated and will be removed in version 0.17.0, when cluster label maps will always be returned together with the table (:gh:`6376` by `Mohammad Sadeghi Hardengi`_).
 
