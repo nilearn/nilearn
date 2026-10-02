@@ -378,3 +378,30 @@ def test_get_cbar_ticks_int_threshold_float():
         get_cbar_ticks(
             vmin=3, vmax=5, threshold=2.4, n_ticks=5, tick_format="%i"
         )
+
+
+@pytest.mark.ai_generated
+def test_load_anat_black_bg_false_non_negative_data():
+    """Test load_anat and plot_anat with black_bg=False on non-negative data.
+
+    Regression test for issue #6313: plot_anat with black_bg = False can
+    introduce spurious negative values.
+    """
+    import nibabel as nib
+
+    from nilearn.plotting import plot_anat
+    from nilearn.plotting.image.utils import load_anat
+
+    # Non-negative image data
+    data = np.random.RandomState(42).rand(10, 10, 10) * 100.0
+    img = nib.Nifti1Image(data, np.eye(4))
+
+    # load_anat should not return negative vmin for non-negative data
+    _, _, vmin, vmax = load_anat(img, black_bg=False)
+    assert vmin >= 0.0
+    assert vmin <= vmax
+
+    # plot_anat display colorbar should not have negative limits
+    display = plot_anat(img, black_bg=False, colorbar=True)
+    assert display._cbar.mappable.norm.vmin >= 0.0
+

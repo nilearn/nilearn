@@ -48,6 +48,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix residual variance of :class:`~nilearn.glm.OLSModel` and :class:`~nilearn.glm.ARModel` being divided by the number of design columns instead of the design rank, which made t and F statistics too small for rank-deficient designs in :class:`~nilearn.glm.first_level.FirstLevelModel` and :class:`~nilearn.glm.second_level.SecondLevelModel` (:gh:`6611` by `Wolfgang Aura`_).
 
+- :bdg-info:`Plotting` Fix :func:`~nilearn.plotting.plot_anat` with ``black_bg=False`` introducing spurious negative values into vmin for non-negative images (:gh:`6313`).
+
 
 .. _v0-15-0-enhancements:
 
