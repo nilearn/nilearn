@@ -9,6 +9,7 @@ from nilearn._utils.docs import (
     Description,
     _matches_type,
     check_content_types,
+    content_to_rst,
     type_to_rst,
 )
 from nilearn.datasets._utils import (
@@ -106,3 +107,14 @@ def test_check_content_types():
     assert len(errors) == 2
     assert "'maps' expected type" in errors[0]
     assert "'lut' is described but missing" in errors[1]
+
+
+def test_content_to_rst():
+
+    rst = content_to_rst(name="talairach_atlas", indent="   ")
+
+    assert (
+        rst[0:60]
+        == """
+   - ``atlas_type``: :obj:`str`.  Type of atlas. See :term:"""
+    )

@@ -2016,13 +2016,15 @@ def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
     return content
 
 
-# we update the content of DATASET_DESCRIPTIONS from the dataset json
+# update the content of DATASET_DESCRIPTIONS from the dataset json
 for k in DATASET_DESCRIPTIONS:
     if "content" not in DATASET_DESCRIPTIONS[k]:
         DATASET_DESCRIPTIONS[k]["content"] = Bunch()
     DATASET_DESCRIPTIONS[k]["content"] = _fill_content_from_json(
         DATASET_DESCRIPTIONS[k]["content"], f"{k}.json"
     )
+
+    # All atlases have an "atlas_type" and "template"
     if "atlas" in k:
         DATASET_DESCRIPTIONS[k]["content"]["atlas_type"] = Bunch(
             type=str, desc=atlas_type
@@ -2032,18 +2034,35 @@ for k in DATASET_DESCRIPTIONS:
         )
 
 
-def content_to_rst(name: str) -> str:
-    """Render the content of the dataset ``name`` as a list."""
-    content = DATASET_DESCRIPTIONS[name].content
+def content_to_rst(name: str, indent="") -> str:
+    """Render the content of the dataset ``name`` as a sorted list.
+
+    Parameters
+    ----------
+    name : str
+        key to use in DATASET_DESCRIPTIONS
+
+    indent : str
+        indent value to use to indent list
+        (useful for proper rendering in HTML)
+    """
+    content = dict(sorted(DATASET_DESCRIPTIONS[name].content.items()))
     tmp = []
     for key, value in content.items():
-        tmp.append(f"- ``{key}``: {type_to_rst(value.type)}. {value.desc}")
+        sanitized_value = "".join(value.desc.split("\n"))
+        sanitized_value = re.sub(" +", " ", sanitized_value)
+        tmp.append(
+            f"\n{indent}- ``{key}``: "
+            f"{type_to_rst(value.type)}. {sanitized_value}"
+        )
 
-    return "\n".join(tmp)
+    return "".join(tmp)
 
 
 def type_to_rst(type_) -> str:
     """Render a type (or type hint) as restructured text."""
+    if str(type_) == "nibabel.nifti1.Nifti1Image":
+        type_ = f":class:`{type_!s}`"
     if isinstance(type_, str):
         return type_
     if type_ is None or type_ is type(None):
@@ -2070,7 +2089,7 @@ def type_to_rst(type_) -> str:
 
 
 for k in DATASET_DESCRIPTIONS:
-    docdict[f"{k}_content"] = content_to_rst(k)
+    docdict[f"{k}_content"] = content_to_rst(k, indent="    ")
 
 
 _DIRECTIVE_REGEX = re.compile(
