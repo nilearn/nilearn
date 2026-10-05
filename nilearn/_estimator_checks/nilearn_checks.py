@@ -472,12 +472,11 @@ def check_doc_attributes(estimator) -> None:
     undocumented_attributes: list[str] = [
         attr for attr in fitted_attributes if attr not in documented_attributes
     ]
-    if undocumented_attributes:
-        raise ValueError(
-            "Missing docstring for attributes "
-            f"[{', '.join(undocumented_attributes)}] "
-            f"in estimator {estimator.__class__.__name__}."
-        )
+    assert not undocumented_attributes, (
+        "Missing docstring for attributes "
+        f"[{', '.join(undocumented_attributes)}] "
+        f"in estimator {estimator.__class__.__name__}."
+    )
 
     extra_attributes = [
         attr for attr in documented_attributes if attr not in fitted_attributes
