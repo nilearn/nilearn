@@ -9,6 +9,8 @@ See :func:`nilearn.datasets.fetch_atlas_pauli_2017`.
 
 Notes
 -----
+This atlas has 12 subcortical nodes in total.
+
 The purpose of this project is to develop a crowd-sourced In Vivo High Resolution Atlas of the Subcortical Human Brain.
 We invite contributions to this project, both to increase the precision of anatomical labels,
 and to increase the number of labeled subcortical nuclei.
@@ -19,14 +21,12 @@ See :footcite:t:`pauli_atlas` and :footcite:t:`Pauli2018`.
 
 Content
 -------
-    :'maps': Nifti images with the (probabilistic) region definitions
-    :'labels': text file containing the file names
+.. nilearn_dataset_content:: pauli_2017_atlas
 
 References
 ----------
-
 .. footbibliography::
 
 License
 -------
-UCC-By Attribution 4.0 International
+.. nilearn_dataset_license:: yeo_2011_atlas

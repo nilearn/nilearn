@@ -1095,26 +1095,19 @@ def fetch_atlas_msdl(
 def fetch_coords_power_2011() -> Bunch[str, pd.DataFrame | str]:
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
-    See :footcite:t:`Power2011`.
+    For more information
+    see the :ref:`dataset description <power_2011_atlas>`.
 
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'rois': :class:`pandas.DataFrame`
-            Contains the coordinates of 264 ROIs in :term:`MNI` space.
-
-        - %(description)s
-
-
-    References
-    ----------
-    .. footbibliography::
+        %(power_2011_atlas_content)s
 
     """
-    dataset_name = "power_2011"
-    fdescr = get_dataset_descr(dataset_name)
+    dataset_name = "power_2011_atlas"
+    fdescr = Description.from_registry(dataset_name)
     csv = PACKAGE_DIRECTORY / "data" / "power_2011.csv"
     rois = pd.read_csv(csv)
     rois = rois.rename(columns={c: c.lower() for c in rois.columns})
@@ -1202,12 +1195,12 @@ def fetch_atlas_smith_2009(
     elif isinstance(url, str):
         list_url = [url] * len(files)
 
-    dataset_name = "smith_2009"
+    dataset_name = "smith_2009_atlas"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
-    fdescr = get_dataset_descr(dataset_name)
+    fdescr = Description.from_registry(dataset_name)
 
     key = f"{'rsn' if resting else 'bm'}{dimension}"
     key_index = list(files).index(key)
@@ -1297,7 +1290,7 @@ def fetch_atlas_yeo_2011(
         )
     opts = {"uncompress": True}
 
-    dataset_name = "yeo_2011"
+    dataset_name = "yeo_2011_atlas"
     keys = (
         "thin_7",
         "thick_7",
@@ -1328,7 +1321,7 @@ def fetch_atlas_yeo_2011(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = get_dataset_descr(dataset_name)
+    fdescr = Description.from_registry(dataset_name)
 
     params = dict(
         [
@@ -2124,9 +2117,9 @@ def fetch_atlas_talairach(
 
         %(talairach_atlas_content)s
 
-    References
-    ----------
-    .. footbibliography::
+    Notes
+    -----
+    %(fetcher_note)s
 
     """
     check_params(locals())
@@ -2165,8 +2158,8 @@ def fetch_atlas_pauli_2017(
 ) -> Atlas:
     """Download the Pauli et al. (2017) atlas.
 
-    This atlas has 12 subcortical nodes in total. See
-    :footcite:t:`pauli_atlas` and :footcite:t:`Pauli2018`.
+    For more information,
+    see the :ref:`dataset description <pauli_2017_atlas>`.
 
     Parameters
     ----------
@@ -2174,7 +2167,9 @@ def fetch_atlas_pauli_2017(
         Which type of the atlas should be download. This can be
         'probabilistic' for the :term:`Probabilistic atlas`, or 'deterministic'
         for the :term:`Deterministic atlas`.
+
     %(data_dir)s
+
     %(verbose)s
 
     Returns
@@ -2182,33 +2177,11 @@ def fetch_atlas_pauli_2017(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'maps': :obj:`str`,
-            path to nifti file containing the
-            :class:`~nibabel.nifti1.Nifti1Image`.
-            If ``atlas_type='probabilistic'``,
-            the image shape is ``(193, 229, 193, 16)``.
-            If ``atlas_type='deterministic'`` the image shape is
-            ``(198, 263, 212)``, and values are indices in the list of labels
-            (integers from 0 to 16).
+        %(pauli_2017_atlas_content)s
 
-        - %(labels)s
-            The list contains values for both
-            :term:`probabilistic<Probabilistic atlas>` and
-            :term:`deterministic<Deterministic atlas>` types.
-
-        - %(description)s
-
-        - %(lut)s
-            Only when atlas_type="deterministic"
-
-        - %(template)s
-
-        - %(atlas_type)s
-
-    References
-    ----------
-    .. footbibliography::
-
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
     check_parameter_in_allowed(
@@ -2222,7 +2195,7 @@ def fetch_atlas_pauli_2017(
         filename = "pauli_2017_det.nii.gz"
 
     url_labels = "https://osf.io/6qrcb/download"
-    dataset_name = "pauli_2017"
+    dataset_name = "pauli_2017_atlas"
 
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
@@ -2239,7 +2212,7 @@ def fetch_atlas_pauli_2017(
     return Atlas(
         maps=atlas_file,
         labels=labels,
-        description=get_dataset_descr(dataset_name),
+        description=Description.from_registry(dataset_name),
         lut=generate_atlas_look_up_table(
             "fetch_atlas_pauli_2017", name=labels
         ),
@@ -2295,15 +2268,9 @@ def fetch_atlas_schaefer_2018(
 
         %(schaefer_2018_atlas_content)s
 
-    References
-    ----------
-    .. footbibliography::
-
-
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 

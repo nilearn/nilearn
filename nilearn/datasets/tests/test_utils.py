@@ -25,7 +25,6 @@ DATASET_NAMES = {
     "brainomics_localizer",
     "development_fmri",
     "dosenbach_2010",
-    "fiac",
     "fsaverage3",
     "fsaverage4",
     "fsaverage5",
@@ -33,17 +32,13 @@ DATASET_NAMES = {
     "fsaverage",
     "haxby2001",
     "icbm152_2009",
-    "language_localizer_demo",
-    "localizer_first_level",
     "Megatrawls",
     "mixed_gambles",
     "miyawaki2008",
     "neurovault",
     "nki_enhanced_surface",
     "oasis1",
-    "power_2011",
     "spm_auditory",
-    "spm_multimodal",
 }
 
 

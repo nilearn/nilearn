@@ -314,7 +314,7 @@ def test_fetch_atlas_smith_2009(tmp_path):
     bunch = fetch_atlas_smith_2009(data_dir=tmp_path, verbose=0, dimension=20)
 
     validate_atlas(bunch)
-    assert bunch["maps"] == str(tmp_path / "smith_2009" / "rsn20.nii.gz")
+    assert bunch["maps"] == str(tmp_path / "smith_2009_atlas" / "rsn20.nii.gz")
 
 
 def test_fetch_coords_power_2011():
