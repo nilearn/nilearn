@@ -1,4 +1,4 @@
-.. _power_atlas:
+.. _power_2011_atlas:
 
 Power 2011 atlas
 ================

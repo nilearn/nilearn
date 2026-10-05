@@ -1983,6 +1983,10 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
         license="unknown",
     ),
+    "yeo_2011_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="MIT",
+    ),
 }
 
 

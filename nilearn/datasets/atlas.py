@@ -1297,21 +1297,7 @@ def fetch_atlas_yeo_2011(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object.
 
-        - 'anat': :obj:`str`
-            Path to nifti file containing the anatomy image.
-
-        - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`.
-          The image contains integer values for each network.
-
-        - %(labels)s
-
-        - %(lut)s
-
-        - %(description)s
-
-        - %(template)s
-
-        - %(atlas_type)s
+        %(yeo_2011_atlas_content)s
 
     References
     ----------

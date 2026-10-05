@@ -12,11 +12,11 @@
         "desc": "Names for the 28 resting state networks."
     },
     "rsn_indices": {
-        "type": "str",
+        "type": "list[tuple[str, list[int]]]",
         "desc": "This maps the network names to the map indices.\n    For example, the map indices for the 'Visual' network can be obtained with ``dict(data.rsn_indices)['Visual]``"
     },
     "rsn28": {
-        "type": "list[tuple[str, list[int]]]",
+        "type": "str",
         "desc": "Fullpath to 4D nifti file containing the 28 resting state networks from Allen et al 2011.\n    The image has shape ``(53, 63, 46, 28)``."
     }
 }

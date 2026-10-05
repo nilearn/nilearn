@@ -1,0 +1,18 @@
+{
+    "labels": {
+        "type": "list[str]",
+        "desc": "List of the names of the regions. There are 39 labels such that ``data.labels[i]`` corresponds to map ``i``."
+    },
+    "maps": {
+        "type": "str",
+        "desc": "Path to nifti file containing the :term:`Probabilistic atlas` image (shape is equal to ``(40, 48, 35, 39)``)."
+    },
+    "networks": {
+        "type": "list[str]",
+        "desc": "List containing the names of the networks. There are 39 network names such that ``data.networks[i]`` is the network name of region ``i``."
+    },
+    "region_coords": {
+        "type": "list[list[float]]",
+        "desc": "Length-3 :obj:`tuple` ``data.region_coords[i]`` contains the coordinates ``(x, y, z)`` of region ``i`` in :term:`MNI` space."
+    }
+}
