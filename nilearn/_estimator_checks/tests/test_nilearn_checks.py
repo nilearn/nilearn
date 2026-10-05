@@ -6,7 +6,7 @@ correct checks.
 
 import pytest
 
-from nilearn._estimator_checks.nilearn_checks import (
+from nilearn._estimator_checks.nilearn_check_generator import (
     CACHE_MIXIN_CHECKS,
     COMMON_CHECKS,
     DECOMPOSITION_CHECKS,
