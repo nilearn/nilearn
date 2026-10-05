@@ -19,17 +19,21 @@ Different versions of the atlas are available, varying in
 - network annotation (7 or 17)
 - spatial resolution of the atlas (1 or 2 mm)
 
+Release v0.14.3 of the Schaefer 2018 parcellation is used by
+default. Versions prior to v0.14.3 are known to contain erroneous region
+label names. For more details, see
+https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/Updates/Update_20190916_README.md
+
+
 Content
 -------
-    :'maps': 3D Nifti image, values are indices in the list of labels.
-    :'labels': ROI labels including Yeo-network annotation.
-    :'description': A short description of the atlas and some references.
+.. nilearn_dataset_content:: schaefer_2018_atlas
+
 
 References
 ----------
-
 .. footbibliography::
 
 License
 -------
-MIT
+.. nilearn_dataset_license:: schaefer_2018_atlas

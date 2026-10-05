@@ -19,6 +19,7 @@ For more information on this dataset's structure,
 see :footcite:t:`CorticalParcellation_Yeo2011`,
 and :footcite:t:`Yeo2011`.
 
+
 Content
 -------
 .. nilearn_dataset_content:: yeo_2011_atlas

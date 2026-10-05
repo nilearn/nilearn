@@ -1135,7 +1135,8 @@ def fetch_atlas_smith_2009(
     """Download and load the Smith :term:`ICA` and BrainMap \
     :term:`Probabilistic atlas` (2009).
 
-    See :footcite:t:`Smith2009b` and :footcite:t:`Laird2011`.
+    For more information
+    see the :ref:`dataset description <smith_2009_atlas>`.
 
     Parameters
     ----------
@@ -1164,28 +1165,11 @@ def fetch_atlas_smith_2009(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - ``maps``: :obj:`str`
-            Path to nifti file containing the requested resting fMRI or
-            or BrainMap components image with the number of requested
-            dimenensions.
-            The shape of the image is ``(91, 109, 91, dimension)``.
-
-        - %(description)s
-
-        - %(atlas_type)s
-
-        - %(template)s
-
-    References
-    ----------
-    .. footbibliography::
+        %(smith_2009_atlas_content)s
 
     Notes
     -----
     %(fetcher_note)s
-
-    For more information about this dataset's structure:
-    https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
     """
     check_params(locals())
 
@@ -1251,21 +1235,17 @@ def fetch_atlas_yeo_2011(
 ) -> Atlas:
     """Download and return file names for the Yeo 2011 :term:`parcellation`.
 
-    This function retrieves the so-called yeo
-    :term:`deterministic atlases<Deterministic atlas>`. The provided images
-    are in MNI152 space and have shapes equal to ``(256, 256, 256, 1)``.
-    They contain consecutive integers values from 0 (background) to either
-    7 or 17 depending on the atlas version considered.
-
-    For more information on this dataset's structure,
-    see :footcite:t:`CorticalParcellation_Yeo2011`,
-    and :footcite:t:`Yeo2011`.
+    For more information
+    see the :ref:`dataset description <yeo_2011_atlas>`.
 
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     n_networks : {7, 17}, default = 7
@@ -1299,15 +1279,9 @@ def fetch_atlas_yeo_2011(
 
         %(yeo_2011_atlas_content)s
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
     %(fetcher_note)s
-
-    License: unknown.
     """
     check_params(locals())
 
@@ -2290,9 +2264,8 @@ def fetch_atlas_schaefer_2018(
     This function returns a :term:`Deterministic atlas`, and the provided
     images are in MNI152 space.
 
-    For more information on this dataset, see :footcite:t:`schaefer_atlas`,
-    :footcite:t:`Schaefer2017`,
-    and :footcite:t:`Yeo2011`.
+    For more information
+    see the :ref:`dataset description <schaefer_2018_atlas>`.
 
     Parameters
     ----------
@@ -2304,11 +2277,15 @@ def fetch_atlas_schaefer_2018(
 
     resolution_mm : {1, 2}, default=1
         Spatial resolution of atlas image, in mm.
+
     %(data_dir)s
+
     base_url : :obj:`str`,  default=None
         Base URL of files to download (``None`` results in
         default ``base_url``).
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -2316,22 +2293,7 @@ def fetch_atlas_schaefer_2018(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'maps': :obj:`str`, path to nifti file containing the
-            3D :class:`~nibabel.nifti1.Nifti1Image` (its shape is
-            ``(182, 218, 182)``).
-            The values are consecutive integers
-            between 0 and ``n_rois`` which can be interpreted as indices
-            in the list of labels.
-
-        - %(labels)s
-
-        - %(description)s
-
-        - %(lut)s
-
-        - %(template)s
-
-        - %(atlas_type)s
+        %(schaefer_2018_atlas_content)s
 
     References
     ----------
@@ -2342,12 +2304,6 @@ def fetch_atlas_schaefer_2018(
     -----
     %(fetcher_note)s
 
-    Release v0.14.3 of the Schaefer 2018 parcellation is used by
-    default. Versions prior to v0.14.3 are known to contain erroneous region
-    label names. For more details, see
-    https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/Updates/Update_20190916_README.md
-
-    License: MIT.
     """
     check_params(locals())
 
@@ -2386,7 +2342,7 @@ def fetch_atlas_schaefer_2018(
         ]
     ]
 
-    dataset_name = "schaefer_2018"
+    dataset_name = "schaefer_2018_atlas"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
@@ -2404,7 +2360,7 @@ def fetch_atlas_schaefer_2018(
     return Atlas(
         maps=atlas_file,
         labels=list(lut["name"]),
-        description=get_dataset_descr(dataset_name),
+        description=Description.from_registry(dataset_name),
         lut=lut,
         atlas_type=atlas_type,
         template="MNI152NLin6Asym",

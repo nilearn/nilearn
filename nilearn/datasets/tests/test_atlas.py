@@ -849,7 +849,7 @@ def test_fetch_atlas_schaefer_2018(
         }
     )
     basename = f"Schaefer2018_{n_rois}Parcels_{yeo_networks}Networks_order.txt"
-    mock_dir = tmp_path / "schaefer_2018"
+    mock_dir = tmp_path / "schaefer_2018_atlas"
     mock_dir.mkdir(exist_ok=True, parents=True)
     mock_file = mock_dir / basename
     mock_lut.to_csv(mock_file, sep="\t", header=False)

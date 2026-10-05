@@ -1979,6 +1979,11 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         license="unknown",
     ),
     "spm_multimodal": Bunch(license="unknown"),
+    "schaefer_2018_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="unknown",
+    ),
+    "smith_2009_atlas": Bunch(license="unknown"),
     "talairach_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
         license="unknown",
@@ -2007,8 +2012,6 @@ def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
 
     with (pkg_dir / "datasets" / "description" / json_file).open("rb") as f:
         metadata = json.load(f)
-        print(json_file)
-        print(metadata)
 
     for key, value in metadata.items():
         if key in content:
@@ -2026,7 +2029,6 @@ def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
 for k in DATASET_DESCRIPTIONS:
     if "content" not in DATASET_DESCRIPTIONS[k]:
         DATASET_DESCRIPTIONS[k]["content"] = Bunch()
-    print(k)
     DATASET_DESCRIPTIONS[k]["content"] = _fill_content_from_json(
         DATASET_DESCRIPTIONS[k]["content"], f"{k}.json"
     )

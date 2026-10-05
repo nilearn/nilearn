@@ -5,6 +5,6 @@
     },
     "maps": {
         "type": "str",
-        "desc": "Path to nifti file containing the 3D :class:`~nibabel.nifti1.Nifti1Image` (its shape is ``(182, 218, 182)``). The values are consecutive integers between 0 and ``n_rois`` which can be interpreted as indices in the list of labels."
+        "desc": "Fullpath to nifti file containing the 3D :class:`~nibabel.nifti1.Nifti1Image` (its shape is ``(182, 218, 182)``). The values are consecutive integers between 0 and ``n_rois`` which can be interpreted as indices in the list of labels."
     }
 }

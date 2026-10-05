@@ -19,25 +19,17 @@ of healthy subjects stored in the BrainMap database.
 
 See :footcite:t:`Smith2009b` and :footcite:t:`Laird2011`.
 
-Content
--------
-    :'rsn20': 20 :term:`ICA` maps derived from :term:`resting-state` decomposition
-    :'rsn10': 10 :term:`ICA` maps from the above that matched across task and rest
-    :'rsn70': 70 :term:`ICA` maps derived from :term:`resting-state` decomposition
-    :'bm20': 20 :term:`ICA` maps derived from decomposition BrainMap task data
-    :'bm10': 10 :term:`ICA` maps from the above that matched across task and rest
-    :'bm70': 70 :term:`ICA` maps derived from decomposition BrainMap task data
-
-
-References
-----------
-
-.. footbibliography::
-
 For more information about this dataset's structure:
 https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
 
+Content
+-------
+.. nilearn_dataset_license:: smith_2009_atlas
+
+References
+----------
+.. footbibliography::
 
 License
 -------
-unknown
+.. nilearn_dataset_license:: smith_2009_atlas
