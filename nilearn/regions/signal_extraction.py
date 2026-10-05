@@ -441,7 +441,7 @@ def signals_to_img_labels(
     if signals.ndim == 2:
         target_shape = (*target_shape, signals.shape[0])
 
-    data = np.zeros(target_shape, dtype=signals.dtype, order=order)
+    data = np.zeros(target_shape, dtype=signals.dtype, order=order)  # type: ignore[no-matching-overload]
     labels_dict = {label: n for n, label in enumerate(labels)}
     # optimized for "data" in F order.
     for k in range(labels_data.shape[2]):

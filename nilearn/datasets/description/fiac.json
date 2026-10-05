@@ -1,0 +1,22 @@
+{
+    "design_matrix1": {
+        "type": "pd.DataFrame",
+        "desc": "Design matrix of run 1."
+    },
+    "design_matrix2": {
+        "type": "pd.DataFrame",
+        "desc": "Design matrix of run 2."
+    },
+    "func1": {
+        "type": "str",
+        "desc": "Fullpath to 4D nifti file of run 1."
+    },
+    "func2": {
+        "type": "str",
+        "desc": "Fullpath to 4D nifti file of run 2."
+    },
+    "mask": {
+        "type": "str",
+        "desc": "Fullpath to 3D nifti mask."
+    }
+}

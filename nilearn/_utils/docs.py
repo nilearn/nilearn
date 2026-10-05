@@ -1967,188 +1967,31 @@ def fill_doc(f: Callable) -> Callable:
 DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     "aal_atlas": Bunch(
         content=Bunch(
-            atlas_type=Bunch(type=str, desc=atlas_type),
-            indices=Bunch(
-                type=list[str],
-                desc=(
-                    "Indices mapping ``labels`` to values "
-                    "in the'``maps`` image. "
-                    "This list has 117 elements in "
-                    "version SPM 5, 8 and 12, and 167 elements "
-                    "in version 3v2. "
-                    "Since the values in the 'maps' image "
-                    "do not correspond to indices in ``labels``, "
-                    "but rather to values in ``indices``, "
-                    "the location of a label in the ``labels`` list "
-                    "does not necessary match the associated value "
-                    "in the image. "
-                    "Use the ``indices`` list to identify "
-                    "the appropriate image value for a given label."
-                ),
-            ),
-            labels=Bunch(
-                type=list[str],
-                desc=(
-                    f"{labels} "
-                    "There are 117 names in version SPM 5, 8, and 12, "
-                    "and 167 names in version 3v2."
-                ),
-            ),
             lut=Bunch(type=pd.DataFrame, desc=lut),
-            maps=Bunch(
-                type=str,
-                desc=(
-                    "Fullpath to 3D nifti file containing label image. "
-                    "The image has shape ``(91, 109, 91)`` "
-                    "and contains 117 unique integer values "
-                    "defining the parcellation in version "
-                    "SPM 5, 8 and 12, and 167 unique integer values "
-                    "defining the parcellation in version 3v2."
-                ),
-            ),
-            template=Bunch(type=str, desc=template),
         ),
         license="unknown",
     ),
-    "allen_2011_atlas": Bunch(
-        content=Bunch(
-            atlas_type=Bunch(type=str, desc=atlas_type),
-            template=Bunch(type=str, desc=template),
-        ),
-        license="unknown",
-    ),
-    "fiac": Bunch(
-        content=Bunch(
-            design_matrix1=Bunch(
-                type=pd.DataFrame, desc="Design matrix of run 1"
-            ),
-            design_matrix2=Bunch(
-                type=pd.DataFrame, desc="Design matrix of run 2"
-            ),
-            func1=Bunch(type=str, desc="fullpath to 4D nifti file of run 1"),
-            func2=Bunch(type=str, desc="fullpath to 4D nifti file of run 1"),
-            mask=Bunch(type=str, desc="fullpath to 3D nifti mask"),
-        ),
-        license="unknown",
-    ),
-    "language_localizer_demo": Bunch(
-        content=Bunch(
-            data_dir=Bunch(type=str, desc="Path to downloaded dataset"),
-            func=Bunch(
-                type=list[str],
-                desc=(
-                    "Absolute paths of downloaded files on disk. "
-                    "The data is organized in a BIDS like fashion."
-                ),
-            ),
-        ),
-        license="ODC-BY-SA",
-    ),
+    "allen_2011_atlas": Bunch(license="unknown"),
+    "fiac": Bunch(license="unknown"),
+    "language_localizer_demo": Bunch(license="ODC-BY-SA"),
     "localizer_first_level": Bunch(
-        content=Bunch(
-            epi_img=Bunch(type=str, desc="fullpath the 4D BOLD nifti image"),
-            events=Bunch(
-                type=str,
-                desc="fullpath to a tsv file describing the paradigm",
-            ),
-            slice_time_ref=Bunch(
-                type=float,
-                desc=(
-                    "slice timing reference "
-                    "used during slice timing correction"
-                ),
-            ),
-            t_r=Bunch(type=float, desc="repetition time in seconds"),
-            template=Bunch(type=str, desc=template),
-        ),
+        content=Bunch(template=Bunch(type=str, desc=template)),
         license="unknown",
     ),
-    "spm_multimodal": Bunch(
-        content=Bunch(
-            anat=Bunch(
-                type=str,
-                desc=(
-                    "fullpath to 3D nifti image "
-                    "(in .img format) of the anatomical image"
-                ),
-            ),
-            func1=Bunch(
-                type=list[str],
-                desc=(
-                    "list of fullpath to 3D nifti image (in .img format) "
-                    "for the functional image of the run 1 "
-                    "(one file per time point)"
-                ),
-            ),
-            func2=Bunch(
-                type=list[str],
-                desc=(
-                    "list of fullpath to 3D nifti image (in .img format) "
-                    "for the functional image of the run 2 "
-                    "(one file per time point)"
-                ),
-            ),
-            events1=Bunch(
-                type=str,
-                desc=(
-                    "fullpath to a tsv file "
-                    "describing the paradigm of the run 1"
-                ),
-            ),
-            events2=Bunch(
-                type=str,
-                desc=(
-                    "fullpath to a tsv file "
-                    "describing the paradigm of the run 2"
-                ),
-            ),
-            slice_order=Bunch(
-                type=str,
-                desc=(
-                    "order in which the slices of the functional runs "
-                    "were acquired"
-                ),
-            ),
-            trials_ses1=Bunch(
-                type=str,
-                desc="fullpath to .mat file containing onsets for run 1",
-            ),
-            trials_ses2=Bunch(
-                type=str,
-                desc="fullpath to .mat file containing onsets for run 2",
-            ),
-            t_r=Bunch(type=float, desc="repetition time in seconds"),
-        ),
-        license="unknown",
-    ),
+    "spm_multimodal": Bunch(license="unknown"),
     "talairach_atlas": Bunch(
-        content=Bunch(
-            labels=Bunch(
-                type=list[str],
-                desc=(
-                    f"{labels}. "
-                    "The list starts with 'Background' "
-                    "(region ID 0 in the image)."
-                ),
-            ),
-            lut=Bunch(type=pd.DataFrame, desc=lut),
-            maps=Bunch(
-                type="nibabel.nifti1.Nifti1Image",
-                desc=(
-                    "Nifti1Image object containing the label image. "
-                    "The image has shape ``(141, 172, 110)`` "
-                    "and contains consecutive integer "
-                    "values from 0 to the number of regions, "
-                    "which are indices in the list of labels. "
-                ),
-            ),
-        ),
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
         license="unknown",
     ),
 }
 
 
 def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
+    # import some packages that are needed
+    # for the eval below
+    # to turn string into an actual type
+    import nibabel  # noqa : F401
+
     import nilearn as nil
 
     pkg_dir = Path(nil.__file__).parent
@@ -2173,10 +2016,20 @@ def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
     return content
 
 
+# we update the content of DATASET_DESCRIPTIONS from the dataset json
 for k in DATASET_DESCRIPTIONS:
+    if "content" not in DATASET_DESCRIPTIONS[k]:
+        DATASET_DESCRIPTIONS[k]["content"] = Bunch()
     DATASET_DESCRIPTIONS[k]["content"] = _fill_content_from_json(
         DATASET_DESCRIPTIONS[k]["content"], f"{k}.json"
     )
+    if "atlas" in k:
+        DATASET_DESCRIPTIONS[k]["content"]["atlas_type"] = Bunch(
+            type=str, desc=atlas_type
+        )
+        DATASET_DESCRIPTIONS[k]["content"]["template"] = Bunch(
+            type=str, desc=template
+        )
 
 
 def content_to_rst(name: str) -> str:
@@ -2311,6 +2164,8 @@ def check_content_types(data, content) -> list[str]:
 
 
 class Description(Bunch):
+    """Class to help inject content description in fetcher docstrings."""
+
     def __init__(
         self,
         documentation: str,

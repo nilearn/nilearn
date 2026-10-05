@@ -935,7 +935,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
             self.alpha_grids_.append(alphas)
             self.ymean_[cls] += y_train_mean
             self.all_coef_[cls, fold] = best_w[:-1]
-            if len(np.atleast_1d(l1_ratios)) == 1:
+            if len(np.atleast_1d(l1_ratios)) == 1:  # type: ignore[no-matching-overload]
                 test_scores = test_scores[0]
             self.cv_scores_[cls].append(test_scores)
             w[cls] += best_w
