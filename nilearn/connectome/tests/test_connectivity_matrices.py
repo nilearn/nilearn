@@ -773,6 +773,7 @@ def _assert_connectivity_partial_correlation(connectivities, covs):
         )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "kind",
     ["tangent", "precision", "correlation", "partial correlation"],
