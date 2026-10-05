@@ -425,17 +425,17 @@ def check_doc_attributes(estimator) -> None:
             raise ValueError(msg)
         else:
             warnings.warn(msg, stacklevel=2)
+    # ensure that there are no extra parameters documented in docstring
     extra_parameters = [
         attr
         for attr in documented_parameters
         if attr not in parameters and attr != "kwargs"
     ]
-    if extra_parameters:
-        raise ValueError(
-            "Extra docstring for parameters "
-            f"[{', '.join(extra_parameters)}] "
-            f"in estimator {estimator.__class__.__name__}."
-        )
+    assert not extra_parameters, (
+        "Extra docstring for parameters "
+        f"[{', '.join(extra_parameters)}] "
+        f"in estimator {estimator.__class__.__name__}."
+    )
 
     # avoid duplicates
     assert len(documented_parameters) == len(set(documented_parameters))
