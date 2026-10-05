@@ -397,11 +397,12 @@ def check_doc_attributes(estimator) -> None:
     """
     doc = NumpyDocString(estimator.__doc__)
     for section in ["Parameters", "Attributes"]:
-        if section not in doc:
-            raise ValueError(
-                f"Estimator {estimator.__class__.__name__} "
-                f"has no '{section} section."
-            )
+        assert re.search(
+            r"^" + section + "\n^-{10}", str(doc), re.MULTILINE
+        ), (
+            f"Estimator {estimator.__class__.__name__} "
+            f"has no '{section} section."
+        )
 
     if not is_gil_enabled():
         pytest.xfail("May fail without the GIL")
