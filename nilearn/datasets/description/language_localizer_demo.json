@@ -1,18 +1,10 @@
 {
-    "epi_img": {
+    "data_dir": {
         "type": "str",
-        "desc": "Fullpath the 4D BOLD nifti image."
+        "desc": "Fullpath to downloaded dataset."
     },
-    "events": {
-        "type": "str",
-        "desc": "Fullpath to TSV file describing the paradigm."
-    },
-    "slice_time_ref": {
-        "type": "float",
-        "desc": "Slice timing reference used during slice timing correction."
-    },
-    "t_r": {
-        "type": "float",
-        "desc": "Repetition time in seconds."
+    "func": {
+        "type": "list[str]",
+        "desc": "Fullpaths of downloaded files on disk. The data is organized in a BIDS like fashion."
     }
 }
