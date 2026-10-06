@@ -1183,20 +1183,12 @@ def check_img_estimator_pickle(estimator_orig) -> None:
 
     if hasattr(estimator, "inverse_transform"):
         check_methods.append("inverse_transform")
-        # the signal is generated right before calling inverse_transform
-        # as transform may update n_elements_
-        # (for example NiftiMapsMasker drops maps that are empty
-        # after resampling or masking)
-        input_data.append(None)
+        signal = _rng().random((1, fitted_estimator.n_elements_))
+        if isinstance(estimator, _BaseDecomposition):
+            signal = [signal]
+        input_data.append(signal)
 
-    for i, (method, input) in enumerate(
-        zip(check_methods, input_data, strict=False)
-    ):
-        if method == "inverse_transform":
-            input = _rng().random((1, fitted_estimator.n_elements_))
-            if isinstance(estimator, _BaseDecomposition):
-                input = [input]
-            input_data[i] = input
+    for method, input in zip(check_methods, input_data, strict=False):
         if hasattr(estimator, method):
             result["input"] = input
             if method == "score":
