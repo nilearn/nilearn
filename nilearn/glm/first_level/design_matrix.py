@@ -48,6 +48,7 @@ from nilearn.glm.first_level.hemodynamic_models import (
     compute_regressor,
     orthogonalize,
 )
+from nilearn.nilearn_typing import HrfModel
 from nilearn.signal import create_cosine_drift
 
 ######################################################################
@@ -235,7 +236,7 @@ def _convolve_regressors(
 def make_first_level_design_matrix(
     frame_times,
     events=None,
-    hrf_model="glover",
+    hrf_model: HrfModel = "glover",
     drift_model="cosine",
     high_pass=0.01,
     drift_order=1,
@@ -400,10 +401,16 @@ def make_first_level_design_matrix(
     if events is not None:
         events = check_and_load_tables(events, "events")[0]
         # create the condition-related regressors
-        if isinstance(hrf_model, str):
-            hrf_model = hrf_model.lower()
+        hrf_model_ = (
+            hrf_model.lower() if isinstance(hrf_model, str) else hrf_model
+        )
         matrix, names = _convolve_regressors(
-            events, hrf_model, frame_times, fir_delays, min_onset, oversampling
+            events=events,
+            hrf_model=hrf_model_,
+            frame_times=frame_times,
+            fir_delays=fir_delays,
+            min_onset=min_onset,
+            oversampling=oversampling,
         )
 
     # step 2: additional regressors

@@ -3,6 +3,7 @@ import warnings
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from nibabel import Nifti1Image
@@ -14,7 +15,6 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.tags import InputTags
 from nilearn.glm._reporting_utils import (
     GLMReportMixin,
     get_runwise_dict,
@@ -27,6 +27,7 @@ from nilearn.image import check_niimg
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
+from nilearn.utils.tags import InputTags
 
 FIGURE_FORMAT = "png"
 
@@ -97,7 +98,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         check_is_fitted(self)
         return self.masker_.mask_img_
 
-    def _attributes_to_dict(self):
+    def _attributes_to_dict(self) -> dict[str, Any]:
         """Return dict with pertinent model attributes & information.
 
         Returns
@@ -575,7 +576,7 @@ def _generate_mask(
     fields["entities"].pop("ses", None)
 
     if generate_bids_name:
-        fields["prefix"] = None
+        fields["prefix"] = ""
 
     return create_bids_filename(fields, entities_to_include)
 
@@ -621,7 +622,7 @@ def _generate_statistical_maps(
         }
 
         if generate_bids_name:
-            fields["prefix"] = None
+            fields["prefix"] = ""
 
         fields["entities"]["contrast"] = _clean_contrast_name(contrast_name)
 
@@ -676,7 +677,7 @@ def _generate_model_level_mapping(
     }
 
     if generate_bids_name:
-        fields["prefix"] = None
+        fields["prefix"] = ""
 
     model_level_mapping = {}
 
@@ -765,7 +766,7 @@ def _generate_contrasts_dict(
         "suffix": "design",
     }
     if generate_bids_name:
-        fields["prefix"] = None
+        fields["prefix"] = ""
 
     contrasts_dict = Bunch()
 

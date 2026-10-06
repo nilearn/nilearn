@@ -33,7 +33,6 @@ from nilearn._utils.param_validation import (
     check_params,
     sanitize_verbose,
 )
-from nilearn._utils.tags import InputTags
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net_solvers import (
@@ -46,6 +45,7 @@ from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import unmask_from_to_3d_array
 from nilearn.surface import SurfaceImage
+from nilearn.utils.tags import InputTags
 
 
 def _crop_mask(mask):
@@ -692,7 +692,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         self.penalty = penalty
         self.n_alphas = n_alphas
         self.eps = eps
-        self.l1_ratios = l1_ratios
+        self.l1_ratios: float | list[float] = l1_ratios
         self.alphas = alphas
         self.mask = mask
         self.fit_intercept = fit_intercept
@@ -836,9 +836,11 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
 
         self.mask_ = get_data(self.mask_img_).astype(bool)
 
-        l1_ratios = self.l1_ratios
-        if not isinstance(l1_ratios, collections.abc.Iterable):
-            l1_ratios = [l1_ratios]
+        l1_ratios: list[float] = (
+            [self.l1_ratios]
+            if not isinstance(self.l1_ratios, collections.abc.Iterable)
+            else list(self.l1_ratios)
+        )
 
         alphas = self.alphas
         if alphas is not None and not isinstance(
@@ -935,7 +937,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
             self.alpha_grids_.append(alphas)
             self.ymean_[cls] += y_train_mean
             self.all_coef_[cls, fold] = best_w[:-1]
-            if len(np.atleast_1d(l1_ratios)) == 1:
+            if len(l1_ratios) == 1:
                 test_scores = test_scores[0]
             self.cv_scores_[cls].append(test_scores)
             w[cls] += best_w

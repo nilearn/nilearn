@@ -63,7 +63,7 @@ def _generate_model_metadata(out_file, model) -> None:
                 density[d] = f"{d} vertices per hemisphere"
         model_metadata["Density"] = density
 
-    with Path(out_file).open("w") as f_obj:
+    with Path(out_file).open("w", encoding="utf-8") as f_obj:
         json.dump(model_metadata, f_obj, indent=4, sort_keys=True)
 
 

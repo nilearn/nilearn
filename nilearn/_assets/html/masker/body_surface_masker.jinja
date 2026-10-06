@@ -4,7 +4,6 @@
     <div class="pure-g">
         <div class="pure-u-1 pure-u-md-2-3">
             {% if not has_plotting_engine %}
-
                 {% include "html/partials/missing_plotting_engine.jinja" %}
 
             {% elif figures[0] %}
@@ -58,7 +57,9 @@
             <div class="d-flex flex-column">
                 {% if summary %}
                     <!--  tables listing each region for each part  -->
-                    <div style="display: flex; justify-content: space-around; flex-wrap: wrap">
+                    <div style="display: flex;
+                                justify-content: space-around;
+                                flex-wrap: wrap">
                         {% for region in summary_html %}
                             <details>
                                 <summary class="pure-button">Regions summary - {{ region }}</summary>
@@ -72,5 +73,4 @@
     </div>
 
     {% include "html/masker/partials/parameters.jinja" %}
-
 {% endblock report %}
