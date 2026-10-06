@@ -19,16 +19,16 @@ Different versions of the atlas are available, varying in
 - network annotation (7 or 17)
 - spatial resolution of the atlas (1 or 2 mm)
 
-Release v0.14.3 of the Schaefer 2018 parcellation is used by
-default. Versions prior to v0.14.3 are known to contain erroneous region
-label names. For more details, see
-https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/Updates/Update_20190916_README.md
+Direct download link: ``https://raw.githubusercontent.com/ThomasYeoLab/CBIG/v0.14.3-Update_Yeo2011_Schaefer2018_labelname/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/MNI/``
 
+Release v0.14.3 of the Schaefer 2018 parcellation is used by default.
+Versions prior to v0.14.3 are known to contain erroneous region label names.
+For more details, see
+https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/Updates/Update_20190916_README.md
 
 Content
 -------
 .. nilearn_dataset_content:: schaefer_2018_atlas
-
 
 References
 ----------
