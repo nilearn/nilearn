@@ -1,8 +1,4 @@
 {
-    "filename": {
-        "type": "str",
-        "desc": "Same as 'maps', kept for backward compatibility only."
-    },
     "labels": {
         "type": "list[str]",
         "desc": "List of the names of the regions."

@@ -161,7 +161,6 @@ def _write_sample_atlas_metadata(ho_dir, filename, is_symm):
 
 
 def _test_atlas_instance_should_match_data(atlas, is_symm):
-    assert Path(atlas.filename).exists() and Path(atlas.filename).is_absolute()
     assert isinstance(atlas.maps, Nifti1Image)
     assert isinstance(atlas.labels, list)
 

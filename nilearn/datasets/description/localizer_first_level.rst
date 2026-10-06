@@ -38,7 +38,6 @@ Content
 
 References
 ----------
-
 .. footbibliography::
 
 License

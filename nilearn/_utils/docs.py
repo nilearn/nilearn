@@ -1973,6 +1973,10 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     ),
     "allen_2011_atlas": Bunch(license="unknown"),
     "fiac": Bunch(license="unknown"),
+    "juelich_atlas": Bunch(
+        license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/#/license?id=fsl-license",
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+    ),
     "language_localizer_demo": Bunch(license="ODC-BY-SA"),
     "localizer_first_level": Bunch(
         content=Bunch(template=Bunch(type=str, desc=template)),

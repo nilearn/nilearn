@@ -743,34 +743,20 @@ def fetch_atlas_juelich(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        - 'maps': :class:`~nibabel.nifti1.Nifti1Image`.
-            It is a 4D image if a :term:`Probabilistic atlas` is requested,
-            and a 3D image
-            if a :term:`maximum probability atlas<Deterministic atlas>`
-            is requested.
-            In the latter case, the image contains integer values
-            which can be interpreted as the indices in the list of labels.
+            %(juelich_atlas_content)s
 
-            .. note::
+        .. note::
 
-                For some atlases, it can be the case that some regions
-                are empty. In this case, no :term:`voxels<voxel>` in the
-                map are assigned to these regions. So the number of
-                unique values in the map can be strictly smaller than the
-                number of region names in ``labels``.
+            For some atlases, it can be the case that some regions are empty.
+            In this case, no :term:`voxels<voxel>` in the map are assigned
+            to these regions.
+            So the number of unique values in the map
+            can be strictly smaller
+            than the number of region names in ``labels``.
 
-        - %(labels)s
-
-        - 'filename': Same as 'maps', kept for backward compatibility only.
-
-        - %(description)s
-
-        - %(lut)s
-            Only for deterministic version of the atlas.
-
-        - %(template)s
-
-        - %(atlas_type)s
+    Notes
+    -----
+    %(fetcher_note)s
 
     See Also
     --------
@@ -799,7 +785,7 @@ def fetch_atlas_juelich(
         raise ValueError(
             "Region splitting not supported for probabilistic atlases"
         )
-    atlas_img, atlas_filename, names, _ = _get_atlas_data_and_labels(
+    atlas_img, _, names, _ = _get_atlas_data_and_labels(
         "Juelich",
         atlas_name,
         data_dir=data_dir,
@@ -832,7 +818,7 @@ def fetch_atlas_juelich(
         lut=generate_atlas_look_up_table(
             "fetch_atlas_juelich", name=list(new_names)
         ),
-        filename=atlas_filename,
+        template="?",
     )
 
 
