@@ -40,6 +40,8 @@ Fixes
 
 - :bdg-info:`Plotting` Avoid overlapping colorbar tick labels when ``0`` is very close to the minimum or maximum value of the colorbar (:gh:`6609` by `Rémi Gau`_).
 
+- :bdg-info:`Plotting` Fixes a bug where calling :func:`~nilearn.plotting.plot_anat` with ``black_bg=False`` inadvertently introduced spurious negative values into non-negative structural scans (:gh:`6625` by `Achintya Singh`_).
+
 - :bdg-dark:`Code` Fix :meth:`~nilearn.decoding.Decoder.fit` logging ``The decoding model will be trained on N features`` twice per fit (:gh:`6614` by `Reyyi Shreyas`_).
 
 - :bdg-dark:`Code` Fix residual variance of :class:`~nilearn.glm.OLSModel` and :class:`~nilearn.glm.ARModel` being divided by the number of design columns instead of the design rank, which made t and F statistics too small for rank-deficient designs in :class:`~nilearn.glm.first_level.FirstLevelModel` and :class:`~nilearn.glm.second_level.SecondLevelModel` (:gh:`6611` by `Wolfgang Aura`_).
