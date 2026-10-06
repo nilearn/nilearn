@@ -101,6 +101,7 @@ from nilearn.decoding.decoder import (
     Decoder,
     DecoderRegressor,
     FREMClassifier,
+    FREMRegressor,
 )
 from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.space_net import BaseSpaceNet
@@ -188,6 +189,9 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
 
     elif is_classifier(estimator):
         dim = 5
+        if isinstance(estimator, FREMClassifier):
+            # FREM needs may need more features in some cases
+            dim = 20
         X, y = make_classification(
             n_samples=30,
             n_features=dim**3,
@@ -202,6 +206,9 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
 
     elif is_regressor(estimator):
         dim = 5
+        if isinstance(estimator, FREMRegressor):
+            # FREM needs may need more features in some cases
+            dim = 10
         X, y = make_regression(
             n_samples=30,
             n_features=dim**3,
@@ -648,7 +655,7 @@ def check_verbosity_embedded_masker(estimator_orig) -> None:
 
     if not isinstance(estimator, _BaseDecomposition) or is_glm(estimator):
         # no extra output at verbose=3 for decomposition / glm estimators
-        assert len(outputs[1]) > 0
+        assert len(outputs[1]) > 0, outputs[1]
         assert len(outputs[1]) < len(outputs[2])
         if not is_glm(estimator):
             assert len(outputs[2]) < len(outputs[3])
