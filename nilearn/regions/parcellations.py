@@ -5,7 +5,7 @@ from typing import ClassVar
 
 import numpy as np
 from joblib import Parallel, delayed
-from scipy.sparse import coo_matrix
+from scipy.sparse import coo_array
 from sklearn.base import clone
 from sklearn.cluster import AgglomerativeClustering, MiniBatchKMeans
 from sklearn.feature_extraction import image
@@ -65,7 +65,7 @@ def _connectivity_surface(mask_img):
     n_vertices = (
         mask_img.data.parts["left"].sum() + mask_img.data.parts["right"].sum()
     )
-    connectivity = coo_matrix((n_vertices, n_vertices))
+    connectivity = coo_array((n_vertices, n_vertices))
     len_previous_mask = 0
     for part in mask_img.mesh.parts:
         face_part = mask_img.mesh.parts[part].faces
@@ -87,7 +87,7 @@ def _connectivity_surface(mask_img):
         edges = order[edges]
         len_previous_mask += mask_part.sum()
         # update the connectivity matrix
-        conn_temp = coo_matrix(
+        conn_temp = coo_array(
             (np.ones((edges.shape[1])), edges),
             (n_vertices, n_vertices),
         ).tocsr()

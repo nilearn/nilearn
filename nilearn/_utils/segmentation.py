@@ -87,11 +87,11 @@ def _make_laplacian_sparse(edges, weights):
     i_indices = np.hstack((edges[0], edges[1]))
     j_indices = np.hstack((edges[1], edges[0]))
     data = np.hstack((-weights, -weights))
-    lap = sparse.coo_matrix(
+    lap = sparse.coo_array(
         (data, (i_indices, j_indices)), shape=(pixel_nb, pixel_nb)
     )
     connect = -np.ravel(lap.sum(axis=1))
-    lap = sparse.coo_matrix(
+    lap = sparse.coo_array(
         (
             np.hstack((data, connect)),
             (np.hstack((i_indices, diag)), np.hstack((j_indices, diag))),
@@ -124,9 +124,9 @@ def _build_ab(lap_sparse, labels):
     rhs = []
     for lab in range(1, nlabels + 1):
         mask = labels[seeds_indices] == lab
-        fs = sparse.csr_matrix(mask)
+        fs = sparse.csr_array(mask)
         fs = fs.transpose()
-        rhs.append(B * fs)
+        rhs.append(B @ fs)
     return lap_sparse, rhs
 
 
