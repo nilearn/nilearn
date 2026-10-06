@@ -59,10 +59,8 @@ from nilearn.datasets import fetch_atlas_yeo_2011
 from nilearn.maskers import MultiNiftiLabelsMasker
 
 yeo = fetch_atlas_yeo_2011(n_networks=17)
-print(
-    "Yeo atlas nifti image (3D) with 17 parcels and liberal mask "
-    f" is located at: {yeo['maps']}"
-)
+print(yeo.description.content.maps)
+print(f"Yeo atlas nifti image  is located at: {yeo['maps']}")
 
 # ConnectivityMeasure from Nilearn uses simple 'correlation' to compute
 # connectivity matrices for all subjects in a list.

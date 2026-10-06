@@ -81,6 +81,7 @@ show()
 # that comes with a predefined colormap.
 dataset_yeo = datasets.fetch_atlas_yeo_2011(n_networks=17)
 
+print(dataset_yeo.description.content.lut)
 print(dataset_yeo.lut)
 
 # %%
