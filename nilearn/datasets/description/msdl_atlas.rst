@@ -3,14 +3,14 @@
 MSDL atlas
 ==========
 
+Multi-Subject Dictionary learning atlas.
+
 Access
 ------
 See :func:`nilearn.datasets.fetch_atlas_msdl`.
 
 Notes
 -----
-Multi-subject Dictionary learning atlas.
-
 Result maps of sparse :term:`Dictionary learning` based on :term:`resting-state` data.
 
 This can be understand as a variant of :term:`ICA` based on the assumption
