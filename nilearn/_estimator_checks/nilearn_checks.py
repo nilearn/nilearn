@@ -191,7 +191,7 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
         dim = 5
         if isinstance(estimator, FREMClassifier):
             # FREM needs may need more features in some cases
-            dim = 20
+            dim = 10
         X, y = make_classification(
             n_samples=30,
             n_features=dim**3,
