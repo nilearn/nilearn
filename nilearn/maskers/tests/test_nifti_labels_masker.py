@@ -1271,3 +1271,27 @@ def test_transform_as_dataframe_with_labels(
     s = masker.transform(img_3d_rand_eye)
 
     assert s.columns.tolist() == labels
+
+
+def test_nifti_labels_masker_inverse_transform_nan():
+    """Ensure NiftiLabelsMasker.inverse_transform handles NaN values
+    gracefully without raising ValueError.
+    """
+    data = np.random.random((3, 3, 3, 10))
+    labels = np.random.randint(0, 5, (3, 3, 3))
+    affine = np.diag([1, 1, 1, 1])
+
+    data_img = Nifti1Image(data, affine)
+    labels_img = Nifti1Image(labels, affine, dtype=np.int16)
+
+    masker = NiftiLabelsMasker(labels_img).fit(data_img)
+
+    # Extract timeseries and inject NaN values
+    timeseries = masker.transform(data_img)
+    timeseries[2, :] = np.nan
+
+    # This should now succeed instead of raising ValueError: Input contains NaN
+    out_img = masker.inverse_transform(timeseries)
+
+    assert out_img is not None
+    assert out_img.shape[:3] == data_img.shape[:3]
