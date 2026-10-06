@@ -316,15 +316,18 @@ def check_doc_attributes(estimator) -> None:
         param for param in parameters if param not in documented_parameters
     ]
     if undocumented_parameters:
-        msg = (
-            "Missing docstring for parameters "
-            f"[{', '.join(undocumented_parameters)}] "
-            f"in estimator {estimator.__class__.__name__}."
-        )
-        if not isinstance(estimator, Parcellations):
-            raise ValueError(msg)
+        if isinstance(estimator, Parcellations):
+            warnings.warn(
+                (
+                    "Missing docstring for parameters "
+                    f"[{', '.join(undocumented_parameters)}] "
+                    f"in estimator {estimator.__class__.__name__}."
+                ),
+                stacklevel=2,
+            )
         else:
-            warnings.warn(msg, stacklevel=2)
+            assert undocumented_parameters == []
+
     # ensure that there are no extra parameters documented in docstring
     extra_parameters = [
         attr
@@ -382,15 +385,17 @@ def check_doc_attributes(estimator) -> None:
         attr for attr in documented_attributes if attr not in fitted_attributes
     ]
     if extra_attributes:
-        msg = (
-            "Extra docstring for attributes "
-            f"[{', '.join(extra_attributes)}] "
-            f"in estimator {estimator.__class__.__name__}."
-        )
-        if not isinstance(estimator, Parcellations):
-            raise ValueError(msg)
+        if isinstance(estimator, Parcellations):
+            warnings.warn(
+                (
+                    "Extra docstring for attributes "
+                    f"[{', '.join(extra_attributes)}] "
+                    f"in estimator {estimator.__class__.__name__}."
+                ),
+                stacklevel=2,
+            )
         else:
-            warnings.warn(msg, stacklevel=2)
+            assert extra_attributes == []
 
     # avoid duplicates
     assert len(documented_attributes) == len(set(documented_attributes))
