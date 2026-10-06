@@ -1084,13 +1084,12 @@ def _projection_matrix(
     sample_locations_array: np.ndarray = np.asarray(
         np.round(sample_locations), dtype=int
     )
-    n_vertices, n_points, _ = sample_locations.shape
+    n_vertices, n_points, _ = sample_locations_array.shape
     masked = _masked_indices(
-        np.vstack([sample_locations_array]), img_shape, mask=mask
+        sample_locations_array.reshape(-1, 3), img_shape, mask=mask
     )
-    sample_locations = np.rollaxis(sample_locations_array, -1)
     sample_indices = np.ravel_multi_index(
-        sample_locations_array, img_shape, mode="clip"
+        np.rollaxis(sample_locations_array, -1), img_shape, mode="clip"
     ).ravel()
     row_indices, _ = np.mgrid[:n_vertices, :n_points]
     row_indices = row_indices.ravel()
