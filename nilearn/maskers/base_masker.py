@@ -640,7 +640,12 @@ class BaseMasker(_BaseMasker):
 
         return img
 
-    def _check_array(self, signals, sklearn_check: bool = True) -> np.ndarray:
+    def _check_array(
+        self,
+        signals,
+        sklearn_check: bool = True,
+        ensure_all_finite: bool = False,
+    ) -> np.ndarray:
         """Check array to inverse transform.
 
         Parameters
@@ -649,6 +654,9 @@ class BaseMasker(_BaseMasker):
 
         sklearn_check : :obj:`bool`
             Run scikit learn check on input
+
+        ensure_all_finite : :obj:`bool`, default=False
+            Whether to raise an error on infinite or NaN values.
         """
         if hasattr(signals, "to_numpy"):
             # convert pandas or polars dataframe to numpy
@@ -657,7 +665,9 @@ class BaseMasker(_BaseMasker):
         signals = np.atleast_1d(signals)
 
         if sklearn_check:
-            signals = check_array(signals, ensure_2d=False)
+            signals = check_array(
+                signals, ensure_2d=False, ensure_all_finite=ensure_all_finite
+            )
 
         assert signals.ndim <= 2
 
