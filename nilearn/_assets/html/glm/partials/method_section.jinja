@@ -10,14 +10,12 @@
         {{ reporting_data.drift_model }}.
     </p>
     {% if reporting_data.trial_types %}
-        <p>
-            Regressors were entered into run-specific design matrices and onsets were
-            convolved with a {{ reporting_data.hrf_model }} canonical hemodynamic response function
-            for the following conditions:
-            <ul>
-                {% for trial in reporting_data.trial_types %}<li>{{ trial }}</li>{% endfor %}
-            </ul>
-        </p>
+        Regressors were entered into run-specific design matrices and onsets were
+        convolved with a {{ reporting_data.hrf_model }} canonical hemodynamic response function
+        for the following conditions:
+        <ul>
+            {% for trial in reporting_data.trial_types %}<li>{{ trial }}</li>{% endfor %}
+        </ul>
     {% endif %}
 {% else %}
     <p>
@@ -32,14 +30,12 @@
     </p>
 {% endif %}
 {% if contrasts %}
-    <p>
-        The following contrasts were computed
-        {% if model_type == "First Level Model" %}
-            using a fixed-effect approach across runs
-        {% endif %}
-        :
-        <ul>
-            {% for c in contrasts %}<li>{{ c }}</li>{% endfor %}
-        </ul>
-    </p>
+    The following contrasts were computed
+    {% if model_type == "First Level Model" %}
+        using a fixed-effect approach across runs
+    {% endif %}
+    :
+    <ul>
+        {% for c in contrasts %}<li>{{ c }}</li>{% endfor %}
+    </ul>
 {% endif %}
