@@ -159,23 +159,12 @@ def fetch_atlas_difumo(
     :term:`probabilistic atlases<Probabilistic atlas>` to extract
     functional signals with different dimensionalities (64, 128,
     256, 512, and 1024).
-    These modes are optimized to represent well raw :term:`BOLD` timeseries,
-    over a with range of experimental conditions.
-    See :footcite:t:`Dadi2020`.
 
     .. nilearn_versionadded:: 0.7.1
 
     Notes
     -----
     %(fetcher_note)s
-
-    Direct download links from OSF:
-
-    - 64: https://osf.io/pqu9r/download
-    - 128: https://osf.io/wjvd5/download
-    - 256: https://osf.io/3vrct/download
-    - 512: https://osf.io/9b76y/download
-    - 1024: https://osf.io/34792/download
 
     Parameters
     ----------
@@ -196,28 +185,9 @@ def fetch_atlas_difumo(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
-        - 'maps': :obj:`str`, path to 4D nifti file containing regions
-            definition. The shape of the image is
-            ``(104, 123, 104, dimension)`` where ``dimension`` is the
-            requested dimension of the atlas.
-
-        - 'labels': :class:`pandas.DataFrame` containing the labels of
-            the regions.
-            The length of the label array corresponds to the
-            number of dimensions requested. ``data.labels[i]`` is the label
-            corresponding to volume ``i`` in the 'maps' image.
-
-        - %(description)s
-
-        - %(atlas_type)s
-
-        - %(template)s
-
-    References
-    ----------
-    .. footbibliography::
+        %(difumo_atlas_content)s
 
     """
     check_params(locals())
@@ -251,7 +221,7 @@ def fetch_atlas_difumo(
         (nifti_file, url, opts),
     ]
 
-    dataset_name = "difumo_atlases"
+    dataset_name = "difumo_atlas"
 
     dataset_dir = get_dataset_dir(
         dataset_name=dataset_name, data_dir=data_dir, verbose=verbose
@@ -272,7 +242,7 @@ def fetch_atlas_difumo(
     return Atlas(
         maps=files_[1],
         labels=labels,
-        description=get_dataset_descr(dataset_name),
+        description=Description.from_registry(dataset_name),
         atlas_type=atlas_type,
         template="MNI152NLin6Asym",
     )
@@ -319,7 +289,7 @@ def fetch_atlas_craddock_2012(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
         - ``'scorr_mean'``: :obj:`str`, path to nifti file containing
             the group-mean :term:`parcellation`
@@ -555,7 +525,7 @@ def fetch_atlas_harvard_oxford(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
             %(harvard_oxford_atlas_content)s
 
@@ -721,7 +691,7 @@ def fetch_atlas_juelich(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
             %(juelich_atlas_content)s
 
@@ -1214,7 +1184,7 @@ def fetch_atlas_yeo_2011(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object.
+        Dictionary-like object, contains:
 
         %(yeo_2011_atlas_content)s
 
@@ -1363,7 +1333,7 @@ def fetch_atlas_aal(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
         %(aal_atlas_content)s
 
@@ -1533,7 +1503,7 @@ def fetch_atlas_basc_multiscale_2015(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, Keys are:
+        Dictionary-like object, contains:
 
         - maps: :obj:`str`
             Path to Nifti file of the brain parcellation.
@@ -1789,7 +1759,7 @@ def fetch_atlas_allen_2011(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
         %(allen_2011_atlas_content)s
 

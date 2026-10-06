@@ -92,7 +92,7 @@ def fetch_haxby(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'anat': :obj:`list` of :obj:`str`.
             Paths to anatomic images.
@@ -323,7 +323,7 @@ def fetch_adhd(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'func':
             Paths to functional :term:`resting-state` images
@@ -492,7 +492,7 @@ def fetch_miyawaki2008(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'func': :obj:`list` of :obj:`str`
             Paths to nifti file with :term:`BOLD` data
@@ -758,7 +758,7 @@ def fetch_localizer_contrasts(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'cmaps': :obj:`list` of :obj:`str`
             Paths to nifti contrast maps
@@ -1011,7 +1011,7 @@ def fetch_localizer_calculation_task(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
         'cmaps': string list, giving paths to nifti contrast maps
 
     Notes
@@ -1074,7 +1074,7 @@ def fetch_localizer_button_task(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'cmaps': string list, giving paths to nifti :term:`contrast` maps
         - 'tmap': string, giving paths to nifti :term:`contrast` maps
@@ -1200,7 +1200,7 @@ def fetch_abide_pcp(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, the keys are described below.
+        Dictionary-like object, contains:
 
     - 'description': :obj:`str`, description of the dataset.
 
@@ -1488,7 +1488,7 @@ def fetch_mixed_gambles(
     Returns
     -------
     data : :class:`~sklearn.utils.Bunch`
-        Dictionary-like object, the attributes of interest are:
+        Dictionary-like object, contains:
 
         - 'zmaps': :obj:`list` of :obj:`str`
           Paths to realigned gain betamaps (one nifti per subject).
@@ -1626,7 +1626,7 @@ def fetch_megatrawls_netmats(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the attributes are :
+        Dictionary-like object, contains:
 
         - 'dimensions': int, consists of given input in dimensions.
 
@@ -1845,7 +1845,7 @@ def fetch_surf_nki_enhanced(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'func_left': Paths to Gifti files containing resting state
                         time series left hemisphere
@@ -2242,7 +2242,7 @@ def fetch_development_fmri(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'func': :obj:`list` of :obj:`str` (Nifti files)
             Paths to downsampled functional MRI data (4D) for each subject.
@@ -2437,7 +2437,7 @@ def fetch_language_localizer_demo_dataset(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
         %(language_localizer_demo_content)s
 
@@ -2856,7 +2856,7 @@ def fetch_localizer_first_level(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
         %(localizer_first_level_content)s
 
@@ -2929,7 +2929,7 @@ def fetch_spm_auditory(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are:
+        Dictionary-like object, contains:
 
         - 'anat': :obj:`list` of :obj:`str`.
             Paths to anat images
@@ -3153,7 +3153,7 @@ def fetch_spm_multimodal_fmri(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
         %(spm_multimodal_content)s
 
@@ -3198,7 +3198,7 @@ def fetch_fiac_first_level(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
          %(fiac_content)s
 

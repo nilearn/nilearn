@@ -1,7 +1,7 @@
 {
     "labels": {
         "type": "pd.DataFrame",
-        "desc": "Containing the labels of the regions. The length of the label array corresponds to the number of dimensions requested. ``data.labels[i]`` is the label corresponding to volume ``i`` in the 'maps' image."
+        "desc": "Containing the labels of the regions. The length of the dataframe corresponds to the number of dimensions requested. ``data.labels[i]`` is the label corresponding to volume ``i`` in the 'maps' image."
     },
     "maps": {
         "type": "str",

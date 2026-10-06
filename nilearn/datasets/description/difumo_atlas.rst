@@ -11,7 +11,7 @@ Notes
 -----
 We provide Dictionaries of Functional Modes “DiFuMo” (:footcite:t:`Dadi2020`)
 that can serve as atlases to extract functional signals,
-e.g to serve as IDPs, with different dimensionalities (64, 128, 256, 512, and 1024).
+for example to serve as IDPs, with different dimensionalities (64, 128, 256, 512, and 1024).
 These modes are optimized to represent well raw :term:`BOLD` timeseries,
 over a with range of experimental conditions.
 
@@ -20,7 +20,7 @@ over a with range of experimental conditions.
 Additionally, we provide meaningful names for these modes,
 based on their anatomical location, to facilitate reporting of results.
 
-* Anatomical names are available for each resolution in .csv
+* Anatomical names are available for each resolution as pandas dataframe
 
 Direct download links from OSF:
 
@@ -30,16 +30,15 @@ Direct download links from OSF:
     - 512: https://osf.io/9b76y/download
     - 1024: https://osf.io/34792/download
 
-Content
--------
-    :'maps': Nifti images with the (probabilistic) region definitions
-    :'labels': CSV file specifying the label information
-
-References
-----------
 For more information about this dataset's structure:
 https://inria.hal.science/hal-02904869
 
+Content
+-------
+.. nilearn_dataset_license:: difumo_atlas
+
+References
+----------
 .. footbibliography::
 
 Mensch, A., Mairal, J., Thirion, B., Varoquaux, G., 2018.
@@ -52,4 +51,4 @@ the OpenfMRI project. Frontiers in neuroinformatics 7.
 
 License
 -------
-usage is unrestricted for non-commercial research purposes.
+.. nilearn_dataset_license:: difumo_atlas

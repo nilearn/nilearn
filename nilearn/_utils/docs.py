@@ -1972,6 +1972,9 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         license="unknown",
     ),
     "allen_2011_atlas": Bunch(license="unknown"),
+    "difumo_atlas": Bunch(
+        license="usage is unrestricted for non-commercial research purposes.",
+    ),
     "fiac": Bunch(license="unknown"),
     "harvard_oxford_atlas": Bunch(
         license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
