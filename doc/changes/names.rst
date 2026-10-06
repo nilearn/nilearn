@@ -4,6 +4,8 @@
     please edit CITATION.cff and run maint_tools/citation_cff_maint.py.
 
 
+.. _Achintya Singh: https://github.com/Achintyasingh412
+
 .. _Ahmad Chamma: https://github.com/achamma723
 
 .. _Aina Frau-Pascual: https://github.com/ainafp
