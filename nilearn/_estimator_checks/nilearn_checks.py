@@ -290,17 +290,19 @@ def skip_if_class(classes, message=""):
     """
 
     def decorator(check_func):
+
         @wraps(check_func)
         def wrapper(estimator):
             if not isinstance(estimator, tuple(classes)):
                 return check_func(estimator)
             else:
                 print(
-                    f"Check {check_func.__name__} does not apply to class "
+                    f"{check_func.__name__} does not apply to class "
                     f"{estimator.__class__.__name__}"
                 )
                 if message != "":
                     print(message)
+                return estimator
 
         return wrapper
 
@@ -314,18 +316,20 @@ def skip_if_attr(attr, if_has_attr=True):
     """
 
     def decorator(check_func):
+
         @wraps(check_func)
         def wrapper(estimator):
             condition = hasattr(estimator, attr)
             if not if_has_attr:
-                condition = ~condition
+                condition = not condition
             if condition:
                 print(
-                    f"Check {check_func.__name__} does not apply to class "
+                    f"{check_func.__name__} does not apply to class "
                     f"{estimator.__class__.__name__} as it "
                     f"{'has' if if_has_attr else 'does not have'} attribute "
                     f"{attr}"
                 )
+                return estimator
             else:
                 return check_func(estimator)
 
@@ -339,13 +343,17 @@ def xfail_if_not_gil(classes=None):
 
     If ``classes`` is specified, it skip the check if also the estimator
     is an instance of one of the classes listed.
+
+    This decorator should be set at the top of all decorators.
     """
 
     def decorator(check_func):
+
         @wraps(check_func)
         def wrapper(estimator):
             if not is_gil_enabled() and (
-                classes is None or (classes and isinstance(estimator, classes))
+                classes is None
+                or (classes and isinstance(estimator, tuple(classes)))
             ):
                 pytest.xfail("May fail without the GIL")
             else:
@@ -424,14 +432,14 @@ def check_doc_parameters_at_init(estimator) -> None:
     )
 
 
+@xfail_if_not_gil()
 @skip_if_class(
-    classes=[ReNA, GroupSparseCovarianceCV],
+    classes=[GroupSparseCovarianceCV, ReNA],
     message=(
         "fit_estimator should be adapted to handle ReNA and "
         "GroupSparseCovarianceCV"
     ),
 )
-@xfail_if_not_gil
 def check_doc_attributes_after_fit(estimator) -> None:
     """Check attributes after fit.
 
@@ -641,7 +649,7 @@ def _check_mask_img_(estimator):
     load_mask_img(estimator.mask_img_)
 
 
-@xfail_if_not_gil
+@xfail_if_not_gil()
 def check_img_estimator_verbose(estimator_orig) -> None:
     """Check verbose behavior.
 
@@ -707,7 +715,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     assert len(output_2) >= len(output), f"\n{output=}\n{output_2=}"
 
 
-@xfail_if_not_gil
+@xfail_if_not_gil()
 def check_verbosity_embedded_masker(estimator_orig) -> None:
     """Check control of verbosity of embedded maskers / estimators.
 
