@@ -52,6 +52,7 @@ from numpydoc.docscrape import NumpyDocString
 from sklearn import clone
 from sklearn.base import is_classifier, is_regressor
 from sklearn.datasets import load_iris, make_classification, make_regression
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import _safe_indexing
@@ -282,7 +283,11 @@ def fit_estimator(
         return estimator.fit(X, y)
 
     else:
-        return estimator.fit(X)
+        if not isinstance(estimator, _BaseDecomposition):
+            return estimator.fit(X)
+
+        with warnings.catch_warnings():  # might not converge
+            warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
 
 # ------------------ GENERIC CHECKS ------------------
