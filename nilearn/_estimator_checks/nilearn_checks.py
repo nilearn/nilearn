@@ -340,14 +340,12 @@ def xfail_if_not_gil(classes=None):
     If ``classes`` is specified, it skip the check if also the estimator
     is an instance of one of the classes listed.
     """
-    if classes is None:
-        classes = []
 
     def decorator(check_func):
         @wraps(check_func)
         def wrapper(estimator):
             if not is_gil_enabled() and (
-                not classes or (classes and isinstance(estimator, classes))
+                classes is None or (classes and isinstance(estimator, classes))
             ):
                 pytest.xfail("May fail without the GIL")
             else:
@@ -643,6 +641,7 @@ def _check_mask_img_(estimator):
     load_mask_img(estimator.mask_img_)
 
 
+@xfail_if_not_gil
 def check_img_estimator_verbose(estimator_orig) -> None:
     """Check verbose behavior.
 
@@ -655,9 +654,6 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     - verbose 2 should have more than output verbose 1
     """
     estimator = clone(estimator_orig)
-
-    if not is_gil_enabled():
-        pytest.xfail("May fail without the GIL")
 
     buffer = io.StringIO()
     with contextlib.redirect_stdout(buffer):
@@ -711,6 +707,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     assert len(output_2) >= len(output), f"\n{output=}\n{output_2=}"
 
 
+@xfail_if_not_gil
 def check_verbosity_embedded_masker(estimator_orig) -> None:
     """Check control of verbosity of embedded maskers / estimators.
 
@@ -721,9 +718,6 @@ def check_verbosity_embedded_masker(estimator_orig) -> None:
     verbose = 3:
         - for decoders: also messages from sklearn estimator
     """
-    if not is_gil_enabled():
-        pytest.xfail("Fail without the GIL")
-
     outputs = {}
     for verbose in [1, 2, 3]:
         estimator = clone(estimator_orig)
@@ -1033,6 +1027,7 @@ def check_img_estimator_cache_warning(estimator_orig) -> None:
                 estimator.compute_contrast(np.asarray([1]))
 
 
+@xfail_if_not_gil(classes=[SearchLight, Decoder])
 def check_img_estimator_fit_idempotent(estimator_orig) -> None:
     """Check that est.fit(X) is the same as est.fit(X).fit(X).
 
@@ -1042,12 +1037,6 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
 
     replaces sklearn check_fit_idempotent
     """
-    if (
-        isinstance(estimator_orig, (SearchLight, Decoder))
-        and not is_gil_enabled()
-    ):
-        pytest.xfail("May fail without the GIL")
-
     check_methods = ["predict", "transform", "decision_function"]
 
     for method in check_methods:
