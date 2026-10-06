@@ -32,6 +32,7 @@ import pickle
 import re
 import warnings
 from copy import deepcopy
+from functools import wraps
 from pathlib import Path
 from tempfile import TemporaryDirectory, mkdtemp
 from typing import Any, cast
@@ -283,6 +284,80 @@ def fit_estimator(
         return estimator.fit(X)
 
 
+def skip_if_class(classes, message=""):
+    """Skip a check if estimator is an instance of one of the classes
+    listed.
+    """
+
+    def decorator(check_func):
+        @wraps(check_func)
+        def wrapper(estimator):
+            if not isinstance(estimator, tuple(classes)):
+                return check_func(estimator)
+            else:
+                print(
+                    f"Check {check_func.__name__} does not apply to class "
+                    f"{estimator.__class__.__name__}"
+                )
+                if message != "":
+                    print(message)
+
+        return wrapper
+
+    return decorator
+
+
+def skip_if_attr(attr, if_has_attr=True):
+    """Skip a check if either ``if_has_attr`` is ``True`` and estimator has
+    attribute ``attr`` or ``if_has_attr`` is ``False`` and estimator does not
+    have attribute ``attr``.
+    """
+
+    def decorator(check_func):
+        @wraps(check_func)
+        def wrapper(estimator):
+            condition = hasattr(estimator, attr)
+            if not if_has_attr:
+                condition = ~condition
+            if condition:
+                print(
+                    f"Check {check_func.__name__} does not apply to class "
+                    f"{estimator.__class__.__name__} as it "
+                    f"{'has' if if_has_attr else 'does not have'} attribute "
+                    f"{attr}"
+                )
+            else:
+                return check_func(estimator)
+
+        return wrapper
+
+    return decorator
+
+
+def xfail_if_not_gil(classes=None):
+    """Skip a check if GIL is not enabled.
+
+    If ``classes`` is specified, it skip the check if also the estimator
+    is an instance of one of the classes listed.
+    """
+    if classes is None:
+        classes = []
+
+    def decorator(check_func):
+        @wraps(check_func)
+        def wrapper(estimator):
+            if not is_gil_enabled() and (
+                not classes or (classes and isinstance(estimator, classes))
+            ):
+                pytest.xfail("May fail without the GIL")
+            else:
+                return check_func(estimator)
+
+        return wrapper
+
+    return decorator
+
+
 # ------------------ GENERIC CHECKS ------------------
 
 
@@ -351,6 +426,14 @@ def check_doc_parameters_at_init(estimator) -> None:
     )
 
 
+@skip_if_class(
+    classes=[ReNA, GroupSparseCovarianceCV],
+    message=(
+        "fit_estimator should be adapted to handle ReNA and "
+        "GroupSparseCovarianceCV"
+    ),
+)
+@xfail_if_not_gil
 def check_doc_attributes_after_fit(estimator) -> None:
     """Check attributes after fit.
 
@@ -358,14 +441,6 @@ def check_doc_attributes_after_fit(estimator) -> None:
     - All documented fitted attributes should exist after fit.
     - No extra public attribute should appear after fit.
     """
-    if isinstance(estimator, (ReNA, GroupSparseCovarianceCV)):
-        # TODO
-        # adapt fit_estimator to handle ReNA and GroupSparseCovarianceCV
-        return
-
-    if not is_gil_enabled():
-        pytest.xfail("May fail without the GIL")
-
     # check fitted attributes after fit
     fitted_estimator = fit_estimator(estimator)
 
@@ -469,6 +544,8 @@ def check_verbose(estimator) -> None:
     assert default_verbose == 0
 
 
+@skip_if_class(classes=[SearchLight, ReNA])
+@skip_if_attr(attr="transform", if_has_attr=False)
 def check_set_output(estimator_orig) -> None:
     """Check that set_output can be used.
 
@@ -482,11 +559,6 @@ def check_set_output(estimator_orig) -> None:
 
     Regression test for https://github.com/nilearn/nilearn/issues/5969
     """
-    if not hasattr(estimator_orig, "transform") or isinstance(
-        estimator_orig, (SearchLight, ReNA)
-    ):
-        return
-
     if isinstance(estimator_orig, (_BaseDecomposition, ConnectivityMeasure)):
         for output in ["pandas", "polars"]:
             with pytest.raises(NotImplementedError):
