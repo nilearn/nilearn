@@ -5,7 +5,7 @@
     },
     "maps": {
         "type": "str",
-        "desc": "Path to nifti file containing the :term:`Probabilistic atlas` image (shape is equal to ``(40, 48, 35, 39)``)."
+        "desc": "Fullpath to nifti file containing the :term:`Probabilistic atlas` image (shape is equal to ``(40, 48, 35, 39)``)."
     },
     "networks": {
         "type": "list[str]",

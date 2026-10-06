@@ -715,6 +715,7 @@ def fetch_atlas_juelich(
         "maxprob-thr25-1mm", "maxprob-thr25-2mm",
         "maxprob-thr50-1mm", "maxprob-thr50-2mm",
         "prob-1mm", "prob-2mm".
+
     %(data_dir)s
         Optionally, it can also be a FSL installation directory (which is
         dependent on your installation).
@@ -734,6 +735,7 @@ def fetch_atlas_juelich(
             (``*-prob-*`` atlases).
 
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -825,7 +827,7 @@ def fetch_atlas_juelich(
     return Atlas(
         maps=new_atlas_niimg,
         labels=list(new_names),
-        description=get_dataset_descr("juelich"),
+        description=Description.from_registry("juelich_atlas"),
         atlas_type=atlas_type,
         lut=generate_atlas_look_up_table(
             "fetch_atlas_juelich", name=list(new_names)
@@ -1012,51 +1014,29 @@ def fetch_atlas_msdl(
 ) -> Atlas:
     """Download and load the MSDL brain :term:`Probabilistic atlas`.
 
-    It can be downloaded at :footcite:t:`atlas_msdl`, and cited
-    using :footcite:t:`Varoquaux2011`.
-    See also :footcite:t:`Varoquaux2013` for more information.
+    For more information,
+    see the :ref:`dataset description <msdl_atlas>`.
 
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
-        - 'maps': :obj:`str`
-            path to nifti file containing the
-            :term:`Probabilistic atlas` image
-            (shape is equal to ``(40, 48, 35, 39)``).
+        %(msdl_atlas_content)s
 
-        - %(labels)s
-            There are 39 labels such that ``data.labels[i]``
-            corresponds to map ``i``.
-
-        - 'region_coords': :obj:`list` of length-3 :obj:`tuple`
-            ``data.region_coords[i]`` contains the coordinates ``(x, y, z)``
-            of region ``i`` in :term:`MNI` space.
-
-        - 'networks': :obj:`list` of :obj:`str`
-            list containing the names of the networks.
-            There are 39 network names such that
-            ``data.networks[i]`` is the network name of region ``i``.
-
-        - %(description)s
-
-        - %(atlas_type)s
-
-        - %(template)s
-
-    References
-    ----------
-    .. footbibliography::
-
-
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -1084,7 +1064,7 @@ def fetch_atlas_msdl(
     return Atlas(
         maps=files[1],
         labels=[name.strip() for name in csv_data["name"].to_list()],
-        description=get_dataset_descr(dataset_name),
+        description=Description.from_registry(dataset_name),
         atlas_type=atlas_type,
         region_coords=csv_data[["x", "y", "z"]].to_numpy().tolist(),
         networks=net_names,

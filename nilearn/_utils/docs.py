@@ -1978,6 +1978,9 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         content=Bunch(template=Bunch(type=str, desc=template)),
         license="unknown",
     ),
+    "msdl_atlas": Bunch(
+        license="usage is unrestricted for non-commercial research purposes."
+    ),
     "pauli_2017_atlas": Bunch(license="UCC-By Attribution 4.0 International"),
     "power_2011_atlas": Bunch(license="unknown"),
     "spm_multimodal": Bunch(license="unknown"),

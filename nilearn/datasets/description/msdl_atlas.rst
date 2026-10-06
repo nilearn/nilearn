@@ -21,19 +21,17 @@ and cited using :footcite:t:`Varoquaux2011`.
 
 See also :footcite:t:`Varoquaux2013` for more information.
 
-Content
--------
-    :'maps': Nifti images with the (probabilistic) region definitions
-    :'labels': CSV file specifying the label information
-
-References
-----------
-
-.. footbibliography::
-
 For more information about this dataset's structure:
 https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/
 
+Content
+-------
+.. nilearn_dataset_content:: msdl_atlas
+
+References
+----------
+.. footbibliography::
+
 License
 -------
-usage is unrestricted for non-commercial research purposes.
+.. nilearn_dataset_license:: msdl_atlas
