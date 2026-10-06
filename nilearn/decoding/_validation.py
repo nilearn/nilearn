@@ -3,9 +3,12 @@
 import numpy as np
 from sklearn.model_selection import cross_val_score
 
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.param_validation import check_params
 from nilearn.image import check_niimg_3d, iter_img
-from nilearn.nilearn_typing import NiimgLike
+from nilearn.nilearn_typing import NiimgLike, NJobs, Verbose
 from nilearn.surface import SurfaceImage
+
 
 @fill_doc
 def cross_val_decoder_score(
@@ -16,8 +19,8 @@ def cross_val_decoder_score(
     groups=None,
     scoring=None,
     cv=None,
-    n_jobs: NJobs=1,
-    verbose: Verbose=0,
+    n_jobs: NJobs = 1,
+    verbose: Verbose = 0,
     params=None,
     pre_dispatch="2*n_jobs",
     error_score=np.nan,
@@ -32,12 +35,12 @@ def cross_val_decoder_score(
 
     Parameters
     ----------
-    estimator : estimator object
-        An estimator accepting images in its ``fit`` and prediction methods,
-        such as :class:`~nilearn.decoding.Decoder`,
+    estimator : object
+        An instance of :class:`~nilearn.decoding.Decoder`,
         :class:`~nilearn.decoding.DecoderRegressor`,
         :class:`~nilearn.decoding.FREMClassifier`, or
-        :class:`~nilearn.decoding.FREMRegressor`.
+        :class:`~nilearn.decoding.FREMRegressor`. It accepts images in its
+        ``fit`` and prediction methods.
 
     imgs : Niimg-like object, :obj:`~nilearn.surface.SurfaceImage`, or iterable
         A 4D image or its path, an iterable of 3D images or their paths,

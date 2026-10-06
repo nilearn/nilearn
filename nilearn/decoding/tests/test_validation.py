@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 from sklearn import clone, config_context
-from sklearn.base import is_classifier
 from sklearn.exceptions import FitFailedWarning
 from sklearn.metrics import check_scoring, get_scorer
 from sklearn.model_selection import KFold, LeaveOneGroupOut, StratifiedKFold
@@ -56,7 +55,7 @@ def image_data(request, volume_data, surf_img_2d, rng):
 
 def _make_decoder(cls, mask):
     """Build a decoder with a small, deterministic inner search."""
-    classifier = is_classifier(cls())
+    classifier = cls in (Decoder, FREMClassifier)
     kwargs = {
         "mask": mask,
         "estimator": "svc" if classifier else "svr",
@@ -74,14 +73,69 @@ def _make_decoder(cls, mask):
 
 
 @pytest.mark.parametrize(
-    "cls", [Decoder, DecoderRegressor, FREMClassifier, FREMRegressor]
+    ("cls", "kwargs", "is_classification"),
+    [
+        (
+            Decoder,
+            {
+                "estimator": "svc",
+                "scoring": "accuracy",
+                "param_grid": {"C": [1.0]},
+                "cv": 2,
+                "screening_percentile": None,
+                "standardize": "zscore_sample",
+                "estimator_args": {"random_state": 0},
+            },
+            True,
+        ),
+        (
+            DecoderRegressor,
+            {
+                "estimator": "svr",
+                "scoring": "r2",
+                "param_grid": {"C": [1.0]},
+                "cv": 2,
+                "screening_percentile": None,
+                "standardize": "zscore_sample",
+            },
+            False,
+        ),
+        (
+            FREMClassifier,
+            {
+                "estimator": "svc",
+                "scoring": "accuracy",
+                "param_grid": {"C": [1.0]},
+                "cv": 2,
+                "screening_percentile": None,
+                "standardize": "zscore_sample",
+                "estimator_args": {"random_state": 0},
+                "clustering_percentile": 100,
+            },
+            True,
+        ),
+        (
+            FREMRegressor,
+            {
+                "estimator": "svr",
+                "scoring": "r2",
+                "param_grid": {"C": [1.0]},
+                "cv": 2,
+                "screening_percentile": None,
+                "standardize": "zscore_sample",
+                "clustering_percentile": 100,
+            },
+            False,
+        ),
+    ],
 )
-def test_cross_val_decoder_score(image_data, cls, rng):
+def test_cross_val_decoder_score(
+    image_data, cls, kwargs, is_classification, rng
+):
     """All decoder classes return held-out scores for real image inputs."""
     img, mask, y = image_data
-    decoder = _make_decoder(cls, mask)
-    if not is_classifier(decoder):
-        y = rng.normal(size=y.shape)
+    decoder = cls(mask=mask, **kwargs)
+    y = y if is_classification else rng.normal(size=y.shape)
 
     scores = cross_val_decoder_score(
         decoder, img, y, cv=3, error_score="raise"
@@ -89,7 +143,7 @@ def test_cross_val_decoder_score(image_data, cls, rng):
 
     assert scores.shape == (3,)
     assert np.isfinite(scores).all()
-    if is_classifier(decoder):
+    if is_classification:
         assert ((scores >= 0) & (scores <= 1)).all()
     assert not hasattr(decoder, "coef_")
     assert not hasattr(decoder, "masker_")
