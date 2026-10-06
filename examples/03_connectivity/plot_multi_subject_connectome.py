@@ -46,12 +46,10 @@ def plot_matrices(cov, prec, title, labels):
 # %%
 # Fetching datasets
 # ------------------
-from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
+from nilearn.datasets import fetch_development_fmri
 
 n_subjects = 4  # subjects to consider for group-sparse covariance (max: 40)
 
-
-msdl_atlas_dataset = fetch_atlas_msdl()
 rest_dataset = fetch_development_fmri(n_subjects=n_subjects)
 
 # print basic information on the dataset
@@ -63,10 +61,19 @@ print(
 # %%
 # Extracting region signals
 # -------------------------
+from nilearn.datasets import fetch_atlas_msdl
 from nilearn.maskers import MultiNiftiMapsMasker
 
+atlas = fetch_atlas_msdl()
+
+print(atlas.description.content)
+
+atlas_img = atlas.maps
+labels = atlas.labels
+
+# %%
 masker = MultiNiftiMapsMasker(
-    msdl_atlas_dataset.maps,
+    atlas_img,
     resampling_target="maps",
     detrend=True,
     high_variance_confounds=True,
@@ -87,7 +94,6 @@ subject_time_series = masker.fit_transform(
     func_filenames, confounds=confound_filenames
 )
 
-
 # %%
 # Computing group-sparse precision matrices
 # -----------------------------------------
@@ -102,7 +108,6 @@ from sklearn.covariance import GraphicalLassoCV
 gl = GraphicalLassoCV(verbose=True)
 gl.fit(np.concatenate(subject_time_series))
 
-
 # %%
 # Displaying results
 # ------------------
@@ -112,9 +117,7 @@ from nilearn.plotting import (
     show,
 )
 
-atlas_img = msdl_atlas_dataset.maps
 atlas_region_coords = find_probabilistic_atlas_cut_coords(atlas_img)
-labels = msdl_atlas_dataset.labels
 
 plot_connectome(
     gl.covariance_,

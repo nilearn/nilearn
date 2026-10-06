@@ -31,6 +31,8 @@ development_dataset = fetch_development_fmri(n_subjects=30, verbose=verbose)
 # %%
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
 msdl_data = fetch_atlas_msdl()
+print(msdl_data.description.content)
+
 msdl_coords = msdl_data.region_coords
 n_regions = len(msdl_coords)
 

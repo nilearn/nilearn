@@ -28,7 +28,7 @@ with less control over the plot (see below)
 from nilearn import datasets
 
 atlas_data = datasets.fetch_atlas_msdl()
-atlas_filename = atlas_data.maps
+print(atlas_data.description.content.maps)
 
 # %%
 # Visualizing a probabilistic atlas with plot_stat_map and add_overlay object
@@ -37,7 +37,7 @@ from nilearn import image, plotting
 
 # First plot the map for the PCC: index 4 in the atlas
 display = plotting.plot_stat_map(
-    image.index_img(atlas_filename, 4),
+    image.index_img(atlas_data.maps, 4),
     colorbar=False,
     title="DMN nodes in MSDL atlas",
     cmap="inferno",
@@ -51,7 +51,7 @@ cmaps = [
     plotting.cm.black_pink,
 ]
 for index, cmap in zip([5, 6, 3], cmaps, strict=False):
-    display.add_overlay(image.index_img(atlas_filename, index), cmap=cmap)
+    display.add_overlay(image.index_img(atlas_data.maps, index), cmap=cmap)
 
 plotting.show()
 
@@ -68,7 +68,7 @@ plotting.show()
 #
 # Unlike :func:`~nilearn.plotting.plot_stat_map` this works with 4D images
 
-dmn_nodes = image.index_img(atlas_filename, [3, 4, 5, 6])
+dmn_nodes = image.index_img(atlas_data.maps, [3, 4, 5, 6])
 # Note that dmn_node is now a 4D image
 print(dmn_nodes.shape)
 

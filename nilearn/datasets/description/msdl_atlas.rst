@@ -16,6 +16,8 @@ Result maps of sparse :term:`Dictionary learning` based on :term:`resting-state`
 This can be understand as a variant of :term:`ICA` based on the assumption
 of sparsity rather than independence.
 
+Direct download link: ``https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip``
+
 It can be downloaded at :footcite:t:`atlas_msdl`,
 and cited using :footcite:t:`Varoquaux2011`.
 
