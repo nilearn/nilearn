@@ -641,10 +641,10 @@ class BaseMasker(_BaseMasker):
         return img
 
     def _check_array(
-            self,
-            signals,
-            sklearn_check: bool = True,
-            ensure_all_finite: bool = False
+        self,
+        signals,
+        sklearn_check: bool = True,
+        ensure_all_finite: bool = False,
     ) -> np.ndarray:
         """Check array to inverse transform.
 
@@ -666,9 +666,7 @@ class BaseMasker(_BaseMasker):
 
         if sklearn_check:
             signals = check_array(
-                signals,
-                ensure_2d=False,
-                ensure_all_finite=ensure_all_finite
+                signals, ensure_2d=False, ensure_all_finite=ensure_all_finite
             )
 
         assert signals.ndim <= 2
