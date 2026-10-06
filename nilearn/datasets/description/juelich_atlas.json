@@ -5,6 +5,6 @@
     },
     "maps": {
         "type": "nibabel.nifti1.Nifti1Image",
-        "desc": "It is a 4D image if a :term:`Probabilistic atlas` is requested, and a 3D image if a :term:`maximum probability atlas<Deterministic atlas>` is requested. In the latter case, the image contains integer values which can be interpreted as the indices in the list of labels."
+        "desc": "It is a 4D image with shape ``(182, 218, 182, 62)`` if a :term:`Probabilistic atlas` is requested, and a 3D image with shape ``(182, 218, 182)`` and 62 regions (+ background) if a :term:`maximum probability atlas<Deterministic atlas>` is requested. In the latter case, the image contains integer values which can be interpreted as the indices in the list of labels."
     }
 }

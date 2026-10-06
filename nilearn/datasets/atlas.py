@@ -509,11 +509,9 @@ def fetch_atlas_harvard_oxford(
         For atlases 'cort-prob-1mm', 'cort-prob-2mm', 'cortl-prob-1mm',
         'cortl-prob-2mm', 'sub-prob-1mm', and 'sub-prob-2mm', the function
         returns a :term:`Probabilistic atlas`, and the
-        :class:`~nibabel.nifti1.Nifti1Image` returned is 4D, with shape
-        ``(182, 218, 182, 48)``.
+        :class:`~nibabel.nifti1.Nifti1Image` returned is 4D.
         For :term:`deterministic atlases<Deterministic atlas>`, the
-        :class:`~nibabel.nifti1.Nifti1Image` returned is 3D, with
-        shape ``(182, 218, 182)`` and 48 regions (+ background).
+        :class:`~nibabel.nifti1.Nifti1Image` returned is 3D.
 
     Parameters
     ----------
@@ -531,6 +529,7 @@ def fetch_atlas_harvard_oxford(
         "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
         "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
         "sub-prob-1mm", "sub-prob-2mm".
+
     %(data_dir)s
         Optionally, it can also be a FSL installation directory (which is
         dependent on your installation).
@@ -550,6 +549,7 @@ def fetch_atlas_harvard_oxford(
             for full :term:`Probabilistic atlas` (*-prob-* atlases).
 
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -557,37 +557,20 @@ def fetch_atlas_harvard_oxford(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        - 'maps': :obj:`str`
-            path to nifti file containing the
-            atlas :class:`~nibabel.nifti1.Nifti1Image`.
-            It is a 4D image
-            if a :term:`Probabilistic atlas` is requested, and a 3D image
-            if a :term:`maximum probability atlas<Deterministic atlas>` is
-            requested.
-            In the latter case, the image contains integer
-            values which can be interpreted as the indices in the list
-            of labels.
+            %(harvard_oxford_atlas_content)s
 
-            .. note::
+        .. note::
 
-                For some atlases, it can be the case that some regions
-                are empty. In this case, no :term:`voxels<voxel>` in the
-                map are assigned to these regions. So the number of
-                unique values in the map can be strictly smaller than the
-                number of region names in ``labels``.
+            For some atlases, it can be the case that some regions are empty.
+            In this case, no :term:`voxels<voxel>` in the map are assigned
+            to these regions.
+            So the number of unique values in the map
+            can be strictly smaller
+            than the number of region names in ``labels``.
 
-        - %(labels)s
-
-        - 'filename': Same as 'maps', kept for backward compatibility only.
-
-        - %(description)s
-
-        - %(lut)s
-            Only for deterministic version of the atlas.
-
-        - %(template)s
-
-        - %(atlas_type)s
+    Notes
+    -----
+    %(fetcher_note)s
 
     See Also
     --------
@@ -632,7 +615,6 @@ def fetch_atlas_harvard_oxford(
         )
     (
         atlas_img,
-        atlas_filename,
         names,
         is_lateralized,
     ) = _get_atlas_data_and_labels(
@@ -645,16 +627,18 @@ def fetch_atlas_harvard_oxford(
     )
 
     atlas_niimg = check_niimg(atlas_img)
+
+    description = Description.from_registry("harvard_oxford_atlas")
+
     if not symmetric_split or is_lateralized:
         return Atlas(
             maps=atlas_niimg,
             labels=names,
-            description=get_dataset_descr("harvard_oxford"),
+            description=description,
             atlas_type=atlas_type,
             lut=generate_atlas_look_up_table(
                 "fetch_atlas_harvard_oxford", name=names
             ),
-            filename=atlas_filename,
             template="MNI152NLin6Asym",
         )
 
@@ -664,16 +648,14 @@ def fetch_atlas_harvard_oxford(
     new_atlas_niimg = new_img_like(
         atlas_niimg, new_atlas_data, atlas_niimg.affine
     )
-
     return Atlas(
         maps=new_atlas_niimg,
         labels=new_names,
-        description=get_dataset_descr("harvard_oxford"),
+        description=description,
         atlas_type=atlas_type,
         lut=generate_atlas_look_up_table(
             "fetch_atlas_harvard_oxford", name=new_names
         ),
-        filename=atlas_filename,
         template="MNI152NLin6Asym",
     )
 
@@ -701,11 +683,9 @@ def fetch_atlas_juelich(
 
         For atlases 'prob-1mm', and 'prob-2mm', the function returns a
         :term:`Probabilistic atlas`, and the
-        :class:`~nibabel.nifti1.Nifti1Image` returned is 4D, with shape
-        ``(182, 218, 182, 62)``.
+        :class:`~nibabel.nifti1.Nifti1Image` returned is 4D.
         For :term:`deterministic atlases<Deterministic atlas>`, the
-        :class:`~nibabel.nifti1.Nifti1Image` returned is 3D, with shape
-        ``(182, 218, 182)`` and 62 regions (+ background).
+        :class:`~nibabel.nifti1.Nifti1Image` returned is 3D.
 
     Parameters
     ----------
@@ -785,7 +765,7 @@ def fetch_atlas_juelich(
         raise ValueError(
             "Region splitting not supported for probabilistic atlases"
         )
-    atlas_img, _, names, _ = _get_atlas_data_and_labels(
+    atlas_img, names, _ = _get_atlas_data_and_labels(
         "Juelich",
         atlas_name,
         data_dir=data_dir,
@@ -897,7 +877,7 @@ def _get_atlas_data_and_labels(
     # The label indices should range from 0 to nlabel + 1
     assert list(names.keys()) == list(range(len(all_labels) + 1))
     names = [item[1] for item in sorted(names.items())]
-    return atlas_img, atlas_file, names, is_lateralized
+    return atlas_img, names, is_lateralized
 
 
 def _merge_probabilistic_maps_juelich(atlas_data, names):
