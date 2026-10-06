@@ -50,10 +50,10 @@ DATASET_NAMES = {
 @pytest.mark.parametrize(
     ("n_subjects", "expected"),
     [
-        (None, 6),
-        (2, 2),
-        ([1, 3], [1, 3]),
-        ((1, 3), (1, 3)),
+        (None, (0, 1, 2, 3, 4, 5)),
+        (2, (0, 1)),
+        ([1, 3], (0, 2)),
+        ((1, 3), (0, 2)),
     ],
 )
 def test_validate_subjects(n_subjects, expected):
@@ -70,7 +70,7 @@ def test_validate_subjects_above_maximum_uses_max():
             warning_message="Only 6 subjects are available.",
         )
 
-    assert result == 6
+    assert result == (0, 1, 2, 3, 4, 5)
 
 
 @pytest.mark.parametrize("n_subjects", [[], (), [0], [7]])

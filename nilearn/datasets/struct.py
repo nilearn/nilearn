@@ -829,11 +829,7 @@ def fetch_oasis_vbm(
     file_names_dua: list[tuple[str, str, dict]] = [
         ("data_usage_agreement.txt", url_dua, {})
     ]
-    subject_indices = (
-        range(n_subjects)
-        if isinstance(n_subjects, int)
-        else [subject_id - 1 for subject_id in n_subjects]
-    )
+    subject_indices = n_subjects
     file_names_gm = [file_names_gm[index] for index in subject_indices]
     file_names_wm = [file_names_wm[index] for index in subject_indices]
     selected_subjects = len(file_names_gm)

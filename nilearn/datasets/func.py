@@ -154,10 +154,7 @@ def fetch_haxby(
         n_subjects,
         max_subjects=6,
     )
-    if isinstance(n_subjects, (list, tuple)):
-        subject_mask = np.array(n_subjects)
-    if isinstance(n_subjects, int):
-        subject_mask = np.arange(1, n_subjects + 1)
+    subject_mask = np.asarray(n_subjects) + 1
 
     dataset_name = "haxby2001"
     data_dir = get_dataset_dir(
@@ -207,7 +204,7 @@ def fetch_haxby(
 
     files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    if n_subjects == 6 or np.any(subject_mask == 6):
+    if 6 in subject_mask:
         files.append(None)  # None value because subject 6 has no anat
 
     kwargs = {}
@@ -358,11 +355,7 @@ def fetch_adhd(
         max_subjects,
         warning_message=f"Warning: there are only {max_subjects} subjects.",
     )
-    subject_indices = (
-        range(n_subjects)
-        if isinstance(n_subjects, int)
-        else [subject_id - 1 for subject_id in n_subjects]
-    )
+    subject_indices = n_subjects
     ids = [all_ids[index] for index in subject_indices]
     nitrc_ids = [all_nitrc_ids[index] for index in subject_indices]
     selected_subjects = len(ids)
@@ -822,11 +815,7 @@ def fetch_localizer_contrasts(
     with index_file.open() as of:
         index = json.load(of)
 
-    subject_mask = (
-        np.arange(1, n_subjects + 1)
-        if isinstance(n_subjects, int)
-        else np.asarray(n_subjects)
-    )
+    subject_mask = np.asarray(n_subjects) + 1
     subject_ids = [f"S{int(s):02}" for s in subject_mask]
 
     data_types = ["cmaps"]
@@ -1375,11 +1364,7 @@ def fetch_abide_pcp(
 
     # Get the files
     n_subjects = _validate_subjects(n_subjects, len(pheno_df))
-    subject_indices = (
-        range(n_subjects)
-        if isinstance(n_subjects, int)
-        else [subject_id - 1 for subject_id in n_subjects]
-    )
+    subject_indices = n_subjects
     pheno_df = pheno_df.iloc[subject_indices]
     file_ids = pheno_df["FILE_ID"].tolist()
 
@@ -1518,9 +1503,7 @@ def fetch_mixed_gambles(
         max_subjects=16,
         warning_message="Warning: there are only 16 subjects!",
     )
-    subject_ids = (
-        range(1, n_subjects + 1) if isinstance(n_subjects, int) else n_subjects
-    )
+    subject_ids = np.asarray(n_subjects) + 1
 
     if url is None:
         url = (
@@ -1887,11 +1870,7 @@ def fetch_surf_nki_enhanced(
         max_subjects,
         warning_message=f"Warning: there are only {max_subjects} subjects.",
     )
-    subject_indices = (
-        range(n_subjects)
-        if isinstance(n_subjects, int)
-        else [subject_id - 1 for subject_id in n_subjects]
-    )
+    subject_indices = n_subjects
     ids = [all_ids[index] for index in subject_indices]
 
     # Dataset description
@@ -2319,6 +2298,7 @@ def fetch_development_fmri(
     )
     max_subjects = adult_count + child_count
 
+    explicit_subject_selection = isinstance(n_subjects, (list, tuple))
     n_subjects = _validate_subjects(
         n_subjects,
         max_subjects,
@@ -2329,24 +2309,24 @@ def fetch_development_fmri(
         ),
     )
 
-    if isinstance(n_subjects, (list, tuple)):
+    if explicit_subject_selection:
         if age_group != "both":
             participants = participants[
                 participants["Child_Adult"] == age_group
             ]
-        subject_indices = [subject_id - 1 for subject_id in n_subjects]
-        participants = participants.iloc[subject_indices]
+        participants = participants.iloc[n_subjects]
     else:
         # Keep the proportion of children versus adults.
-        percent_total = float(n_subjects) / max_subjects
+        n_subjects_count = len(n_subjects)
+        percent_total = float(n_subjects_count) / max_subjects
         n_child = np.round(percent_total * child_count).astype(int)
         n_adult = np.round(percent_total * adult_count).astype(int)
 
         # Return adults by default or if explicitly requested.
-        if (age_group != "child") and (n_subjects == 1):
+        if (age_group != "child") and (n_subjects_count == 1):
             n_adult, n_child = 1, 0
 
-        if (age_group == "both") and (n_subjects == 2):
+        if (age_group == "both") and (n_subjects_count == 2):
             n_adult, n_child = 1, 1
 
         participants = _filter_csv_by_n_subjects(
@@ -2648,11 +2628,7 @@ def select_from_index(
     # We get a list of subjects (for the moment the first n subjects)
     subjects = infer_subjects(urls)
     n_subjects = _validate_subjects(n_subjects, len(subjects))
-    subject_indices = (
-        range(n_subjects)
-        if isinstance(n_subjects, int)
-        else [subject_id - 1 for subject_id in n_subjects]
-    )
+    subject_indices = n_subjects
     selected_subjects = {subjects[index] for index in subject_indices}
 
     # We exclude urls of subjects not selected

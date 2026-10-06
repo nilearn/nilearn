@@ -55,12 +55,12 @@ def _validate_subjects(
     max_subjects: int,
     *,
     warning_message: str | None = None,
-) -> int | list[int] | tuple[int, ...]:
+) -> tuple[int, ...]:
     """Validate and normalize a dataset subject selection."""
     check_params({"n_subjects": n_subjects})
 
     if n_subjects is None:
-        return max_subjects
+        return tuple(range(max_subjects))
 
     if isinstance(n_subjects, (list, tuple)):
         if not n_subjects:
@@ -70,17 +70,17 @@ def _validate_subjects(
             check_parameter_in_allowed(
                 subject_id, range(1, max_subjects + 1), "subject id"
             )
-        return n_subjects
+        return tuple(subject_id - 1 for subject_id in n_subjects)
 
     if n_subjects < 1:
         raise ValueError("'n_subjects' must be greater than zero.")
 
     if n_subjects <= max_subjects:
-        return n_subjects
+        return tuple(range(n_subjects))
 
     if warning_message is not None:
         warnings.warn(warning_message, stacklevel=find_stack_level())
-    return max_subjects
+    return tuple(range(max_subjects))
 
 
 def md5_hash(string):
