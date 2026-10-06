@@ -288,6 +288,7 @@ def fit_estimator(
 
         with warnings.catch_warnings():  # might not converge
             warnings.filterwarnings("ignore", category=ConvergenceWarning)
+            return estimator.fit(X)
 
 
 # ------------------ GENERIC CHECKS ------------------
