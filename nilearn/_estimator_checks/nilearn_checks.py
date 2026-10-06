@@ -1171,12 +1171,20 @@ def check_img_estimator_pickle(estimator_orig) -> None:
 
     if hasattr(estimator, "inverse_transform"):
         check_methods.append("inverse_transform")
-        signal = _rng().random((1, fitted_estimator.n_elements_))
-        if isinstance(estimator, _BaseDecomposition):
-            signal = [signal]
-        input_data.append(signal)
+        # the signal is generated right before calling inverse_transform
+        # as transform may update n_elements_
+        # (for example NiftiMapsMasker drops maps that are empty
+        # after resampling or masking)
+        input_data.append(None)
 
-    for method, input in zip(check_methods, input_data, strict=False):
+    for i, (method, input) in enumerate(
+        zip(check_methods, input_data, strict=False)
+    ):
+        if method == "inverse_transform":
+            input = _rng().random((1, fitted_estimator.n_elements_))
+            if isinstance(estimator, _BaseDecomposition):
+                input = [input]
+            input_data[i] = input
         if hasattr(estimator, method):
             result["input"] = input
             if method == "score":
@@ -1890,7 +1898,16 @@ def check_img_estimator_standardization(estimator_orig) -> None:
     # for the standardize to actually do something
     input_img, y = generate_data_to_fit(estimator_orig)
 
-    for method in ["predict", "transform"]:
+    # For classifiers, compare decision_function rather than predict:
+    # predicted labels can be identical
+    # even when the standardization did change the fitted model.
+    methods = ["predict", "transform"]
+    if is_classifier(estimator_orig) and hasattr(
+        estimator_orig, "decision_function"
+    ):
+        methods = ["decision_function", "transform"]
+
+    for method in methods:
         if not hasattr(estimator_orig, method):
             continue
 
