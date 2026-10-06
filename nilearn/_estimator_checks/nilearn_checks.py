@@ -655,7 +655,7 @@ def check_verbosity_embedded_masker(estimator_orig) -> None:
 
     if not isinstance(estimator, _BaseDecomposition) or is_glm(estimator):
         # no extra output at verbose=3 for decomposition / glm estimators
-        assert len(outputs[1]) > 0, outputs[1]
+        assert len(outputs[1]) > 0
         assert len(outputs[1]) < len(outputs[2])
         if not is_glm(estimator):
             assert len(outputs[2]) < len(outputs[3])
