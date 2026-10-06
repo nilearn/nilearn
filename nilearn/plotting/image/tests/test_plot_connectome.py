@@ -1,5 +1,7 @@
 """Tests for :func:`nilearn.plotting.plot_connectome`."""
 
+import warnings
+
 import numpy as np
 import pytest
 from matplotlib.patches import FancyArrow
@@ -34,7 +36,20 @@ def test_plot_connectome_masked_array_sparse_matrix(
     plot_connectome(
         masked_adjacency_matrix, node_coords, **params_plot_connectome
     )
-    sparse_adjacency_matrix = sparse.coo_matrix(adjacency)
+
+    # TODO (scipy >= 1.20) remove this smoke test
+    # drop of sparse matrix API
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            category=(DeprecationWarning, FutureWarning),
+        )
+        sparse_adjacency_matrix = sparse.coo_matrix(adjacency)
+        plot_connectome(
+            sparse_adjacency_matrix, node_coords, **params_plot_connectome
+        )
+
+    sparse_adjacency_matrix = sparse.coo_array(adjacency)
     plot_connectome(
         sparse_adjacency_matrix, node_coords, **params_plot_connectome
     )

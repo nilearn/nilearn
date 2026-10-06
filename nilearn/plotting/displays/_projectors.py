@@ -3,6 +3,7 @@ from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy
 from matplotlib import cm as mpl_cm
 from scipy.sparse import issparse
 from scipy.stats import scoreatpercentile
@@ -169,7 +170,10 @@ class OrthoProjector(OrthoSlicer):
     @fill_doc
     def add_graph(
         self,
-        adjacency_matrix,
+        adjacency_matrix: np.ndarray
+        | np.ma.masked_array
+        | scipy.sparse.coo_matrix
+        | scipy.sparse.coo_array,
         node_coords,
         node_color="auto",
         node_size=50,
@@ -185,11 +189,11 @@ class OrthoProjector(OrthoSlicer):
 
         Parameters
         ----------
-        adjacency_matrix : :class:`numpy.ndarray` of shape ``(n, n)``
-            Represents the edges strengths of the graph.
-            The matrix can be symmetric which will result in
-            an undirected graph, or not symmetric which will
-            result in a directed graph.
+        adjacency_matrix : :class:`numpy.ndarray` of shape ``(n, n)``, \
+            or :class:`scipy.sparse.coo_array`.
+        Represents the link strengths of the graph.
+        The matrix can be symmetric which will result in an undirected graph,
+        or not symmetric which will result in a directed graph.
 
         node_coords : :class:`numpy.ndarray` of shape ``(n, 3)``
             3D coordinates of the graph nodes in world space.

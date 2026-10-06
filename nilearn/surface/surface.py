@@ -2144,7 +2144,9 @@ def get_data(img, ensure_finite: bool = False) -> np.ndarray:
     return concatenated_data
 
 
-def compute_adjacency_matrix(mesh: InMemoryMesh, values="ones", dtype=None):
+def compute_adjacency_matrix(
+    mesh: InMemoryMesh, values="ones", dtype=None
+) -> csr_matrix:
     """Compute the adjacency matrix for a surface.
 
     The adjacency matrix is a matrix
