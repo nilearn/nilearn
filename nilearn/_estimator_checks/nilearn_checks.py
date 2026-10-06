@@ -286,7 +286,8 @@ def fit_estimator(
         if not isinstance(estimator, _BaseDecomposition):
             return estimator.fit(X)
 
-        with warnings.catch_warnings():  # might not converge
+        with warnings.catch_warnings():
+            # might not converge
             warnings.filterwarnings("ignore", category=ConvergenceWarning)
             return estimator.fit(X)
 
@@ -1237,23 +1238,26 @@ def check_img_estimator_pipeline_consistency(estimator_orig) -> None:
 
     pipeline = make_pipeline(estimator)
 
-    if is_glm(estimator):
-        # FirstLevel
-        if hasattr(estimator, "hrf_model"):
-            pipeline.fit(X, firstlevelmodel__design_matrices=y)
-        # SecondLevel
+    with warnings.catch_warnings():
+        # might not converge
+        warnings.filterwarnings("ignore", category=ConvergenceWarning)
+        if is_glm(estimator):
+            # FirstLevel
+            if hasattr(estimator, "hrf_model"):
+                pipeline.fit(X, firstlevelmodel__design_matrices=y)
+            # SecondLevel
+            else:
+                pipeline.fit(X, secondlevelmodel__design_matrix=y)
+
+        elif (
+            isinstance(estimator, SearchLight)
+            or is_classifier(estimator)
+            or is_regressor(estimator)
+        ):
+            pipeline.fit(X, y)
+
         else:
-            pipeline.fit(X, secondlevelmodel__design_matrix=y)
-
-    elif (
-        isinstance(estimator, SearchLight)
-        or is_classifier(estimator)
-        or is_regressor(estimator)
-    ):
-        pipeline.fit(X, y)
-
-    else:
-        pipeline.fit(X)
+            pipeline.fit(X)
 
     funcs = ["score", "transform"]
 
@@ -1923,10 +1927,13 @@ def check_img_estimator_standardization(estimator_orig) -> None:
 
             estimator.standardize = standardize
 
-            if is_classifier(estimator) or is_regressor(estimator):
-                estimator.fit(input_img, y)
-            else:
-                estimator.fit(input_img)
+            with warnings.catch_warnings():
+                # might not converge
+                warnings.filterwarnings("ignore", category=ConvergenceWarning)
+                if is_classifier(estimator) or is_regressor(estimator):
+                    estimator.fit(input_img, y)
+                else:
+                    estimator.fit(input_img)
 
             results[str(standardize)] = getattr(estimator, method)(input_img)
 
@@ -2111,7 +2118,10 @@ def check_decoder_with_surface_data(estimator_orig) -> None:
                 estimator.fit(X, y)
             continue
 
-        estimator.fit(X, y)
+        with warnings.catch_warnings():
+            # might not converge
+            warnings.filterwarnings("ignore", category=ConvergenceWarning)
+            estimator.fit(X, y)
 
         assert estimator.coef_ is not None
 
