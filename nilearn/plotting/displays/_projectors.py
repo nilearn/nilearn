@@ -191,9 +191,10 @@ class OrthoProjector(OrthoSlicer):
         ----------
         adjacency_matrix : :class:`numpy.ndarray` of shape ``(n, n)``, \
             or :class:`scipy.sparse.coo_array`.
-        Represents the link strengths of the graph.
-        The matrix can be symmetric which will result in an undirected graph,
-        or not symmetric which will result in a directed graph.
+            Represents the link strengths of the graph.
+            The matrix can be symmetric which will result
+            in an undirected graph,
+            or not symmetric which will result in a directed graph.
 
         node_coords : :class:`numpy.ndarray` of shape ``(n, 3)``
             3D coordinates of the graph nodes in world space.
