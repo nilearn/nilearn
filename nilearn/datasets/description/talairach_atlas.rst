@@ -33,7 +33,7 @@ see https://www.talairach.org,
 :footcite:t:`Lancaster2000`,
 and :footcite:t:`Lancaster1997`.
 
-Direct download link from OSF: https://www.talairach.org/talairach.nii
+Direct download link: https://www.talairach.org/talairach.nii
 
 Content
 -------

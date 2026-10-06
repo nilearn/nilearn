@@ -17,6 +17,8 @@ Those were derived from 6 minutes of :term:`resting-state` time series
 from 36 subjects as well as from the from the smoothed task activity coordinates
 of healthy subjects stored in the BrainMap database.
 
+Direct download link: ``https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/`` or ``https://www.nitrc.org``
+
 See :footcite:t:`Smith2009b` and :footcite:t:`Laird2011`.
 
 For more information about this dataset's structure:

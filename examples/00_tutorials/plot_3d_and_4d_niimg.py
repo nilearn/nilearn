@@ -51,25 +51,25 @@ show()
 # correspondence between rest and task.
 from nilearn.datasets import fetch_atlas_smith_2009
 
-rsn = fetch_atlas_smith_2009(resting=True, dimension=10)["maps"]
-print(rsn)
+rsn = fetch_atlas_smith_2009(resting=True, dimension=10)
+print(rsn.description.content.maps)
+print(rsn.maps)
 
 # %%
-# It is a 4D nifti file.
-# the :mod:`nilearn.image` package
+# The :mod:`nilearn.image` package
 # provides some utility functions to work with image files.
 # We can load it into the memory to print its shape.
 from nilearn.image import load_img
 
-print(load_img(rsn).shape)
+print(load_img(rsn.maps).shape)
 
 # %%
 # We can retrieve the first volume (note that Python indexing starts at 0):
 from nilearn.image import index_img
 
-first_rsn = index_img(rsn, 0)
+first_rsn = index_img(rsn.maps, 0)
 
-first_rsn = index_img(rsn, 0)
+first_rsn = index_img(rsn.maps, 0)
 print(first_rsn.shape)
 
 # %%
@@ -92,7 +92,7 @@ show()
 # compact display.
 from nilearn.image import iter_img
 
-for img in iter_img(rsn):
+for img in iter_img(rsn.maps):
     # img is now an in-memory 3D img
     plot_stat_map(
         img, threshold=3, display_mode="z", cut_coords=1, colorbar=False
