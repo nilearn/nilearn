@@ -40,10 +40,8 @@ def test_plot_connectome_masked_array_sparse_matrix(
     # TODO (scipy >= 1.20) remove this smoke test
     # drop of sparse matrix API
     with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            category=(DeprecationWarning, FutureWarning),
-        )
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        warnings.filterwarnings("ignore", category=FutureWarning)
         sparse_adjacency_matrix = sparse.coo_matrix(adjacency)
         plot_connectome(
             sparse_adjacency_matrix, node_coords, **params_plot_connectome
