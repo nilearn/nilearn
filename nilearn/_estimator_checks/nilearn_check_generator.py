@@ -10,8 +10,9 @@ from nilearn._estimator_checks.nilearn_checks import (
     check_decoder_screening_n_features,
     check_decoder_with_arrays,
     check_decoder_with_surface_data,
-    check_doc_attributes,
+    check_doc_attributes_after_fit,
     check_doc_link,
+    check_doc_parameters_at_init,
     check_fit_returns_self,
     check_glm_empty_data_messages,
     check_img_estimator_cache_warning,
@@ -93,10 +94,11 @@ from nilearn.utils.tags import (
 
 # Checks that apply to all estimators
 COMMON_CHECKS = [
-    check_doc_attributes,
+    check_doc_parameters_at_init,
+    check_doc_attributes_after_fit,
+    check_doc_link,
     check_set_output,
     check_verbose,
-    check_doc_link,
 ]
 
 # Checks that apply to all estimators inheriting from CacheMixin

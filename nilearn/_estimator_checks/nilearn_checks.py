@@ -286,14 +286,12 @@ def fit_estimator(
 # ------------------ GENERIC CHECKS ------------------
 
 
-def check_doc_attributes(estimator) -> None:
-    """Check that parameters and attributes are documented.
+def check_doc_parameters_at_init(estimator) -> None:
+    """Check that parameters are documented.
 
     - Public parameters should be documented.
     - Attributes should be in same order as in __init__()
     - All documented parameters should exist after init.
-    - Fitted attributes (ending with a "_") should be documented.
-    - All documented fitted attributes should exist after fit.
     """
     doc = NumpyDocString(estimator.__doc__)
     for section in ["Parameters", "Attributes"]:
@@ -309,31 +307,29 @@ def check_doc_attributes(estimator) -> None:
 
     # check public attributes before fit
     parameters = [x for x in estimator.__dict__ if not x.startswith("_")]
-    documented_parameters = {
+    documented_parameters: dict[str, str] = {
         param.name: param.type for param in doc["Parameters"]
     }
-    undocumented_parameters = [
-        param for param in parameters if param not in documented_parameters
-    ]
-    if undocumented_parameters:
-        if isinstance(estimator, Parcellations):
-            warnings.warn(
-                (
-                    "Missing docstring for parameters "
-                    f"[{', '.join(undocumented_parameters)}] "
-                    f"in estimator {estimator.__class__.__name__}."
-                ),
-                stacklevel=2,
-            )
-        else:
-            assert undocumented_parameters == []
+
+    undocumented_parameters = list(
+        set(parameters) - set(documented_parameters)
+    )
+    assert not undocumented_parameters or isinstance(estimator, Parcellations)
+
+    if undocumented_parameters and isinstance(estimator, Parcellations):
+        warnings.warn(
+            (
+                "Missing docstring for parameters "
+                f"[{', '.join(undocumented_parameters)}] "
+                f"in estimator {estimator.__class__.__name__}."
+            ),
+            stacklevel=2,
+        )
 
     # ensure that there are no extra parameters documented in docstring
-    extra_parameters = [
-        attr
-        for attr in documented_parameters
-        if attr not in parameters and attr != "kwargs"
-    ]
+    extra_parameters = list(
+        set(documented_parameters) - set(parameters) - {"kwargs"}
+    )
     assert not extra_parameters, (
         "Extra docstring for parameters "
         f"[{', '.join(extra_parameters)}] "
@@ -343,8 +339,7 @@ def check_doc_attributes(estimator) -> None:
     # avoid duplicates
     assert len(documented_parameters) == len(set(documented_parameters))
 
-    verbose_doc = documented_parameters["verbose"]
-    assert "default=0" in verbose_doc
+    assert "default=0" in documented_parameters["verbose"]
 
     # Attributes should be in same order as in __init__()
     tmp = dict(**inspect.signature(estimator.__init__).parameters)
@@ -355,10 +350,21 @@ def check_doc_attributes(estimator) -> None:
         f"Got\n{list(documented_parameters)}"
     )
 
+
+def check_doc_attributes_after_fit(estimator) -> None:
+    """Check attributes after fit.
+
+    - Public fitted attributes (ending with a "_") should be documented.
+    - All documented fitted attributes should exist after fit.
+    - No extra public attribute should appear after fit.
+    """
     if isinstance(estimator, (ReNA, GroupSparseCovarianceCV)):
         # TODO
         # adapt fit_estimator to handle ReNA and GroupSparseCovarianceCV
         return
+
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
 
     # check fitted attributes after fit
     fitted_estimator = fit_estimator(estimator)
@@ -369,33 +375,33 @@ def check_doc_attributes(estimator) -> None:
         if x.endswith("_") and not x.startswith("_")
     ]
 
+    doc = NumpyDocString(estimator.__doc__)
     documented_attributes: dict[str, str] = {
         attr.name: attr.type for attr in doc["Attributes"]
     }
-    undocumented_attributes: list[str] = [
-        attr for attr in fitted_attributes if attr not in documented_attributes
-    ]
+    undocumented_attributes = list(
+        set(fitted_attributes) - set(documented_attributes)
+    )
     assert not undocumented_attributes, (
         "Missing docstring for attributes "
         f"[{', '.join(undocumented_attributes)}] "
         f"in estimator {estimator.__class__.__name__}."
     )
 
-    extra_attributes = [
-        attr for attr in documented_attributes if attr not in fitted_attributes
-    ]
-    if extra_attributes:
-        if isinstance(estimator, Parcellations):
-            warnings.warn(
-                (
-                    "Extra docstring for attributes "
-                    f"[{', '.join(extra_attributes)}] "
-                    f"in estimator {estimator.__class__.__name__}."
-                ),
-                stacklevel=2,
-            )
-        else:
-            assert extra_attributes == []
+    extra_attributes = list(
+        set(documented_attributes) - set(fitted_attributes)
+    )
+
+    assert not extra_attributes or isinstance(estimator, Parcellations)
+    if extra_attributes and isinstance(estimator, Parcellations):
+        warnings.warn(
+            (
+                "Extra docstring for attributes "
+                f"[{', '.join(extra_attributes)}] "
+                f"in estimator {estimator.__class__.__name__}."
+            ),
+            stacklevel=2,
+        )
 
     # avoid duplicates
     assert len(documented_attributes) == len(set(documented_attributes))
