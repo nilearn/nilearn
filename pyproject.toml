@@ -154,7 +154,7 @@ skip = "./.git,*.cff,*.bib,*/tmp,*.min.js,*.umd.js,localizer_behavioural.tsv,env
 blank_line_after_tag = "load,extends,include,endblock,set"
 blank_line_before_tag = "load,extends,include,block,set"
 format_css = true
-ignore = "H030,H031,H021,H006"
+ignore = "H030,H031,H037,H021,H006"
 max_line_length = 79
 use_gitignore = true
 
