@@ -219,13 +219,18 @@ def _chunk_read_(
             total=total_size,
             completed=initial_size,
         )
-        progress.start()
 
     bytes_so_far = initial_size
 
     t0 = time_last_display = time.time()
 
     try:
+        # Start the progress bar in the try block
+        # so it is always stopped:
+        # otherwise the progress bar stays as the active live display
+        # and all subsequent downloads fail.
+        if use_rich:
+            progress.start()
         for chunk in response.iter_content(chunk_size):
             bytes_so_far += len(chunk)
 
