@@ -3176,7 +3176,7 @@ def fetch_spm_multimodal_fmri(
         data = _download_data_spm_multimodal(dataset_dir, subject_dir, verbose)
 
     data.description = Description.from_registry("spm_multimodal")
-    data.t_r = 2
+    data.t_r = 2.0
     return data
 
 

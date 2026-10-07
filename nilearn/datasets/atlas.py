@@ -1021,12 +1021,15 @@ def fetch_coords_power_2011() -> Bunch[str, pd.DataFrame | str]:
         %(power_2011_atlas_content)s
 
     """
-    dataset_name = "power_2011_atlas"
-    fdescr = Description.from_registry(dataset_name)
     csv = PACKAGE_DIRECTORY / "data" / "power_2011.csv"
     rois = pd.read_csv(csv)
     rois = rois.rename(columns={c: c.lower() for c in rois.columns})
-    params = {"rois": rois, "description": fdescr}
+    params = {
+        "rois": rois,
+        "description": Description.from_registry("power_2011_atlas"),
+        "template": "MNI?",
+        "atlas_type": "deterministic",
+    }
     return Bunch(**params)
 
 

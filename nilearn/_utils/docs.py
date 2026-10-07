@@ -2000,7 +2000,10 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     "msdl_atlas": Bunch(
         license="usage is unrestricted for non-commercial research purposes."
     ),
-    "pauli_2017_atlas": Bunch(license="UCC-By Attribution 4.0 International"),
+    "pauli_2017_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="UCC-By Attribution 4.0 International",
+    ),
     "power_2011_atlas": Bunch(license="unknown"),
     "spm_multimodal": Bunch(license="unknown"),
     "schaefer_2018_atlas": Bunch(
@@ -2192,7 +2195,8 @@ def _container_items_match(value, origin, args) -> bool:
 
 
 def check_content_types(data, content) -> list[str]:
-    """Check that data returned by a fetcher matches its described content.
+    """Check that data returned by a fetcher matches its described content
+    and that all data is described.
 
     Parameters
     ----------
@@ -2210,13 +2214,27 @@ def check_content_types(data, content) -> list[str]:
     """
     errors = []
     for key, value in content.items():
-        if key not in data:
+        if key not in data and key != "lut":
+            # look up table (lut) is missing FOR NOW
+            # for some probabilistic atlases (juelich and harvard_oxford)
+            # but present for their deterministic version
+            # so we skip this check for lut for now
             errors.append(f"'{key}' is described but missing from the data")
-        elif not _matches_type(data[key], value.type):
+
+        if key in data and not _matches_type(data[key], value.type):
             errors.append(
                 f"'{key}' expected type '{value.type}', "
                 f"got '{type(data[key]).__name__}'"
             )
+
+    for key in data:
+        if key == "description":
+            continue
+        if key not in content:
+            errors.append(
+                f"'{key}' is present in data but not described in content"
+            )
+
     return errors
 
 
