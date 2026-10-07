@@ -14,6 +14,7 @@ HIGHLIGHTS
  | **Minimum supported versions of the following packages have been bumped up:**
  | - joblib -- 1.5.0
  | - scikit-learn -- 1.6.0
+ | - scipy -- 1.12.0
  |
 
 ..
@@ -62,6 +63,8 @@ Enhancements
 
 Changes
 -------
+
+- :bdg-secondary:`Maint` Bump the minimum supported version of scipy to 1.12.0 (:gh:`6626` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The ``return_label_maps`` parameter of :func:`~reporting.get_clusters_table` is deprecated and will be removed in version 0.17.0, when cluster label maps will always be returned together with the table (:gh:`6376` by `Mohammad Sadeghi Hardengi`_).
 

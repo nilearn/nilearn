@@ -10,7 +10,7 @@ from typing import Any, ClassVar
 import numpy as np
 from nibabel import Nifti1Image
 from scipy import sparse
-from sklearn import neighbors
+from sklearn import config_context, get_config, neighbors
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -134,8 +134,16 @@ def apply_mask_and_get_affinity(
     mask_coords = np.asarray(mask_coords).T
 
     clf = neighbors.NearestNeighbors(radius=radius)
-    A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
-    A = A.tolil()
+    # TODO (sklearn >= 1.9)
+    # use sklearn.config_context(sparse_interface="sparray") directly
+    if "sparse_interface" in get_config():
+        sparse_context = config_context(sparse_interface="sparray")
+    else:
+        sparse_context = contextlib.nullcontext()
+    with sparse_context:
+        A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
+    # older sklearn versions return a sparse matrix
+    A = sparse.lil_array(A)
     for i, nearest in enumerate(nearests):
         if nearest is None:
             continue
@@ -718,9 +726,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if self.allow_overlap:
             n_adjacent_spheres = np.asarray(adjacency.sum(axis=0)).ravel()
             scale = 1 / np.maximum(1, n_adjacent_spheres)
-            adjacency = adjacency.dot(sparse.diags(scale))
+            adjacency = adjacency @ sparse.diags_array(scale)
 
-        img = adjacency.T.dot(region_signals.T).T
+        img = (adjacency.T @ region_signals.T).T
 
         img = unmask(img, self.mask_img_)
 
