@@ -2106,20 +2106,14 @@ def type_to_rst(type_) -> str:
 
     origin = typing.get_origin(type_)
     if origin is None:
-        if type_.__module__ == "builtins":
+        module = type_.__module__
+        if module == "builtins":
             return f":obj:`{type_.__qualname__}`"
-        # use the top level package
+        # pandas documents its classes at the top level
         # (e.g. pandas.DataFrame and not pandas.core.frame.DataFrame)
-        package = type_.__module__.split(".")[0]
-        tmp = (
-            ".".join([str(x) for x in type_.__module__.split(".")])
-            + f".{type_.__qualname__}"
-        )
-        return (
-            f":class:`{package}.{type_.__qualname__}`"
-            if package == "pandas"
-            else f":class:`{tmp}`"
-        )
+        if module.split(".")[0] == "pandas":
+            module = "pandas"
+        return f":class:`{module}.{type_.__qualname__}`"
 
     args = typing.get_args(type_)
     if origin in (typing.Union, types.UnionType):
