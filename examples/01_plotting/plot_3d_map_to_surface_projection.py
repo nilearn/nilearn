@@ -166,7 +166,7 @@ from nilearn.datasets import fetch_atlas_surf_destrieux
 fsaverage = load_fsaverage("fsaverage5")
 destrieux = fetch_atlas_surf_destrieux()
 labels_img = SurfaceImage(
-    mesh=fsaverage.pial,
+    mesh=fsaverage.inflated,
     data={
         "left": destrieux.map_left,
         "right": destrieux.map_right,
