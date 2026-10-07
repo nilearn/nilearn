@@ -10,6 +10,7 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 import pytest
+from nibabel import Nifti1Image
 
 pytest.importorskip("matplotlib")
 import matplotlib as mpl
@@ -20,6 +21,12 @@ from nilearn.datasets import (
     load_sample_motor_activation_image,
 )
 from nilearn.glm._reporting_utils import _stat_map_to_png
+from nilearn.glm.first_level import (
+    FirstLevelModel,
+    make_first_level_design_matrix,
+)
+from nilearn.glm.second_level import SecondLevelModel
+from nilearn.glm.tests._testing import block_paradigm
 from nilearn.glm.thresholding import threshold_stats_img
 
 pytest.importorskip(
@@ -137,3 +144,47 @@ def test_stat_map_to_png_surface(
         )
 
     return fig
+
+
+@pytest.mark.mpl_image_compare
+def test_flm_plot_predicted_signal_and_residuals(
+    rng, shape_3d_default, affine_eye, img_3d_ones_eye
+):
+    """Test plot_predicted_signal_and_residuals with FirstLevelModel."""
+    n_frames = 512
+    t_r = 1.0
+    frame_times = np.linspace(0, (n_frames - 1) * t_r, n_frames)
+
+    dmtx = make_first_level_design_matrix(frame_times, events=block_paradigm())
+
+    images = Nifti1Image(
+        dataobj=rng.random((*shape_3d_default, n_frames)), affine=affine_eye
+    )
+
+    model = FirstLevelModel(
+        t_r=t_r, mask_img=img_3d_ones_eye, minimize_memory=False
+    )
+    model.fit(images, design_matrices=dmtx)
+
+    _, figs = model.plot_predicted_signal_and_residuals(coords=[(0, 0, 0)])
+    return figs[0]
+
+
+@pytest.mark.mpl_image_compare
+def test_slm_plot_predicted_signal_and_residuals(
+    rng, affine_eye, shape_3d_default
+):
+    """Test plot_predicted_signal_and_residuals with SecondLevelModel."""
+    images = []
+    for _ in range(500):
+        data = rng.random(shape_3d_default)
+        images.append(Nifti1Image(data, affine_eye))
+
+    design_matrix = pd.DataFrame([1] * len(images), columns=["intercept"])
+
+    model = SecondLevelModel(smoothing_fwhm=8.0, minimize_memory=False)
+    model = model.fit(images, design_matrix=design_matrix)
+    model.compute_contrast("intercept")
+
+    _, figs = model.plot_predicted_signal_and_residuals(coords=[(0, 0, 0)])
+    return figs[0]

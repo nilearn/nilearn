@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import pandas as pd
 from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
 from sklearn.utils import Bunch
@@ -14,7 +15,9 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn.glm._reporting_utils import (
     GLMReportMixin,
     get_runwise_dict,
@@ -25,7 +28,13 @@ from nilearn.glm._reporting_utils import (
 )
 from nilearn.image import check_niimg
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
-from nilearn.maskers import SurfaceMasker
+from nilearn.maskers import (
+    NiftiLabelsMasker,
+    NiftiSpheresMasker,
+    SurfaceLabelsMasker,
+    SurfaceMasker,
+)
+from nilearn.nilearn_typing import NiimgLike
 from nilearn.surface import SurfaceImage
 from nilearn.utils.tags import InputTags
 
@@ -553,6 +562,321 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             )
 
         return get_runwise_dict(contrasts, output, design_matrices)
+
+    def _plotting_pred_and_res(
+        self,
+        observed_ts,
+        predicted_ts,
+        residuals_ts,
+        title_ref: str | None = None,
+        figsize: tuple[int, int] = (10, 8),
+        close: bool = True,
+    ):
+        """Help plot observed vs predicted signal and residuals.
+
+        Parameters
+        ----------
+        observed_ts : array-like
+            The observed time series.
+        predicted_ts : array-like
+            The predicted time series.
+        residuals_ts : array-like
+            The residuals time series.
+        title_ref : str or None, default = None
+            Reference string for the title of the plots.
+        figsize : tuple of int, default = (10,8)
+            Size of the figure.
+        close : bool, default = True
+            Whether to close the figure after creation.
+
+        Returns
+        -------
+        fig : matplotlib.figure.Figure
+            The generated figure.
+        """
+        import matplotlib.pyplot as plt
+
+        max_abs_residual = np.max(np.abs(residuals_ts))
+        if max_abs_residual == 0:
+            max_abs_residual = 1
+
+        if self.__str__() == "Second Level Model":
+            fig, axes = plt.subplots(2, 1, figsize=figsize)
+
+            ax_for_resdiduals_hist = 1
+
+            vmin = np.min([np.min(observed_ts), np.min(predicted_ts)])
+            vmax = np.max([np.max(observed_ts), np.max(predicted_ts)])
+
+            # Plot observed vs predicted signal
+            axes[0].scatter(observed_ts, predicted_ts, color="blue")
+            axes[0].plot(
+                [vmin, vmax],
+                [vmin, vmax],
+                color="black",
+                linestyle="--",
+                alpha=0.7,
+            )
+            axes[0].set_title("Observed vs Predicted Signal")
+            axes[0].set_ylabel("Observed (AU)")
+            axes[0].set_xlabel("Predicted Signal (AU)")
+
+        else:
+            fig, axes = plt.subplots(3, 1, figsize=figsize)
+
+            ax_for_resdiduals_hist = 2
+
+            # Generate a time axis
+            n_timepoints = len(observed_ts)
+            time_axis = np.arange(n_timepoints)
+            x_label = "Time (TR)"
+
+            # Plot observed vs predicted signal
+            axes[0].plot(
+                time_axis, observed_ts, label="Observed", color="blue"
+            )
+            axes[0].plot(
+                time_axis, predicted_ts, label="Predicted", color="orange"
+            )
+            axes[0].axhline(y=0, color="black", linestyle="--", alpha=0.7)
+            axes[0].set_title("Observed vs Predicted Signal")
+            axes[0].set_ylabel("Signal Intensity (AU)")
+            axes[0].legend()
+            axes[0].set_xlabel(x_label)
+
+            # Plot residuals
+            axes[1].plot(
+                time_axis, residuals_ts, label="Residuals", color="red"
+            )
+            axes[1].axhline(y=0, color="black", linestyle="--", alpha=0.7)
+            axes[1].set_title("Residuals Over Time")
+            axes[1].set_ylabel("Residuals")
+            axes[1].set_xlabel(x_label)
+            axes[1].set_ylim(max_abs_residual * -1.1, max_abs_residual * 1.1)
+            axes[1].legend()
+
+        # Plot histogram of residuals
+        axes[ax_for_resdiduals_hist].hist(
+            residuals_ts, bins=30, color="green", alpha=0.7
+        )
+        axes[ax_for_resdiduals_hist].set_title("Histogram of Residuals")
+        axes[ax_for_resdiduals_hist].set_xlabel("Residuals")
+        axes[ax_for_resdiduals_hist].set_ylabel("Frequency")
+        axes[ax_for_resdiduals_hist].set_xlim(
+            max_abs_residual * -1.1, max_abs_residual * 1.1
+        )
+
+        if title_ref is not None:
+            fig.suptitle(f"{title_ref}", fontsize=16)
+
+        plt.tight_layout()
+        if close:
+            plt.close(fig)
+        return fig
+
+    def _get_predicted_signal_and_residuals(
+        self, coords=None, mask=None, radius: float = 3.0
+    ) -> tuple[list[pd.DataFrame], list[str]]:
+        """Return observed, predicted and residuals as a list of DataFrames.
+
+        Parameters
+        ----------
+        coords : :obj:`tuple` or :obj:`list` of :obj:`tuple` of coordinates, \
+                or None, default = None
+            Coordinates of the voxel(s) or region center(s).
+            Ignored if ``masker`` is provided.
+
+        mask : A Niimg-like, :class:`~nilearn.surface.SurfaceImage`, \
+               class:`~maskers.NiftiSpheresMasker`,  \
+               class:`~maskers.NiftiLabelsMasker`,  \
+               class:`~maskers.SurfaceLabelsMasker`,  \
+               or None, default = None
+            If a SurfaceImage is passed, it will be used
+            to instantiate a SurfaceLabelsMasker.
+            If a Niimglike is passed, it will be used
+            to instantiate a NiftiLabelsMasker.
+            If None, a NiftiSpheresMasker
+            centered on ``coords`` with radius ``radius`` is created.
+
+        radius : :obj:`float`, default = 3.0
+            Radius of the sphere if ``masker`` is None.
+
+        Returns
+        -------
+        dfs : :obj:`list` of :class:`pandas.DataFrame`
+            List of DataFrames containing the observed, predicted,
+            and residuals.
+            Each dataframe corresponds to a different region.
+
+        region_names : :obj:`list` of :obj:`str`
+            List of the region names.
+        """
+        check_is_fitted(self)
+
+        if self.minimize_memory:
+            raise ValueError(
+                "To plot predicted signal and residuals, "
+                "the GLM model object needs to store "
+                "there attributes. "
+                "To do so, set 'minimize_memory' to 'False' "
+                "when initializing the GLM model."
+            )
+
+        if mask is not None and coords is not None:
+            warnings.warn(
+                (
+                    "You provided both 'mask' and 'coords'. "
+                    "Only 'mask' will be used."
+                ),
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
+            coords = None
+
+        if mask is None:
+            if coords is None:
+                raise ValueError("Either 'mask' or 'coords' must be provided.")
+            # Allow a single coordinate tuple to be passed
+            if isinstance(coords[0], (int, float)):
+                coords = [coords]
+            masker = NiftiSpheresMasker(seeds=coords, radius=radius)
+        else:
+            check_is_of_allowed_type(
+                mask,
+                (
+                    NiimgLike,
+                    SurfaceImage,
+                    NiftiSpheresMasker,
+                    NiftiLabelsMasker,
+                    SurfaceLabelsMasker,
+                ),
+                "mask",
+            )
+            if isinstance(mask, NiimgLike):
+                if isinstance(self.mask_img_, SurfaceImage):
+                    raise TypeError(
+                        "The model was fitted with with surface data: "
+                        "'mask' must be a SurfaceImage."
+                    )
+                masker = NiftiLabelsMasker(mask)
+            elif isinstance(mask, SurfaceImage):
+                if isinstance(self.mask_img_, Nifti1Image):
+                    raise TypeError(
+                        "The model was fitted with with volume data: "
+                        "'mask' must be a NiimgLike."
+                    )
+                masker = SurfaceLabelsMasker(mask)
+            else:
+                masker = mask
+        if not masker.__sklearn_is_fitted__():
+            masker.fit()
+
+        # Get observed, predicted, and residual time series
+        # and extract time series for the observed, predicted, and residuals
+        y_pred = self.predicted_
+        resid = self.residuals_
+        if not isinstance(y_pred, (Nifti1Image, SurfaceImage)):
+            y_pred = y_pred[0]
+            resid = resid[0]
+        predicted = masker.transform(y_pred)
+        residuals = masker.transform(resid)
+        observed = predicted + residuals
+
+        dfs = []
+        region_names = masker.get_feature_names_out()
+
+        for i in range(len(region_names)):
+            tmp = {}
+            tmp[f"{region_names[i]}; observed"] = observed[:, i]
+            tmp[f"{region_names[i]}; predicted"] = predicted[:, i]
+            tmp[f"{region_names[i]}; residuals"] = residuals[:, i]
+            dfs.append(pd.DataFrame(tmp))
+
+        return dfs, region_names
+
+    def plot_predicted_signal_and_residuals(
+        self,
+        coords=None,
+        mask=None,
+        radius=3.0,
+        figsize=(10, 8),
+        show=False,
+    ):
+        """Plot the predicted and residuals for a small region.
+
+        The model must be fitted.
+
+        Parameters
+        ----------
+        coords : :obj:`tuple` or :obj:`list` of :obj:`tuple` of coordinates, \
+                or None, default = None
+            Coordinates of the voxel(s) or region center(s).
+            Ignored if ``masker`` is provided.
+
+        mask : A Niimg-like, :class:`~nilearn.surface.SurfaceImage`, \
+               class:`~maskers.NiftiSpheresMasker`,  \
+               class:`~maskers.NiftiLabelsMasker`,  \
+               class:`~maskers.SurfaceLabelsMasker`,  \
+               or None, default = None
+            If a SurfaceImage is passed, it will be used
+            to instantiate a SurfaceLabelsMasker.
+            If a Niimglike is passed, it will be used
+            to instantiate a NiftiLabelsMasker.
+            If None, a NiftiSpheresMasker
+            centered on ``coords`` with radius ``radius`` is created.
+
+        radius : :obj:`float`, default = 3.0
+            Radius of the sphere if ``masker`` is None.
+
+        figsize : :obj:`tuple`, default = (10, 8)
+            Size of the figure.
+
+        show : :obj:`bool`, default = False
+            Whether to display the figure.
+
+        Returns
+        -------
+        dfs : :obj:`list` of :class:`pandas.DataFrame`
+            List of DataFrames containing the observed, predicted,
+            and residuals values.
+            Each dataframe corresponds to a different region.
+
+        fig : list of matplotlib.figure.Figure or None
+            The generated figures.
+
+        Notes
+        -----
+        This method requires that the model was fitted with
+        ``minimize_memory=False``, since the voxelwise predicted signal
+        and residuals are only stored in that mode.
+
+        """
+        dfs, region_names = self._get_predicted_signal_and_residuals(
+            coords=coords, mask=mask, radius=radius
+        )
+        if not is_matplotlib_installed():
+            warnings.warn(
+                "Matplotlib is not installed. No figure will be returned.",
+                ImportWarning,
+                stacklevel=find_stack_level(),
+            )
+            return dfs, None
+
+        figs = []
+        for df, region_name in zip(dfs, region_names, strict=False):
+            fig = self._plotting_pred_and_res(
+                observed_ts=df[f"{region_name}; observed"].values,
+                predicted_ts=df[f"{region_name}; predicted"].values,
+                residuals_ts=df[f"{region_name}; residuals"].values,
+                title_ref=region_name if len(dfs) > 1 else None,
+                figsize=figsize,
+                close=not show,
+            )
+            if show:
+                fig.show()
+            figs.append(fig)
+
+        return dfs, figs
 
 
 def _generate_mask(
