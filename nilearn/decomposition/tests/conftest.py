@@ -6,6 +6,7 @@ from collections.abc import Generator
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from sklearn.exceptions import ConvergenceWarning
 
 from nilearn.maskers import (
     MultiNiftiMasker,
@@ -28,13 +29,11 @@ N_COMPONENTS = 4
 
 @pytest.fixture(autouse=True)
 def suppress_specific_decomposition_warning() -> Generator[None, None, None]:
-    """Ignore internal decoding warnings."""
+    """Ignore internal decomposition warnings."""
     with warnings.catch_warnings():
-        messages = "Objective did not converge.*|"
         warnings.filterwarnings(
             "ignore",
-            message=messages,
-            category=UserWarning,
+            category=ConvergenceWarning,
         )
         yield
 
