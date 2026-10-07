@@ -109,7 +109,7 @@ show()
 #
 # Afterwards, we'll use iter_img to loop through them following the same
 # formula as before.
-selected_volumes = index_img(rsn, slice(3, 5))
+selected_volumes = index_img(rsn.maps, slice(3, 5))
 
 # %%
 # If you're new to Python, one thing to note is that the slice constructor
