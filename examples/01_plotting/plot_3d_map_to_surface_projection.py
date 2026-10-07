@@ -17,22 +17,22 @@ and add contours of regions of interest using
 # -----------------------------------------------
 # You can create a :obj:`~nilearn.surface.SurfaceImage` object
 # from a nifti image by using the ``from_volume`` class method.
-# that will call indirectly :func:`~nilearn.surface.vol_to_surf`.
+# This triggers a call to :func:`~nilearn.surface.vol_to_surf`.
 
 # %%
-# Get a statistical map as nifti
+# Fetch a motor activation map as a nifti image.
 from nilearn.datasets import load_sample_motor_activation_image
 
 stat_img = load_sample_motor_activation_image()
 
 # %%
-# Get a cortical mesh
+# Get a cortical mesh.
 from nilearn.datasets import load_fsaverage
 
 fsaverage_meshes = load_fsaverage()
 
 # %%
-# Construct a surface image from a volume.
+# Extract a surface image from the volume.
 from nilearn.surface import SurfaceImage
 
 surface_image = SurfaceImage.from_volume(
@@ -42,7 +42,7 @@ surface_image = SurfaceImage.from_volume(
 
 # %%
 # Here, we load the curvature map
-# to use as background map some plots.
+# to use as background map on some plots.
 # We define a surface map whose value for a given :term:`vertex`
 # is 1 if the curvature is positive,
 # -1 if the curvature is negative.
@@ -60,10 +60,10 @@ for hemi, data in curv_sign.data.parts.items():
 # You can visualize the surface image using the function
 # :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
 # as the default plotting engine.
-from nilearn.plotting import plot_surf_stat_map
-
 # In this example we will plot both hemispheres, but you can choose one of
 # "left", "right" or "both".
+from nilearn.plotting import plot_surf_stat_map
+
 hemi = "both"
 
 fig = plot_surf_stat_map(
@@ -78,11 +78,11 @@ fig.show()
 
 # %%
 # If you have a recent version of Nilearn (>=0.8.2),
-# and if you have ``plotly`` installed,
-# you can easily configure :func:`~nilearn.plotting.plot_surf_stat_map`
+# and if ``plotly`` is installed
+# (see the :ref:`installation instructions <quickstart>`)
+# you can configure :func:`~nilearn.plotting.plot_surf_stat_map`
 # to use ``plotly`` instead of ``matplotlib``:
 
-# If plotly is not installed, use matplotlib
 from nilearn._utils.helpers import is_plotly_installed
 
 engine = "plotly" if is_plotly_installed() else "matplotlib"
@@ -103,17 +103,18 @@ figure.show()
 
 # Uncomment the line below to have interactive
 # visualization in the browser
+#
 # figure.show(renderer="browser")
 
 # %%
-# When using ``matplolib`` as the plotting engine, a standard
+# When using ``matplotlib`` as the plotting engine, a standard
 # :class:`matplotlib.figure.Figure` is returned.
 # With ``plotly`` as the plotting engine,
 # a custom :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
 # is returned which provides a similar API
 # to the :class:`~matplotlib.figure.Figure`.
 # For example, you can save a static version of the figure to file
-# (this option requires to have ``kaleido`` installed).
+# (this option requires to have ``kaleido`` installed)
 # as we would do with a matplotlib figure.
 #
 # .. admonition:: Google Chrome needed
@@ -159,8 +160,9 @@ plot_stat_map(
 )
 
 # %%
-# Use an atlas and choose regions to outline
-# ------------------------------------------
+# Extracting region contours with an atlas
+# ----------------------------------------
+# We first load the Destrieux atlas.
 from nilearn.datasets import fetch_atlas_surf_destrieux
 
 fsaverage = load_fsaverage("fsaverage5")
@@ -173,13 +175,13 @@ destrieux_atlas = SurfaceImage(
     },
 )
 
-# these are the regions we want to outline
+# %%
+# We select the regions we want to outline and
+# get indices in atlas for these labels.
 regions_dict = {
     "G_postcentral": "Postcentral gyrus",
     "G_precentral": "Precentral gyrus",
 }
-
-# get indices in atlas for these labels
 regions_indices = [
     np.where(np.array(destrieux.labels) == region)[0][0]
     for region in regions_dict
@@ -222,6 +224,7 @@ elif engine == "plotly":
     )
     # Uncomment the line below to have interactive
     # visualization in the browser
+    #
     # figure.show(renderer="browser")
 
 figure.show()
@@ -311,6 +314,7 @@ view = view_surf(
     engine="plotly",
 )
 
+# %%
 # In a notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
 view
@@ -318,10 +322,11 @@ view
 # If plotly is not installed or the code is run in script mode,
 # it is still possible to have interactive visualization in the
 # browser by uncommenting the below line.
+#
 # view.open_in_browser()
 
 # %%
-# Now let's see it with niivue.
+# Now let's visualize it with niivue.
 view = view_surf(
     surf_mesh=fsaverage_meshes["inflated"],
     surf_map=surface_image,
@@ -332,10 +337,11 @@ view = view_surf(
     engine="niivue",
 )
 view
+
 # view.open_in_browser()
 
 # %%
-# We don't need to do the projection ourselves, we can use
+# If we don't need to do the projection ourselves, we can use
 # :func:`~nilearn.plotting.view_img_on_surf`:
 from nilearn.plotting import view_img_on_surf
 
@@ -346,15 +352,16 @@ view
 # If plotly is not installed or the code is run in script mode,
 # it is still possible to have interactive visualization in the
 # browser by uncommenting the below line.
+#
 # view.open_in_browser()
 
 # %%
-# Impact of plot parameters on visualization
-# ------------------------------------------
+# Impact of projection parameters on visualization
+# ------------------------------------------------
 # You can specify arguments to be passed on to the function
 # :func:`~nilearn.surface.vol_to_surf` using `vol_to_surf_kwargs`
 # This allows fine-grained control of how the input 3D image
-# is resampled and interpolated -
+# is resampled and interpolated ---
 # for example if you are viewing a volumetric atlas,
 # you would want to avoid averaging the labels between neighboring regions.
 # Using nearest-neighbor interpolation with zero radius will achieve this.
@@ -380,6 +387,7 @@ view
 # If plotly is not installed or the code is run in script mode,
 # it is still possible to have interactive visualization in the
 # browser by uncommenting the below line.
+#
 # view.open_in_browser()
 
 # sphinx_gallery_dummy_images=1
