@@ -589,54 +589,52 @@ def check_set_output(estimator_orig) -> None:
     if isinstance(estimator, NiftiSpheresMasker):
         mask_img = new_img_like(img, np.ones(img.shape[:3]))
         estimator.mask_img = mask_img
+
     estimator = fit_estimator(estimator)
-
     signal = estimator.transform(img)
-
-    if isinstance(estimator, _BaseDecomposition):
-        signal = signal[0]
-
-    assert isinstance(signal, np.ndarray)
 
     to_inverse_transform = {
         "default": signal,
         "pandas": pd.DataFrame(np.atleast_2d(signal)),
         "polars": pl.from_numpy(np.atleast_2d(signal)),
     }
-    results = {}
 
-    # check inverse_transform always gives the expected output type
-    if hasattr(estimator, "inverse_transform"):
-        for k, v in to_inverse_transform.items():
-            r = estimator.inverse_transform(v)
-            assert (
-                (accepts_volume(estimator) and isinstance(r, Nifti1Image))
-                or (accepts_surface(estimator) and isinstance(r, SurfaceImage))
-                or isinstance(r, np.ndarray)
-            )
-            results[k] = r
+    output_types = {
+        "default": np.ndarray,
+        "pandas": pd.DataFrame,
+        "polars": pl.DataFrame,
+    }
 
-    # check inverse_transform always gives the same result
-    for k in ["pandas", "polars"]:
-        if accepts_volume(estimator):
-            check_imgs_equal(results[k], results["default"])
-        elif accepts_surface(estimator):
-            assert_surface_image_close(results[k], results["default"])
-        else:
-            assert_array_equal(results[k], results["default"])
-
-    # transform output to "pandas" or  "polars"
-    for output, expected_type in zip(
-        ["pandas", "polars"], [pd.DataFrame, pl.DataFrame], strict=False
-    ):
-        estimator.set_output(transform=output)
+    # transform output to "default", "pandas" and  "polars"
+    for output, expected_type in output_types.items():
+        if output != "default":
+            estimator.set_output(transform=output)
         signal = estimator.transform(img)
-
+        # check that returned signal is of expected type
         assert isinstance(signal, expected_type)
 
         if hasattr(estimator, "inverse_transform"):
+            # check that inverse_transform always gives the same result
+            # independent of output type
+            r_signal = estimator.inverse_transform(signal)
             for v in to_inverse_transform.values():
-                estimator.inverse_transform(v)
+                r = estimator.inverse_transform(v)
+                assert (
+                    (
+                        accepts_volume(estimator)
+                        and isinstance(r, Nifti1Image)
+                       and check_imgs_equal(r, r_signal)
+                    )
+                    or (
+                        accepts_surface(estimator)
+                        and isinstance(r, SurfaceImage)
+                       and assert_surface_image_close(r, r_signal) is None
+                    )
+                    or (
+                        isinstance(r, np.ndarray)
+                       and assert_array_equal(r, r_signal) is None
+                    )
+                )
 
     # check on 1D image for estimators that accepts surface
     if accepts_surface(estimator_orig):
