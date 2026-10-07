@@ -2024,6 +2024,7 @@ def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
     # for the eval below
     # to turn string into an actual type
     import nibabel  # noqa : F401
+    import numpy as np  # noqa : F401
 
     import nilearn as nil
 
