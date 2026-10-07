@@ -1,0 +1,10 @@
+{
+    "labels": {
+        "type": "list[str]",
+        "desc": "List of the names of the regions."
+    },
+    "maps": {
+        "type": "str",
+        "desc": "Fullpath to 3D nifti file containing the :class:`~nibabel.nifti1.Nifti1Image` defining the cortical ROIs, lateralized or not. The image has shape ``(76, 93, 76)``, and contains integer values which can be interpreted as the indices in the list of labels."
+    }
+}

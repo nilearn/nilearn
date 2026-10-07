@@ -1972,6 +1972,10 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         license="unknown",
     ),
     "allen_2011_atlas": Bunch(license="unknown"),
+    "destrieux_2009_atlas": Bunch(
+        license="unknown",
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+    ),
     "difumo_atlas": Bunch(
         license="usage is unrestricted for non-commercial research purposes.",
     ),
@@ -2000,6 +2004,10 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         license="unknown",
     ),
     "smith_2009_atlas": Bunch(license="unknown"),
+    "surf_destrieux_atlas": Bunch(
+        license="unknown",
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+    ),
     "talairach_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
         license="unknown",

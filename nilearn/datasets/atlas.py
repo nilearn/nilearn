@@ -160,6 +160,9 @@ def fetch_atlas_difumo(
     functional signals with different dimensionalities (64, 128,
     256, 512, and 1024).
 
+    For more information,
+    see the :ref:`dataset description <difumo_atlas>`.
+
     .. nilearn_versionadded:: 0.7.1
 
     Notes
@@ -375,8 +378,8 @@ def fetch_atlas_destrieux_2009(
     """Download and load the Destrieux cortical \
     :term:`deterministic atlas<Deterministic atlas>` (dated 2009).
 
-    See :footcite:t:`Fischl2004`,
-    and :footcite:t:`Destrieux2009`.
+    For more information,
+    see the :ref:`dataset description <destrieux_2009_atlas>`.
 
     .. note::
 
@@ -390,9 +393,13 @@ def fetch_atlas_destrieux_2009(
     lateralized : :obj:`bool`, default=True
         If True, returns an atlas with distinct regions for right and left
         hemispheres.
+
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -400,27 +407,15 @@ def fetch_atlas_destrieux_2009(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'maps': :obj:`str`
-            path to nifti file containing the
-            :class:`~nibabel.nifti1.Nifti1Image` defining the cortical
-            ROIs, lateralized or not. The image has shape ``(76, 93, 76)``,
-            and contains integer values which can be interpreted as the
-            indices in the list of labels.
+        %(destrieux_2009_atlas)s
 
-        - %(labels)s
+    Notes
+    -----
+    %(fetcher_note)s
 
-        - %(description)s
-
-        - %(lut)s
-
-        - %(template)s
-
-        - %(atlas_type)s
-
-    References
-    ----------
-    .. footbibliography::
-
+    See Also
+    --------
+    nilearn.datasets.fetch_atlas_surf_destrieux
     """
     check_params(locals())
 
@@ -439,7 +434,7 @@ def fetch_atlas_destrieux_2009(
         ("destrieux2009.rst", url, opts),
     ]
 
-    dataset_name = "destrieux_2009"
+    dataset_name = "destrieux_2009_atlas"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
@@ -450,7 +445,7 @@ def fetch_atlas_destrieux_2009(
     return Atlas(
         maps=files_[1],
         labels=labels.name.to_list(),
-        description=Path(files_[2]).read_text(encoding="utf-8"),
+        description=Description.from_registry(dataset_name),
         atlas_type=atlas_type,
         lut=pd.read_csv(files_[0]),
         template="fsaverage",
@@ -472,7 +467,9 @@ def fetch_atlas_harvard_oxford(
 
     This function can also load Harvard Oxford atlas from your local directory
     specified by your FSL installed path given in `data_dir` argument.
-    See documentation for details.
+
+    For more information,
+    see the :ref:`dataset description <harvard_oxford_atlas>`.
 
     .. note::
 
@@ -645,7 +642,9 @@ def fetch_atlas_juelich(
 
     This function can also load Juelich atlas from your local directory
     specified by your FSL installed path given in `data_dir` argument.
-    See documentation for details.
+
+    For more information,
+    see the :ref:`dataset description <juelich_atlas>`.
 
     .. nilearn_versionadded:: 0.8.1
 
@@ -1830,18 +1829,22 @@ def fetch_atlas_surf_destrieux(
     """Download and load Destrieux et al, 2010 cortical \
     :term:`Deterministic atlas`.
 
-    See :footcite:t:`Destrieux2010`.
-
     This atlas returns 76 labels per hemisphere based on sulco-gryal patterns
     as distributed with Freesurfer in fsaverage5 surface space.
+
+    For more information,
+    see the :ref:`dataset description <surf_destrieux_atlas>`.
 
     .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -1849,33 +1852,38 @@ def fetch_atlas_surf_destrieux(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - %(labels)s
-
-        - 'map_left': :class:`numpy.ndarray` of :obj:`int`
-            Maps each vertex on the left hemisphere
-            of the fsaverage5 surface to its index
-            into the list of label name.
-
-        - 'map_right': :class:`numpy.ndarray` of :obj:`int`
-            Maps each :term:`vertex` on the right hemisphere
-            of the fsaverage5 surface to its index
-            into the list of label name.
-
-        - %(description)s
-
-        - %(lut)s
-
-        - %(template)s
-
-        - %(atlas_type)s
+        - %(surf_destrieux_atlas_content)s
 
     See Also
     --------
     nilearn.datasets.fetch_surf_fsaverage
+    nilearn.datasets.fetch_atlas_destrieux_2009
 
-    References
-    ----------
-    .. footbibliography::
+    Notes
+    -----
+    %(fetcher_note)s
+
+    Examples
+    --------
+    The code snippet below shows how to use this dataset
+    to generate a :class:`~nilearn.surface.SurfaceImage`.
+
+    .. code-block::
+
+        from nilearn.datasets import load_fsaverage, fetch_atlas_surf_destrieux
+        from nilearn.surface import SurfaceImage
+
+        fsaverage = load_fsaverage("fsaverage5")
+        destrieux = fetch_atlas_surf_destrieux()
+        labels_img = SurfaceImage(
+            mesh=fsaverage.pial,
+            data={
+                "left": destrieux.map_left,
+                "right": destrieux.map_right,
+            },
+        )
+    )
+
 
     """
     check_params(locals())
@@ -1885,8 +1893,7 @@ def fetch_atlas_surf_destrieux(
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/"
 
-    dataset_name = "destrieux_surface"
-    fdescr = get_dataset_descr(dataset_name)
+    dataset_name = "destrieux_surface_atlas"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
@@ -1926,7 +1933,7 @@ def fetch_atlas_surf_destrieux(
         labels=labels,
         map_left=annot_left[0],
         map_right=annot_right[0],
-        description=fdescr,
+        description=Description.from_registry(dataset_name),
         lut=lut,
         atlas_type=atlas_type,
         template="fsaverage",
@@ -2036,7 +2043,6 @@ def fetch_atlas_talairach(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 

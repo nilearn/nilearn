@@ -58,7 +58,7 @@ destrieux = fetch_atlas_surf_destrieux()
 # Create a surface image instance
 # with the Destrieux parcellation
 destrieux_atlas = SurfaceImage(
-    mesh=fsaverage_meshes["pial"],
+    mesh=fsaverage_meshes.pial,
     data={
         "left": destrieux.map_left,
         "right": destrieux.map_right,
