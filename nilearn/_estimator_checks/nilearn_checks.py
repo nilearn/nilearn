@@ -298,54 +298,26 @@ def fit_estimator(
             return estimator.fit(X)
 
 
-def skip_if_class(classes, message=""):
-    """Skip a check if estimator is an instance of one of the classes
-    listed.
-    """
+def skip_if(*conditions):
+    """Skip a check if estimator satisfies one of the conditions."""
 
     def decorator(check_func):
 
         @wraps(check_func)
         def wrapper(estimator):
-            if not isinstance(estimator, tuple(classes)):
-                return check_func(estimator)
-            else:
-                print(
-                    f"{check_func.__name__} does not apply to class "
-                    f"{estimator.__class__.__name__}"
-                )
-                if message != "":
-                    print(message)
-                return estimator
-
-        return wrapper
-
-    return decorator
-
-
-def skip_if_attr(attr, if_has_attr=True):
-    """Skip a check if either ``if_has_attr`` is ``True`` and estimator has
-    attribute ``attr`` or ``if_has_attr`` is ``False`` and estimator does not
-    have attribute ``attr``.
-    """
-
-    def decorator(check_func):
-
-        @wraps(check_func)
-        def wrapper(estimator):
-            condition = hasattr(estimator, attr)
-            if not if_has_attr:
-                condition = not condition
-            if condition:
-                print(
-                    f"{check_func.__name__} does not apply to class "
-                    f"{estimator.__class__.__name__} as it "
-                    f"{'has' if if_has_attr else 'does not have'} attribute "
-                    f"{attr}"
-                )
-                return estimator
-            else:
-                return check_func(estimator)
+            for condition in conditions:
+                if isinstance(condition, tuple):
+                    condition, reason = condition
+                else:
+                    reason = ""
+                if condition(estimator):
+                    print(
+                        f"\n'{check_func.__name__}' does not apply to class "
+                        f"'{estimator.__class__.__name__}'. "
+                        f"{reason}"
+                    )
+                    return estimator
+            return check_func(estimator)
 
         return wrapper
 
@@ -445,11 +417,11 @@ def check_doc_parameters_at_init(estimator) -> None:
 
 
 @xfail_if_not_gil()
-@skip_if_class(
-    classes=[GroupSparseCovarianceCV, ReNA],
-    message=(
+@skip_if(
+    (
+        lambda e: isinstance(e, (GroupSparseCovarianceCV, ReNA)),
         "fit_estimator should be adapted to handle ReNA and "
-        "GroupSparseCovarianceCV"
+        "GroupSparseCovarianceCV",
     ),
 )
 def check_doc_attributes_after_fit(estimator) -> None:
@@ -562,8 +534,13 @@ def check_verbose(estimator) -> None:
     assert default_verbose == 0
 
 
-@skip_if_class(classes=[SearchLight, ReNA])
-@skip_if_attr(attr="transform", if_has_attr=False)
+@skip_if(
+    lambda e: isinstance(e, (SearchLight, ReNA)),
+    (
+        lambda e: not hasattr(e, "transform"),
+        "'transform' attribute is not implemented.",
+    ),
+)
 def check_set_output(estimator_orig) -> None:
     """Check that set_output can be used.
 
@@ -613,28 +590,27 @@ def check_set_output(estimator_orig) -> None:
         # check that returned signal is of expected type
         assert isinstance(signal, expected_type)
 
-        if hasattr(estimator, "inverse_transform"):
-            # check that inverse_transform always gives the same result
-            # independent of output type
-            r_signal = estimator.inverse_transform(signal)
-            for v in to_inverse_transform.values():
-                r = estimator.inverse_transform(v)
-                assert (
-                    (
-                        accepts_volume(estimator)
-                        and isinstance(r, Nifti1Image)
-                       and check_imgs_equal(r, r_signal)
-                    )
-                    or (
-                        accepts_surface(estimator)
-                        and isinstance(r, SurfaceImage)
-                       and assert_surface_image_close(r, r_signal) is None
-                    )
-                    or (
-                        isinstance(r, np.ndarray)
-                       and assert_array_equal(r, r_signal) is None
-                    )
+        # check that inverse_transform always gives the same result
+        # independent of output type
+        r_signal = estimator.inverse_transform(signal)
+        for v in to_inverse_transform.values():
+            r = estimator.inverse_transform(v)
+            assert (
+                (
+                    accepts_volume(estimator)
+                    and isinstance(r, Nifti1Image)
+                    and check_imgs_equal(r, r_signal)
                 )
+                or (
+                    accepts_surface(estimator)
+                    and isinstance(r, SurfaceImage)
+                    and assert_surface_image_close(r, r_signal) is None
+                )
+                or (
+                    isinstance(r, np.ndarray)
+                    and assert_array_equal(r, r_signal) is None
+                )
+            )
 
     # check on 1D image for estimators that accepts surface
     if accepts_surface(estimator_orig):
@@ -644,8 +620,6 @@ def check_set_output(estimator_orig) -> None:
         for output in ["default", "pandas", "polars"]:
             estimator.set_output(transform=output)
             signal = estimator.transform(_surf_mask_1d())
-
-        if hasattr(estimator, "inverse_transform"):
             estimator.inverse_transform(signal)
 
 
@@ -1965,7 +1939,12 @@ def check_img_estimator_n_elements(estimator_orig) -> None:
 
 
 @xfail_if_not_gil()
-@skip_if_attr("standardize", if_has_attr=False)
+@skip_if(
+    (
+        lambda e: not hasattr(e, "standardize"),
+        "'standardize' attribute is not implemented.",
+    )
+)
 def check_img_estimator_standardization(estimator_orig) -> None:
     """Check non-masker estimator with several value for standardize.
 
@@ -3140,7 +3119,12 @@ def check_masker_inverse_transform(estimator_orig) -> None:
 
 
 @xfail_if_not_gil()
-@skip_if_attr(attr="resampling_target", if_has_attr=False)
+@skip_if(
+    (
+        lambda e: not hasattr(e, "resampling_target"),
+        "'resampling_target' attribute is not implemented.",
+    )
+)
 def check_masker_transform_resampling(estimator_orig) -> None:
     """Check transform / inverse_transform for maskers with resampling.
 
