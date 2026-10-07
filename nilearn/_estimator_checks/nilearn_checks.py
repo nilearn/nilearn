@@ -549,8 +549,6 @@ def check_set_output(estimator_orig) -> None:
     - can transform to polars or pandas dataframe
     - can inverse_transform from numpy array, or pandas / polars dataframes
       and give the same results
-    - check that estimators that work with surface can deal with 1D image
-
 
     Regression test for https://github.com/nilearn/nilearn/issues/5969
     """
@@ -612,15 +610,31 @@ def check_set_output(estimator_orig) -> None:
                 )
             )
 
-    # check on 1D image for estimators that accepts surface
-    if accepts_surface(estimator_orig):
-        estimator = clone(estimator_orig)
-        estimator = fit_estimator(estimator)
 
-        for output in ["default", "pandas", "polars"]:
-            estimator.set_output(transform=output)
-            signal = estimator.transform(_surf_mask_1d())
-            estimator.inverse_transform(signal)
+@skip_if(
+    lambda e: isinstance(
+        e, (SearchLight, ReNA, _BaseDecomposition, ConnectivityMeasure)
+    ),
+    (
+        lambda e: not hasattr(e, "transform"),
+        "'transform' attribute is not implemented.",
+    ),
+    (
+        lambda e: not accepts_surface(e),
+        "Only tests estimators that accept surface image.",
+    ),
+)
+def check_set_output_accepts_surface(estimator_orig) -> None:
+    """Check that set_output can be used with estimators that accept surface
+    image and can deal with 1D image.
+    """
+    estimator = clone(estimator_orig)
+    estimator = fit_estimator(estimator)
+
+    for output in ["default", "pandas", "polars"]:
+        estimator.set_output(transform=output)
+        signal = estimator.transform(_surf_mask_1d())
+        estimator.inverse_transform(signal)
 
 
 # ------------------ GENERIC IMG ESTIMATORS CHECKS ------------------

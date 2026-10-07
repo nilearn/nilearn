@@ -73,6 +73,7 @@ from nilearn._estimator_checks.nilearn_checks import (
     check_nifti_masker_generate_report_after_fit_with_only_mask,
     check_nilearn_methods_sample_order_invariance,
     check_set_output,
+    check_set_output_accepts_surface,
     check_supervised_img_estimator_y_no_nan,
     check_surface_masker_fit_transform_errors,
     check_surface_masker_list_surf_images_no_mask,
@@ -98,6 +99,7 @@ COMMON_CHECKS = [
     check_doc_attributes_after_fit,
     check_doc_link,
     check_set_output,
+    check_set_output_accepts_surface,
     check_verbose,
 ]
 
