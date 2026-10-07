@@ -3,6 +3,8 @@
 Version 0.15.0dev
 =================
 
+.. _v0-15-0-highlights:
+
 HIGHLIGHTS
 ----------
 
@@ -27,6 +29,8 @@ HIGHLIGHTS
     - :bdg-dark:`Code`
 
 
+.. _v0-15-0-fixes:
+
 Fixes
 -----
 
@@ -50,6 +54,8 @@ Fixes
 - :bdg-dark:`Code` Fix dataset downloads failing with ``Only one live display may be active at once`` after a failed download when `rich <https://github.com/Textualize/rich>`_ is installed (:gh:`6624` by `Rémi Gau`_).
 
 
+.. _v0-15-0-enhancements:
+
 Enhancements
 ------------
 
@@ -64,6 +70,8 @@ Enhancements
 - :bdg-success:`API` :class:`~nilearn.utils.InputTags` is now part of the public API in :mod:`nilearn.utils`, so that third-party estimators can declare whether they accept Nifti and / or surface images (:gh:`6563` by `Aniket Singh Yadav`_).
 
 - :bdg-dark:`Code` Name columns of signals extracted as dataframes by :meth:`~maskers.NiftiSpheresMasker.transform` (:gh:`6599` by `Rémi Gau`_).
+
+.. _v0-15-0-changes:
 
 Changes
 -------

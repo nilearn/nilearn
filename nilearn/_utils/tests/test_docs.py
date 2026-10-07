@@ -24,7 +24,6 @@ from nilearn.datasets._utils import (
     [
         (str, ":obj:`str`"),
         ("str", "str"),
-        ("nibabel.nifti1.Nifti1Image", ":class:`nibabel.nifti1.Nifti1Image`"),
         (pd.DataFrame, ":class:`pandas.DataFrame`"),
         (list[str], ":obj:`list` of :obj:`str`"),
         (
@@ -134,11 +133,8 @@ def test_check_content_types():
 
 
 def test_content_to_rst():
-
+    """Ensure that Nifti1Image and pandas.DataFrame are properly printed."""
     rst = content_to_rst(name="talairach_atlas", indent="   ")
 
-    assert (
-        rst[0:60]
-        == """
-   - ``atlas_type``: :obj:`str`.  Type of atlas. See :term:"""
-    )
+    assert "- ``maps``: :class:`nibabel.nifti1.Nifti1Image`" in rst
+    assert "- ``lut``: :class:`pandas.DataFrame`" in rst

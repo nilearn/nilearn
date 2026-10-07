@@ -9,6 +9,8 @@ Version 0.2.5.1
 This is a bugfix release.
 The new minimum required version of ``scikit-learn`` is ``0.14.1``.
 
+.. _v0-2-5-1-changes:
+
 Changes
 -------
 
@@ -16,12 +18,16 @@ Changes
 
 - :bdg-dark:`Code` ``Scikit-learn`` validation tools have been imported and are now used to check consistency of input data, in SpaceNet for example.
 
+.. _v0-2-5-1-new:
+
 New
 ---
 
 - :bdg-success:`API` Add an option to select only off-diagonal elements in function ``sym_to_vec``. Also, the scaling of matrices is modified: we divide the diagonal by ``sqrt(2)`` instead of multiplying the off-diagonal elements.
 
 - :bdg-primary:`Doc` Connectivity examples rely on :class:`~connectome.ConnectivityMeasure`.
+
+.. _v0-2-5-1-fixes:
 
 Fixes
 -----
@@ -39,6 +45,8 @@ Version 0.2.5
 The ``0.2.5`` release includes plotting for connectomes and glass brain with
 hemisphere-specific projection, as well as more didactic examples and
 improved documentation.
+
+.. _v0-2-5-new:
 
 New
 ---
@@ -58,6 +66,8 @@ New
 - :bdg-success:`API` New function :func:`~datasets.get_data_dirs` to check where nilearn downloads data.
 
 - :bdg-dark:`Code` Function :func:`~datasets.fetch_localizer_contrasts` can now download a specific list of subjects rather than a range of subjects.
+
+.. _v0-2-5-contributors:
 
 Contributors
 ------------

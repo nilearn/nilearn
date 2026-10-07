@@ -2099,8 +2099,6 @@ def content_to_rst(name: str, indent="") -> str:
 
 def type_to_rst(type_) -> str:
     """Render a type (or type hint) as restructured text."""
-    if str(type_) == "nibabel.nifti1.Nifti1Image":
-        type_ = f":class:`{type_!s}`"
     if isinstance(type_, str):
         return type_
     if type_ is None or type_ is type(None):
@@ -2113,10 +2111,14 @@ def type_to_rst(type_) -> str:
         # use the top level package
         # (e.g. pandas.DataFrame and not pandas.core.frame.DataFrame)
         package = type_.__module__.split(".")[0]
+        tmp = (
+            ".".join([str(x) for x in type_.__module__.split(".")])
+            + f".{type_.__qualname__}"
+        )
         return (
             f":class:`{package}.{type_.__qualname__}`"
             if package == "pandas"
-            else f":class:`{type_!s}`"
+            else f":class:`{tmp}`"
         )
 
     args = typing.get_args(type_)
