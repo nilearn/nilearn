@@ -353,6 +353,123 @@ def xfail_if_not_gil(classes=None):
 # ------------------ GENERIC CHECKS ------------------
 
 
+def check_verbose(estimator) -> None:
+    """Check verbose.
+
+    All estimators should have:
+    - verbose set to 0
+    - a default verbose == 0
+    """
+    assert estimator.verbose == 0
+
+    signature = dict(**inspect.signature(estimator.__init__).parameters)
+    default_verbose = signature["verbose"].default
+    assert default_verbose == 0
+
+
+@skip_if(
+    lambda e: isinstance(e, (SearchLight, ReNA)),
+    (
+        lambda e: not hasattr(e, "transform"),
+        "'transform' attribute is not implemented.",
+    ),
+)
+def check_set_output(estimator_orig) -> None:
+    """Check that set_output can be used.
+
+    Check that:
+    - by default we transform to numpy array
+    - can transform to polars or pandas dataframe
+    - can inverse_transform from numpy array, or pandas / polars dataframes
+      and give the same results
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5969
+    """
+    if isinstance(estimator_orig, (_BaseDecomposition, ConnectivityMeasure)):
+        for output in ["pandas", "polars"]:
+            with pytest.raises(NotImplementedError):
+                estimator_orig.set_output(transform=output)
+        return
+
+    # default
+    estimator = clone(estimator_orig)
+    img, _ = generate_data_to_fit(estimator)
+    if isinstance(estimator, NiftiSpheresMasker):
+        mask_img = new_img_like(img, np.ones(img.shape[:3]))
+        estimator.mask_img = mask_img
+
+    estimator = fit_estimator(estimator)
+    signal = estimator.transform(img)
+
+    to_inverse_transform = {
+        "default": signal,
+        "pandas": pd.DataFrame(np.atleast_2d(signal)),
+        "polars": pl.from_numpy(np.atleast_2d(signal)),
+    }
+
+    output_types = {
+        "default": np.ndarray,
+        "pandas": pd.DataFrame,
+        "polars": pl.DataFrame,
+    }
+
+    # transform output to "default", "pandas" and  "polars"
+    for output, expected_type in output_types.items():
+        if output != "default":
+            estimator.set_output(transform=output)
+        signal = estimator.transform(img)
+        # check that returned signal is of expected type
+        assert isinstance(signal, expected_type)
+
+        # check that inverse_transform always gives the same result
+        # independent of output type
+        r_signal = estimator.inverse_transform(signal)
+        for v in to_inverse_transform.values():
+            r = estimator.inverse_transform(v)
+            assert (
+                (
+                    accepts_volume(estimator)
+                    and isinstance(r, Nifti1Image)
+                    and check_imgs_equal(r, r_signal)
+                )
+                or (
+                    accepts_surface(estimator)
+                    and isinstance(r, SurfaceImage)
+                    and assert_surface_image_close(r, r_signal) is None
+                )
+                or (
+                    isinstance(r, np.ndarray)
+                    and assert_array_equal(r, r_signal) is None
+                )
+            )
+
+
+@skip_if(
+    lambda e: isinstance(
+        e, (SearchLight, ReNA, _BaseDecomposition, ConnectivityMeasure)
+    ),
+    (
+        lambda e: not hasattr(e, "transform"),
+        "'transform' attribute is not implemented.",
+    ),
+    (
+        lambda e: not accepts_surface(e),
+        "Only tests estimators that accept surface image.",
+    ),
+)
+def check_set_output_accepts_surface(estimator_orig) -> None:
+    """Check that set_output can be used with estimators that accept surface
+    image and can deal with 1D image.
+    """
+    estimator = clone(estimator_orig)
+    estimator = fit_estimator(estimator)
+
+    for output in ["default", "pandas", "polars"]:
+        estimator.set_output(transform=output)
+        signal = estimator.transform(_surf_mask_1d())
+        estimator.inverse_transform(signal)
+
+
 @xfail_if_not_gil()
 def check_doc_parameters_at_init(estimator) -> None:
     """Check that parameters are documented.
@@ -518,123 +635,6 @@ def check_doc_link(estimator_orig) -> None:
         f"Doc link '{doc_link}' does not match expected pattern "
         f"'{expected_pattern}'"
     )
-
-
-def check_verbose(estimator) -> None:
-    """Check verbose.
-
-    All estimators should have:
-    - verbose set to 0
-    - a default verbose == 0
-    """
-    assert estimator.verbose == 0
-
-    signature = dict(**inspect.signature(estimator.__init__).parameters)
-    default_verbose = signature["verbose"].default
-    assert default_verbose == 0
-
-
-@skip_if(
-    lambda e: isinstance(e, (SearchLight, ReNA)),
-    (
-        lambda e: not hasattr(e, "transform"),
-        "'transform' attribute is not implemented.",
-    ),
-)
-def check_set_output(estimator_orig) -> None:
-    """Check that set_output can be used.
-
-    Check that:
-    - by default we transform to numpy array
-    - can transform to polars or pandas dataframe
-    - can inverse_transform from numpy array, or pandas / polars dataframes
-      and give the same results
-
-    Regression test for https://github.com/nilearn/nilearn/issues/5969
-    """
-    if isinstance(estimator_orig, (_BaseDecomposition, ConnectivityMeasure)):
-        for output in ["pandas", "polars"]:
-            with pytest.raises(NotImplementedError):
-                estimator_orig.set_output(transform=output)
-        return
-
-    # default
-    estimator = clone(estimator_orig)
-    img, _ = generate_data_to_fit(estimator)
-    if isinstance(estimator, NiftiSpheresMasker):
-        mask_img = new_img_like(img, np.ones(img.shape[:3]))
-        estimator.mask_img = mask_img
-
-    estimator = fit_estimator(estimator)
-    signal = estimator.transform(img)
-
-    to_inverse_transform = {
-        "default": signal,
-        "pandas": pd.DataFrame(np.atleast_2d(signal)),
-        "polars": pl.from_numpy(np.atleast_2d(signal)),
-    }
-
-    output_types = {
-        "default": np.ndarray,
-        "pandas": pd.DataFrame,
-        "polars": pl.DataFrame,
-    }
-
-    # transform output to "default", "pandas" and  "polars"
-    for output, expected_type in output_types.items():
-        if output != "default":
-            estimator.set_output(transform=output)
-        signal = estimator.transform(img)
-        # check that returned signal is of expected type
-        assert isinstance(signal, expected_type)
-
-        # check that inverse_transform always gives the same result
-        # independent of output type
-        r_signal = estimator.inverse_transform(signal)
-        for v in to_inverse_transform.values():
-            r = estimator.inverse_transform(v)
-            assert (
-                (
-                    accepts_volume(estimator)
-                    and isinstance(r, Nifti1Image)
-                    and check_imgs_equal(r, r_signal)
-                )
-                or (
-                    accepts_surface(estimator)
-                    and isinstance(r, SurfaceImage)
-                    and assert_surface_image_close(r, r_signal) is None
-                )
-                or (
-                    isinstance(r, np.ndarray)
-                    and assert_array_equal(r, r_signal) is None
-                )
-            )
-
-
-@skip_if(
-    lambda e: isinstance(
-        e, (SearchLight, ReNA, _BaseDecomposition, ConnectivityMeasure)
-    ),
-    (
-        lambda e: not hasattr(e, "transform"),
-        "'transform' attribute is not implemented.",
-    ),
-    (
-        lambda e: not accepts_surface(e),
-        "Only tests estimators that accept surface image.",
-    ),
-)
-def check_set_output_accepts_surface(estimator_orig) -> None:
-    """Check that set_output can be used with estimators that accept surface
-    image and can deal with 1D image.
-    """
-    estimator = clone(estimator_orig)
-    estimator = fit_estimator(estimator)
-
-    for output in ["default", "pandas", "polars"]:
-        estimator.set_output(transform=output)
-        signal = estimator.transform(_surf_mask_1d())
-        estimator.inverse_transform(signal)
 
 
 # ------------------ GENERIC IMG ESTIMATORS CHECKS ------------------
