@@ -16,8 +16,6 @@ from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
 from nibabel.spatialimages import SpatialImage
 from scipy import interpolate, sparse
-from scipy.sparse import csr_matrix
-from scipy.sparse.csgraph import connected_components
 from sklearn.exceptions import EfficiencyWarning
 
 from nilearn._utils.helpers import stringify_path
@@ -2150,7 +2148,7 @@ def get_data(img, ensure_finite: bool = False) -> np.ndarray:
 
 def compute_adjacency_matrix(
     mesh: InMemoryMesh, values="ones", dtype=None
-) -> csr_matrix:
+) -> sparse.csr_array:
     """Compute the adjacency matrix for a surface.
 
     The adjacency matrix is a matrix
@@ -2232,7 +2230,7 @@ def compute_adjacency_matrix(
     ee = np.concatenate([edge_lens, edge_lens])
     uv = np.concatenate([u, v])
     vu = np.concatenate([v, u])
-    return csr_matrix((ee, (uv, vu)), shape=(n, n))
+    return sparse.csr_array((ee, (uv, vu)), shape=(n, n))
 
 
 def find_surface_clusters(
@@ -2278,7 +2276,9 @@ def find_surface_clusters(
     adj = compute_adjacency_matrix(mesh)
     sub_adj = adj[mask][:, mask]
 
-    _, labels_sub = connected_components(sub_adj, directed=False)
+    _, labels_sub = sparse.csgraph.connected_components(
+        sub_adj, directed=False
+    )
 
     # full label array (0 = background)
     labels = np.zeros(mesh.n_vertices, dtype=int)
