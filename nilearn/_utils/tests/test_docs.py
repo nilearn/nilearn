@@ -10,6 +10,7 @@ from nilearn._utils.docs import (
     _matches_type,
     check_content_types,
     content_to_rst,
+    render_description_directives,
     type_to_rst,
 )
 from nilearn.datasets._utils import (
@@ -49,6 +50,28 @@ def test_description_directives_are_rendered(rst_file):
     Rendering raises a KeyError otherwise.
     """
     assert ".. nilearn_dataset_" not in get_dataset_descr(rst_file.stem)
+
+
+@pytest.mark.parametrize("newline", ["\n", "\r\n"])
+def test_render_description_directives_newlines(newline):
+    """Check directives are rendered with LF and CRLF line endings.
+
+    Description files are checked out with CRLF on windows.
+    """
+    name = next(iter(DATASET_DESCRIPTIONS))
+    rst = newline.join(
+        [
+            "Content",
+            "-------",
+            f".. nilearn_dataset_content:: {name}",
+            "License",
+            "-------",
+            f".. nilearn_dataset_license:: {name}",
+            "",
+        ]
+    )
+
+    assert ".. nilearn_dataset_" not in render_description_directives(rst)
 
 
 @pytest.mark.parametrize("name", DATASET_DESCRIPTIONS)

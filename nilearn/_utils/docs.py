@@ -2118,7 +2118,7 @@ for k in DATASET_DESCRIPTIONS:
 
 
 _DIRECTIVE_REGEX = re.compile(
-    r"^\.\. nilearn_dataset_(?P<kind>content|license):: *(?P<name>\S+) *$",
+    r"^\.\. nilearn_dataset_(?P<kind>content|license):: *(?P<name>\S+) *\r?$",
     flags=re.MULTILINE,
 )
 

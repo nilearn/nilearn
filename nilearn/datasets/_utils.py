@@ -768,10 +768,12 @@ def fetch_single_file(
 def get_dataset_descr(ds_name: str) -> str:
     """Return the description of a dataset."""
     try:
+        # read in text mode to normalize line endings across platforms
+        # (CRLF on windows)
         with (PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst").open(
-            "rb"
+            encoding="utf-8"
         ) as rst_file:
-            descr = rst_file.read().decode("utf-8")
+            descr = rst_file.read()
     except OSError:
         descr = ""
 
