@@ -41,6 +41,9 @@ license: BSD-4-Clause
 
 authors:
   - family-names: Nilearn contributors
+  - given-names: Achintya
+    family-names: Singh
+    website: https://github.com/Achintyasingh412
   - given-names: Ahmad
     family-names: Chamma
     website: https://github.com/achamma723

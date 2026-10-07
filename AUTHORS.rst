@@ -48,6 +48,7 @@ Other contributors
 
 Some other past or present contributors are:
 
+* `Achintya Singh`_
 * `Ahmad Chamma`_: Inria, Saclay, France
 * `Aina Frau-Pascual`_
 * `Alex Rothberg`_: Free Agency, New York, USA
