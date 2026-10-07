@@ -590,17 +590,18 @@ def check_set_output(estimator_orig) -> None:
         "polars": pl.from_numpy(np.atleast_2d(signal)),
     }
     results = {}
+
     # check inverse_transform always gives the expected output type
     if hasattr(estimator, "inverse_transform"):
         for k, v in to_inverse_transform.items():
             r = estimator.inverse_transform(v)
-            if accepts_volume(estimator):
-                assert isinstance(r, Nifti1Image)
-            elif accepts_surface(estimator):
-                assert isinstance(r, SurfaceImage)
-            else:
-                assert isinstance(r, np.ndarray)
+            assert (
+                (accepts_volume(estimator) and isinstance(r, Nifti1Image))
+                or (accepts_surface(estimator) and isinstance(r, SurfaceImage))
+                or isinstance(r, np.ndarray)
+            )
             results[k] = r
+
     # check inverse_transform always gives the same result
     for k in ["pandas", "polars"]:
         if accepts_volume(estimator):
