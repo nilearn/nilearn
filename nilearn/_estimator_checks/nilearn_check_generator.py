@@ -240,45 +240,41 @@ DECOMPOSITION_CHECKS = [
     check_warning_embedded_masker,
 ]
 
+
+def accepts_image(estimator):
+    """Check if estimator accepts volume of surface image."""
+    return accepts_volume(estimator) or accepts_surface(estimator)
+
+
 # List of tuples
 # (conditions to test on estimator, list of checks to apply)
 CHECK_SELECTOR = [
     (lambda e: True, COMMON_CHECKS),
     (lambda e: isinstance(e, CacheMixin), CACHE_MIXIN_CHECKS),
     # ----------INPUT VOLUME OR SURFACE----------
+    (lambda e: accepts_image(e), IMG_INPUT_COMMON_CHECKS),
     (
-        lambda e: accepts_volume(e) or accepts_surface(e),
-        IMG_INPUT_COMMON_CHECKS,
-    ),
-    (
-        lambda e: (
-            (accepts_volume(e) or accepts_surface(e)) and is_classifier(e)
-        ),
+        lambda e: accepts_image(e) and is_classifier(e),
         IMG_INPUT_CLAS_REG_COMMON_CHECKS,
     ),
     (
-        lambda e: (
-            (accepts_volume(e) or accepts_surface(e)) and is_regressor(e)
-        ),
+        lambda e: accepts_image(e) and is_regressor(e),
         IMG_INPUT_REG_CHECKS,
     ),
     (
-        lambda e: (
-            (accepts_volume(e) or accepts_surface(e))
-            and hasattr(e, "inverse_transform")
-        ),
+        lambda e: accepts_image(e) and hasattr(e, "inverse_transform"),
         IMG_INPUT_INVERSE_TRANSFORM_CHECKS,
     ),
     (
         lambda e: (
-            (accepts_volume(e) or accepts_surface(e))
+            accepts_image(e)
             and hasattr(e, "transform")
             and hasattr(e, "dtype")
         ),
         IMG_INPUT_TRANSFORM_DTYPE_CHECKS,
     ),
     (
-        lambda e: (accepts_volume(e) or accepts_surface(e)) and _requires_y(e),
+        lambda e: accepts_image(e) and _requires_y(e),
         IMG_INPUT_REQUIRES_Y,
     ),
     # ----------MASKERS----------
@@ -297,10 +293,7 @@ CHECK_SELECTOR = [
     ),
     # NiftiMasker
     # TODO enforce for other maskers
-    (
-        lambda e: isinstance(e, NiftiMasker),
-        NIFTIMASKER_CHECKS,
-    ),
+    (lambda e: isinstance(e, NiftiMasker), NIFTIMASKER_CHECKS),
     # MultiNiftiMasker
     # TODO enforce for other maskers
     (
