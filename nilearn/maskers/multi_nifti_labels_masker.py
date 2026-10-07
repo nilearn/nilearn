@@ -1,5 +1,9 @@
 """Transformer for computing ROI signals of multiple 4D images."""
 
+from pathlib import Path
+
+import pandas as pd
+
 from nilearn._utils.docs import fill_doc
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.nifti_labels_masker import NiftiLabelsMasker
@@ -120,7 +124,7 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
         self,
         labels_img=None,
         labels=None,
-        lut=None,
+        lut: pd.DataFrame | str | Path | None = None,
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,

@@ -2,6 +2,7 @@
 
 import warnings
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, ClassVar
 
 import numpy as np
@@ -210,7 +211,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         self,
         labels_img=None,
         labels=None,
-        lut=None,
+        lut: pd.DataFrame | str | Path | None = None,
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
@@ -599,7 +600,18 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             )
 
     @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+    def fit_transform(
+        self,
+        imgs,
+        y=None,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
+        sample_mask=None,
+    ):
         """Prepare and perform signal extraction from regions.
 
         Parameters
@@ -631,7 +643,17 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         return hasattr(self, "labels_img_") and hasattr(self, "lut_")
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -855,7 +877,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         return labels_img_
 
     @fill_doc
-    def inverse_transform(self, signals) -> Nifti1Image:
+    def inverse_transform(
+        self, signals: pd.DataFrame | np.ndarray
+    ) -> Nifti1Image:
         """Compute :term:`voxel` signals from region signals.
 
         Any mask given at initialization is taken into account.

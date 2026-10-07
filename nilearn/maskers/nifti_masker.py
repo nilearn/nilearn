@@ -3,9 +3,11 @@
 import inspect
 import warnings
 from copy import copy as copy_object
+from pathlib import Path
 from typing import Any, ClassVar
 
 import numpy as np
+import pandas as pd
 from joblib import Memory
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -633,7 +635,12 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     def transform_single_imgs(
         self,
         imgs,
-        confounds=None,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
         sample_mask=None,
         copy=True,
     ):

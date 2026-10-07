@@ -1,9 +1,11 @@
 """Parcellation tools such as KMeans or Ward for fMRI images."""
 
 import warnings
+from pathlib import Path
 from typing import ClassVar
 
 import numpy as np
+import pandas as pd
 from joblib import Parallel, delayed
 from scipy.sparse import coo_matrix
 from sklearn.base import clone
@@ -579,7 +581,16 @@ class Parcellations(_MultiPCA):
         return hasattr(self, "labels_img_")
 
     @fill_doc
-    def transform(self, imgs, confounds=None):
+    def transform(
+        self,
+        imgs,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path | None]
+        | None = None,
+    ):
         """Extract signals from :term:`parcellations<parcellation>` learned \
         on :term:`fMRI` images.
 
@@ -657,7 +668,17 @@ class Parcellations(_MultiPCA):
         return region_signals[0] if single_subject else region_signals
 
     @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None):
+    def fit_transform(
+        self,
+        imgs,
+        y=None,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path | None]
+        | None = None,
+    ):
         """Fit the images to :term:`parcellations<parcellation>` and \
         then transform them.
 

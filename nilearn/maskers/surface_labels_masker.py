@@ -2,9 +2,11 @@
 
 import warnings
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, ClassVar, Self
 
 import numpy as np
+import pandas as pd
 from scipy import ndimage
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -176,7 +178,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self,
         labels_img=None,
         labels=None,
-        lut=None,
+        lut: pd.DataFrame | str | Path | None = None,
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
@@ -372,7 +374,17 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         return hasattr(self, "lut_") and hasattr(self, "mask_img_")
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from surface object.
 
         Parameters
@@ -453,7 +465,9 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, signals) -> SurfaceImage:
+    def inverse_transform(
+        self, signals: pd.DataFrame | np.ndarray
+    ) -> SurfaceImage:
         """Transform extracted signal back to surface image.
 
         Parameters

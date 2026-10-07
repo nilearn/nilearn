@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, TypeGuard, get_args, overload
 
 import numpy as np
+import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image, Nifti1Pair, load, spatialimages
 from nibabel.fileslice import is_fancy
@@ -2174,7 +2175,12 @@ def clean_img(
     runs: np.ndarray | None = ...,
     detrend: bool = ...,
     standardize: Standardize = ...,
-    confounds=...,
+    confounds: pd.DataFrame
+    | np.ndarray
+    | str
+    | Path
+    | list[pd.DataFrame | np.ndarray | str | Path]
+    | None = ...,
     low_pass: LowPass = ...,
     high_pass: HighPass = ...,
     t_r: Tr = ...,
@@ -2190,7 +2196,12 @@ def clean_img(
     runs: np.ndarray | None = ...,
     detrend: bool = ...,
     standardize: Standardize = ...,
-    confounds=...,
+    confounds: pd.DataFrame
+    | np.ndarray
+    | str
+    | Path
+    | list[pd.DataFrame | np.ndarray | str | Path]
+    | None = ...,
     low_pass: LowPass = ...,
     high_pass: HighPass = ...,
     t_r: Tr = ...,
@@ -2206,7 +2217,12 @@ def clean_img(
     runs: np.ndarray | None = None,
     detrend: bool = True,
     standardize: Standardize = "zscore_sample",
-    confounds=None,
+    confounds: pd.DataFrame
+    | np.ndarray
+    | str
+    | Path
+    | list[pd.DataFrame | np.ndarray | str | Path]
+    | None = None,
     low_pass: LowPass = None,
     high_pass: HighPass = None,
     t_r: Tr = None,

@@ -33,7 +33,17 @@ class _MultiMixin:
 
     @fill_doc
     def fit_transform(
-        self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
+        self,
+        imgs,
+        y=None,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path | None]
+        | None = None,
+        sample_mask=None,
+        **fit_params,
     ):
         """
         Fit to data, then transform it.
@@ -76,7 +86,12 @@ class _MultiMixin:
 
     @fill_doc
     def transform_imgs(
-        self, imgs_list, confounds=None, n_jobs=1, sample_mask=None
+        self,
+        imgs_list,
+        confounds: list[pd.DataFrame | np.ndarray | str | Path | None]
+        | None = None,
+        n_jobs=1,
+        sample_mask=None,
     ):
         """Extract signals from a list of 4D niimgs.
 
@@ -127,7 +142,17 @@ class _MultiMixin:
         return region_signals
 
     @fill_doc
-    def transform(self, imgs, confounds=None, sample_mask=None):
+    def transform(
+        self,
+        imgs,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path | None]
+        | None = None,
+        sample_mask=None,
+    ):
         """Apply mask, spatial and temporal preprocessing.
 
         Parameters

@@ -5,8 +5,10 @@ on multi subject MRI data.
 import collections.abc
 import inspect
 import warnings
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -357,7 +359,13 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
 
     @fill_doc
     def transform_imgs(
-        self, imgs_list, confounds=None, sample_mask=None, copy=True, n_jobs=1
+        self,
+        imgs_list,
+        confounds: list[pd.DataFrame | np.ndarray | str | Path | None]
+        | None = None,
+        sample_mask=None,
+        copy=True,
+        n_jobs=1,
     ):
         """Prepare multi subject data in parallel.
 

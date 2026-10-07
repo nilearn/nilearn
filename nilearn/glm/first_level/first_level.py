@@ -876,10 +876,24 @@ class FirstLevelModel(BaseGLM):
     def fit(
         self,
         run_imgs,
-        events=None,
-        confounds=None,
+        events: pd.DataFrame
+        | pd.Series
+        | str
+        | Path
+        | list[pd.DataFrame | pd.Series | str | Path]
+        | None = None,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
         sample_masks=None,
-        design_matrices=None,
+        design_matrices: pd.DataFrame
+        | str
+        | Path
+        | list[pd.DataFrame | str | Path]
+        | None = None,
         bins=100,
     ) -> Self:
         """Fit the :term:`GLM`.

@@ -3,9 +3,11 @@ brain regions.
 """
 
 import warnings
+from pathlib import Path
 from typing import Any, ClassVar, Self
 
 import numpy as np
+import pandas as pd
 from scipy import linalg
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -282,7 +284,17 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         return hasattr(self, "n_elements_")
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from surface object.
 
         Parameters
@@ -371,7 +383,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, region_signals) -> SurfaceImage:
+    def inverse_transform(
+        self, region_signals: pd.DataFrame | np.ndarray
+    ) -> SurfaceImage:
         """Compute :term:`vertex` signals from region signals.
 
         Parameters

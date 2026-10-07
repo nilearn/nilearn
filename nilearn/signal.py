@@ -566,7 +566,12 @@ def clean(
     detrend: bool = True,
     standardize="zscore_sample",
     sample_mask=None,
-    confounds=None,
+    confounds: pd.DataFrame
+    | np.ndarray
+    | str
+    | Path
+    | list[pd.DataFrame | np.ndarray | str | Path]
+    | None = None,
     standardize_confounds: StandardizeConfounds = True,
     filter: Literal["butterworth", "cosine", False] = "butterworth",
     low_pass: LowPass = None,

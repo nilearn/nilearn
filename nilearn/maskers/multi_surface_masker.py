@@ -1,8 +1,10 @@
 """Extract data from multiple 2D surface objects."""
 
+from pathlib import Path
 from typing import Self
 
 import numpy as np
+import pandas as pd
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP
@@ -166,7 +168,12 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
     def transform_single_imgs(
         self,
         imgs,
-        confounds=None,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
         sample_mask=None,
     ):
         """Extract signals from fitted surface object.

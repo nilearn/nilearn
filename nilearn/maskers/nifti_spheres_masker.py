@@ -5,9 +5,11 @@ Mask nifti images by spherical volumes for seed-region analyses
 
 import contextlib
 import warnings
+from pathlib import Path
 from typing import Any, ClassVar
 
 import numpy as np
+import pandas as pd
 from nibabel import Nifti1Image
 from scipy import sparse
 from sklearn import neighbors
@@ -566,7 +568,18 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return self
 
     @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+    def fit_transform(
+        self,
+        imgs,
+        y=None,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
+        sample_mask=None,
+    ):
         """Prepare and perform signal extraction.
 
         Parameters
@@ -597,7 +610,17 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return hasattr(self, "seeds_") and hasattr(self, "n_elements_")
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -681,7 +704,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return [str(tuple(x)) + radius_suffix for x in seeds.tolist()]
 
     @fill_doc
-    def inverse_transform(self, region_signals) -> Nifti1Image:
+    def inverse_transform(
+        self, region_signals: pd.DataFrame | np.ndarray
+    ) -> Nifti1Image:
         """Compute :term:`voxel` signals from spheres signals.
 
         Any mask given at initialization is taken into account. Throws an error

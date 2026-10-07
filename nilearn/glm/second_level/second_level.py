@@ -619,7 +619,16 @@ class SecondLevelModel(BaseGLM):
 
     @fill_doc
     def fit(
-        self, second_level_input, confounds=None, design_matrix=None
+        self,
+        second_level_input: list[FirstLevelModel]
+        | pd.DataFrame
+        | pd.Series
+        | NiimgLike
+        | list[NiimgLike]
+        | SurfaceImage
+        | list[SurfaceImage],
+        confounds: pd.DataFrame | None = None,
+        design_matrix: pd.DataFrame | str | Path | None = None,
     ) -> Self:
         """Fit the second-level :term:`GLM`.
 
@@ -966,9 +975,15 @@ class SecondLevelModel(BaseGLM):
 
 @overload
 def non_parametric_inference(
-    second_level_input,
-    confounds=...,
-    design_matrix=...,
+    second_level_input: list[FirstLevelModel]
+    | pd.DataFrame
+    | pd.Series
+    | NiimgLike
+    | list[NiimgLike]
+    | SurfaceImage
+    | list[SurfaceImage],
+    confounds: pd.DataFrame | None = ...,
+    design_matrix: pd.DataFrame | str | Path | None = ...,
     second_level_contrast=...,
     first_level_contrast=...,
     mask=...,
@@ -986,9 +1001,15 @@ def non_parametric_inference(
 
 @overload
 def non_parametric_inference(
-    second_level_input,
-    confounds=...,
-    design_matrix=...,
+    second_level_input: list[FirstLevelModel]
+    | pd.DataFrame
+    | pd.Series
+    | NiimgLike
+    | list[NiimgLike]
+    | SurfaceImage
+    | list[SurfaceImage],
+    confounds: pd.DataFrame | None = ...,
+    design_matrix: pd.DataFrame | str | Path | None = ...,
     second_level_contrast=...,
     first_level_contrast=...,
     mask=...,
@@ -1006,9 +1027,15 @@ def non_parametric_inference(
 
 @fill_doc
 def non_parametric_inference(
-    second_level_input,
-    confounds=None,
-    design_matrix=None,
+    second_level_input: list[FirstLevelModel]
+    | pd.DataFrame
+    | pd.Series
+    | NiimgLike
+    | list[NiimgLike]
+    | SurfaceImage
+    | list[SurfaceImage],
+    confounds: pd.DataFrame | None = None,
+    design_matrix: pd.DataFrame | str | Path | None = None,
     second_level_contrast=None,
     first_level_contrast=None,
     mask=None,

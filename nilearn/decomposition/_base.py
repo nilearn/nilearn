@@ -13,6 +13,7 @@ from string import Template
 from typing import Literal, Self, get_args
 
 import numpy as np
+import pandas as pd
 from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from scipy import linalg
@@ -463,7 +464,17 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             )
 
     @fill_doc
-    def fit(self, imgs, y=None, confounds=None) -> Self:
+    def fit(
+        self,
+        imgs,
+        y=None,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path | None]
+        | None = None,
+    ) -> Self:
         """Compute the mask and the components across subjects.
 
         Parameters
@@ -617,7 +628,16 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
     def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "components_")
 
-    def transform(self, imgs, confounds=None):
+    def transform(
+        self,
+        imgs,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path | None]
+        | None = None,
+    ):
         """Project the data into a reduced representation.
 
         Parameters
@@ -708,7 +728,18 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         )
 
     @fill_doc
-    def score(self, imgs, y=None, confounds=None, per_component=False):
+    def score(
+        self,
+        imgs,
+        y=None,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path | None]
+        | None = None,
+        per_component=False,
+    ):
         """Score function based on explained variance on imgs.
 
         Should only be used by DecompositionEstimator derived classes

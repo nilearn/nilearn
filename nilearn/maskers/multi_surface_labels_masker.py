@@ -1,6 +1,9 @@
 """Extract data from multiple 2D surface objects."""
 
+from pathlib import Path
 from typing import Self
+
+import pandas as pd
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
@@ -129,7 +132,7 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         self,
         labels_img=None,
         labels=None,
-        lut=None,
+        lut: pd.DataFrame | str | Path | None = None,
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,

@@ -41,6 +41,31 @@
       "concise_description": "Argument `Iterable[Unknown] | list[Unknown]` is not assignable to parameter `obj` with type `Sized` in function `len`"
     },
     {
+      "concise_description": "Argument `DataFrame | Path | list[DataFrame | Path | ndarray | str | None] | ndarray | str` is not assignable to parameter `obj` with type `Sized` in function `len`",
+      "name": "bad-argument-type",
+      "path": "nilearn/decomposition/_base.py"
+    },
+    {
+      "concise_description": "Argument `DataFrame | Path | list[DataFrame | Path | ndarray | str | None] | ndarray | str` is not assignable to parameter `obj` with type `Sized` in function `len`",
+      "name": "bad-argument-type",
+      "path": "nilearn/decomposition/_base.py"
+    },
+    {
+      "concise_description": "Argument `DataFrame | Path | list[DataFrame | Path | ndarray | str | None] | ndarray | str` is not assignable to parameter `obj` with type `Sized` in function `len`",
+      "name": "bad-argument-type",
+      "path": "nilearn/decomposition/_base.py"
+    },
+    {
+      "concise_description": "Argument `DataFrame | Path | list[DataFrame | Path | ndarray | str | None] | ndarray | str` is not assignable to parameter `obj` with type `Sized` in function `len`",
+      "name": "bad-argument-type",
+      "path": "nilearn/decomposition/_base.py"
+    },
+    {
+      "concise_description": "Argument `DataFrame | Path | list[DataFrame | Path | ndarray | str | None] | ndarray | str` is not assignable to parameter `iter2` with type `Iterable[Hashable]` in function `zip.__new__`",
+      "name": "bad-argument-type",
+      "path": "nilearn/decomposition/_base.py"
+    },
+    {
       "path": "nilearn/decomposition/tests/conftest.py",
       "name": "missing-attribute",
       "concise_description": "Object of class `NoneType` has no attribute `parts`"
@@ -69,6 +94,36 @@
       "path": "nilearn/glm/first_level/first_level.py",
       "name": "bad-argument-type",
       "concise_description": "Argument `Unknown | None` is not assignable to parameter `x` with type `Buffer | SupportsIndex | SupportsInt | SupportsTrunc | str` in function `int.__new__`"
+    },
+    {
+      "concise_description": "Object of type `DataFrame | Path | str | None` has no attribute `columns`",
+      "name": "missing-attribute",
+      "path": "nilearn/glm/second_level/second_level.py"
+    },
+    {
+      "concise_description": "Cannot index into `Path`",
+      "name": "bad-index",
+      "path": "nilearn/glm/second_level/second_level.py"
+    },
+    {
+      "concise_description": "Cannot index into `str`",
+      "name": "bad-index",
+      "path": "nilearn/glm/second_level/second_level.py"
+    },
+    {
+      "concise_description": "`None` is not subscriptable",
+      "name": "unsupported-operation",
+      "path": "nilearn/glm/second_level/second_level.py"
+    },
+    {
+      "concise_description": "Argument `list[DataFrame]` is not assignable to parameter `design_matrices` with type `DataFrame | Path | list[DataFrame | Path | str] | str | None` in function `nilearn.glm.first_level.first_level.FirstLevelModel.fit`",
+      "name": "bad-argument-type",
+      "path": "nilearn/glm/tests/test_glm_reporter.py"
+    },
+    {
+      "concise_description": "Argument `list[DataFrame]` is not assignable to parameter `design_matrices` with type `DataFrame | Path | list[DataFrame | Path | str] | str | None` in function `nilearn.glm.first_level.first_level.FirstLevelModel.fit`",
+      "name": "bad-argument-type",
+      "path": "nilearn/glm/tests/test_io.py"
     },
     {
       "path": "nilearn/image/image.py",
@@ -106,6 +161,31 @@
       "concise_description": "Class member `PhonyNiimage._dataobj` overrides parent class `SpatialImage` in an inconsistent manner"
     },
     {
+      "concise_description": "Object of class `_MultiMixin` has no attribute `fit`",
+      "name": "missing-attribute",
+      "path": "nilearn/maskers/_mixin.py"
+    },
+    {
+      "concise_description": "Object of class `_MultiMixin` has no attribute `_cache`",
+      "name": "missing-attribute",
+      "path": "nilearn/maskers/_mixin.py"
+    },
+    {
+      "concise_description": "Object of class `_MultiMixin` has no attribute `transform_single_imgs`",
+      "name": "missing-attribute",
+      "path": "nilearn/maskers/_mixin.py"
+    },
+    {
+      "concise_description": "Argument `list[DataFrame | Path | ndarray | str | None] | None` is not assignable to parameter `iter2` with type `Iterable[DataFrame | Path | ndarray | str | None]` in function `zip.__new__`",
+      "name": "bad-argument-type",
+      "path": "nilearn/maskers/_mixin.py"
+    },
+    {
+      "concise_description": "Object of class `object` has no attribute `transform`",
+      "name": "missing-attribute",
+      "path": "nilearn/maskers/_mixin.py"
+    },
+    {
       "path": "nilearn/maskers/base_masker.py",
       "name": "bad-override",
       "concise_description": "Class member `BaseMasker._get_summary_html` overrides parent class `_BaseMasker` in an inconsistent manner"
@@ -114,6 +194,26 @@
       "path": "nilearn/maskers/base_masker.py",
       "name": "bad-override",
       "concise_description": "Class member `_BaseSurfaceMasker._get_summary_html` overrides parent class `_BaseMasker` in an inconsistent manner"
+    },
+    {
+      "concise_description": "Argument `list[DataFrame | Path | ndarray | str | None] | None` is not assignable to parameter `iter2` with type `Iterable[DataFrame | Path | ndarray | str | None]` in function `zip.__new__`",
+      "name": "bad-argument-type",
+      "path": "nilearn/maskers/multi_nifti_masker.py"
+    },
+    {
+      "concise_description": "Argument `DataFrame | ndarray` is not assignable to parameter `signals` with type `ndarray` in function `nilearn.maskers.base_masker._BaseSurfaceMasker._check_array`",
+      "name": "bad-argument-type",
+      "path": "nilearn/maskers/surface_labels_masker.py"
+    },
+    {
+      "concise_description": "Argument `DataFrame | ndarray` is not assignable to parameter `signals` with type `ndarray` in function `nilearn.maskers.base_masker._BaseSurfaceMasker._check_array`",
+      "name": "bad-argument-type",
+      "path": "nilearn/maskers/surface_maps_masker.py"
+    },
+    {
+      "concise_description": "Argument `DataFrame | ndarray` is not assignable to parameter `signals` with type `ndarray` in function `nilearn.maskers.base_masker._BaseSurfaceMasker._check_array`",
+      "name": "bad-argument-type",
+      "path": "nilearn/maskers/surface_masker.py"
     },
     {
       "path": "nilearn/masking.py",
@@ -164,6 +264,96 @@
       "path": "nilearn/plotting/image/utils.py",
       "name": "bad-override",
       "concise_description": "Class member `_MNI152Template.get_data` overrides parent class `SpatialImage` in an inconsistent manner"
+    },
+    {
+      "concise_description": "Argument `DataFrame | Path | str` is not assignable to parameter `design_matrix` with type `DataFrame` in function `nilearn.glm.first_level.design_matrix.check_design_matrix`",
+      "name": "bad-argument-type",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Argument `DataFrame | Path | str` is not assignable to parameter `design_matrix` with type `DataFrame` in function `nilearn.glm.first_level.design_matrix.check_design_matrix`",
+      "name": "bad-argument-type",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Type `Path` is not iterable",
+      "name": "not-iterable",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Type `Path` is not iterable",
+      "name": "not-iterable",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Type `Path` is not iterable",
+      "name": "not-iterable",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Argument `DataFrame | Hashable | Path | str | Unknown` is not assignable to parameter `events` with type `DataFrame` in function `nilearn.glm.first_level.experimental_paradigm.check_events`",
+      "name": "bad-argument-type",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Cannot set item in `Path`",
+      "name": "unsupported-operation",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Cannot set item in `str`",
+      "name": "unsupported-operation",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Cannot set item in `tuple[DataFrame | Path | str, ...]`",
+      "name": "unsupported-operation",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Argument `DataFrame | Path | list[DataFrame | Path | str] | str | tuple[DataFrame | Path | str, ...]` is not assignable to parameter `obj` with type `Sized` in function `len`",
+      "name": "bad-argument-type",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Cannot index into `Hashable`",
+      "name": "bad-index",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Cannot index into `Path`",
+      "name": "bad-index",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Cannot index into `str`",
+      "name": "bad-index",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Object of type `DataFrame | Hashable | Path | str | Unknown` has no attribute `iterrows`",
+      "name": "missing-attribute",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Object of type `DataFrame | Path | str` has no attribute `columns`",
+      "name": "missing-attribute",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Object of type `DataFrame | Path | str` has no attribute `columns`",
+      "name": "missing-attribute",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Object of type `DataFrame | Path | str` has no attribute `drop`",
+      "name": "missing-attribute",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
+    },
+    {
+      "concise_description": "Object of type `DataFrame | Path | str` has no attribute `corr`",
+      "name": "missing-attribute",
+      "path": "nilearn/plotting/matrix/matrix_plotting.py"
     },
     {
       "path": "nilearn/regions/region_extractor.py",

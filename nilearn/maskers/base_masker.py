@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Self, overload
 
 import numpy as np
+import pandas as pd
 from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.base import TransformerMixin
@@ -412,7 +413,16 @@ class BaseMasker(_BaseMasker):
     @abc.abstractmethod
     @fill_doc
     def transform_single_imgs(
-        self, imgs, confounds=None, sample_mask=None, copy=True
+        self,
+        imgs,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
+        sample_mask=None,
+        copy=True,
     ):
         """Extract signals from a single niimg.
 
@@ -526,7 +536,17 @@ class BaseMasker(_BaseMasker):
         check_volume_for_fit(imgs)
 
     @fill_doc
-    def transform(self, imgs, confounds=None, sample_mask=None):
+    def transform(
+        self,
+        imgs,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
+        sample_mask=None,
+    ):
         """Apply mask, spatial and temporal preprocessing.
 
         Parameters
@@ -571,7 +591,17 @@ class BaseMasker(_BaseMasker):
 
     @fill_doc
     def fit_transform(
-        self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
+        self,
+        imgs,
+        y=None,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
+        sample_mask=None,
+        **fit_params,
     ):
         """Fit to data, then transform it.
 
@@ -606,7 +636,7 @@ class BaseMasker(_BaseMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, X) -> Nifti1Image:
+    def inverse_transform(self, X: pd.DataFrame | np.ndarray) -> Nifti1Image:
         """Transform the data matrix back to an image in brain space.
 
         This step only performs spatial unmasking,
@@ -813,7 +843,17 @@ class _BaseSurfaceMasker(_BaseMasker):
         """Present only to comply with sklearn estimators checks."""
 
     @fill_doc
-    def transform(self, imgs, confounds=None, sample_mask=None):
+    def transform(
+        self,
+        imgs,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
+        sample_mask=None,
+    ):
         """Apply mask, spatial and temporal preprocessing.
 
         Parameters
@@ -896,13 +936,34 @@ class _BaseSurfaceMasker(_BaseMasker):
         return output
 
     @abc.abstractmethod
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from a single surface image."""
         # implemented in children classes
         raise NotImplementedError()
 
     @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+    def fit_transform(
+        self,
+        imgs,
+        y=None,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
+        sample_mask=None,
+    ):
         """Prepare and perform signal extraction from regions.
 
         Parameters

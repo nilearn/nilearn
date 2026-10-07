@@ -1,10 +1,12 @@
 """Masker for surface objects."""
 
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, ClassVar, Self
 from warnings import warn
 
 import numpy as np
+import pandas as pd
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -283,7 +285,12 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     def transform_single_imgs(
         self,
         imgs,
-        confounds=None,
+        confounds: pd.DataFrame
+        | np.ndarray
+        | str
+        | Path
+        | list[pd.DataFrame | np.ndarray | str | Path]
+        | None = None,
         sample_mask=None,
     ):
         """Extract signals from fitted surface object.
@@ -342,7 +349,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         return output if target_dtype is None else output.astype(target_dtype)
 
     @fill_doc
-    def inverse_transform(self, signals) -> SurfaceImage:
+    def inverse_transform(
+        self, signals: pd.DataFrame | np.ndarray
+    ) -> SurfaceImage:
         """Transform extracted signal back to surface object.
 
         Parameters

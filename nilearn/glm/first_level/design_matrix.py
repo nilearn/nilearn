@@ -30,6 +30,7 @@ Design matrices contain three different types of regressors:
    estimates.
 """
 
+from pathlib import Path
 from warnings import warn
 
 import numpy as np
@@ -235,7 +236,7 @@ def _convolve_regressors(
 @fill_doc
 def make_first_level_design_matrix(
     frame_times,
-    events=None,
+    events: pd.DataFrame | str | Path | None = None,
     hrf_model: HrfModel = "glover",
     drift_model="cosine",
     high_pass=0.01,
@@ -495,7 +496,7 @@ def check_design_matrix(
 
 
 def make_second_level_design_matrix(
-    subjects_label, confounds=None
+    subjects_label, confounds: pd.DataFrame | None = None
 ) -> pd.DataFrame:
     """Set up a second level design.
 
