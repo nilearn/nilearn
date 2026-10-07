@@ -104,23 +104,24 @@ Probabilistic atlases
 .. toctree::
     :hidden:
 
-    description/craddock_2012.rst
-    description/difumo_atlases.rst
-    description/msdl_atlas.rst
-    description/dosenbach_2010.rst
-    description/power_2011.rst
-    description/seitzman_2018.rst
     description/aal_atlas.rst
     description/allen_2011_atlas.rst
-    description/basc_multiscale_2015.rst
-    description/destrieux_surface.rst
-    description/harvard_oxford.rst
-    description/juelich.rst
-    description/pauli_2017.rst
-    description/schaefer_2018.rst
-    description/smith_2009.rst
+    description/basc_multiscale_2015_atlas.rst
+    description/craddock_2012.rst
+    description/destrieux_2009_atlas.rst
+    description/difumo_atlas.rst
+    description/dosenbach_2010.rst
+    description/harvard_oxford_atlas.rst
+    description/juelich_atlas.rst
+    description/msdl_atlas.rst
+    description/pauli_2017_atlas.rst
+    description/power_2011_atlas.rst
+    description/schaefer_2018_atlas.rst
+    description/seitzman_2018.rst
+    description/surf_destrieux_atlas.rst
+    description/smith_2009_atlas.rst
     description/talairach_atlas.rst
-    description/yeo_2011.rst
+    description/yeo_2011_atlas.rst
 
 
 Preprocessed datasets

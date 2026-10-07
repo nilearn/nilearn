@@ -26,7 +26,7 @@ https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
 
 Content
 -------
-.. nilearn_dataset_license:: smith_2009_atlas
+.. nilearn_dataset_content:: smith_2009_atlas
 
 References
 ----------

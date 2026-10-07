@@ -407,7 +407,7 @@ def fetch_atlas_destrieux_2009(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        %(destrieux_2009_atlas)s
+        %(destrieux_2009_atlas_content)s
 
     Notes
     -----
@@ -1456,23 +1456,6 @@ def fetch_atlas_basc_multiscale_2015(
     :term:`functional magnetic resonance images<fMRI>` from about 200 young
     healthy subjects.
 
-    Multiple resolutions (number of networks) are available, among
-    7, 12, 20, 36, 64, 122, 197, 325, 444. The brain parcellations
-    have been generated using a method called bootstrap analysis of
-    stable clusters called as BASC :footcite:t:`Bellec2010`,
-    and the resolutions have been selected using a data-driven method
-    called MSTEPS :footcite:t:`Bellec2013`.
-
-    Note that two versions of the template are available, 'sym' or 'asym'.
-    The 'asym' type contains brain images that have been registered in the
-    asymmetric version of the :term:`MNI` brain template (reflecting that
-    the brain is asymmetric), while the 'sym' type contains images registered
-    in the symmetric version of the :term:`MNI` template.
-    The symmetric template has been forced to be symmetric anatomically, and
-    is therefore ideally suited to study homotopic functional connections in
-    :term:`fMRI`: finding homotopic regions simply consists of flipping the
-    x-axis of the template.
-
     .. nilearn_versionadded:: 0.2.3
 
     Parameters
@@ -1517,16 +1500,10 @@ def fetch_atlas_basc_multiscale_2015(
 
         - %(atlas_type)s
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
     %(fetcher_note)s
 
-    For more information on this dataset's structure, see
-    https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615
     """
     check_params(locals())
 
@@ -1547,13 +1524,12 @@ def fetch_atlas_basc_multiscale_2015(
 
     opts = {"uncompress": True}
 
-    dataset_name = "basc_multiscale_2015"
+    dataset_name = "basc_multiscale_2015_atlas"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
     folder_name = Path(f"template_cambridge_basc_multiscale_nii_{version}")
-    fdescr = get_dataset_descr(dataset_name)
 
     basename = (
         "template_cambridge_basc_multiscale_"
@@ -1571,7 +1547,7 @@ def fetch_atlas_basc_multiscale_2015(
     return Atlas(
         maps=data[0],
         labels=labels,
-        description=fdescr,
+        description=Description.from_registry("basc_multiscale_2015_atlas"),
         lut=generate_atlas_look_up_table(
             "fetch_atlas_basc_multiscale_2015", name=labels
         ),
@@ -1852,7 +1828,7 @@ def fetch_atlas_surf_destrieux(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - %(surf_destrieux_atlas_content)s
+        %(surf_destrieux_atlas_content)s
 
     See Also
     --------
@@ -1882,8 +1858,6 @@ def fetch_atlas_surf_destrieux(
                 "right": destrieux.map_right,
             },
         )
-    )
-
 
     """
     check_params(locals())
@@ -1893,7 +1867,7 @@ def fetch_atlas_surf_destrieux(
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/"
 
-    dataset_name = "destrieux_surface_atlas"
+    dataset_name = "surf_destrieux_atlas"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )

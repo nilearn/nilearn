@@ -24,6 +24,7 @@ from nilearn.datasets._utils import (
     [
         (str, ":obj:`str`"),
         ("str", "str"),
+        ("nibabel.nifti1.Nifti1Image", ":class:`nibabel.nifti1.Nifti1Image`"),
         (pd.DataFrame, ":class:`pandas.DataFrame`"),
         (list[str], ":obj:`list` of :obj:`str`"),
         (

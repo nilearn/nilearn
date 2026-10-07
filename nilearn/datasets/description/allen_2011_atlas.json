@@ -5,7 +5,7 @@
     },
     "maps": {
         "type": "str",
-        "desc": "Fullpath to 4D nifti file containing T-maps of all 75 unthresholded components.\n    The image has shape ``(53, 63, 46, 75)``."
+        "desc": "Fullpath to 4D nifti file containing T-maps of all 75 unthresholded components. The image has shape ``(53, 63, 46, 75)``."
     },
     "networks": {
         "type": "list[list[str]]",
@@ -13,10 +13,10 @@
     },
     "rsn_indices": {
         "type": "list[tuple[str, list[int]]]",
-        "desc": "This maps the network names to the map indices.\n    For example, the map indices for the 'Visual' network can be obtained with ``dict(data.rsn_indices)['Visual]``"
+        "desc": "This maps the network names to the map indices. For example, the map indices for the 'Visual' network can be obtained with ``dict(data.rsn_indices)['Visual]``"
     },
     "rsn28": {
         "type": "str",
-        "desc": "Fullpath to 4D nifti file containing the 28 resting state networks from Allen et al 2011.\n    The image has shape ``(53, 63, 46, 28)``."
+        "desc": "Fullpath to 4D nifti file containing the 28 resting state networks from Allen et al 2011. The image has shape ``(53, 63, 46, 28)``."
     }
 }

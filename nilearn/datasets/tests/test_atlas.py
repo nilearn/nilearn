@@ -375,7 +375,7 @@ def test_fetch_atlas_destrieux_2009(
     name = "_lateralized" if lateralized else ""
 
     assert bunch["maps"] == str(
-        tmp_path / "destrieux_2009" / f"destrieux2009_rois{name}.nii.gz"
+        tmp_path / "destrieux_2009_atlas" / f"destrieux2009_rois{name}.nii.gz"
     )
 
     check_fetcher_verbosity(
@@ -608,7 +608,7 @@ def test_fetch_atlas_aal_version_error(tmp_path):
 def test_fetch_atlas_basc_multiscale_2015(tmp_path, capsys):
     resolution = 7
 
-    dataset_name = "basc_multiscale_2015"
+    dataset_name = "basc_multiscale_2015_atlas"
     name_sym = "template_cambridge_basc_multiscale_nii_sym"
     basename_sym = "template_cambridge_basc_multiscale_sym_scale007.nii.gz"
 
@@ -691,7 +691,7 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker, capsys):
 
 
 def test_fetch_atlas_surf_destrieux(tmp_path, capsys):
-    data_dir = tmp_path / "destrieux_surface"
+    data_dir = tmp_path / "surf_destrieux_atlas"
     data_dir.mkdir()
 
     # Create mock annots

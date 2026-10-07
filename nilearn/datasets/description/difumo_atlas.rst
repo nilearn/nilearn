@@ -35,7 +35,7 @@ https://inria.hal.science/hal-02904869
 
 Content
 -------
-.. nilearn_dataset_license:: difumo_atlas
+.. nilearn_dataset_content:: difumo_atlas
 
 References
 ----------

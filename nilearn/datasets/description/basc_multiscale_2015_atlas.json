@@ -1,0 +1,10 @@
+{
+    "labels": {
+        "type": "list[str]",
+        "desc": "List of the names of the regions."
+    },
+    "maps": {
+        "type": "str",
+        "desc": "Fullpath to the 3D Nifti file of the brain parcellation. Images have shape ``(53, 64, 52)`` and contain consecutive integer values from 0 to the selected number of networks (scale)."
+    }
+}

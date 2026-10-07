@@ -15,7 +15,7 @@ See :footcite:t:`Power2011`.
 
 Content
 -------
-.. nilearn_dataset_license:: power_2011_atlas
+.. nilearn_dataset_content:: power_2011_atlas
 
 References
 ----------

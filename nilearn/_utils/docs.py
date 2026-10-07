@@ -1972,21 +1972,25 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         license="unknown",
     ),
     "allen_2011_atlas": Bunch(license="unknown"),
-    "destrieux_2009_atlas": Bunch(
-        license="unknown",
+    "basc_multiscale_2015_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="Creative Commons -- Attribution Non-Commercial",
+    ),
+    "destrieux_2009_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="unknown",
     ),
     "difumo_atlas": Bunch(
         license="usage is unrestricted for non-commercial research purposes.",
     ),
     "fiac": Bunch(license="unknown"),
     "harvard_oxford_atlas": Bunch(
-        license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
     ),
     "juelich_atlas": Bunch(
-        license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
     ),
     "language_localizer_demo": Bunch(license="ODC-BY-SA"),
     "localizer_first_level": Bunch(
@@ -2005,8 +2009,8 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     ),
     "smith_2009_atlas": Bunch(license="unknown"),
     "surf_destrieux_atlas": Bunch(
-        license="unknown",
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="unknown",
     ),
     "talairach_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
@@ -2109,7 +2113,11 @@ def type_to_rst(type_) -> str:
         # use the top level package
         # (e.g. pandas.DataFrame and not pandas.core.frame.DataFrame)
         package = type_.__module__.split(".")[0]
-        return f":class:`{package}.{type_.__qualname__}`"
+        return (
+            f":class:`{package}.{type_.__qualname__}`"
+            if package == "pandas"
+            else f":class:`{type_!s}`"
+        )
 
     args = typing.get_args(type_)
     if origin in (typing.Union, types.UnionType):

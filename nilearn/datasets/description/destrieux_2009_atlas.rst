@@ -20,7 +20,7 @@ See also :footcite:t:`Fischl2004` and :footcite:t:`Destrieux2009`.
 
 Content
 -------
-.. nilearn_dataset_license:: destrieux_2009_atlas
+.. nilearn_dataset_content:: destrieux_2009_atlas
 
 References
 ----------

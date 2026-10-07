@@ -24,7 +24,7 @@ See also :footcite:t:`Makris2006`, :footcite:t:`Desikan2006`,
 
 Content
 -------
-.. nilearn_dataset_license:: harvard_oxford_atlas
+.. nilearn_dataset_content:: harvard_oxford_atlas
 
 References
 ----------

@@ -15,7 +15,7 @@ Anatomical :term:`parcellation` of the cortex (76 labels per hemisphere) based o
 
 Content
 -------
-.. nilearn_dataset_license:: surf_destrieux_atlas
+.. nilearn_dataset_content:: surf_destrieux_atlas
 
 References
 ----------
