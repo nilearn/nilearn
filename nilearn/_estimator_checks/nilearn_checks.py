@@ -52,6 +52,7 @@ from numpydoc.docscrape import NumpyDocString
 from sklearn import clone
 from sklearn.base import is_classifier, is_regressor
 from sklearn.datasets import load_iris, make_classification, make_regression
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import _safe_indexing
@@ -101,6 +102,7 @@ from nilearn.decoding.decoder import (
     Decoder,
     DecoderRegressor,
     FREMClassifier,
+    FREMRegressor,
 )
 from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.space_net import BaseSpaceNet
@@ -188,6 +190,9 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
 
     elif is_classifier(estimator):
         dim = 5
+        if isinstance(estimator, FREMClassifier):
+            # FREM needs may need more features in some cases
+            dim = 10
         X, y = make_classification(
             n_samples=30,
             n_features=dim**3,
@@ -202,6 +207,9 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
 
     elif is_regressor(estimator):
         dim = 5
+        if isinstance(estimator, FREMRegressor):
+            # FREM needs may need more features in some cases
+            dim = 10
         X, y = make_regression(
             n_samples=30,
             n_features=dim**3,
@@ -275,7 +283,13 @@ def fit_estimator(
         return estimator.fit(X, y)
 
     else:
-        return estimator.fit(X)
+        if not isinstance(estimator, _BaseDecomposition):
+            return estimator.fit(X)
+
+        with warnings.catch_warnings():
+            # might not converge
+            warnings.filterwarnings("ignore", category=ConvergenceWarning)
+            return estimator.fit(X)
 
 
 # ------------------ GENERIC CHECKS ------------------
@@ -1224,23 +1238,26 @@ def check_img_estimator_pipeline_consistency(estimator_orig) -> None:
 
     pipeline = make_pipeline(estimator)
 
-    if is_glm(estimator):
-        # FirstLevel
-        if hasattr(estimator, "hrf_model"):
-            pipeline.fit(X, firstlevelmodel__design_matrices=y)
-        # SecondLevel
+    with warnings.catch_warnings():
+        # might not converge
+        warnings.filterwarnings("ignore", category=ConvergenceWarning)
+        if is_glm(estimator):
+            # FirstLevel
+            if hasattr(estimator, "hrf_model"):
+                pipeline.fit(X, firstlevelmodel__design_matrices=y)
+            # SecondLevel
+            else:
+                pipeline.fit(X, secondlevelmodel__design_matrix=y)
+
+        elif (
+            isinstance(estimator, SearchLight)
+            or is_classifier(estimator)
+            or is_regressor(estimator)
+        ):
+            pipeline.fit(X, y)
+
         else:
-            pipeline.fit(X, secondlevelmodel__design_matrix=y)
-
-    elif (
-        isinstance(estimator, SearchLight)
-        or is_classifier(estimator)
-        or is_regressor(estimator)
-    ):
-        pipeline.fit(X, y)
-
-    else:
-        pipeline.fit(X)
+            pipeline.fit(X)
 
     funcs = ["score", "transform"]
 
@@ -1890,7 +1907,16 @@ def check_img_estimator_standardization(estimator_orig) -> None:
     # for the standardize to actually do something
     input_img, y = generate_data_to_fit(estimator_orig)
 
-    for method in ["predict", "transform"]:
+    # For classifiers, compare decision_function rather than predict:
+    # predicted labels can be identical
+    # even when the standardization did change the fitted model.
+    methods = ["predict", "transform"]
+    if is_classifier(estimator_orig) and hasattr(
+        estimator_orig, "decision_function"
+    ):
+        methods = ["decision_function", "transform"]
+
+    for method in methods:
         if not hasattr(estimator_orig, method):
             continue
 
@@ -1901,10 +1927,13 @@ def check_img_estimator_standardization(estimator_orig) -> None:
 
             estimator.standardize = standardize
 
-            if is_classifier(estimator) or is_regressor(estimator):
-                estimator.fit(input_img, y)
-            else:
-                estimator.fit(input_img)
+            with warnings.catch_warnings():
+                # might not converge
+                warnings.filterwarnings("ignore", category=ConvergenceWarning)
+                if is_classifier(estimator) or is_regressor(estimator):
+                    estimator.fit(input_img, y)
+                else:
+                    estimator.fit(input_img)
 
             results[str(standardize)] = getattr(estimator, method)(input_img)
 
@@ -2089,7 +2118,10 @@ def check_decoder_with_surface_data(estimator_orig) -> None:
                 estimator.fit(X, y)
             continue
 
-        estimator.fit(X, y)
+        with warnings.catch_warnings():
+            # might not converge
+            warnings.filterwarnings("ignore", category=ConvergenceWarning)
+            estimator.fit(X, y)
 
         assert estimator.coef_ is not None
 
