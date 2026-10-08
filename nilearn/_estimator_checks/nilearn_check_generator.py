@@ -126,9 +126,8 @@ IMG_INPUT_COMMON_CHECKS = [
     check_img_estimator_dtypes_inverse_transform,
 ]
 
-# Checks that apply to all classifiers and regressors which accept volume or
-# surface image as input
-IMG_INPUT_CLAS_REG_COMMON_CHECKS = [
+# Checks for classifiers which accept volume or surface image as input
+IMG_INPUT_CLASSIFIER_CHECKS = [
     check_supervised_img_estimator_y_no_nan,
     check_decoder_empty_data_messages,
     check_decoder_compatibility_mask_image,
@@ -141,8 +140,8 @@ IMG_INPUT_CLAS_REG_COMMON_CHECKS = [
 ]
 
 # Checks for regressors which accept volume or surface image as input
-IMG_INPUT_REG_CHECKS = [
-    *IMG_INPUT_CLAS_REG_COMMON_CHECKS,
+IMG_INPUT_REGRESSOR_CHECKS = [
+    *IMG_INPUT_CLASSIFIER_CHECKS,
     check_img_regressor_no_decision_function,
 ]
 
@@ -243,11 +242,11 @@ CHECK_SELECTOR = [
     (lambda e: accepts_image(e), IMG_INPUT_COMMON_CHECKS),
     (
         lambda e: accepts_image(e) and is_classifier(e),
-        IMG_INPUT_CLAS_REG_COMMON_CHECKS,
+        IMG_INPUT_CLASSIFIER_CHECKS,
     ),
     (
         lambda e: accepts_image(e) and is_regressor(e),
-        IMG_INPUT_REG_CHECKS,
+        IMG_INPUT_REGRESSOR_CHECKS,
     ),
     (
         lambda e: accepts_image(e) and _requires_y(e),
