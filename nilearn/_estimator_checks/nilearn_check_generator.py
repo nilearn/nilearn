@@ -188,9 +188,8 @@ VOLUME_INPUT_MASKER_CHECKS = [
     check_nifti_masker_fit_transform_files,
     check_nifti_masker_fit_with_3d_mask,
     check_nifti_masker_generate_report_after_fit_with_only_mask,
+    check_masker_shelving,
 ]
-
-NIFTIMASKER_CHECKS = [check_masker_shelving]
 
 MULTINIFTIMASKER_CHECKS = [check_multi_nifti_masker_shelving]
 
@@ -268,9 +267,6 @@ CHECK_SELECTOR = [
         lambda e: is_masker(e) and not isinstance(e, _MultiMixin),
         NON_MULTI_MASKER_CHECKS,
     ),
-    # NiftiMasker
-    # TODO enforce for other maskers
-    (lambda e: isinstance(e, NiftiMasker), NIFTIMASKER_CHECKS),
     # MultiNiftiMasker
     # TODO enforce for other maskers
     (

@@ -3288,6 +3288,8 @@ def check_masker_transform_resampling(estimator_orig) -> None:
                     estimator.transform(imgs_with_different_fov)
 
 
+# TODO enforce for other maskers
+@skip_if(lambda e: not isinstance(e, NiftiMasker))
 def check_masker_shelving(estimator_orig) -> None:
     """Check behavior when shelving masker."""
     estimator = clone(estimator_orig)
