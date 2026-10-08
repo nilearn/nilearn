@@ -813,6 +813,7 @@ def test_fetch_development_fmri_functional(tmp_path):
     assert len(confounds) == 8
 
 
+@pytest.mark.ai_generated
 def test_fetch_development_fmri(tmp_path, request_mocker, capsys):
     """Test for fetch_development_fmri."""
     mock_participants = _mock_participants_data()
@@ -904,11 +905,12 @@ def test_fetch_development_fmri_phenotype(request_mocker):
     assert all(x == "child" for x in data.phenotypic["Child_Adult"])
 
 
+@pytest.mark.ai_generated
 def test_fetch_development_fmri_invalid_n_subjects():
     max_subjects = 155
     n_subjects = _validate_subjects(n_subjects=None, max_subjects=max_subjects)
 
-    assert n_subjects == max_subjects
+    assert n_subjects == tuple(range(max_subjects))
     with pytest.warns(UserWarning, match="Wrong value for n_subjects"):
         _validate_subjects(
             n_subjects=156,

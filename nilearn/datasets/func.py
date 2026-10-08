@@ -1365,7 +1365,7 @@ def fetch_abide_pcp(
     # Get the files
     n_subjects = _validate_subjects(n_subjects, len(pheno_df))
     subject_indices = n_subjects
-    pheno_df = pheno_df.iloc[subject_indices]
+    pheno_df = pheno_df.iloc[list(subject_indices)]
     file_ids = pheno_df["FILE_ID"].tolist()
 
     results = {
@@ -2031,7 +2031,7 @@ def load_nki(
 @fill_doc
 def _fetch_development_fmri_participants(
     data_path: Path, url: Url, verbose: Verbose
-):
+) -> pd.DataFrame:
     """Use in fetch_development_fmri function.
 
     This function helps in downloading and loading participants data from .tsv
@@ -2072,8 +2072,7 @@ def _fetch_development_fmri_participants(
         "Gender",
         "Handedness",
     ]
-    participants = pd.read_table(path_to_participants, usecols=names)
-    return participants
+    return pd.read_table(path_to_participants, usecols=names)
 
 
 @fill_doc
@@ -2289,7 +2288,7 @@ def fetch_development_fmri(
     fdescr = get_dataset_descr(dataset_name)
 
     # Participants data: ids, demographics, etc
-    participants = _fetch_development_fmri_participants(
+    participants: pd.DataFrame = _fetch_development_fmri_participants(
         data_path=data_path, url=None, verbose=verbose
     )
 
@@ -2314,7 +2313,7 @@ def fetch_development_fmri(
             participants = participants[
                 participants["Child_Adult"] == age_group
             ]
-        participants = participants.iloc[n_subjects]
+        participants = participants.iloc[list(n_subjects)]
     else:
         # Keep the proportion of children versus adults.
         n_subjects_count = len(n_subjects)
@@ -2352,7 +2351,9 @@ def fetch_development_fmri(
     )
 
 
-def _filter_func_regressors_by_participants(participants, age_group):
+def _filter_func_regressors_by_participants(
+    participants: pd.DataFrame, age_group: Literal["adults", "child", "both"]
+) -> tuple[int, int]:
     """Filter functional and regressors based on participants."""
     valid_age_groups = ("both", "child", "adult")
     check_parameter_in_allowed(age_group, valid_age_groups, "age_group")
@@ -2364,7 +2365,9 @@ def _filter_func_regressors_by_participants(participants, age_group):
     return adult_count, child_count
 
 
-def _filter_csv_by_n_subjects(participants, n_adult, n_child):
+def _filter_csv_by_n_subjects(
+    participants: pd.DataFrame, n_adult: int, n_child: int
+) -> pd.DataFrame:
     """Restrict the csv files to the adequate number of subjects."""
     child_ids = participants[participants["Child_Adult"] == "child"][
         "participant_id"
