@@ -157,7 +157,7 @@ def _prepare_lines_metadata(
         adjacency_matrix[
             np.abs(adjacency_matrix) <= colors["abs_threshold"]
         ] = 0
-    s = sparse.coo_matrix(adjacency_matrix)
+    s = sparse.coo_array(adjacency_matrix)
     nodes = np.asarray([s.row, s.col], dtype=int).T
     edges = np.arange(len(nodes))
     path_edges, path_nodes = _prepare_line(edges, nodes)

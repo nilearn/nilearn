@@ -8,6 +8,11 @@ from nilearn.utils.discovery import all_estimators
 
 
 @pytest.mark.slow
+# TODO (scipy >= 1.20 or sklearn >= ?)
+# remove the pytest.mark.filterwarnings
+@pytest.mark.filterwarnings(
+    "ignore:.*_matrix is being replaced:DeprecationWarning"
+)
 @parametrize_with_checks(
     estimators=[est() for _, est in all_estimators()],
     expected_failed_checks=return_expected_failed_checks,

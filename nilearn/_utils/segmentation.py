@@ -11,13 +11,12 @@ sub functions in skimage.segmentation
 import warnings
 
 import numpy as np
-from scipy import __version__, sparse
 from scipy import ndimage as ndi
+from scipy import sparse
 from scipy.sparse.linalg import cg
 from sklearn.utils import as_float_array
 
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.versions import compare_version
 
 
 def _make_graph_edges_3d(n_x: int, n_y: int, n_z: int) -> np.ndarray:
@@ -87,11 +86,11 @@ def _make_laplacian_sparse(edges, weights):
     i_indices = np.hstack((edges[0], edges[1]))
     j_indices = np.hstack((edges[1], edges[0]))
     data = np.hstack((-weights, -weights))
-    lap = sparse.coo_matrix(
+    lap = sparse.coo_array(
         (data, (i_indices, j_indices)), shape=(pixel_nb, pixel_nb)
     )
     connect = -np.ravel(lap.sum(axis=1))
-    lap = sparse.coo_matrix(
+    lap = sparse.coo_array(
         (
             np.hstack((data, connect)),
             (np.hstack((i_indices, diag)), np.hstack((j_indices, diag))),
@@ -124,9 +123,9 @@ def _build_ab(lap_sparse, labels):
     rhs = []
     for lab in range(1, nlabels + 1):
         mask = labels[seeds_indices] == lab
-        fs = sparse.csr_matrix(mask)
+        fs = sparse.csr_array(mask)
         fs = fs.transpose()
-        rhs.append(B * fs)
+        rhs.append(B @ fs)
     return lap_sparse, rhs
 
 
@@ -367,14 +366,7 @@ def _solve_cg(lap_sparse, B, tol):
     For each pixel, the label i corresponding to the maximal X_i is returned.
     """
     lap_sparse = lap_sparse.tocsc()
-    X = [
-        cg(lap_sparse, -b_i.todense(), rtol=tol, atol=0)[0]
-        # TODO (scipy to >= 1.12.0)
-        # See https://github.com/nilearn/nilearn/pull/4394
-        if compare_version(__version__, ">=", "1.12")
-        else cg(lap_sparse, -b_i.todense(), tol=tol, atol="legacy")[0]
-        for b_i in B
-    ]
+    X = [cg(lap_sparse, -b_i.todense(), rtol=tol, atol=0)[0] for b_i in B]
 
     X = np.array(X)
     X = np.argmax(X, axis=0)

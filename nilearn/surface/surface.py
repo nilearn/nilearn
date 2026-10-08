@@ -16,8 +16,6 @@ from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
 from nibabel.spatialimages import SpatialImage
 from scipy import interpolate, sparse
-from scipy.sparse import csr_matrix
-from scipy.sparse.csgraph import connected_components
 from sklearn.exceptions import EfficiencyWarning
 
 from nilearn._utils.helpers import stringify_path
@@ -712,7 +710,7 @@ def _face_outer_normals(mesh):
     return normals
 
 
-def _surrounding_faces(mesh):
+def _surrounding_faces(mesh) -> sparse.csr_array:
     """Get matrix indicating which faces the nodes belong to.
 
     i, j is set if node i is a vertex of triangle j.
@@ -722,7 +720,7 @@ def _surrounding_faces(mesh):
     vertices = mesh.coordinates
     faces = mesh.faces
     n_faces = faces.shape[0]
-    return sparse.csr_matrix(
+    return sparse.csr_array(
         (
             np.ones(3 * n_faces),
             (faces.ravel(), np.tile(np.arange(n_faces), (3, 1)).T.ravel()),
@@ -989,7 +987,7 @@ def _projection_matrix(
     mask=None,
     inner_mesh=None,
     depth=None,
-):
+) -> sparse.csr_array:
     """Get a sparse matrix that projects volume data onto a mesh.
 
     Parameters
@@ -1056,8 +1054,9 @@ def _projection_matrix(
 
     Returns
     -------
-    proj : :obj:`scipy.sparse.csr_matrix`
-       Shape (n_voxels, n_mesh_vertices). The dot product of this matrix with
+    proj : :obj:`scipy.sparse.csr_array`
+       Shape (n_voxels, n_mesh_vertices).
+       The dot product of this matrix with
        an image (represented as a column vector) gives the projection onto mesh
        vertices.
 
@@ -1080,19 +1079,22 @@ def _projection_matrix(
         inner_mesh=inner_mesh,
         depth=depth,
     )
-    sample_locations = np.asarray(np.round(sample_locations), dtype=int)
-    n_vertices, n_points, _ = sample_locations.shape
-    masked = _masked_indices(np.vstack(sample_locations), img_shape, mask=mask)
-    sample_locations = np.rollaxis(sample_locations, -1)
+    sample_locations_array: np.ndarray = np.asarray(
+        np.round(sample_locations), dtype=int
+    )
+    n_vertices, n_points, _ = sample_locations_array.shape
+    masked = _masked_indices(
+        sample_locations_array.reshape(-1, 3), img_shape, mask=mask
+    )
     sample_indices = np.ravel_multi_index(
-        sample_locations, img_shape, mode="clip"
+        np.rollaxis(sample_locations_array, -1), img_shape, mode="clip"
     ).ravel()
     row_indices, _ = np.mgrid[:n_vertices, :n_points]
     row_indices = row_indices.ravel()
     row_indices = row_indices[~masked]
     sample_indices = sample_indices[~masked]
     weights = np.ones(len(row_indices))
-    proj = sparse.csr_matrix(
+    proj = sparse.csr_array(
         (weights, (row_indices, sample_indices.ravel())),
         shape=(n_vertices, np.prod(img_shape)),
     )
@@ -2144,7 +2146,9 @@ def get_data(img, ensure_finite: bool = False) -> np.ndarray:
     return concatenated_data
 
 
-def compute_adjacency_matrix(mesh: InMemoryMesh, values="ones", dtype=None):
+def compute_adjacency_matrix(
+    mesh: InMemoryMesh, values="ones", dtype=None
+) -> sparse.csr_array:
     """Compute the adjacency matrix for a surface.
 
     The adjacency matrix is a matrix
@@ -2226,7 +2230,7 @@ def compute_adjacency_matrix(mesh: InMemoryMesh, values="ones", dtype=None):
     ee = np.concatenate([edge_lens, edge_lens])
     uv = np.concatenate([u, v])
     vu = np.concatenate([v, u])
-    return csr_matrix((ee, (uv, vu)), shape=(n, n))
+    return sparse.csr_array((ee, (uv, vu)), shape=(n, n))
 
 
 def find_surface_clusters(
@@ -2272,7 +2276,9 @@ def find_surface_clusters(
     adj = compute_adjacency_matrix(mesh)
     sub_adj = adj[mask][:, mask]
 
-    _, labels_sub = connected_components(sub_adj, directed=False)
+    _, labels_sub = sparse.csgraph.connected_components(
+        sub_adj, directed=False
+    )
 
     # full label array (0 = background)
     labels = np.zeros(mesh.n_vertices, dtype=int)
