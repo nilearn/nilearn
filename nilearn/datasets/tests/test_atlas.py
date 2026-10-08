@@ -90,7 +90,7 @@ def test_downloader(tmp_path, request_mocker):
     )
     url = "http://example.com/craddock_atlas"
     request_mocker.url_mapping["*craddock*"] = local_archive
-    datasetdir = tmp_path / "craddock_2012"
+    datasetdir = tmp_path / "craddock_2012_atlas"
     datasetdir.mkdir()
 
     # Create a dummy file. If sandboxing is successful, it won't be overwritten
@@ -108,7 +108,7 @@ def test_downloader(tmp_path, request_mocker):
 
     with pytest.raises(IOError):
         fetch_files(
-            str(tmp_path / "craddock_2012"),
+            str(tmp_path / "craddock_2012_atlas"),
             files,
             verbose=0,
         )
@@ -300,7 +300,7 @@ def test_fetch_atlas_craddock_2012(
     )
 
     validate_atlas(bunch)
-    assert bunch["maps"] == str(tmp_path / "craddock_2012" / expected)
+    assert bunch["maps"] == str(tmp_path / "craddock_2012_atlas" / expected)
 
     assert request_mocker.url_count == 1
 

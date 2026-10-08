@@ -110,6 +110,7 @@ def test_matches_type(value, type_, expected):
     assert _matches_type(value, type_) is expected
 
 
+@pytest.mark.ai_generated
 def test_check_content_types():
     """Check mismatches between data and their described content."""
     content = Bunch(
@@ -120,16 +121,38 @@ def test_check_content_types():
 
     assert (
         check_content_types(
-            Bunch(maps="foo", labels=["a"], lut=pd.DataFrame()), content
+            Bunch(
+                maps="foo",
+                labels=["a"],
+                lut=pd.DataFrame(),
+                description="not checked",
+            ),
+            content,
         )
         == []
     )
 
-    errors = check_content_types(Bunch(maps=1, labels=["a"]), content)
+    errors = check_content_types(Bunch(maps=1, foo="bar"), content)
 
-    assert len(errors) == 2
+    assert len(errors) == 3
     assert "'maps' expected type" in errors[0]
-    assert "'lut' is described but missing" in errors[1]
+    assert "'labels' is described but missing" in errors[1]
+    assert "'foo' is present in data but not described" in errors[2]
+
+
+@pytest.mark.ai_generated
+def test_check_content_types_missing_lut():
+    """Check that a missing look up table is not reported (for now).
+
+    Some probabilistic atlases (juelich, harvard_oxford) have no lut
+    while their deterministic version do.
+    """
+    content = Bunch(
+        maps=Bunch(type=str, desc=""),
+        lut=Bunch(type=pd.DataFrame, desc=""),
+    )
+
+    assert check_content_types(Bunch(maps="foo"), content) == []
 
 
 def test_content_to_rst():
