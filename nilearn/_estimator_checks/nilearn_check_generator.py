@@ -82,7 +82,6 @@ from nilearn._estimator_checks.nilearn_checks import (
     check_verbosity_embedded_masker,
     check_warning_embedded_masker,
 )
-from nilearn._utils.cache_mixin import CacheMixin
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers._mixin import _MultiMixin
@@ -101,10 +100,8 @@ COMMON_CHECKS = [
     check_set_output,
     check_set_output_accepts_surface,
     check_verbose,
+    check_img_estimator_cache_warning,
 ]
-
-# Checks that apply to all estimators inheriting from CacheMixin
-CACHE_MIXIN_CHECKS = [check_img_estimator_cache_warning]
 
 # Checks that apply to all estimators that accept volume or surface image as
 # input
@@ -243,7 +240,6 @@ def accepts_image(estimator):
 # (conditions to test on estimator, list of checks to apply)
 CHECK_SELECTOR = [
     (lambda e: True, COMMON_CHECKS),
-    (lambda e: isinstance(e, CacheMixin), CACHE_MIXIN_CHECKS),
     # ----------INPUT VOLUME OR SURFACE----------
     (lambda e: accepts_image(e), IMG_INPUT_COMMON_CHECKS),
     (

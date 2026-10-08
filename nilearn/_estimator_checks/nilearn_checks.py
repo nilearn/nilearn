@@ -67,6 +67,7 @@ from sklearn.utils.estimator_checks import (
 )
 
 from nilearn._base import NilearnBaseEstimator
+from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.helpers import (
     is_gil_enabled,
     is_matplotlib_installed,
@@ -975,6 +976,9 @@ def check_img_estimator_dont_overwrite_parameters(estimator_orig) -> None:
     )
 
 
+@skip_if(
+    lambda e: not isinstance(e, CacheMixin),
+)
 def check_img_estimator_cache_warning(estimator_orig) -> None:
     """Check estimator behavior with caching.
 

@@ -7,7 +7,6 @@ correct checks.
 import pytest
 
 from nilearn._estimator_checks.nilearn_check_generator import (
-    CACHE_MIXIN_CHECKS,
     COMMON_CHECKS,
     DECOMPOSITION_CHECKS,
     GLM_CHECKS,
@@ -126,10 +125,7 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
     [
         (
             e,
-            COMMON_CHECKS
-            + CACHE_MIXIN_CHECKS
-            + IMG_INPUT_COMMON_CHECKS
-            + GLM_CHECKS,
+            COMMON_CHECKS + IMG_INPUT_COMMON_CHECKS + GLM_CHECKS,
         )
         for e in GLM
     ]
@@ -137,23 +133,19 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
     + [
         (
             e,
-            COMMON_CHECKS
-            + CACHE_MIXIN_CHECKS
-            + IMG_INPUT_COMMON_CHECKS
-            + DECOMPOSITION_CHECKS,
+            COMMON_CHECKS + IMG_INPUT_COMMON_CHECKS + DECOMPOSITION_CHECKS,
         )
         for e in DECOMPOSITION
     ]
     # Connectome estimators except GroupSparseCovariance
     + [(e, COMMON_CHECKS) for e in CONNECTOME if e != GroupSparseCovariance]
     # GroupSparseCovariance
-    + [(GroupSparseCovariance, COMMON_CHECKS + CACHE_MIXIN_CHECKS)]
+    + [(GroupSparseCovariance, COMMON_CHECKS)]
     # Nifti maskers (non multi) except NiftiMasker
     + [
         (
             e,
             COMMON_CHECKS
-            + CACHE_MIXIN_CHECKS
             + IMG_INPUT_COMMON_CHECKS
             + VOLUME_INPUT_MASKER_CHECKS
             + NON_MULTI_MASKER_CHECKS,
@@ -166,7 +158,6 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
         (
             NiftiMasker,
             COMMON_CHECKS
-            + CACHE_MIXIN_CHECKS
             + IMG_INPUT_COMMON_CHECKS
             + VOLUME_INPUT_MASKER_CHECKS
             + NON_MULTI_MASKER_CHECKS
@@ -178,7 +169,6 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
         (
             e,
             COMMON_CHECKS
-            + CACHE_MIXIN_CHECKS
             + IMG_INPUT_COMMON_CHECKS
             + VOLUME_INPUT_MASKER_CHECKS
             + MULTI_MASKER_CHECKS,
@@ -191,7 +181,6 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
         (
             MultiNiftiMasker,
             COMMON_CHECKS
-            + CACHE_MIXIN_CHECKS
             + IMG_INPUT_COMMON_CHECKS
             + VOLUME_INPUT_MASKER_CHECKS
             + NIFTIMASKER_CHECKS
@@ -204,7 +193,6 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
         (
             e,
             COMMON_CHECKS
-            + CACHE_MIXIN_CHECKS
             + IMG_INPUT_COMMON_CHECKS
             + SURFACE_INPUT_MASKER_CHECKS
             + NON_MULTI_MASKER_CHECKS,
@@ -216,7 +204,6 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
         (
             e,
             COMMON_CHECKS
-            + CACHE_MIXIN_CHECKS
             + IMG_INPUT_COMMON_CHECKS
             + SURFACE_INPUT_MASKER_CHECKS
             + MULTI_MASKER_CHECKS,
@@ -228,7 +215,6 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
         (
             e,
             COMMON_CHECKS
-            + CACHE_MIXIN_CHECKS
             + IMG_INPUT_COMMON_CHECKS
             + IMG_INPUT_CLAS_REG_COMMON_CHECKS
             + IMG_INPUT_REQUIRES_Y,
@@ -240,7 +226,6 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
         (
             e,
             COMMON_CHECKS
-            + CACHE_MIXIN_CHECKS
             + IMG_INPUT_COMMON_CHECKS
             + IMG_INPUT_REG_CHECKS
             + IMG_INPUT_REQUIRES_Y,
@@ -252,7 +237,6 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
         (
             RegionExtractor,
             COMMON_CHECKS
-            + CACHE_MIXIN_CHECKS
             + IMG_INPUT_COMMON_CHECKS
             + VOLUME_INPUT_MASKER_CHECKS
             + NON_MULTI_MASKER_CHECKS,
@@ -263,10 +247,7 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
     [
         (
             Parcellations,
-            COMMON_CHECKS
-            + CACHE_MIXIN_CHECKS
-            + IMG_INPUT_COMMON_CHECKS
-            + DECOMPOSITION_CHECKS,
+            COMMON_CHECKS + IMG_INPUT_COMMON_CHECKS + DECOMPOSITION_CHECKS,
         )
     ]
     +
