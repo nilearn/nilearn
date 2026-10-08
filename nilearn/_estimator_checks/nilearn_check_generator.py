@@ -125,6 +125,7 @@ IMG_INPUT_COMMON_CHECKS = [
     check_img_estimator_standardization,
     check_img_estimator_verbose,
     check_nilearn_methods_sample_order_invariance,
+    check_img_estimator_clean_dtype,
     check_img_estimator_dtypes_inverse_transform,
 ]
 
@@ -154,10 +155,6 @@ IMG_INPUT_REQUIRES_Y = [
     check_img_estimator_requires_y_none,
     check_inputs_length,
 ]
-
-# Checks for estimators that accept volume or surface image as input and
-# implements transform function and has dtype parameter
-IMG_INPUT_TRANSFORM_DTYPE_CHECKS = [check_img_estimator_clean_dtype]
 
 # Checks that apply to all maskers
 COMMON_MASKER_CHECKS = [
@@ -256,14 +253,6 @@ CHECK_SELECTOR = [
     (
         lambda e: accepts_image(e) and is_regressor(e),
         IMG_INPUT_REG_CHECKS,
-    ),
-    (
-        lambda e: (
-            accepts_image(e)
-            and hasattr(e, "transform")
-            and hasattr(e, "dtype")
-        ),
-        IMG_INPUT_TRANSFORM_DTYPE_CHECKS,
     ),
     (
         lambda e: accepts_image(e) and _requires_y(e),

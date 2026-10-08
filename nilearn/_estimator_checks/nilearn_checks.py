@@ -1690,6 +1690,16 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
                 ) from e
 
 
+@skip_if(
+    (
+        lambda e: not hasattr(e, "transform"),
+        "'transform' attribute is not implemented.",
+    ),
+    (
+        lambda e: not hasattr(e, "dtype"),
+        "'dtype' attribute is not implemented.",
+    ),
+)
 def check_img_estimator_clean_dtype(estimator_orig) -> None:
     """Regression test for https://github.com/nilearn/nilearn/issues/6525.
 
