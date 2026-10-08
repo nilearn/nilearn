@@ -1976,6 +1976,9 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
         license="Creative Commons -- Attribution Non-Commercial",
     ),
+    "craddock_2012_atlas": Bunch(
+        license="Creative Commons Attribution Non-commercial Share Alike."
+    ),
     "destrieux_2009_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
         license="unknown",

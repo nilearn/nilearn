@@ -263,14 +263,8 @@ def fetch_atlas_craddock_2012(
     """Download and return file names \
        for the Craddock 2012 :term:`parcellation`.
 
-    This function returns a :term:`probabilistic atlas<Probabilistic atlas>`.
-    The provided images are in MNI152 space. All images are 4D with
-    shapes equal to ``(47, 56, 46, 43)``.
-
-    See :footcite:t:`CreativeCommons` for the license.
-
-    See :footcite:t:`Craddock2012` and :footcite:t:`nitrcClusterROI`
-    for more information on this :term:`parcellation`.
+    For more information,
+    see the :ref:`dataset description <craddock_2012_atlas>`.
 
     Parameters
     ----------
@@ -288,41 +282,16 @@ def fetch_atlas_craddock_2012(
     grp_mean : :obj:`bool`, default=True
         The choice of the :term:`parcellation` (with group_mean or without)
 
-
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - ``'scorr_mean'``: :obj:`str`, path to nifti file containing
-            the group-mean :term:`parcellation`
-            when emphasizing spatial homogeneity.
+        %(craddock_2012_atlas_content)s
 
-        - ``'tcorr_mean'``: :obj:`str`, path to nifti file containing
-            the group-mean parcellation when emphasizing temporal homogeneity.
-
-        - ``'scorr_2level'``: :obj:`str`, path to nifti file containing
-            the :term:`parcellation` obtained
-            when emphasizing spatial homogeneity.
-
-        - ``'tcorr_2level'``: :obj:`str`, path to nifti file containing
-            the :term:`parcellation` obtained
-            when emphasizing temporal homogeneity.
-
-        - ``'random'``: :obj:`str`, path to nifti file containing
-            the :term:`parcellation` obtained with random clustering.
-
-        - %(description)s
-
-        - %(atlas_type)s
-
-        - %(template)s
-
-
-    References
-    ----------
-    .. footbibliography::
-
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
     atlas_type = "probabilistic"
@@ -334,13 +303,11 @@ def fetch_atlas_craddock_2012(
         )
     opts = {"uncompress": True}
 
-    dataset_name = "craddock_2012"
+    dataset_name = "craddock_2012_atlas"
 
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-
-    fdescr = get_dataset_descr(dataset_name)
 
     allowed_homogeneity = {"spatial", "temporal", "random"}
     if homogeneity not in allowed_homogeneity:
@@ -362,8 +329,9 @@ def fetch_atlas_craddock_2012(
 
     return Atlas(
         maps=data[0],
-        description=fdescr,
+        description=Description.from_registry(dataset_name),
         atlas_type=atlas_type,
+        template="MNI152",
     )
 
 
