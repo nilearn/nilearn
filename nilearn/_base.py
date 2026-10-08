@@ -1,12 +1,15 @@
 """Base classes for all estimators and various utility functions."""
 
 import itertools
+from pathlib import Path
 
 from packaging.version import parse
 from sklearn.base import BaseEstimator
 
 from nilearn._version import __version__
 from nilearn.utils.tags import InputTags
+
+PACKAGE_DIRECTORY = Path(__file__).parent
 
 
 def documentation_url():

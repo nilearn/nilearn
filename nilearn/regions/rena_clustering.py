@@ -15,7 +15,7 @@ from scipy.sparse import coo_matrix, csgraph, dia_matrix
 from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.utils.validation import check_is_fitted, validate_data
 
-from nilearn._base import NilearnBaseEstimator
+from nilearn._base import PACKAGE_DIRECTORY, NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.docs import fill_doc
@@ -685,15 +685,11 @@ class ReNA(
 
         Only works in during sklearn checks during tests.
         """
-        import nilearn as nil
-
-        pkg_dir = Path(nil.__file__).parent
-
         frame = inspect.currentframe()
         while frame:
             filename = inspect.getfile(frame)
             is_test_file = Path(filename).name.startswith("test_")
-            in_nilearn_code = filename.startswith(str(pkg_dir))
+            in_nilearn_code = filename.startswith(str(PACKAGE_DIRECTORY))
             if is_test_file:
                 break
             frame = frame.f_back

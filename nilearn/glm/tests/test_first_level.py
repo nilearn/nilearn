@@ -18,7 +18,7 @@ from numpy.testing import (
 )
 from sklearn.cluster import KMeans
 
-import nilearn as nil
+from nilearn._base import PACKAGE_DIRECTORY
 from nilearn._utils.data_gen import (
     basic_paradigm,
     generate_fake_fmri_data_and_design,
@@ -747,7 +747,7 @@ def test_fmri_inputs_with_confounds(tmp_path):
 def test_fmri_inputs_with_confounds_with_nan():
     """Test with confounds and, events."""
     confound_file = (
-        Path(nil.__file__).parent
+        PACKAGE_DIRECTORY
         / "interfaces"
         / "fmriprep"
         / "data"

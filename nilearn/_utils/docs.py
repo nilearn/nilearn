@@ -17,12 +17,11 @@ import sys
 import types
 import typing
 from collections.abc import Callable
-from pathlib import Path
 
 import pandas as pd
 from sklearn.utils import Bunch
 
-from nilearn._base import documentation_url
+from nilearn._base import PACKAGE_DIRECTORY, documentation_url
 
 ##############################################################################
 #
@@ -2032,16 +2031,14 @@ def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
     import nibabel  # noqa : F401
     import numpy as np  # noqa : F401
 
-    import nilearn as nil
-
-    pkg_dir = Path(nil.__file__).parent
-
-    json_file_path = pkg_dir / "datasets" / "description" / json_file
+    json_file_path = PACKAGE_DIRECTORY / "datasets" / "description" / json_file
 
     if not json_file_path.exists():
         return content
 
-    with (pkg_dir / "datasets" / "description" / json_file).open("rb") as f:
+    with (PACKAGE_DIRECTORY / "datasets" / "description" / json_file).open(
+        "rb"
+    ) as f:
         metadata = json.load(f)
 
     for key, value in metadata.items():
@@ -2263,6 +2260,10 @@ class Description(Bunch):
 
         See ``nilearn.datasets._descriptions.DATASET_DESCRIPTIONS``.
         """
+        assert (
+            PACKAGE_DIRECTORY / "datasets" / "description" / f"{name}.rst"
+        ).exists()
+
         entry = DATASET_DESCRIPTIONS[name]
         return cls(
             documentation=(
