@@ -1968,8 +1968,7 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     "aal_atlas": Bunch(
         content=Bunch(
             lut=Bunch(type=pd.DataFrame, desc=lut),
-        ),
-        license="unknown",
+        )
     ),
     "allen_2011_atlas": Bunch(license="unknown"),
     "basc_multiscale_2015_atlas": Bunch(
@@ -1981,11 +1980,11 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     ),
     "destrieux_2009_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
-        license="unknown",
     ),
     "difumo_atlas": Bunch(
         license="usage is unrestricted for non-commercial research purposes.",
     ),
+    "dosenbach_2010_atlas": Bunch(),
     "fiac": Bunch(license="unknown"),
     "harvard_oxford_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
@@ -1997,8 +1996,7 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     ),
     "language_localizer_demo": Bunch(license="ODC-BY-SA"),
     "localizer_first_level": Bunch(
-        content=Bunch(template=Bunch(type=str, desc=template)),
-        license="unknown",
+        content=Bunch(template=Bunch(type=str, desc=template))
     ),
     "msdl_atlas": Bunch(
         license="usage is unrestricted for non-commercial research purposes."
@@ -2007,20 +2005,18 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
         license="UCC-By Attribution 4.0 International",
     ),
-    "power_2011_atlas": Bunch(license="unknown"),
-    "spm_multimodal": Bunch(license="unknown"),
+    "power_2011_atlas": Bunch(),
+    "spm_multimodal": Bunch(),
+    "seitzman_2018_atlas": Bunch(),
     "schaefer_2018_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
-        license="unknown",
     ),
-    "smith_2009_atlas": Bunch(license="unknown"),
+    "smith_2009_atlas": Bunch(),
     "surf_destrieux_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
-        license="unknown",
     ),
     "talairach_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
-        license="unknown",
     ),
     "yeo_2011_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
@@ -2064,6 +2060,10 @@ def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
 for k in DATASET_DESCRIPTIONS:
     if "content" not in DATASET_DESCRIPTIONS[k]:
         DATASET_DESCRIPTIONS[k]["content"] = Bunch()
+
+    if "license" not in DATASET_DESCRIPTIONS[k]:
+        DATASET_DESCRIPTIONS[k]["license"] = "unknown"
+
     DATASET_DESCRIPTIONS[k]["content"] = _fill_content_from_json(
         DATASET_DESCRIPTIONS[k]["content"], f"{k}.json"
     )

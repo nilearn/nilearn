@@ -1198,8 +1198,7 @@ To add the description of a new dataset ``<name>``:
    They will be added automatically.
 
 2. Add an entry to ``DATASET_DESCRIPTIONS``
-   in ``nilearn/_utils/docs.py`` with the license of the dataset
-   (use ``"unknown"`` if it is not known).
+   in ``nilearn/_utils/docs.py`` with the license of the dataset (if it is known).
    Values that are shared across datasets and already documented in ``docdict``
    (for example the look up table ``lut`` of deterministic atlases)
    are added here rather than in the json file:

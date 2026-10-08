@@ -1,4 +1,4 @@
-.. _seitzman_atlas:
+.. _seitzman_2018_atlas:
 
 Seitzman 2018 atlas
 ===================
@@ -9,31 +9,26 @@ See :func:`nilearn.datasets.fetch_coords_seitzman_2018`.
 
 Notes
 -----
-300 ROI coordinates in cortical, subcortical and cerebellar regions.
+300 regions coordinates in cortical, subcortical and cerebellar regions.
 
-    Here, we apply a winner-take-all partitioning method
-    to :term:`resting-state` :term:`fMRI` data
-    and careful consideration of anatomy to generate novel functionally-constrained ROIs
-    in the thalamus, basal ganglia, amygdala, hippocampus, and cerebellum.
-    We validate these ROIs in three datasets via several anatomical and functional criteria,
-    including known anatomical divisions and functions,
-    as well as agreement with existing literature.
-    Further, we demonstrate that combining these ROIs with established cortical ROIs recapitulates
-    and extends previously described functional network organization.
+These regions cover cortical, subcortical and cerebellar regions and are
+assigned to one of 13 networks:
+(Auditory, CinguloOpercular, DefaultMode,
+DorsalAttention, FrontoParietal, MedialTemporalLobe, ParietoMedial, Reward, Salience, SomatomotorDorsal, SomatomotorLateral, VentralAttention, Visual)
+and have a regional label
+(cortexL, cortexR, cerebellum, thalamus, hippocampus, basalGanglia, amygdala, cortexMid).
 
-    :footcite:t:`Seitzman2020`
+Here, we apply a winner-take-all partitioning method
+to :term:`resting-state` :term:`fMRI` data
+and careful consideration of anatomy to generate novel functionally-constrained regions
+in the thalamus, basal ganglia, amygdala, hippocampus, and cerebellum.
+We validate these regions in three datasets via several anatomical and functional criteria,
+including known anatomical divisions and functions,
+as well as agreement with existing literature.
+Further, we demonstrate that combining these regions with established cortical regions recapitulates
+and extends previously described functional network organization.
 
-Content
--------
-    :"rois": Coordinates of 300 ROIs in :term:`MNI` space
-    :"radius": Radius of each ROI in mm
-    :"networks": Network names
-    :"regions": Region names
-
-References
-----------
-
-.. footbibliography::
+See :footcite:t:`Seitzman2020`.
 
 For more information see:
 https://greenelab.ucsd.edu/data_software
@@ -41,6 +36,14 @@ https://greenelab.ucsd.edu/data_software
 ROI coordinates downloaded from:
 https://wustl.app.box.com/s/twpyb1pflj6vrlxgh3rohyqanxbdpelw
 
+Content
+-------
+.. nilearn_dataset_content:: seitzman_2018_atlas
+
+References
+----------
+.. footbibliography::
+
 License
 -------
-unknown
+.. nilearn_dataset_license:: seitzman_2018_atlas

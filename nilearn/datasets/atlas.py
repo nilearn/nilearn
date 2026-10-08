@@ -29,7 +29,6 @@ from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
     fetch_single_file,
-    get_dataset_descr,
     get_dataset_dir,
 )
 from nilearn.image import check_niimg, new_img_like, reorder_img
@@ -1423,6 +1422,9 @@ def fetch_atlas_basc_multiscale_2015(
     :term:`functional magnetic resonance images<fMRI>` from about 200 young
     healthy subjects.
 
+    For more information
+    see the :ref:`dataset description <basc_multiscale_2015_atlas>`.
+
     .. nilearn_versionadded:: 0.2.3
 
     Parameters
@@ -1532,7 +1534,8 @@ def fetch_coords_dosenbach_2010(
     These ROIs cover much of the cerebral cortex
     and cerebellum and are assigned to 6 networks.
 
-    See :footcite:t:`Dosenbach2010`.
+    For more information
+    see the :ref:`dataset description <dosenbach_2010_atlas>`.
 
     Parameters
     ----------
@@ -1545,23 +1548,9 @@ def fetch_coords_dosenbach_2010(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'rois':  :class:`pandas.DataFrame` with the coordinates
-          of the 160 ROIs in :term:`MNI` space.
-
-        - %(labels)s
-
-        - 'networks': :class:`numpy.ndarray` of :obj:`str`, list of network
-          names for the 160 ROI.
-
-        - %(description)s
-
-    References
-    ----------
-    .. footbibliography::
+        %(seitzman_2018_atlas_content)s
 
     """
-    dataset_name = "dosenbach_2010"
-    fdescr = get_dataset_descr(dataset_name)
     csv = PACKAGE_DIRECTORY / "data" / "dosenbach_2010.csv"
     out_csv = pd.read_csv(csv)
 
@@ -1579,9 +1568,9 @@ def fetch_coords_dosenbach_2010(
         "rois": out_csv[["x", "y", "z"]],
         "labels": labels,
         "networks": out_csv["network"],
-        "description": fdescr,
+        "description": Description.from_registry("dosenbach_2010_atlas"),
+        "template": "MNI",
     }
-
     return Bunch(**params)
 
 
@@ -1591,14 +1580,8 @@ def fetch_coords_seitzman_2018(
 ) -> Bunch[str, str | pd.DataFrame | np.ndarray]:
     """Load the Seitzman et al. 300 ROIs.
 
-    These ROIs cover cortical, subcortical and cerebellar regions and are
-    assigned to one of 13 networks (Auditory, CinguloOpercular, DefaultMode,
-    DorsalAttention, FrontoParietal, MedialTemporalLobe, ParietoMedial,
-    Reward, Salience, SomatomotorDorsal, SomatomotorLateral, VentralAttention,
-    Visual) and have a regional label (cortexL, cortexR, cerebellum, thalamus,
-    hippocampus, basalGanglia, amygdala, cortexMid).
-
-    See :footcite:t:`Seitzman2020`.
+    For more information
+    see the :ref:`dataset description <seitzman_2018_atlas>`.
 
     .. nilearn_versionadded:: 0.5.1
 
@@ -1613,27 +1596,9 @@ def fetch_coords_seitzman_2018(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'rois': :class:`pandas.DataFrame` with the coordinates
-          of the 300 ROIs in :term:`MNI` space.
-
-        - 'radius': :class:`numpy.ndarray` of :obj:`int`
-            Radius of each ROI in mm.
-
-        - 'networks': :class:`numpy.ndarray` of :obj:`str`
-            Names of the corresponding network for each ROI.
-
-        - 'regions': :class:`numpy.ndarray` of :obj:`str`
-            Names of the regions.
-
-        - %(description)s
-
-    References
-    ----------
-    .. footbibliography::
+        %(seitzman_2018_atlas_content)s
 
     """
-    dataset_name = "seitzman_2018"
-    fdescr = get_dataset_descr(dataset_name)
     roi_file = (
         PACKAGE_DIRECTORY
         / "data"
@@ -1669,9 +1634,9 @@ def fetch_coords_seitzman_2018(
         "radius": np.array(rois["radius"]),
         "networks": np.array(rois["network"]),
         "regions": np.array(rois["region"]),
-        "description": fdescr,
+        "description": Description.from_registry("seitzman_2018_atlas"),
+        "template": "MNI",
     }
-
     return Bunch(**params)
 
 
