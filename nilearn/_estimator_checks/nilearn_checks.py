@@ -1565,6 +1565,12 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
                         getattr(estimator, method)(X)
 
 
+@skip_if(
+    (
+        lambda e: not hasattr(e, "inverse_transform"),
+        "'inverse_transform' attribute is not implemented.",
+    ),
+)
 def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
     """Check estimator can inverse_transform with inputs of varying dtypes.
 

@@ -159,12 +159,6 @@ IMG_INPUT_REQUIRES_Y = [
 # implements transform function and has dtype parameter
 IMG_INPUT_TRANSFORM_DTYPE_CHECKS = [check_img_estimator_clean_dtype]
 
-# Checks for estimators that accept volume or surface image as input and
-# implements inverse_transform function
-IMG_INPUT_INVERSE_TRANSFORM_CHECKS = [
-    check_img_estimator_dtypes_inverse_transform
-]
-
 # Checks that apply to all maskers
 COMMON_MASKER_CHECKS = [
     check_masker_clean_kwargs,
@@ -262,10 +256,6 @@ CHECK_SELECTOR = [
     (
         lambda e: accepts_image(e) and is_regressor(e),
         IMG_INPUT_REG_CHECKS,
-    ),
-    (
-        lambda e: accepts_image(e) and hasattr(e, "inverse_transform"),
-        IMG_INPUT_INVERSE_TRANSFORM_CHECKS,
     ),
     (
         lambda e: (
