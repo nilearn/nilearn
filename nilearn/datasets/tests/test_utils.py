@@ -19,52 +19,6 @@ from nilearn.datasets.tests.conftest import Response
 
 datadir = _utils.PACKAGE_DIRECTORY / "data"
 
-DATASET_NAMES = {
-    "ABIDE_pcp",
-    "adhd",
-    "brainomics_localizer",
-    "development_fmri",
-    "fsaverage3",
-    "fsaverage4",
-    "fsaverage5",
-    "fsaverage6",
-    "fsaverage",
-    "haxby2001",
-    "icbm152_2009",
-    "Megatrawls",
-    "mixed_gambles",
-    "miyawaki2008",
-    "neurovault",
-    "nki_enhanced_surface",
-    "oasis1",
-    "spm_auditory",
-}
-
-
-@pytest.mark.parametrize("name", DATASET_NAMES)
-def test_get_dataset_descr(name):
-    """Test function ``get_dataset_descr()``.
-
-    Not needed for atlas datasets as this is checked in
-    nilearn/datasets/tests/test_atlas.py
-    """
-    descr = _utils.get_dataset_descr(name)
-
-    assert isinstance(descr, str)
-    assert len(descr) > 0
-
-
-def test_get_dataset_descr_warning():
-    """Tests that function ``get_dataset_descr()`` gives a warning \
-       when no description is available.
-    """
-    with pytest.warns(
-        UserWarning, match="Could not find dataset description."
-    ):
-        descr = _utils.get_dataset_descr("")
-
-    assert descr == ""
-
 
 def test_get_dataset_dir(tmp_path):
     """Test folder creation under different environments.

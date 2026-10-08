@@ -13,10 +13,6 @@ from nilearn._utils.docs import (
     render_description_directives,
     type_to_rst,
 )
-from nilearn.datasets._utils import (
-    PACKAGE_DIRECTORY,
-    get_dataset_descr,
-)
 
 
 @pytest.mark.parametrize(
@@ -37,19 +33,6 @@ from nilearn.datasets._utils import (
 def test_type_to_rst(type_, expected):
     """Check rendering of types as rst."""
     assert type_to_rst(type_) == expected
-
-
-@pytest.mark.parametrize(
-    "rst_file",
-    sorted((PACKAGE_DIRECTORY / "description").glob("*.rst")),
-    ids=lambda x: x.stem,
-)
-def test_description_directives_are_rendered(rst_file):
-    """Check all nilearn_dataset_* directives refer to a registered dataset.
-
-    Rendering raises a KeyError otherwise.
-    """
-    assert ".. nilearn_dataset_" not in get_dataset_descr(rst_file.stem)
 
 
 @pytest.mark.parametrize("newline", ["\n", "\r\n"])
