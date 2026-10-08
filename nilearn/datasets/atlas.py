@@ -310,11 +310,7 @@ def fetch_atlas_craddock_2012(
     )
 
     allowed_homogeneity = {"spatial", "temporal", "random"}
-    if homogeneity not in allowed_homogeneity:
-        raise ValueError(
-            f"'homogeneity' must be one of {allowed_homogeneity}. "
-            f"Got {homogeneity=}."
-        )
+    check_parameter_in_allowed(homogeneity, allowed_homogeneity, "homogeneity")
 
     if homogeneity in ["spatial", "temporal"]:
         if grp_mean:
