@@ -24,7 +24,6 @@ DATASET_NAMES = {
     "adhd",
     "brainomics_localizer",
     "development_fmri",
-    "dosenbach_2010",
     "fsaverage3",
     "fsaverage4",
     "fsaverage5",

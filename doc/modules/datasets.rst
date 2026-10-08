@@ -105,10 +105,11 @@ Probabilistic atlases
     :hidden:
 
     description/aal_atlas.rst
-    description/allen_rsn_2011_atlas.rst
+    description/allen_2011_atlas.rst
     description/basc_multiscale_2015_atlas.rst
     description/craddock_2012_atlas.rst
     description/difumo_atlas.rst
+    description/destrieux_2009_atlas.rst
     description/dosenbach_2010_atlas.rst
     description/harvard_oxford_atlas.rst
     description/juelich_atlas.rst
