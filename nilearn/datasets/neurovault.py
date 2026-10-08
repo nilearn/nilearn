@@ -27,6 +27,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
+from nilearn._utils.versions import sparray_context
 from nilearn.datasets._utils import (
     fetch_single_file,
     get_dataset_descr,
@@ -1265,7 +1266,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
         )
         return None, None
     vectorizer = DictVectorizer(**kwargs)
-    frequencies = vectorizer.fit_transform(words).toarray()
+    with sparray_context():
+        frequencies = vectorizer.fit_transform(words).toarray()
     vocabulary = np.asarray(vectorizer.feature_names_)
     logger.log(
         f"Computing word features done; vocabulary size: {vocabulary.size}",

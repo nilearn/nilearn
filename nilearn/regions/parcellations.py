@@ -8,7 +8,7 @@ from joblib import Parallel, delayed
 from scipy.sparse import coo_array
 from sklearn.base import clone
 from sklearn.cluster import AgglomerativeClustering, MiniBatchKMeans
-from sklearn.feature_extraction import image
+from sklearn.feature_extraction import image as sk_image_feature_extraction
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
 
@@ -22,6 +22,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     sanitize_verbose,
 )
+from nilearn._utils.versions import sparray_context
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.image.image import iter_check_niimg, new_img_like
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
@@ -133,7 +134,8 @@ def _estimator_fit(data, estimator, method=None):
     # they cluster first dimension of data (samples) but we want to cluster
     # features (voxels)
     else:
-        estimator.fit(data.T)
+        with sparray_context():
+            estimator.fit(data.T)
     labels_ = estimator.labels_
 
     return labels_
@@ -526,9 +528,10 @@ class Parcellations(_MultiPCA):
             else:
                 mask_ = safe_get_data(mask_img_).astype(bool)
                 shape = mask_.shape
-                connectivity = image.grid_to_graph(
-                    n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
-                )
+                with sparray_context():
+                    connectivity = sk_image_feature_extraction.grid_to_graph(
+                        n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
+                    )
 
             agglomerative = AgglomerativeClustering(
                 n_clusters=self.n_parcels,
