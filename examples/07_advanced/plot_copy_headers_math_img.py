@@ -13,12 +13,13 @@ depending on the software used.
 """
 
 # %%
-# Let's fetch two subjects from
-# an example :term:`fMRI` dataset,
-# :func:`~nilearn.datasets.fetch_adhd`.
+# .. admonition:: dataset
 #
-# For more information on the structure of this dataset,
-# see the :ref:`dataset description <adhd_dataset>`.
+#    This example uses the :ref:`ADHD dataset <adhd_dataset>`.
+#
+
+# %%
+# Let's fetch two subjects from the dataset.
 #
 from nilearn.datasets import fetch_adhd
 

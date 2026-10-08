@@ -18,6 +18,13 @@ from a single subject dataset from the "Neurospin Localizer".
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`localizer first level dataset
+#    <localizer_first_level_dataset>`.
+#
+
+# %%
 # At first, we grab the localizer data.
 import pandas as pd
 

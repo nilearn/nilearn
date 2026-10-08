@@ -1,6 +1,6 @@
 """
-Generate an events.tsv file for the NeuroSpin localizer task
-============================================================
+Generate an events.tsv file
+===========================
 
 Create a :term:`BIDS`-compatible events.tsv file from onset/trial-type
 information.

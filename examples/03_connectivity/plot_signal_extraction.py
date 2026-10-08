@@ -24,6 +24,15 @@ documentation <parcellation_time_series>` for more.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`Harvard-Oxford atlas <harvard_oxford_atlas>`
+#    - the :ref:`development fMRI dataset <development_dataset>`
+#
+
+# %%
 # Retrieve the atlas and the data
 # -------------------------------
 from nilearn.datasets import fetch_atlas_harvard_oxford, fetch_development_fmri

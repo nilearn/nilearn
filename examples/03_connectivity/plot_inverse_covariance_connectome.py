@@ -21,6 +21,15 @@ represent only the edges above 80% of the values.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`MSDL atlas <msdl_atlas>`
+#    - the :ref:`development fMRI dataset <development_dataset>`
+#
+
+# %%
 # Retrieve the atlas and the data
 # -------------------------------
 from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri

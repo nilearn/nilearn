@@ -1,6 +1,6 @@
 """
-Searchlight analysis of face vs house recognition
-=================================================
+Searchlight analysis
+====================
 
 Searchlight analysis requires fitting a classifier a large amount of
 times. As a result, it is an intrinsically slow method.
@@ -9,6 +9,12 @@ Searchlight is run only on one slice on
 the :term:`fMRI` (see the generated figures).
 
 """
+
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
 
 # %%
 # Load Haxby dataset

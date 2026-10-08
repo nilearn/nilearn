@@ -1,6 +1,6 @@
 """
-Voxel-Based Morphometry on Oasis dataset
-========================================
+Voxel-Based Morphometry: Regression
+===================================
 
 This example uses Voxel-Based Morphometry (:term:`VBM`)
 to study the relationship between aging and gray matter density.
@@ -37,6 +37,12 @@ to limit the memory usage.
     can impact significantly the prediction score.
 
 """
+
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`OASIS VBM dataset <oasis_maps>`.
+#
 
 # Use a single variable to control the verbosity of the script.
 verbose = 1

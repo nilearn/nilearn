@@ -14,6 +14,13 @@ versus periods of rest.
     More sensitive results would likely be obtained on the corrected,
     spatially normalized and smoothed images.
 """
+
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`SPM auditory dataset <spm_auditory_dataset>`.
+#
+
 # %%
 # Retrieving the data
 # -------------------

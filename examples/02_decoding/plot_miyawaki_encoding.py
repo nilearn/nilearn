@@ -1,6 +1,6 @@
 """
-Encoding models for visual stimuli from Miyawaki et al. 2008
-============================================================
+Encoding models for visual stimuli
+==================================
 
 This example partly reproduces the encoding model presented
 in :footcite:t:`Miyawaki2008`.
@@ -26,6 +26,12 @@ receptive fields for a set of voxels to see which pixel location a
     for the same dataset.
 
 """
+
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Miyawaki 2008 dataset <miyawaki_dataset>`.
+#
 
 from nilearn._utils.helpers import check_matplotlib
 

@@ -16,6 +16,15 @@ for a careful study.
 verbose = 0
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`MSDL atlas <msdl_atlas>`
+#    - the :ref:`development fMRI dataset <development_dataset>`
+#
+
+# %%
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
 # We study only 30 subjects from the dataset, to save computation time.

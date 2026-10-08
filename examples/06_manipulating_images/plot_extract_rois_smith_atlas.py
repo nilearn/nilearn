@@ -1,16 +1,21 @@
 """
-Regions Extraction of Default Mode Networks using Smith Atlas
-=============================================================
+Regions Extraction of Default Mode Networks
+===========================================
 
-This simple example shows how to extract regions from Smith atlas
-resting state networks.
+This simple example shows how to extract regions with a probabilistic atlas.
 
-In particular, we show how Default Mode Network regions are extracted
-using :class:`~nilearn.regions.RegionExtractor` from regions module
+In particular, we show how default mode network regions are extracted
+using :class:`~nilearn.regions.RegionExtractor`
+from the :mod:`~nilearn.regions` module.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`Smith 2009 atlas <smith_2009_atlas>`.
+
 """
 
 # %%
-# Fetching the smith :term:`ICA` 10 RSN by importing datasets utilities
+# Fetching the Smith atlas 10 resting state networks.
 from nilearn import datasets
 
 atlas_networks = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)[

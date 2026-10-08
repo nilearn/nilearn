@@ -1,11 +1,18 @@
 """
-Decoding with ANOVA + SVM: face vs house in the Haxby dataset
-=============================================================
+Decoding with ANOVA + SVM
+=========================
 
-This example does a simple but efficient decoding on the Haxby dataset:
+This example does a simple but efficient decoding face vs house
+in the Haxby dataset:
 using a feature selection, followed by an SVM.
 
 """
+
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+#
 
 import warnings
 

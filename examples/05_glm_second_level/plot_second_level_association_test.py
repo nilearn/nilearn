@@ -4,10 +4,15 @@ Example of generic design in second-level models
 
 This example shows the results obtained in a group analysis using a more
 complex contrast than a one- or two-sample t test.
-We use the [left button press (auditory cue)] task from the Localizer
-dataset and seek association between the contrast values and a variate
-that measures the speed of pseudo-word reading. No confounding variate
-is included in the model.
+
+.. admonition:: dataset
+
+    TWe use the ``left button press (auditory cue)`` task
+    from the :ref:`Brainomics Localizer dataset <brainomics_maps>`
+    and seek association between the contrast values and a variate
+    that measures the speed of pseudo-word reading.
+    No confounding variate is included in the model.
+
 """
 
 # %%

@@ -23,8 +23,12 @@ visualization & results checking are possible at each step.
     for automatic ROI extraction of brain connected networks
     given in 4D image.
 
-"""
 
+.. admonition:: dataset
+
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+
+"""
 # %%
 # Here are the coordinates of the slice we are interested in each direction.
 # We will be using them for visualization.

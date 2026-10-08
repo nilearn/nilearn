@@ -30,6 +30,16 @@ for more information on the data used in this example.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`Destrieux atlas <destrieux_2009_atlas>`
+#    - the :ref:`fsaverage template <fs_average_template>`
+#    - the :ref:`NKI enhanced surface dataset <nki_dataset>`
+#
+
+# %%
 # Retrieving the data
 # -------------------
 from nilearn.datasets import (

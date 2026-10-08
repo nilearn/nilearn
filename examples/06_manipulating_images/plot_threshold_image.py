@@ -10,8 +10,13 @@ The goal of this example is to illustrate the use of the function
 The ``threshold`` parameter can take both positive and negative values.
 ``two_sided`` parameter is complementary to ``threshold`` effecting its
 behavior.
-"""
 
+.. admonition:: dataset
+
+    This example uses a sample motor activation statistical map (`image 10426
+    <https://neurovault.org/images/10426/>`_ from Neurovault).
+
+"""
 # %%
 # Image without threshold
 # -----------------------

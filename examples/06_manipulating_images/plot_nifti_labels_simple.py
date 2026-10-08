@@ -8,6 +8,13 @@ More precisely, this example shows how to use the
 :class:`~nilearn.maskers.NiftiLabelsMasker` object to perform this
 operation in just a few lines of code.
 
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Harvard-Oxford atlas <harvard_oxford_atlas>`
+    - the :ref:`development fMRI dataset <development_dataset>`
+
 """
 
 # %%
@@ -16,7 +23,7 @@ operation in just a few lines of code.
 #
 # We start by fetching the brain development functional dataset
 # and we restrict the example to one subject only.
-from nilearn.datasets import fetch_atlas_harvard_oxford, fetch_development_fmri
+from nilearn.datasets import fetch_development_fmri
 
 dataset = fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
@@ -31,6 +38,7 @@ print(f"First functional nifti image (4D) is at: {func_filename}")
 # We then load the Harvard-Oxford atlas to define the brain regions
 # and the first label correspond to the background.
 #
+from nilearn.datasets import fetch_atlas_harvard_oxford
 
 atlas = fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
 print(f"The atlas contains {len(atlas.labels) - 1} non-overlapping regions")

@@ -1,6 +1,6 @@
 """
-FREM on Jimura et al "mixed gambles" dataset
-============================================
+Regression with fast ensembling of regularized models
+=====================================================
 
 In this example, we use fast ensembling of regularized models (FREM) to
 solve a regression problem, predicting the gain level corresponding to each
@@ -16,6 +16,12 @@ To have more details, see: :ref:`frem`.
 See the :ref:`dataset description <mixed_gamble_maps>`
 for more information on the data used in this example.
 """
+
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`mixed gambles dataset <mixed_gamble_maps>`.
+#
 
 # %%
 # Load the data from the Jimura mixed-gamble experiment
