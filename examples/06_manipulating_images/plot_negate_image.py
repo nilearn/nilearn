@@ -1,21 +1,18 @@
 """
-Negating an image with math_img
-===============================
+Negating an image with ``math_img``
+===================================
 
 The goal of this example is to illustrate the use of the function
 :func:`~nilearn.image.math_img` on T-maps.
 We compute a negative image by multiplying its voxel values with -1.
+
+.. admonition:: dataset
+
+    This example uses a sample motor activation statistical map
+    (`image 10426 <https://neurovault.org/images/10426/>`_ from Neurovault).
+
 """
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses a sample motor activation statistical map (`image 10426
-#    <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
-#    <neurovault_dataset>`).
-#
-
-# %%
 from nilearn import datasets, image, plotting
 
 # %%
