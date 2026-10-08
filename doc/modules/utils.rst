@@ -15,6 +15,12 @@
 
 .. autosummary::
    :toctree: generated/
+   :template: class.rst
+
+   InputTags
+
+.. autosummary::
+   :toctree: generated/
    :template: function.rst
 
    all_displays

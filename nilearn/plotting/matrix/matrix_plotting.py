@@ -128,7 +128,7 @@ def _sanitize_figure_and_axes(figure, axes) -> tuple[Figure, Axes]:
             f"You gave 'figure={figure}, axes={axes}'."
         )
     if figure is not None:
-        if isinstance(figure, plt.Figure):
+        if isinstance(figure, Figure):
             fig = figure
         else:
             fig = plt.figure(figsize=figure, layout="constrained")
@@ -179,8 +179,8 @@ def plot_matrix(
     mat,
     title: Title = None,
     labels=None,
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     colorbar: ColorBar = True,
     cmap=DEFAULT_DIVERGING_CMAP,
     tri: Literal["full", "lower", "diag"] = "full",
@@ -230,9 +230,9 @@ def plot_matrix(
     tri : {'full', 'lower', 'diag'}, default='full'
         Which triangular part of the matrix to plot:
 
-            - 'lower': Plot the lower part
-            - 'diag': Plot the lower part with the diagonal
-            - 'full': Plot the full matrix
+        - 'lower': Plot the lower part
+        - 'diag': Plot the lower part with the diagonal
+        - 'full': Plot the full matrix
 
 
     auto_fit : :obj:`bool`, default=True
@@ -258,6 +258,23 @@ def plot_matrix(
     -------
     display : :class:`matplotlib.axes.Axes`
         Axes image.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>>
+        >>> from nilearn.plotting import plot_matrix, show
+        >>>
+        >>> rng =  np.random.default_rng(0)
+        >>> matrix = rng.normal(size=(10, 10))
+        >>> vmax = np.max(np.abs(matrix.ravel()))
+        >>>
+        >>> fig = plot_matrix(matrix, vmax=vmax, vmin=-vmax)
+        >>>
+        >>> show()
 
     """
     check_params(locals())
@@ -304,7 +321,7 @@ def plot_contrast_matrix(
     contrast_def,
     design_matrix,
     colorbar: ColorBar = True,
-    axes=None,
+    axes: Axes | None = None,
     output_file: OutputFile = None,
 ) -> Axes:
     """Create plot for :term:`contrast` definition.
@@ -384,7 +401,7 @@ def plot_contrast_matrix(
 def plot_design_matrix(
     design_matrix,
     rescale: bool = True,
-    axes=None,
+    axes: Axes | None = None,
     output_file: OutputFile = None,
 ) -> Axes:
     """Plot a design matrix.
@@ -507,6 +524,26 @@ def plot_event(
     -------
     figure : :class:`matplotlib.figure.Figure`
         Plot Figure object.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import pandas as pd
+        >>>
+        >>> from nilearn.plotting import plot_event, show
+        >>>
+        >>> trial_type = ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
+        >>> onset = [0, 70, 100, 10, 30, 90, 30, 40, 60]
+        >>> duration =  [1, 5, 3] * 3
+        >>> model_event = pd.DataFrame({"onset": onset,
+        ...                             "duration": duration,
+        ...                             "trial_type": trial_type})
+        >>>
+        >>> fig = plot_event(model_event)
+        >>>
+        >>> show()
 
     """
     model_event = check_and_load_tables(model_event, "model_event")

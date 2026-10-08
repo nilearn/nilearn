@@ -9,7 +9,7 @@ from nilearn.nilearn_typing import Verbose
 
 
 def generate_atlas_look_up_table(
-    function=None,
+    function: str | None = None,
     name=None,
     index=None,
     strict: bool = False,
@@ -68,6 +68,7 @@ def generate_atlas_look_up_table(
         if fname == "unknown":
             index = get_indices_from_image(index)
         name = []
+        assert index is not None
         for x in index:
             if background_label is not None and x == background_label:
                 name.append("Background")
@@ -106,7 +107,7 @@ def generate_atlas_look_up_table(
         and "Background" not in name
         and background_label in index
     ):
-        name.insert(index.index(background_label), "Background")
+        name.insert(index.index(int(background_label)), "Background")
 
     if len(name) != len(index):
         if strict:

@@ -1,11 +1,13 @@
 """Functions to compare volume or surface images."""
 
 import warnings
+from pathlib import Path
 from typing import get_args
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import gridspec
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from scipy import stats
 
@@ -29,13 +31,13 @@ def plot_img_comparison(
     ref_imgs,
     src_imgs,
     masker=None,
-    plot_hist=True,
-    log=True,
-    ref_label="image set 1",
-    src_label="image set 2",
-    output_dir=None,
-    axes=None,
-    colorbar=True,
+    plot_hist: bool = True,
+    log: bool = True,
+    ref_label: str = "image set 1",
+    src_label: str = "image set 2",
+    output_dir: str | Path | None = None,
+    axes: Axes | None = None,
+    colorbar: ColorBar = True,
 ) -> list[float]:
     """Create plots to compare two lists of images and measure correlation.
 
@@ -81,8 +83,9 @@ def plot_img_comparison(
     src_label : :obj:`str`, default='image set 2'
         Name of source images.
 
-    output_dir : :obj:`str` or None, default=None
+    output_dir : :obj:`str`, :obj:`pathlib.Path` or None, default=None
         Directory where plotted figures will be stored.
+        No figure is saved if ``None`` is passed.
 
     axes : :obj:`list` of two matplotlib Axes objects, or None, default=None
         Can receive a list of the form [ax1, ax2] to render the plots.
@@ -211,7 +214,7 @@ def plot_img_comparison(
             ax2.legend(loc="best")
 
             output_file = (
-                output_dir / f"{int(i):04}.png" if output_dir else None
+                Path(output_dir) / f"{int(i):04}.png" if output_dir else None
             )
             save_figure_if_needed(ax1.figure, output_file)
 

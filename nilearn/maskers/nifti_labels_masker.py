@@ -143,7 +143,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
           to the shape of the data if needed.
         - ``"labels"`` means that the ``mask_img`` and images provided
           to ``fit()`` are resampled to the shape and affine of ``labels_img``.
-        - ``"None"`` means no resampling:
+        - ``None`` means no resampling:
           if shapes and affines do not match, a :obj:`ValueError` is raised.
 
     %(memory)s
@@ -855,7 +855,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         return labels_img_
 
     @fill_doc
-    def inverse_transform(self, signals):
+    def inverse_transform(self, signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from region signals.
 
         Any mask given at initialization is taken into account.

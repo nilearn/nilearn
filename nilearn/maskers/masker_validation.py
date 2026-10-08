@@ -9,7 +9,6 @@ import numpy as np
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.tags import is_glm
 from nilearn.maskers import (
     MultiNiftiMasker,
     MultiSurfaceMasker,
@@ -17,6 +16,7 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers._mixin import _MultiMixin
+from nilearn.utils.tags import is_glm
 
 
 def get_params(

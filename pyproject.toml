@@ -17,8 +17,9 @@ dev = [
 doc = [
     "docutils>=0.17",
     "furo>=2024.8.6",
-    "jupyterlite-pyodide-kernel>=0.7.2",
-    "jupyterlite-sphinx>=0.22.1",
+    # See https://github.com/jupyterlite/pyodide-kernel#compatibility
+    "jupyterlite-pyodide-kernel>=0.8.0,<=0.9.0",
+    "jupyterlite-sphinx>=0.23.0",
     "marimo>=0.12.0",
     "memory_profiler>=0.61",  # measuring memory during docs building
     "myst-parser>=3.0.1",
@@ -27,6 +28,9 @@ doc = [
     "sphinx>=7.4.7",
     "sphinx-copybutton>=0.5.2",
     "sphinx-design>=0.6.1",
+    # sphinx-prompt<1.8.0 ships its package in a "sphinx-prompt" folder
+    # that cannot be imported as "sphinx_prompt"
+    "sphinx-prompt>=1.8.0",
     "sphinxcontrib-mermaid>=1.0.0",
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
@@ -133,13 +137,8 @@ requires-python = ">=3.11"
 
 [project.optional-dependencies]
 # keep plotly as a separate optional extra dependency because of its size
-plotly = [
-    "kaleido>=1.1.0",
-    "plotly>=6.1.1"
-]
-plotting = [
-    "matplotlib>=3.8.0"
-]
+plotly = ["kaleido>=1.1.0", "plotly>=6.1.1"]
+plotting = ["matplotlib>=3.8.0"]
 
 [project.urls]
 Changelog = "https://nilearn.github.io/stable/changes/whats_new.html"
@@ -150,13 +149,13 @@ Homepage = "https://nilearn.github.io"
 [tool.codespell]
 builtin = "clear,rare,en-GB_to_en-US"
 ignore-words = ".github/codespell_ignore_words.txt"
-skip = "./.git,*.cff,*.bib,*/tmp,*.min.js,*.umd.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results,AUTHORS.rst"
+skip = "./.git,*.cff,*.bib,*/tmp,*.min.js,*.umd.js,localizer_behavioural.tsv,env,venv,./doc/auto_examples,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results,AUTHORS.rst"
 
 [tool.djlint]
 blank_line_after_tag = "load,extends,include,endblock,set"
 blank_line_before_tag = "load,extends,include,block,set"
 format_css = true
-ignore = "H030,H031,H021,H006"
+ignore = "H030,H031,H037,H021,H006"
 max_line_length = 79
 use_gitignore = true
 
@@ -187,7 +186,9 @@ version-file = "nilearn/_version.py"
 exclude = [
     "nilearn/plotting/tests/baseline",
     "nilearn/maskers/tests/baseline",
-    "nilearn/glm/tests/baseline"
+    "nilearn/glm/tests/baseline",
+    "nilearn/_estimator_checks",
+    "nilearn/tests"
 ]
 packages = ["nilearn"]
 
@@ -199,15 +200,15 @@ root_package = "nilearn"
 
 [[tool.importlinter.contracts]]
 ignore_imports = [
-    "nilearn.*.tests.* -> nilearn._utils.estimator_checks",  # allowed in tests
-    "nilearn._utils.estimator_checks -> nilearn.glm.*",  # allowed in tests
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
-    "nilearn.plotting.matrix.* -> nilearn.glm.**"
+    "nilearn.plotting.matrix.* -> nilearn.glm.**",
+    "nilearn.** -> nilearn.utils.tags"  # estimator tags are used by all layers
 ]
 # ** utils:
 # - can import from any lower layers
+# - nilearn.utils.tags is a leaf module imported by all layers (see ignore_imports)
 # ** glm, decoding, connectome, decomposition:
 # - cannot import from each other
 # - but can import from any lower layers
@@ -233,8 +234,6 @@ type = "layers"
 
 [[tool.importlinter.contracts]]
 ignore_imports = [
-    "nilearn.*.tests.* -> nilearn._utils.estimator_checks",  # allowed in tests
-    "nilearn._utils.estimator_checks -> nilearn.glm.*",  # allowed in tests
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
@@ -269,7 +268,6 @@ forbidden_modules = [
     "nilearn.datasets"
 ]
 ignore_imports = [
-    "nilearn.connectome.tests.* -> nilearn._utils.estimator_checks",
     "nilearn.connectome.tests.test_connectivity_matrices -> nilearn.tests.test_signal",
     "nilearn.connectome.tests.test_group_sparse_cov -> nilearn._utils.data_gen"
 ]
@@ -278,13 +276,9 @@ source_modules = ["nilearn.connectome"]
 type = "forbidden"
 
 [[tool.importlinter.contracts]]
-forbidden_modules = [
-    "nilearn._utils.data_gen"
-]
+forbidden_modules = ["nilearn._utils.data_gen"]
 name = "fixtures from 'nilearn.conftest' should not rely on data generated in 'nilearn._utils.data_gen'"
-source_modules = [
-    "nilearn.conftest"
-]
+source_modules = ["nilearn.conftest"]
 type = "forbidden"
 
 [[tool.importlinter.contracts]]
@@ -300,27 +294,25 @@ allowed_importers = [
     "nilearn.glm"  # TODO try to avoid
 ]
 name = "assets only imported by reporting, plotting, glm"
-protected_modules = [
-    "nilearn._assets"
-]
+protected_modules = ["nilearn._assets"]
 type = "protected"
 
-[tool.mypy]
-allow_redefinition = false
-enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
-exclude = [
-    'nilearn_cache/.*',
-    'nilearn/_version.py'
-]
-warn_unreachable = true
-
-[[tool.mypy.overrides]]
-ignore_errors = true
-module = ["nilearn._version"]
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = [
+[tool.pyrefly]
+# Errors already present in the code base are listed in the baseline file
+# and are not reported, so only new errors fail the check.
+# Regenerate it with: pyrefly check --update-baseline
+baseline = "pyrefly-baseline.json"
+baseline-format = "minimal"
+baseline-matching-mode = "concise-description"
+# Skip the bodies of unannotated functions and treat their return type
+# as Any, as mypy did.
+check-unannotated-defs = false
+infer-return-types = "never"
+preset = "legacy"
+project-excludes = ["**/nilearn_cache/**/*", "**/nilearn/_version.py"]
+project-includes = ["nilearn/**/*.py"]
+python-version = "3.11"
+replace-imports-with-any = [
     "IPython.*",
     "jinja2.*",
     "joblib.*",
@@ -340,6 +332,9 @@ module = [
     "statsmodels.*",
     "svg.*"
 ]
+
+[tool.pyrefly.errors]
+redundant-condition = "error"
 
 [tool.pytest.ini_options]
 # We do not run doctests systematically with "--doctest-modules".
@@ -453,9 +448,13 @@ max-complexity = 23
 "**/{doc}/*" = ["B018", "D103"]  # 17 D103 errors to fix
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]  # 13 D103 errors to fix
 "__init__.py" = ["D104", "E402"]
-"doc/conf.py" = ["I001"]  # ignore sorting because this leads to conflict when running prek locally and in CI
+"doc/conf.py" = [
+    "I001"
+]  # ignore sorting because this leads to conflict when running prek locally and in CI
 "nilearn/**/tests/test_*" = ["D100"]
-"nilearn/connectome/tests/test_connectivity_matrices.py" = ["D103"]  # 30 errors to fix
+"nilearn/connectome/tests/test_connectivity_matrices.py" = [
+    "D103"
+]  # 30 errors to fix
 "nilearn/datasets/func.py" = ["PTH211"]  # 1 error
 "nilearn/datasets/tests/conftest.py" = ["D102"]
 "nilearn/datasets/tests/test_atlas.py" = ["D103"]  # 24 errors to fix
