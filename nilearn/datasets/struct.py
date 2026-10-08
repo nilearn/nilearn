@@ -1157,7 +1157,10 @@ def _fetch_surf_fsaverage(
     opts = {"uncompress": True}
 
     url = {
-        "fsaverage3": "https://osf.io/329dq/download",
+        "fsaverage3": (
+            "https://zenodo.org/api/records/23242166/files/"
+            "fsaverage3.tar.gz/content"
+        ),
         "fsaverage4": "https://osf.io/gkqd5/download",
         "fsaverage6": "https://osf.io/jzxyr/download",
         "fsaverage": "https://osf.io/svf8k/download",  # fsaverage7
