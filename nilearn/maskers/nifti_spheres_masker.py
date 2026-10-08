@@ -10,7 +10,7 @@ from typing import Any, ClassVar
 import numpy as np
 from nibabel import Nifti1Image
 from scipy import sparse
-from sklearn import config_context, get_config, neighbors
+from sklearn import neighbors
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -18,6 +18,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
+from nilearn._utils.versions import sparray_context
 from nilearn.datasets import load_mni152_template
 from nilearn.image import load_img, resample_img
 from nilearn.image.image import (
@@ -134,13 +135,7 @@ def apply_mask_and_get_affinity(
     mask_coords = np.asarray(mask_coords).T
 
     clf = neighbors.NearestNeighbors(radius=radius)
-    # TODO (sklearn >= 1.9)
-    # use sklearn.config_context(sparse_interface="sparray") directly
-    if "sparse_interface" in get_config():
-        sparse_context = config_context(sparse_interface="sparray")
-    else:
-        sparse_context = contextlib.nullcontext()
-    with sparse_context:
+    with sparray_context():
         A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
     # older sklearn versions return a sparse matrix
     A = sparse.lil_array(A)
