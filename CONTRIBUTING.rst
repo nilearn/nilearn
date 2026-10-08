@@ -1070,11 +1070,9 @@ Specifically, your atlas object:
 
 - MUST have at least the following 4 attributes (as with the existing atlases):
 
-  - ``description`` (str): A text description of the atlas.
-    This should be brief but thorough,
-    describing the source (paper),
-    relevant information related to its construction (modality, dataset, method),
-    and, if there is more than one map, a description of each map.
+  - ``description``: a description of the content of the atlas
+    built from the dataset description registry
+    (see :ref:`dataset_description`).
   - ``maps`` (list or string): the path to the nifti image, or a list of paths
   - ``atlas_type``: must be either ``deterministic`` or ``probabilistic``
   - ``labels`` (list): a list of string labels corresponding to each atlas label,
@@ -1089,11 +1087,13 @@ Deterministic atlases must also include:
   - that complies with the
     `dseg.tsv format from BIDS
     <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
-  - can be validated by the function ``nilearn._utils.helpers.check_look_up_table``
+  - can be validated by the function ``nilearn._utils.bids.check_look_up_table``
     in strict mode.
 
 In addition, the atlas will need to be called by a fetcher.
 For example, see :nilearn-gh:`here <blob/main/nilearn/datasets/atlas.py>`.
+The fetcher and the content it returns must be documented
+as described in :ref:`dataset_description`.
 
 Finally, as with other features, please provide a test for your atlas.
 Examples can be found :nilearn-gh:`here <blob/main/nilearn/datasets/tests/test_atlas.py>`.
@@ -1136,6 +1136,162 @@ returned by the ``request_mocker`` pytest fixture, defined in
 ``nilearn.datasets.tests._testing``. The docstrings of this module and the
 ``Sender`` class it contains provide information on how to write a test using
 this fixture. Existing tests can also serve as examples.
+
+.. _dataset_description:
+
+Describing the data returned by a fetcher
+-----------------------------------------
+
+Each atlas or dataset comes with a description of what its fetcher returns.
+This description is defined in a single place
+and then reused to:
+
+- build the ``description`` returned by the fetcher
+  (a ``nilearn._utils.docs.Description`` object
+  with ``documentation``, ``content`` and ``license`` attributes),
+- fill the ``Returns`` section of the docstring of the fetcher,
+- fill the ``Content`` and ``License`` sections
+  of the dataset description page in the documentation,
+- check that what the fetcher returns matches its description.
+
+Everything is tied together by a single name, for example ``yeo_2011_atlas``.
+This name must be used for:
+
+- the key of the dataset in the ``DATASET_DESCRIPTIONS`` registry
+  in ``nilearn/_utils/docs.py``,
+- the name of the description files
+  ``nilearn/datasets/description/<name>.rst``
+  and ``nilearn/datasets/description/<name>.json``,
+- the reference label at the top of the ``.rst`` file,
+- for new datasets, the name of the directory where the data is stored
+  (the ``dataset_name`` passed to ``get_dataset_dir``).
+
+Atlas names must contain ``atlas``:
+the ``atlas_type`` and ``template`` keys are then automatically
+added to their content.
+
+To add the description of a new dataset ``<name>``:
+
+1. Describe each value returned by the fetcher in
+   ``nilearn/datasets/description/<name>.json``.
+   For each key, give its ``type`` and a ``desc`` (rst is allowed):
+
+   .. code-block:: json
+
+      {
+          "labels": {
+              "type": "list[str]",
+              "desc": "List of the names of the regions."
+          },
+          "maps": {
+              "type": "str",
+              "desc": "Path to the 3D nifti image containing the regions."
+          }
+      }
+
+   Types are written as python type hints
+   and are evaluated when nilearn is imported, for example:
+   ``str``, ``float``, ``list[str]``, ``list[tuple[str, list[int]]]``,
+   ``pd.DataFrame``, ``np.ndarray``, ``nibabel.nifti1.Nifti1Image``.
+
+   Do not include ``description``, ``atlas_type`` or ``template``.
+   They will be added automatically.
+
+2. Add an entry to ``DATASET_DESCRIPTIONS``
+   in ``nilearn/_utils/docs.py`` with the license of the dataset
+   (use ``"unknown"`` if it is not known).
+   Values that are shared across datasets and already documented in ``docdict``
+   (for example the look up table ``lut`` of deterministic atlases)
+   are added here rather than in the json file:
+
+   .. code-block:: python
+
+      DATASET_DESCRIPTIONS: dict[str, Bunch] = {
+          # ...
+          "yeo_2011_atlas": Bunch(
+              content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+              license="MIT",
+          ),
+      }
+
+   A key cannot be defined both in the registry and in the json file.
+
+3. In the fetcher, build the description from the registry
+   and use the generated ``<name>_content`` template
+   in the ``Returns`` section of the docstring:
+
+   .. code-block:: python
+
+      @fill_doc
+      def fetch_atlas_yeo_2011(data_dir=None, verbose=1):
+          """...
+
+          For more information
+          see the :ref:`dataset description <yeo_2011_atlas>`.
+
+          Returns
+          -------
+          data : :class:`sklearn.utils.Bunch`
+              Dictionary-like object, contains:
+
+              %(yeo_2011_atlas_content)s
+          """
+          ...
+          dataset_name = "yeo_2011_atlas"
+          data_dir = get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+          ...
+          description = Description.from_registry(dataset_name)
+
+4. Write ``nilearn/datasets/description/<name>.rst``
+   with a free text description of the dataset
+   (source, construction, references...).
+   Do not describe the content or the license by hand:
+   use the ``nilearn_dataset_content`` and ``nilearn_dataset_license`` directives
+   instead.
+
+   .. code-block:: rst
+
+      .. _yeo_2011_atlas:
+
+      Yeo 2011 atlas
+      ==============
+
+      Access
+      ------
+      See :func:`nilearn.datasets.fetch_atlas_yeo_2011`.
+
+      Notes
+      -----
+      ...
+
+      Content
+      -------
+      .. nilearn_dataset_content:: yeo_2011_atlas
+
+      References
+      ----------
+      .. footbibliography::
+
+      License
+      -------
+      .. nilearn_dataset_license:: yeo_2011_atlas
+
+   These directives are rendered at doc build time
+   by the sphinx extension in ``doc/sphinxext/dataset_descriptions.py``.
+
+5. Add the ``.rst`` file to the relevant ``toctree``
+   in ``doc/modules/datasets.rst``.
+
+The tests in ``nilearn/_utils/tests/test_docs.py`` check
+that all the directives used in the description files
+refer to an entry of the registry.
+
+Since tests do not download any data,
+they cannot check that the described types match the actual data.
+This is checked when the data is actually downloaded,
+by ``doc/get_data_examples.py`` (run before building the documentation)
+and ``doc/make_atlas_table.py``.
+If you add a new fetcher, make sure it is called in at least one of these scripts.
 
 .. _performance:
 
