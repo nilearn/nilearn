@@ -194,6 +194,7 @@ TYPE_MAPS = {
     "memory_level": nilearn_typing.MemoryLevel,
     "n_jobs": nilearn_typing.NJobs,
     "n_perm": nilearn_typing.NPerm,
+    "n_subjects": (int, list, tuple, type(None)),
     "opening": nilearn_typing.Opening,
     "output_file": nilearn_typing.OutputFile,
     "radiological": nilearn_typing.Radiological,
