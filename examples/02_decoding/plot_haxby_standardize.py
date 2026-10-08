@@ -25,6 +25,11 @@ Aside from ``standardize``, the data processing and ``Decoder``
 options mirror those of the
 :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_different_estimators.py`
 example, so the two can be read side by side.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+
 """
 
 # %%
