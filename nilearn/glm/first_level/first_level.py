@@ -893,6 +893,7 @@ class FirstLevelModel(BaseGLM):
         | str
         | Path
         | list[pd.DataFrame | str | Path]
+        | list[pd.DataFrame]
         | None = None,
         bins=100,
     ) -> Self:
