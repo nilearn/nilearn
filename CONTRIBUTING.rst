@@ -1189,7 +1189,7 @@ To add the description of a new dataset ``<name>``:
           }
       }
 
-   Types are written as python type hints
+   Types are written as Python type hints
    and are evaluated when nilearn is imported, for example:
    ``str``, ``float``, ``list[str]``, ``list[tuple[str, list[int]]]``,
    ``pd.DataFrame``, ``np.ndarray``, ``nibabel.nifti1.Nifti1Image``.
