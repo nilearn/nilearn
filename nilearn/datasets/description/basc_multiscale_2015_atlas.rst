@@ -15,7 +15,7 @@ and the scales have been selected using a data-driven method called MSTEPS (:foo
 .. note::
 
     Two versions of the template are available, ending with either ``sym`` or ``asym``.
-    The ``asym`` flavor contains brain images that ha1ve been registered in the asymmetric version of the :term:`MNI` brain template (reflecting that the brain is asymmetric),
+    The ``asym`` flavor contains brain images that have been registered in the asymmetric version of the :term:`MNI` brain template (reflecting that the brain is asymmetric),
     while with the ``sym`` flavor they have been registered in the symmetric version of the :term:`MNI` template.
     The symmetric template has been forced to be symmetric anatomically,
     and is therefore ideally suited to study homotopic functional connections in fMRI:
