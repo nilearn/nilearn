@@ -9,14 +9,10 @@ Version 0.2.2
 The ``0.2.2`` is a bugfix + dependency update release (for ``sphinx-gallery``).
 It aims at preparing a renewal of the tutorials.
 
-.. _v0-2-2-new:
-
 New
 ---
 
 - :bdg-success:`API` Fetcher for Megatrawl Netmats dataset.
-
-.. _v0-2-2-enhancements:
 
 Enhancements
 ------------
@@ -28,8 +24,6 @@ Enhancements
 - :bdg-secondary:`Maint` Reworking of the documentation organization.
 
 - :bdg-secondary:`Maint` ``Sphinx-gallery`` updated to version ``0.1.1``.
-
-.. _v0-2-2-fixes:
 
 Fixes
 -----
@@ -54,16 +48,12 @@ Fixes
 
 - :bdg-info:`Plotting` Function :func:`~plotting.find_xyz_cut_coords` raises a meaningful error when 4D data is provided instead of 3D.
 
-.. _v0-2-2-changes:
-
 Changes
 -------
 
 - :bdg-dark:`Code` Download progression message refreshing rate has been lowered to sparsify CircleCI logs.
 
 - :bdg-danger:`Deprecation` Deprecated dataset downloading function have been removed.
-
-.. _v0-2-2-contributors:
 
 Contributors
 ------------

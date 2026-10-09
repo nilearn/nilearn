@@ -6,8 +6,6 @@ Version 0.7.0
 
 **Released November 2020**
 
-.. _v0-7-0-highlights:
-
 HIGHLIGHTS
 ----------
 
@@ -30,8 +28,6 @@ HIGHLIGHTS
 
   Minimum required version of ``Joblib`` is now ``0.12``.
 
-
-.. _v0-7-0-new:
 
 NEW
 ---
@@ -62,8 +58,6 @@ NEW
 
 - :bdg-info:`Plotting` The position annotation on the plot methods now implements the ``decimals`` option to enable annotation of a slice coordinate position with the float.
 
-.. _v0-7-0-fixes:
-
 Fixes
 -----
 
@@ -80,8 +74,6 @@ Fixes
 - :bdg-primary:`Doc` Fix readme file of the Destrieux 2009 atlas.
 
 - :bdg-info:`Plotting` the default background (MNI template) in plotting functions now has the correct orientation; before left and right were inverted.
-
-.. _v0-7-0-changes:
 
 Changes
 -------
