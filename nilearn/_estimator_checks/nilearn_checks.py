@@ -579,10 +579,9 @@ def check_verbosity_embedded_masker(estimator_orig) -> None:
             assert re.search(r"Computation of .* done in", outputs[verbose])
 
 
-def check_warning_embedded_masker(estimator_orig) -> None:
+@clone_estimator
+def check_warning_embedded_masker(estimator) -> None:
     """Check no excessive warning thrown by embedded masker."""
-    estimator = clone(estimator_orig)
-
     # no such warning is thrown when using fit_transform
     with warnings.catch_warnings(record=True) as warning_list:
         estimator = fit_estimator(estimator)
@@ -613,7 +612,8 @@ def _sanitize_standard_output(output):
     return output
 
 
-def check_img_estimator_fit_check_is_fitted(estimator_orig) -> None:
+@clone_estimator
+def check_img_estimator_fit_check_is_fitted(estimator) -> None:
     """Check appropriate response to check_fitted from sklearn before fitting.
 
     Should act as a replacement in the case of the maskers
@@ -629,8 +629,6 @@ def check_img_estimator_fit_check_is_fitted(estimator_orig) -> None:
     - __sklearn_is_fitted__ returns True
     - running sklearn check_is_fitted throws no error
     """
-    estimator = clone(estimator_orig)
-
     if not hasattr(estimator, "__sklearn_is_fitted__"):
         raise TypeError(
             "All nilearn estimators must have __sklearn_is_fitted__ method."
@@ -673,16 +671,13 @@ def check_img_estimator_fit_check_is_fitted(estimator_orig) -> None:
     check_is_fitted(estimator)
 
 
-def check_nilearn_methods_sample_order_invariance(estimator_orig) -> None:
+@clone_estimator
+def check_nilearn_methods_sample_order_invariance(estimator) -> None:
     """Check method gives invariant results \
         if applied on a subset with different sample order.
 
     Replace sklearn check_methods_sample_order_invariance.
     """
-    estimator = clone(estimator_orig)
-
-    set_random_state(estimator)
-
     estimator = fit_estimator(estimator)
 
     X, _ = generate_data_to_fit(estimator)
@@ -743,17 +738,14 @@ def check_fit_returns_self(estimator) -> None:
     assert fitted_estimator is estimator
 
 
-def check_img_estimator_dont_overwrite_parameters(estimator_orig) -> None:
+@clone_estimator
+def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
     """Check that fit method only changes or sets private attributes.
 
     Only for estimator that work with images.
 
     Replaces check_dont_overwrite_parameters from sklearn.
     """
-    estimator = clone(estimator_orig)
-
-    set_random_state(estimator, 1)
-
     dict_before_fit = estimator.__dict__.copy()
 
     fitted_estimator = fit_estimator(estimator)
@@ -796,13 +788,12 @@ def check_img_estimator_dont_overwrite_parameters(estimator_orig) -> None:
 
 
 @skip_if_not(lambda e: isinstance(e, CacheMixin))
-def check_img_estimator_cache_warning(estimator_orig) -> None:
+@clone_estimator
+def check_img_estimator_cache_warning(estimator) -> None:
     """Check estimator behavior with caching.
 
     Make sure some warnings are thrown at the appropriate time.
     """
-    estimator = clone(estimator_orig)
-
     assert hasattr(estimator, "memory")
     assert hasattr(estimator, "memory_level")
 
@@ -856,6 +847,7 @@ def check_img_estimator_cache_warning(estimator_orig) -> None:
 
 
 @xfail_if_not_gil(classes=[SearchLight, Decoder])
+@clone_estimator
 def check_img_estimator_fit_idempotent(estimator_orig) -> None:
     """Check that est.fit(X) is the same as est.fit(X).fit(X).
 
@@ -907,13 +899,12 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
         )
 
 
-def check_img_estimator_overwrite_params(estimator_orig) -> None:
+@clone_estimator
+def check_img_estimator_overwrite_params(estimator) -> None:
     """Check that we do not change or mutate the internal state of input.
 
     Replaces sklearn check_estimators_overwrite_params
     """
-    estimator = clone(estimator_orig)
-
     # Make a physical copy of the original estimator parameters before fitting.
     params = estimator.get_params()
     original_params = deepcopy(params)
@@ -941,13 +932,12 @@ def check_img_estimator_overwrite_params(estimator_orig) -> None:
         )
 
 
-def check_img_estimator_dict_unchanged(estimator_orig) -> None:
+@clone_estimator
+def check_img_estimator_dict_unchanged(estimator) -> None:
     """Replace check_dict_unchanged from sklearn.
 
     Several methods should not change the dict of the object.
     """
-    estimator = clone(estimator_orig)
-
     estimator = fit_estimator(estimator)
 
     dict_before = estimator.__dict__.copy()
@@ -1036,13 +1026,12 @@ def check_img_estimator_dict_unchanged(estimator_orig) -> None:
 
 
 @xfail_if_not_gil(classes=[SearchLight])
-def check_img_estimator_pickle(estimator_orig) -> None:
+@clone_estimator
+def check_img_estimator_pickle(estimator) -> None:
     """Test that we can pickle all estimators.
 
     Adapted from sklearn's check_estimators_pickle
     """
-    estimator = clone(estimator_orig)
-
     X, y = generate_data_to_fit(estimator)
 
     if isinstance(estimator, NiftiSpheresMasker):
@@ -1107,13 +1096,12 @@ def check_img_estimator_pickle(estimator_orig) -> None:
 
 
 @xfail_if_not_gil(classes=[SearchLight])
-def check_img_estimator_pipeline_consistency(estimator_orig) -> None:
+@clone_estimator
+def check_img_estimator_pipeline_consistency(estimator) -> None:
     """Check pipeline consistency for nilearn estimators.
 
     Substitute for sklearn check_pipeline_consistency.
     """
-    estimator = clone(estimator_orig)
-
     X, y = generate_data_to_fit(estimator)
 
     if isinstance(estimator, NiftiSpheresMasker):
@@ -1161,6 +1149,7 @@ def check_img_estimator_pipeline_consistency(estimator_orig) -> None:
             assert_allclose_dense_sparse(result, result_pipe)
 
 
+@clone_estimator
 def check_img_estimator_dtype_bool(estimator_orig) -> None:
     """Raise error for dtype bool or
     cast bool input to int for inverse_transform.
@@ -1360,6 +1349,7 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
         "'inverse_transform' attribute is not implemented.",
     ),
 )
+@clone_estimator
 def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
     """Check estimator can inverse_transform with inputs of varying dtypes.
 
@@ -1490,6 +1480,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
         "'dtype' attribute is not implemented.",
     ),
 )
+@clone_estimator
 def check_img_estimator_clean_dtype(estimator_orig) -> None:
     """Regression test for https://github.com/nilearn/nilearn/issues/6525.
 
@@ -1624,13 +1615,12 @@ def check_img_estimator_clean_dtype(estimator_orig) -> None:
         _check_clean_dtype_output(result)
 
 
-def check_img_estimator_requires_y_none(estimator_orig) -> None:
+@clone_estimator
+def check_img_estimator_requires_y_none(estimator) -> None:
     """Check estimator with requires_y=True fails gracefully for y=None.
 
     Replaces sklearn check_requires_y_none
     """
-    estimator = clone(estimator_orig)
-
     expected_err_msgs = "requires y to be passed, but the target y is None"
     shape = (5, 5, 5) if isinstance(estimator, SearchLight) else (30, 31, 32)
     input_img = Nifti1Image(_rng().random(shape), _affine_eye())
@@ -1641,10 +1631,9 @@ def check_img_estimator_requires_y_none(estimator_orig) -> None:
             raise ve
 
 
-def check_inputs_length(estimator_orig) -> None:
+@clone_estimator
+def check_inputs_length(estimator) -> None:
     """Raise error when X and y have inconsistent numbers of samples."""
-    estimator = clone(estimator_orig)
-
     iris = load_iris()
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
@@ -1659,7 +1648,8 @@ def check_inputs_length(estimator_orig) -> None:
         estimator.fit(X_, y)
 
 
-def check_img_estimator_fit_score_takes_y(estimator_orig) -> None:
+@clone_estimator
+def check_img_estimator_fit_score_takes_y(estimator) -> None:
     """Replace sklearn check_fit_score_takes_y for maskers.
 
     Check that all estimators accept an (optional) y
@@ -1667,8 +1657,6 @@ def check_img_estimator_fit_score_takes_y(estimator_orig) -> None:
 
     For decoders, y is not optional
     """
-    estimator = clone(estimator_orig)
-
     if is_glm(estimator):
         # GLM estimators take no "y" at all.
         return
@@ -1707,7 +1695,8 @@ def check_img_estimator_fit_score_takes_y(estimator_orig) -> None:
             assert tmp["y"] is None
 
 
-def check_img_estimator_n_elements(estimator_orig) -> None:
+@clone_estimator
+def check_img_estimator_n_elements(estimator) -> None:
     """Check n_elements is set during fitting and used after that.
 
     check that after fitting
@@ -1717,8 +1706,6 @@ def check_img_estimator_n_elements(estimator_orig) -> None:
     replaces sklearn "check_n_features_in" and
     "check_n_features_in_after_fitting"
     """
-    estimator = clone(estimator_orig)
-
     assert not hasattr(estimator, "n_features_in_")
 
     estimator = fit_estimator(estimator)
@@ -1765,6 +1752,7 @@ def check_img_estimator_n_elements(estimator_orig) -> None:
         "'standardize' attribute is not implemented.",
     )
 )
+@clone_estimator
 def check_img_estimator_standardization(estimator_orig) -> None:
     """Check non-masker estimator with several value for standardize.
 
@@ -1831,13 +1819,12 @@ def check_img_estimator_standardization(estimator_orig) -> None:
 # ------------------ DECODERS CHECKS ------------------
 
 
-def check_supervised_img_estimator_y_no_nan(estimator_orig) -> None:
+@clone_estimator
+def check_supervised_img_estimator_y_no_nan(estimator) -> None:
     """Check estimator fails if y contains nan or inf.
 
     Replaces sklearn check_supervised_y_no_nan
     """
-    estimator = clone(estimator_orig)
-
     dim = 5
     if isinstance(estimator, SearchLight):
         n_samples = 30
@@ -1870,6 +1857,7 @@ def check_supervised_img_estimator_y_no_nan(estimator_orig) -> None:
             estimator.fit(X, y)
 
 
+@clone_estimator
 def check_decoder_empty_data_messages(estimator_orig) -> None:
     """Check that empty images are caught properly.
 
@@ -1917,6 +1905,7 @@ def check_decoder_empty_data_messages(estimator_orig) -> None:
         estimator.fit(X_as_surf, y)
 
 
+@clone_estimator
 def check_decoder_compatibility_mask_image(estimator_orig) -> None:
     """Check compatibility of the mask_img and images for decoders.
 
@@ -1967,17 +1956,16 @@ def check_decoder_compatibility_mask_image(estimator_orig) -> None:
             getattr(estimator, method)(*input_data)
 
 
-def check_decoder_with_surface_data(estimator_orig) -> None:
+@clone_estimator
+def check_decoder_with_surface_data(estimator) -> None:
     """Test fit and other methods with surface image."""
-    if isinstance(estimator_orig, SearchLight):
+    if isinstance(estimator, SearchLight):
         # note searchlight does not fit Surface data
         return
 
     n_samples = 50
     y = _rng().choice([0, 1], size=n_samples)
     X = _make_surface_img(n_samples)
-
-    estimator = clone(estimator_orig)
 
     for mask in [None, SurfaceMasker(), _surf_mask_1d(), _make_surface_mask()]:
         estimator.mask = mask
@@ -2008,30 +1996,28 @@ def check_decoder_with_surface_data(estimator_orig) -> None:
                 getattr(estimator, method)(X)
 
 
-def check_img_regressor_no_decision_function(regressor_orig) -> None:
+@clone_estimator
+def check_img_regressor_no_decision_function(estimator) -> None:
     """Check that regressors don't have some method, attributes.
 
     replaces sklearn check_regressors_no_decision_function
     """
-    regressor = clone(regressor_orig)
+    X, y = generate_data_to_fit(estimator)
 
-    X, y = generate_data_to_fit(regressor)
-
-    regressor.fit(X, y)
+    estimator.fit(X, y)
     attrs = ["decision_function", "classes_", "n_classes_"]
     for attr in attrs:
-        assert not hasattr(regressor, attr), (
-            f"'{regressor.__class__.__name__}' should not have '{attr}'"
+        assert not hasattr(estimator, attr), (
+            f"'{estimator.__class__.__name__}' should not have '{attr}'"
         )
 
 
-def check_decoder_with_arrays(estimator_orig) -> None:
+@clone_estimator
+def check_decoder_with_arrays(estimator) -> None:
     """Check that several methods of decoders work with ndarray and images.
 
     Test for backward compatibility.
     """
-    estimator = clone(estimator_orig)
-
     estimator = fit_estimator(estimator)
 
     for method in [
@@ -2054,30 +2040,29 @@ def check_decoder_with_arrays(estimator_orig) -> None:
         assert_array_equal(result_1, result_2)
 
 
-def check_decoder_estimator_args(estimator_orig) -> None:
+@clone_estimator
+def check_decoder_estimator_args(estimator) -> None:
     """Check extra_parameters can be passed to the sklearn estimator."""
-    if isinstance(estimator_orig, BaseSpaceNet):
+    if isinstance(estimator, BaseSpaceNet):
         # BaseSpaceNet do not have an embedded sklearn estimator
         # to pass things to.
         return
-    estimator = clone(estimator_orig)
     assert hasattr(estimator, "estimator_args")
     estimator.estimator_args = {"max_iter": 5000}
     estimator = fit_estimator(estimator)
 
-    if isinstance(estimator_orig, SearchLight):
+    if isinstance(estimator, SearchLight):
         return
     assert estimator.estimator_.max_iter == 5000
 
 
-def check_decoder_screening_n_features(estimator_orig) -> None:
+@clone_estimator
+def check_decoder_screening_n_features(estimator) -> None:
     """Set screening_n_features gives the requested number of weights / CV.
 
     screening_n_features determines the number of selected features per CV
     so we only run a single CV.
     """
-    estimator = clone(estimator_orig)
-
     if (
         isinstance(estimator, SearchLight)
         or "screening_n_features" not in estimator.get_params()
@@ -2111,25 +2096,23 @@ def check_decoder_screening_n_features(estimator_orig) -> None:
 # ------------------ MASKER CHECKS ------------------
 
 
-def check_masker_clean_kwargs(estimator_orig) -> None:
+@clone_estimator
+def check_masker_clean_kwargs(estimator) -> None:
     """Check attributes for cleaning.
 
     Maskers accept a clean_args dict
     and store in clean_args and contains parameters to pass to clean.
     """
-    estimator = clone(estimator_orig)
-
     assert estimator.clean_args is None
 
 
-def check_masker_detrending(estimator_orig) -> None:
+@clone_estimator
+def check_masker_detrending(estimator) -> None:
     """Check detrending does something.
 
     Fit transform on same input should give different results
     if detrend is true or false.
     """
-    estimator = clone(estimator_orig)
-
     input_img: Nifti1Image | SurfaceImage
     if accepts_volume(estimator):
         input_img = _img_4d_rand_eye_medium()
@@ -2145,6 +2128,7 @@ def check_masker_detrending(estimator_orig) -> None:
 
 
 @xfail_if_not_gil()
+@clone_estimator
 def check_masker_standardization(estimator_orig) -> None:
     """Check maskers with several value for standardize.
 
@@ -2240,7 +2224,8 @@ def _check_clean_dtype_output(result) -> None:
             )
 
 
-def check_masker_compatibility_mask_image(estimator_orig) -> None:
+@clone_estimator
+def check_masker_compatibility_mask_image(estimator) -> None:
     """Check compatibility of the mask_img and images to masker.
 
     Compatibility should be check at fit and transform time.
@@ -2249,8 +2234,6 @@ def check_masker_compatibility_mask_image(estimator_orig) -> None:
     For surface maskers, check_compatibility_mask_and_images does it.
     But this means we do not have exactly the same error messages.
     """
-    estimator = clone(estimator_orig)
-
     mask_img: Nifti1Image | SurfaceImage
     input_img: Nifti1Image | SurfaceImage
     if accepts_volume(estimator):
@@ -2284,14 +2267,13 @@ def check_masker_compatibility_mask_image(estimator_orig) -> None:
     _check_mask_img_(estimator)
 
 
-def check_masker_no_mask_no_img(estimator_orig) -> None:
+@clone_estimator
+def check_masker_no_mask_no_img(estimator) -> None:
     """Check maskers mask_img_ when no mask passed at init or imgs at fit.
 
     For (Multi)NiftiMasker and SurfaceMasker fit should raise ValueError.
     For all other maskers mask_img_ should be None after fit.
     """
-    estimator = clone(estimator_orig)
-
     assert not hasattr(estimator, "mask_img_")
     if isinstance(estimator, (NiftiMasker, SurfaceMasker)):
         with pytest.raises(
@@ -2303,15 +2285,14 @@ def check_masker_no_mask_no_img(estimator_orig) -> None:
         assert estimator.mask_img_ is None
 
 
-def check_masker_mask_img_from_imgs(estimator_orig) -> None:
+@clone_estimator
+def check_masker_mask_img_from_imgs(estimator) -> None:
     """Check maskers mask_img_ inferred from imgs when no mask is provided.
 
     For (Multi)NiftiMasker and SurfaceMasker:
     they must have a valid mask_img_ after fit.
     For all other maskers mask_img_ should be None after fit.
     """
-    estimator = clone(estimator_orig)
-
     if accepts_volume(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
@@ -2325,7 +2306,6 @@ def check_masker_mask_img_from_imgs(estimator_orig) -> None:
     # Except for (Multi)NiftiMasker and SurfaceMasker,
     # maskers have mask_img_ = None after fitting some input image
     # when no mask was passed at construction
-    estimator = clone(estimator)
     assert not hasattr(estimator, "mask_img_")
 
     estimator.fit(input_img)
@@ -2336,6 +2316,7 @@ def check_masker_mask_img_from_imgs(estimator_orig) -> None:
         assert estimator.mask_img_ is None
 
 
+@clone_estimator
 def check_masker_mask_img(estimator_orig) -> None:
     """Check maskers mask_img_ post fit is valid.
 
@@ -2444,14 +2425,13 @@ def check_masker_mask_img(estimator_orig) -> None:
             assert "Given mask will be used" not in str(w)
 
 
-def check_masker_clean(estimator_orig) -> None:
+@clone_estimator
+def check_masker_clean(estimator) -> None:
     """Check that cleaning does something on fit transform.
 
     Fit transform on same input should give different results
     if some cleaning parameters are passed.
     """
-    estimator = clone(estimator_orig)
-
     input_img: Nifti1Image | SurfaceImage
     if accepts_volume(estimator):
         input_img = _img_4d_rand_eye_medium()
@@ -2468,7 +2448,8 @@ def check_masker_clean(estimator_orig) -> None:
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
 
 
-def check_masker_transformer(estimator_orig) -> None:
+@clone_estimator
+def check_masker_transformer(estimator) -> None:
     """Replace sklearn _check_transformer for maskers.
 
     - for maskers transform is in the base class and
@@ -2478,8 +2459,6 @@ def check_masker_transformer(estimator_orig) -> None:
     - fit_transform method should work on non fitted estimator
     - fit_transform should give same result as fit then transform
     """
-    estimator = clone(estimator_orig)
-
     # transform_single_imgs should not be an abstract method anymore
     assert not getattr(
         estimator.transform_single_imgs, "__isabstractmethod__", False
@@ -2504,7 +2483,8 @@ def check_masker_transformer(estimator_orig) -> None:
     assert_array_equal(signal_1, signal_2)
 
 
-def check_masker_transformer_high_variance_confounds(estimator_orig) -> None:
+@clone_estimator
+def check_masker_transformer_high_variance_confounds(estimator) -> None:
     """Check high_variance_confounds use in maskers.
 
     Make sure that using high_variance_confounds returns different result.
@@ -2512,8 +2492,6 @@ def check_masker_transformer_high_variance_confounds(estimator_orig) -> None:
     Ensure that high_variance_confounds can be used with regular confounds,
     and that results are different than when just using the confounds alone.
     """
-    estimator = clone(estimator_orig)
-
     length = 10
 
     input_img: Nifti1Image | SurfaceImage
@@ -2560,7 +2538,8 @@ def check_masker_transformer_high_variance_confounds(estimator_orig) -> None:
             )
 
 
-def check_masker_transformer_sample_mask(estimator_orig) -> None:
+@clone_estimator
+def check_masker_transformer_sample_mask(estimator) -> None:
     """Check sample_mask use in maskers.
 
     Make sure that using sample_mask returns different result
@@ -2570,8 +2549,6 @@ def check_masker_transformer_sample_mask(estimator_orig) -> None:
     that always keep the same samples (sample 1, 2 and 4)
     that should all return the same thing.
     """
-    estimator = clone(estimator_orig)
-
     input_img: Nifti1Image | SurfaceImage
     if accepts_volume(estimator):
         input_img = _img_4d_rand_eye()
@@ -2618,7 +2595,8 @@ def check_masker_transformer_sample_mask(estimator_orig) -> None:
     assert_array_equal(signal_2, signal_5)
 
 
-def check_masker_with_confounds(estimator_orig) -> None:
+@clone_estimator
+def check_masker_with_confounds(estimator) -> None:
     """Test fit_transform with confounds.
 
     Check different types of confounds
@@ -2631,8 +2609,6 @@ def check_masker_with_confounds(estimator_orig) -> None:
 
     For more tests see those of signal.clean.
     """
-    estimator = clone(estimator_orig)
-
     length = 20
     input_img: Nifti1Image | SurfaceImage
     if accepts_volume(estimator):
@@ -2682,10 +2658,9 @@ def check_masker_with_confounds(estimator_orig) -> None:
         )
 
 
-def check_masker_refit(estimator_orig) -> None:
+@clone_estimator
+def check_masker_refit(estimator) -> None:
     """Check masker can be refitted and give different results."""
-    estimator = clone(estimator_orig)
-
     mask_img_1: Nifti1Image | SurfaceImage
     mask_img_2: Nifti1Image | SurfaceImage
     if accepts_volume(estimator):
@@ -2724,13 +2699,12 @@ def check_masker_refit(estimator_orig) -> None:
             assert_surface_image_equal(fitted_mask_1, fitted_mask_2)
 
 
-def check_masker_empty_data_messages(estimator_orig) -> None:
+@clone_estimator
+def check_masker_empty_data_messages(estimator) -> None:
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
     """
-    estimator = clone(estimator_orig)
-
     imgs: Nifti1Image | SurfaceImage
     mask_img: Nifti1Image | SurfaceImage
     if accepts_volume(estimator):
@@ -2757,10 +2731,9 @@ def check_masker_empty_data_messages(estimator_orig) -> None:
         estimator.transform(imgs)
 
 
-def check_masker_fit_with_empty_mask(estimator_orig) -> None:
+@clone_estimator
+def check_masker_fit_with_empty_mask(estimator) -> None:
     """Check mask that excludes all voxels raise an error."""
-    estimator = clone(estimator_orig)
-
     mask_img: Nifti1Image | SurfaceImage
     imgs: list[Nifti1Image] | SurfaceImage
     if accepts_volume(estimator):
@@ -2781,14 +2754,13 @@ def check_masker_fit_with_empty_mask(estimator_orig) -> None:
         estimator.fit(imgs)
 
 
-def check_masker_fit_with_non_finite_in_mask(estimator_orig) -> None:
+@clone_estimator
+def check_masker_fit_with_non_finite_in_mask(estimator) -> None:
     """Check mask with non finite values can be used with maskers.
 
     - Warning is thrown.
     - Output of transform must contain only finite values.
     """
-    estimator = clone(estimator_orig)
-
     mask_img: Nifti1Image | SurfaceImage
     imgs: Nifti1Image | SurfaceImage
     if accepts_volume(estimator):
@@ -2818,7 +2790,8 @@ def check_masker_fit_with_non_finite_in_mask(estimator_orig) -> None:
     assert np.all(np.isfinite(signal))
 
 
-def check_masker_smooth(estimator_orig) -> None:
+@clone_estimator
+def check_masker_smooth(estimator) -> None:
     """Check that masker can smooth data when extracting.
 
     Check that masker instance has smoothing_fwhm attribute.
@@ -2829,8 +2802,6 @@ def check_masker_smooth(estimator_orig) -> None:
     - Check that output is the same with and without smoothing.
     TODO: update once smoothing is implemented.
     """
-    estimator = clone(estimator_orig)
-
     assert hasattr(estimator, "smoothing_fwhm")
 
     imgs: Nifti1Image | SurfaceImage
@@ -2850,7 +2821,8 @@ def check_masker_smooth(estimator_orig) -> None:
     assert_raises(AssertionError, assert_array_equal, smoothed_signal, signal)
 
 
-def check_masker_inverse_transform(estimator_orig) -> None:
+@clone_estimator
+def check_masker_inverse_transform(estimator) -> None:
     """Check output of inverse_transform.
 
     For signal with 1 or more samples.
@@ -2868,8 +2840,6 @@ def check_masker_inverse_transform(estimator_orig) -> None:
     Check that running inverse_transform() before and after running transform()
     give same result.
     """
-    estimator = clone(estimator_orig)
-
     if accepts_volume(estimator):
         # using different shape for imgs, mask
         # to force resampling
@@ -2945,7 +2915,8 @@ def check_masker_inverse_transform(estimator_orig) -> None:
         "'resampling_target' attribute is not implemented.",
     )
 )
-def check_masker_transform_resampling(estimator_orig) -> None:
+@clone_estimator
+def check_masker_transform_resampling(estimator) -> None:
     """Check transform / inverse_transform for maskers with resampling.
 
     Similar to check_masker_inverse_transform
@@ -2970,8 +2941,6 @@ def check_masker_transform_resampling(estimator_orig) -> None:
     If the resampling target is "maps" or "labels"
     then a warning should be thrown.
     """
-    estimator = clone(estimator_orig)
-
     # using different shape for imgs, mask
     # to force resampling
     n_sample = 10
@@ -3076,10 +3045,9 @@ def check_masker_transform_resampling(estimator_orig) -> None:
 
 # TODO enforce for other maskers
 @skip_if_not(lambda e: isinstance(e, NiftiMasker))
-def check_masker_shelving(estimator_orig) -> None:
+@clone_estimator
+def check_masker_shelving(estimator) -> None:
     """Check behavior when shelving masker."""
-    estimator = clone(estimator_orig)
-
     if is_windows_platform():
         # TODO (run check without xdist)
         # rare failure of this test on python on windows
@@ -3111,10 +3079,9 @@ def check_masker_shelving(estimator_orig) -> None:
         assert_array_equal(epi_shelved, epi)
 
 
-def check_masker_joblib_cache(estimator_orig) -> None:
+@clone_estimator
+def check_masker_joblib_cache(estimator) -> None:
     """Check cached data."""
-    estimator = clone(estimator_orig)
-
     img, _ = generate_data_to_fit(estimator)
 
     if accepts_volume(estimator):
@@ -3153,6 +3120,7 @@ def check_masker_joblib_cache(estimator_orig) -> None:
         out_img.to_filename(cachedir / "test.nii")
 
 
+@clone_estimator
 def check_masker_verbose(estimator_orig) -> None:
     """Check verbose behavior for maskers.
 
@@ -3246,18 +3214,16 @@ def check_masker_verbose(estimator_orig) -> None:
 # ------------------ SURFACE MASKER CHECKS ------------------
 
 
-def check_surface_masker_fit_transform_errors(estimator_orig) -> None:
+@clone_estimator
+def check_surface_masker_fit_transform_errors(estimator) -> None:
     """Check fit / transform errors.
 
     Check 'shape' errors between images to fit and mask.
     """
-    estimator = clone(estimator_orig)
-
     mask_img = _make_surface_mask()
 
     imgs = _make_surface_img(5)
 
-    estimator = clone(estimator)
     estimator.mask_img = mask_img
 
     # errors
@@ -3284,6 +3250,7 @@ def check_surface_masker_fit_transform_errors(estimator_orig) -> None:
         estimator.transform(_drop_surf_img_part(imgs))
 
 
+@clone_estimator
 def check_surface_masker_list_surf_images_no_mask(estimator_orig) -> None:
     """Test transform / inverse_transform on list of surface images.
 
@@ -3373,6 +3340,7 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig) -> None:
             estimator.fit([_make_surface_img(5), _make_surface_img(5)])
 
 
+@clone_estimator
 def check_surface_masker_list_surf_images_with_mask(estimator_orig) -> None:
     """Test transform / inverse_transform on list of surface images.
 
@@ -3490,7 +3458,8 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig) -> None:
 # ------------------ NIFTI MASKER CHECKS ------------------
 
 
-def check_nifti_masker_fit_transform(estimator_orig) -> None:
+@clone_estimator
+def check_nifti_masker_fit_transform(estimator) -> None:
     """Run several checks on maskers.
 
     - can fit 3D / 4D image
@@ -3500,8 +3469,6 @@ def check_nifti_masker_fit_transform(estimator_orig) -> None:
     - array from transformed 3D images should have 1D
     - array from transformed 4D images should have 2D
     """
-    estimator = clone(estimator_orig)
-
     estimator.fit(_img_3d_rand())
 
     # 3D images
@@ -3545,15 +3512,14 @@ def check_nifti_masker_fit_transform(estimator_orig) -> None:
     assert signal.shape == (_img_4d_rand_eye().shape[3], estimator.n_elements_)
 
 
-def check_nifti_masker_fit_transform_5d(estimator_orig) -> None:
+@clone_estimator
+def check_nifti_masker_fit_transform_5d(estimator) -> None:
     """Run checks on nifti maskers for transforming 5D images.
 
     - multi masker should be fine
       and return a list of 2D numpy arrays
     - non multimasker should fail
     """
-    estimator = clone(estimator_orig)
-
     n_subject = 3
 
     estimator.fit(_img_3d_rand())
@@ -3596,10 +3562,9 @@ def check_nifti_masker_fit_transform_5d(estimator_orig) -> None:
         # assert all(isinstance(x, pd.DataFrame) for x in signal)
 
 
-def check_nifti_masker_fit_transform_files(estimator_orig) -> None:
+@clone_estimator
+def check_nifti_masker_fit_transform_files(estimator) -> None:
     """Check that nifti maskers can work directly on files."""
-    estimator = clone(estimator_orig)
-
     with TemporaryDirectory() as tmp_dir:
         filename = write_imgs_to_path(
             _img_3d_rand(),
@@ -3612,6 +3577,7 @@ def check_nifti_masker_fit_transform_files(estimator_orig) -> None:
         estimator.fit_transform(filename)
 
 
+@clone_estimator
 def check_nifti_masker_dtype(estimator_orig) -> None:
     """Check dtype of output of maskers."""
     estimator = clone(estimator_orig)
@@ -3635,13 +3601,12 @@ def check_nifti_masker_dtype(estimator_orig) -> None:
         assert estimator.fit_transform(img).dtype == np.float64
 
 
-def check_nifti_masker_fit_with_3d_mask(estimator_orig) -> None:
+@clone_estimator
+def check_nifti_masker_fit_with_3d_mask(estimator) -> None:
     """Check 3D mask can be used with nifti maskers.
 
     Mask can have different shape than fitted image.
     """
-    estimator = clone(estimator_orig)
-
     # _shape_3d_large() is used
     # this test would fail for RegionExtractor otherwise
     mask = np.ones(_shape_3d_large())
@@ -3659,10 +3624,9 @@ def check_nifti_masker_fit_with_3d_mask(estimator_orig) -> None:
 # ------------------ MULTI MASKER CHECKS ------------------
 
 
-def check_multi_nifti_masker_shelving(estimator_orig) -> None:
+@clone_estimator
+def check_multi_nifti_masker_shelving(estimator) -> None:
     """Check behavior when shelving masker."""
-    estimator = clone(estimator_orig)
-
     if is_windows_platform():
         # TODO (run check without xdist)
         # rare failure of this test on python on windows
@@ -3702,7 +3666,8 @@ def check_multi_nifti_masker_shelving(estimator_orig) -> None:
             assert_array_equal(e_shelved, e)
 
 
-def check_multimasker_with_confounds(estimator_orig) -> None:
+@clone_estimator
+def check_multimasker_with_confounds(estimator) -> None:
     """Test multi maskers with a list of confounds.
 
     Ensure results is different than when not using confounds.
@@ -3713,8 +3678,6 @@ def check_multimasker_with_confounds(estimator_orig) -> None:
     Check that error is raised if number of confounds
     does not match number of images.
     """
-    estimator = clone(estimator_orig)
-
     length = _img_4d_rand_eye_medium().shape[3]
 
     input_imgs: list[Nifti1Image] | list[SurfaceImage]
@@ -3758,15 +3721,14 @@ def check_multimasker_with_confounds(estimator_orig) -> None:
         estimator.fit_transform(input_imgs, confounds=1)
 
 
-def check_multimasker_transformer_sample_mask(estimator_orig) -> None:
+@clone_estimator
+def check_multimasker_transformer_sample_mask(estimator) -> None:
     """Test multi maskers with a list of "sample_mask".
 
     "sample_mask" was directly sent as input to the parallel calls of
     "transform_single_imgs" instead of sending iterations.
     See https://github.com/nilearn/nilearn/issues/3967 for more details.
     """
-    estimator = clone(estimator_orig)
-
     length = _img_4d_rand_eye_medium().shape[3]
 
     input_imgs: list[Nifti1Image] | list[SurfaceImage]
@@ -3810,8 +3772,9 @@ def check_multimasker_transformer_sample_mask(estimator_orig) -> None:
         estimator.fit_transform(input_imgs, sample_mask=1)
 
 
+@clone_estimator
 def check_multimasker_transformer_high_variance_confounds(
-    estimator_orig,
+    estimator,
 ) -> None:
     """Check high_variance_confounds in multi maskers with data many samples.
 
@@ -3822,8 +3785,6 @@ def check_multimasker_transformer_high_variance_confounds(
 
     Also checks that confounds can be accepted as different formats.
     """
-    estimator = clone(estimator_orig)
-
     length = _img_4d_rand_eye_medium().shape[3]
 
     input_imgs: list[Nifti1Image] | list[SurfaceImage]
@@ -3872,6 +3833,7 @@ def check_multimasker_transformer_high_variance_confounds(
 # ------------------ GLM CHECKS ------------------
 
 
+@clone_estimator
 def check_glm_empty_data_messages(
     estimator_orig: FirstLevelModel | SecondLevelModel,
 ) -> None:
@@ -3966,7 +3928,8 @@ def _generate_report_with_no_warning(estimator) -> None:
             assert not unknown_warnings, unknown_warnings
 
 
-def check_masker_generate_report(estimator_orig) -> None:
+@clone_estimator
+def check_masker_generate_report(estimator) -> None:
     """Check that maskers can generate report.
 
     - check that we get a warning:
@@ -3978,8 +3941,6 @@ def check_masker_generate_report(estimator_orig) -> None:
     - check that the masker has report data after fit
 
     """
-    estimator = clone(estimator_orig)
-
     generate_and_check_masker_report(estimator)
 
     assert isinstance(estimator._report_content, dict)
@@ -4025,9 +3986,9 @@ def check_masker_generate_report(estimator_orig) -> None:
 
 
 @xfail_if_not_gil()
-def check_masker_generate_report_constant(estimator_orig) -> None:
+@clone_estimator
+def check_masker_generate_report_constant(estimator) -> None:
     """Check report is constant across calls."""
-    estimator = clone(estimator_orig)
     input_img: Nifti1Image | SurfaceImage
     if accepts_volume(estimator):
         input_img = _img_3d_rand()
@@ -4060,12 +4021,11 @@ def check_masker_generate_report_constant(estimator_orig) -> None:
 
 
 @xfail_if_not_gil()
+@clone_estimator
 def check_nifti_masker_generate_report_after_fit_with_only_mask(
-    estimator_orig,
+    estimator,
 ) -> None:
     """Check 3D mask is enough to run with fit and generate report."""
-    estimator = clone(estimator_orig)
-
     mask = np.ones(_shape_3d_large())
     mask_img = Nifti1Image(mask, affine=_affine_eye())
 
@@ -4109,10 +4069,9 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(
 
 
 @xfail_if_not_gil()
-def check_masker_generate_report_false(estimator_orig) -> None:
+@clone_estimator
+def check_masker_generate_report_false(estimator) -> None:
     """Test with reports set to False."""
-    estimator = clone(estimator_orig)
-
     estimator.reports = False
 
     input_img: Nifti1Image | SurfaceImage
@@ -4129,10 +4088,9 @@ def check_masker_generate_report_false(estimator_orig) -> None:
 
 
 @xfail_if_not_gil()
-def check_multimasker_generate_report(estimator_orig) -> None:
+@clone_estimator
+def check_multimasker_generate_report(estimator) -> None:
     """Test calling generate report on multiple subjects raises warning."""
-    estimator = clone(estimator_orig)
-
     input_img: list[Nifti1Image] | list[SurfaceImage]
     if accepts_volume(estimator):
         input_img = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
