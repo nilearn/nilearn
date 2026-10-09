@@ -2,8 +2,6 @@ from sklearn.base import is_classifier, is_regressor
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._estimator_checks.nilearn_checks import (
-    _clone_estimator,
-    _requires_y,
     check_decoder_compatibility_mask_image,
     check_decoder_empty_data_messages,
     check_decoder_estimator_args,
@@ -82,6 +80,7 @@ from nilearn._estimator_checks.nilearn_checks import (
     check_verbosity_embedded_masker,
     check_warning_embedded_masker,
 )
+from nilearn._estimator_checks.utils import accepts_image, clone, requires_y
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers._mixin import _MultiMixin
@@ -229,11 +228,6 @@ DECOMPOSITION_CHECKS = [
 ]
 
 
-def accepts_image(estimator):
-    """Check if estimator accepts volume of surface image."""
-    return accepts_volume(estimator) or accepts_surface(estimator)
-
-
 # List of tuples
 # (conditions to test on estimator, list of checks to apply)
 CHECK_SELECTOR = [
@@ -249,7 +243,7 @@ CHECK_SELECTOR = [
         IMG_INPUT_REGRESSOR_CHECKS,
     ),
     (
-        lambda e: accepts_image(e) and _requires_y(e),
+        lambda e: accepts_image(e) and requires_y(e),
         IMG_INPUT_REQUIRES_Y,
     ),
     # ----------MASKERS----------
@@ -301,7 +295,7 @@ def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
     checks_to_run = []
     for est in estimators:
         checks_to_run.extend(
-            (_clone_estimator(est), est.__class__.__name__, check)
+            (clone(est), est.__class__.__name__, check)
             for check in nilearn_check_generator(estimator=est)
         )
 

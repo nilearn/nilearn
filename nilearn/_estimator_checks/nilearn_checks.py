@@ -32,7 +32,6 @@ import pickle
 import re
 import warnings
 from copy import deepcopy
-from functools import wraps
 from pathlib import Path
 from tempfile import TemporaryDirectory, mkdtemp
 from typing import Any, cast
@@ -50,7 +49,6 @@ from numpy.testing import (
     assert_raises,
 )
 from numpydoc.docscrape import NumpyDocString
-from sklearn import clone
 from sklearn.base import is_classifier, is_regressor
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.exceptions import ConvergenceWarning
@@ -67,6 +65,14 @@ from sklearn.utils.estimator_checks import (
 )
 
 from nilearn._base import NilearnBaseEstimator
+from nilearn._estimator_checks.utils import (
+    accepts_image,
+    clone,
+    clone_estimator,
+    requires_y,
+    skip_if,
+    xfail_if_not_gil,
+)
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.helpers import (
     is_gil_enabled,
@@ -155,25 +161,6 @@ from nilearn.utils.tags import (
 )
 
 NILEARN_DIR = Path(__file__).parents[1]
-
-
-def accepts_image(estimator):
-    """Check if estimator accepts volume of surface image."""
-    return accepts_volume(estimator) or accepts_surface(estimator)
-
-
-def _clone_estimator(estimator_orig):
-    """Clone estimator, set random_state and return."""
-    estimator = clone(estimator_orig)
-    # sets random_state to 0 if parameter exists for the estimator
-    set_random_state(estimator)
-    return estimator
-
-
-def _requires_y(estimator):
-    """Check if estimator expects target as input."""
-    tags = estimator.__sklearn_tags__()
-    return getattr(tags.target_tags, "required", True)
 
 
 def _not_fitted_error_message(estimator) -> str:
@@ -303,72 +290,6 @@ def fit_estimator(
             # might not converge
             warnings.filterwarnings("ignore", category=ConvergenceWarning)
             return estimator.fit(X)
-
-
-def clone_estimator(check_func):
-    """Provide cloned estimator to check function.
-
-    This decorator should be set at the bottom of all decorators.
-    """
-
-    @wraps(check_func)
-    def wrapper(estimator):
-        estimator = _clone_estimator(estimator)
-        return check_func(estimator)
-
-    return wrapper
-
-
-def skip_if(*conditions):
-    """Skip a check if estimator satisfies one of the conditions."""
-
-    def decorator(check_func):
-
-        @wraps(check_func)
-        def wrapper(estimator):
-            for condition in conditions:
-                if isinstance(condition, tuple):
-                    condition, reason = condition
-                else:
-                    reason = ""
-                if condition(estimator):
-                    print(
-                        f"\n'{check_func.__name__}' does not apply to class "
-                        f"'{estimator.__class__.__name__}'. "
-                        f"{reason}"
-                    )
-                    return estimator
-            return check_func(estimator)
-
-        return wrapper
-
-    return decorator
-
-
-def xfail_if_not_gil(classes=None):
-    """Skip a check if GIL is not enabled.
-
-    If ``classes`` is specified, it skip the check if also the estimator
-    is an instance of one of the classes listed.
-
-    This decorator should be set at the top of all decorators.
-    """
-
-    def decorator(check_func):
-
-        @wraps(check_func)
-        def wrapper(estimator):
-            if not is_gil_enabled() and (
-                classes is None
-                or (classes and isinstance(estimator, tuple(classes)))
-            ):
-                pytest.xfail("May fail without the GIL")
-            else:
-                return check_func(estimator)
-
-        return wrapper
-
-    return decorator
 
 
 # ------------------ GENERIC CHECKS ------------------
@@ -683,7 +604,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
       - verbose True and verbose = 1
     - verbose 2 should have more than output verbose 1
     """
-    estimator = _clone_estimator(estimator_orig)
+    estimator = clone(estimator_orig)
     buffer = io.StringIO()
     with contextlib.redirect_stdout(buffer):
         fit_estimator(estimator)
@@ -691,7 +612,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     assert output == ""
 
     # verbose False == verbose 0
-    estimator = _clone_estimator(estimator_orig)
+    estimator = clone(estimator_orig)
     estimator.verbose = False
 
     buffer = io.StringIO()
@@ -700,7 +621,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     output_false = buffer.getvalue()
     assert output == output_false
 
-    estimator = _clone_estimator(estimator_orig)
+    estimator = clone(estimator_orig)
     estimator.verbose = 1
 
     buffer = io.StringIO()
@@ -711,7 +632,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
 
     # verbose True == verbose 1
     # should mostly be the same except for object reference
-    estimator = _clone_estimator(estimator_orig)
+    estimator = clone(estimator_orig)
     estimator.verbose = True
 
     buffer = io.StringIO()
@@ -751,7 +672,7 @@ def check_verbosity_embedded_masker(estimator_orig) -> None:
     """
     outputs = {}
     for verbose in [1, 2, 3]:
-        estimator = _clone_estimator(estimator_orig)
+        estimator = clone(estimator_orig)
         estimator.verbose = verbose
 
         buffer = io.StringIO()
