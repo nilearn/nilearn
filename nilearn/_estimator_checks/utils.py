@@ -214,7 +214,7 @@ def skip_if(*conditions):
                 if condition(estimator):
                     print(
                         f"\n'{check_func.__name__}' does not apply to class "
-                        f"'{estimator.__class__.__name__}' for {condition}. "
+                        f"'{estimator.__class__.__name__}'. "
                         f"{reason}"
                     )
                     return estimator
@@ -240,8 +240,8 @@ def skip_if_not(*conditions):
                 if not condition(estimator):
                     print(
                         f"\n'{check_func.__name__}' does not apply to class "
-                        f"'{estimator.__class__.__name__}' for not "
-                        f"{condition}. {reason}"
+                        f"'{estimator.__class__.__name__}'. "
+                        f"{reason}"
                     )
                     return estimator
             return check_func(estimator)
