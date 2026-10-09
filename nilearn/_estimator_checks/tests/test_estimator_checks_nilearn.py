@@ -6,7 +6,7 @@ import pytest
 from nibabel import Nifti1Image
 from sklearn.covariance import EmpiricalCovariance
 
-from nilearn._estimator_checks.nilearn_checks import (
+from nilearn._estimator_checks.nilearn_check_generator import (
     nilearn_check_estimator,
 )
 from nilearn._utils.data_gen import generate_maps
@@ -89,15 +89,9 @@ DECODING = [
     ),
 ]
 
-DECOMPOSITION = [
-    DictLearning(random_state=RANDOM_STATE),
-    CanICA(random_state=RANDOM_STATE),
-]
+DECOMPOSITION = [DictLearning(), CanICA()]
 
-GLM = [
-    FirstLevelModel(random_state=RANDOM_STATE),
-    SecondLevelModel(),
-]
+GLM = [FirstLevelModel(), SecondLevelModel()]
 
 MASKERS = [
     NiftiMasker(),
@@ -125,7 +119,7 @@ MASKERS = [
 ]
 
 REGIONS = [
-    HierarchicalKMeans(n_clusters=2, random_state=RANDOM_STATE),
+    HierarchicalKMeans(n_clusters=2),
     RegionExtractor(
         maps_img=generate_maps(
             shape=_shape_3d_large(),
@@ -135,9 +129,9 @@ REGIONS = [
         )[0]
     ),
     ReNA(mask_img=_img_3d_mni(), n_clusters=2),
-    Parcellations(method="kmeans", n_parcels=5, random_state=RANDOM_STATE),
-    Parcellations(method="ward", n_parcels=5, random_state=RANDOM_STATE),
-    Parcellations(method="rena", n_parcels=5, random_state=RANDOM_STATE),
+    Parcellations(method="kmeans", n_parcels=5),
+    Parcellations(method="ward", n_parcels=5),
+    Parcellations(method="rena", n_parcels=5),
 ]
 
 
