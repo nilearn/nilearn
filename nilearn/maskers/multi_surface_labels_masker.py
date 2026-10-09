@@ -10,6 +10,15 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.surface_labels_masker import SurfaceLabelsMasker
+from nilearn.nilearn_typing import (
+    HighPass,
+    LowPass,
+    Memory,
+    MemoryLevel,
+    NJobs,
+    Tr,
+    Verbose,
+)
 from nilearn.surface.surface import check_surf_img
 
 
@@ -137,19 +146,19 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         mask_img=None,
         smoothing_fwhm=None,
         standardize=None,
-        standardize_confounds=True,
-        detrend=False,
-        high_variance_confounds=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
+        standardize_confounds: bool = True,
+        detrend: bool = False,
+        high_variance_confounds: bool = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
         dtype=None,
-        memory=None,
-        memory_level=1,
-        n_jobs=1,
-        verbose=0,
+        memory: Memory = None,
+        memory_level: MemoryLevel = 1,
+        n_jobs: NJobs = 1,
+        verbose: Verbose = 0,
         strategy="mean",
-        reports=True,
+        reports: bool = True,
         cmap=DEFAULT_SEQUENTIAL_CMAP,
         clean_args=None,
     ):

@@ -48,7 +48,7 @@ from nilearn.image.image import (
 from nilearn.image.resampling import resample_img
 from nilearn.maskers._mixin import MaskerReportMixin
 from nilearn.masking import load_mask_img, unmask
-from nilearn.nilearn_typing import SingleConfound
+from nilearn.nilearn_typing import Signals, SingleConfound
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
@@ -622,7 +622,7 @@ class BaseMasker(_BaseMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, X: pd.DataFrame | np.ndarray) -> Nifti1Image:
+    def inverse_transform(self, X: Signals) -> Nifti1Image:
         """Transform the data matrix back to an image in brain space.
 
         This step only performs spatial unmasking,

@@ -27,6 +27,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
+    check_n_confounds_match_n_images,
     check_parameter_in_allowed,
     check_params,
     check_run_sample_masks,
@@ -2487,7 +2488,7 @@ def _get_confounds(
         filters=filters,
         verbose=verbose,
     )
-    _check_confounds_list(confounds=confounds_files, imgs=imgs)
+    check_n_confounds_match_n_images(confounds_files, imgs)
 
     if not confounds_files or kwargs_load_confounds is None:
         return None
@@ -2505,30 +2506,6 @@ def _get_confounds(
         return confounds
 
     return load_confounds(img_files=imgs, **kwargs_load_confounds)[0]
-
-
-def _check_confounds_list(confounds, imgs) -> None:
-    """Check the number of confounds.tsv files.
-
-    If no file is found, it will be assumed there are none,
-    but if there are any confounds files, there must be one per run.
-
-    Parameters
-    ----------
-    confounds : :obj:`list` of :obj:`str`
-        List of fullpath to the confounds.tsv files
-
-    imgs : :obj:`list` of :obj:`str`
-        List of fullpath to the preprocessed images
-
-    """
-    if confounds and len(confounds) != len(imgs):
-        raise ValueError(
-            f"{len(confounds)} confounds.tsv files found "
-            f"for {len(imgs)} bold files. "
-            "Same number of confound files as "
-            "the number of runs is expected"
-        )
 
 
 def _check_args_first_level_from_bids(

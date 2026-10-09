@@ -8,7 +8,6 @@ import warnings
 from typing import Any, ClassVar
 
 import numpy as np
-import pandas as pd
 from nibabel import Nifti1Image
 from scipy import sparse
 from sklearn import neighbors
@@ -36,7 +35,7 @@ from nilearn.maskers.base_masker import (
     sanitize_displayed_maps,
 )
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
-from nilearn.nilearn_typing import SingleConfound
+from nilearn.nilearn_typing import Signals, SingleConfound
 
 
 def apply_mask_and_get_affinity(
@@ -694,9 +693,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return [str(tuple(x)) + radius_suffix for x in seeds.tolist()]
 
     @fill_doc
-    def inverse_transform(
-        self, region_signals: pd.DataFrame | np.ndarray
-    ) -> Nifti1Image:
+    def inverse_transform(self, region_signals: Signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from spheres signals.
 
         Any mask given at initialization is taken into account. Throws an error

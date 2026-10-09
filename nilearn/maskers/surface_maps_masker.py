@@ -6,7 +6,6 @@ import warnings
 from typing import Any, ClassVar, Self
 
 import numpy as np
-import pandas as pd
 from scipy import linalg
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -32,7 +31,7 @@ from nilearn.maskers.base_masker import (
     mask_logger,
     sanitize_displayed_maps,
 )
-from nilearn.nilearn_typing import SingleConfound
+from nilearn.nilearn_typing import Signals, SingleConfound
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -378,9 +377,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         )
 
     @fill_doc
-    def inverse_transform(
-        self, region_signals: pd.DataFrame | np.ndarray
-    ) -> SurfaceImage:
+    def inverse_transform(self, region_signals: Signals) -> SurfaceImage:
         """Compute :term:`vertex` signals from region signals.
 
         Parameters

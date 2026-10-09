@@ -24,7 +24,7 @@ from nilearn._utils.param_validation import (
 from nilearn.image import mean_img
 from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
-from nilearn.nilearn_typing import SingleConfound
+from nilearn.nilearn_typing import Signals, SingleConfound
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -461,9 +461,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         )
 
     @fill_doc
-    def inverse_transform(
-        self, signals: pd.DataFrame | np.ndarray
-    ) -> SurfaceImage:
+    def inverse_transform(self, signals: Signals) -> SurfaceImage:
         """Transform extracted signal back to surface image.
 
         Parameters

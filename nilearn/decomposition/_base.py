@@ -31,6 +31,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
+    check_n_confounds_match_n_images,
     check_params,
 )
 from nilearn._utils.path_finding import resolve_globbing
@@ -476,11 +477,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             confounds_sequence = confounds
         else:
             confounds_sequence = [confounds]
-        if len(confounds_sequence) != len(imgs):
-            raise ValueError(
-                f"Number of confounds ({len(confounds_sequence)=}) "
-                f"must match number of images ({len(imgs)=})."
-            )
+        check_n_confounds_match_n_images(confounds_sequence, imgs)
         return confounds_sequence
 
     @fill_doc

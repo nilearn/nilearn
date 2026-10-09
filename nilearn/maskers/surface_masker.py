@@ -5,7 +5,6 @@ from typing import Any, ClassVar, Self
 from warnings import warn
 
 import numpy as np
-import pandas as pd
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -19,7 +18,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
-from nilearn.nilearn_typing import SingleConfound
+from nilearn.nilearn_typing import Signals, SingleConfound
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
 
@@ -344,9 +343,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         return output if target_dtype is None else output.astype(target_dtype)
 
     @fill_doc
-    def inverse_transform(
-        self, signals: pd.DataFrame | np.ndarray
-    ) -> SurfaceImage:
+    def inverse_transform(self, signals: Signals) -> SurfaceImage:
         """Transform extracted signal back to surface object.
 
         Parameters

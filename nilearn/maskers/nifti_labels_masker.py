@@ -35,7 +35,7 @@ from nilearn.maskers.base_masker import (
     mask_logger,
 )
 from nilearn.masking import load_mask_img
-from nilearn.nilearn_typing import SingleConfound
+from nilearn.nilearn_typing import Signals, SingleConfound
 
 
 class _ExtractionFunctor:
@@ -868,9 +868,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         return labels_img_
 
     @fill_doc
-    def inverse_transform(
-        self, signals: pd.DataFrame | np.ndarray
-    ) -> Nifti1Image:
+    def inverse_transform(self, signals: Signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from region signals.
 
         Any mask given at initialization is taken into account.

@@ -345,3 +345,11 @@ def sanitize_verbose(verbose: int | bool) -> int:
     elif verbose is False:
         verbose = 0
     return verbose
+
+
+def check_n_confounds_match_n_images(confounds, imgs_list) -> None:
+    if len(confounds) != len(imgs_list):
+        raise ValueError(
+            f"Number of confounds ({len(confounds)=}) "
+            f"must match number of images ({len(imgs_list)=})."
+        )

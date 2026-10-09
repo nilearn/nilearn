@@ -109,6 +109,7 @@ ResamplingInterpolation: TypeAlias = Literal["continuous", "nearest"]
 Resolution: TypeAlias = Integer | None
 Resume: TypeAlias = bool
 ScreeningPercentile: TypeAlias = Scalar
+Signals: TypeAlias = np.ndarray | pd.DataFrame
 SmoothingFwhm: TypeAlias = Scalar
 Standardize: TypeAlias = Literal["zscore_sample", "psc", None]
 StandardizeConfounds: TypeAlias = bool
