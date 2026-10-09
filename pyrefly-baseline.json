@@ -96,26 +96,6 @@
       "concise_description": "Argument `Unknown | None` is not assignable to parameter `x` with type `Buffer | SupportsIndex | SupportsInt | SupportsTrunc | str` in function `int.__new__`"
     },
     {
-      "concise_description": "Object of type `DataFrame | Path | str | None` has no attribute `columns`",
-      "name": "missing-attribute",
-      "path": "nilearn/glm/second_level/second_level.py"
-    },
-    {
-      "concise_description": "Cannot index into `Path`",
-      "name": "bad-index",
-      "path": "nilearn/glm/second_level/second_level.py"
-    },
-    {
-      "concise_description": "Cannot index into `str`",
-      "name": "bad-index",
-      "path": "nilearn/glm/second_level/second_level.py"
-    },
-    {
-      "concise_description": "`None` is not subscriptable",
-      "name": "unsupported-operation",
-      "path": "nilearn/glm/second_level/second_level.py"
-    },
-    {
       "concise_description": "Argument `list[DataFrame]` is not assignable to parameter `design_matrices` with type `DataFrame | Path | list[DataFrame | Path | str] | str | None` in function `nilearn.glm.first_level.first_level.FirstLevelModel.fit`",
       "name": "bad-argument-type",
       "path": "nilearn/glm/tests/test_glm_reporter.py"
