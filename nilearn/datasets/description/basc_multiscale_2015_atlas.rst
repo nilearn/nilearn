@@ -5,7 +5,7 @@ BASC multiscale atlas
 
 This work is a derivative from the Cambridge sample found
 in the `1000 functional connectome project <https://fcon_1000.projects.nitrc.org/fcpClassic/FcpTable.html>`_
-(:footcite:t:`Liu2009`), originally released under Creative Commons -- Attribution Non-Commercial.
+(:footcite:t:`Liu2009`), originally released under Creative Commons -- Attribution Non-commercial.
 It includes group brain parcellations generated
 from :term:`resting-state` functional magnetic resonance images for about 200 young healthy subjects.
 Multiple scales (number of networks) are available, and includes 7, 12, 20, 36, 64, 122, 197, 325, 444.
