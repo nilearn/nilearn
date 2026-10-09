@@ -493,7 +493,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         Parameters
         ----------
-        imgs : Niimg-like objects or :obj:`~nilearn.surface.SurfaceImage`,
+        imgs : Niimg-like objects or :obj:`~nilearn.surface.SurfaceImage`, \
                :obj:`list` of Niimg-like objects or \
                list or tuple of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
@@ -506,7 +506,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         confounds : str or pathlib.Path to CSV file paths, \
                 numpy.ndarrays or pandas DataFrames or \
-                list or tuple of: str or pathlib.Path to CSV file paths, \
+                list or tuple of str or pathlib.Path to CSV file paths, \
                 numpy.ndarrays or pandas DataFrames or None, default=None.
             This parameter is passed to nilearn.signal.clean.
             Please see the related documentation for details.
@@ -653,7 +653,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         Parameters
         ----------
-        imgs :  Niimg-like objects or :obj:`~nilearn.surface.SurfaceImage`,
+        imgs :  Niimg-like objects or :obj:`~nilearn.surface.SurfaceImage`, \
                :obj:`list` of Niimg-like objects or \
                list or tuple of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
@@ -752,7 +752,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         Parameters
         ----------
-        imgs :  Niimg-like objects or :obj:`~nilearn.surface.SurfaceImage`,
+        imgs :  Niimg-like objects or :obj:`~nilearn.surface.SurfaceImage`, \
                :obj:`list` of Niimg-like objects or \
                list or tuple of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
@@ -762,7 +762,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
         confounds : str or pathlib.Path to CSV file paths, \
                 numpy.ndarrays or pandas DataFrames or \
-                list or tuple of: str or pathlib.Path to CSV file paths, \
+                list or tuple of str or pathlib.Path to CSV file paths, \
                 numpy.ndarrays or pandas DataFrames or None, default=None.
             This parameter is passed to nilearn.signal.clean.
             Please see the related documentation for details.

@@ -6,6 +6,8 @@ Version 0.1.2
 
 **Released March 2015**
 
+.. _v0-1-2-changelog:
+
 Changelog
 ---------
 

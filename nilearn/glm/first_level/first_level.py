@@ -953,15 +953,9 @@ class FirstLevelModel(BaseGLM):
 
                 This parameter is ignored if design_matrices are passed.
 
-        confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
-                    :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
-                    :class:`numpy.ndarray` or :obj:`str`, default=None
-            Each column in a DataFrame corresponds to a confound variable
-            to be included in the regression model of the respective run_img.
-            The number of rows must match the number of volumes in the
-            respective run_img.
+        %(confounds)s
+
             Ignored in case designs is not None.
-            If string, then a path to a csv file is expected.
 
             .. warning::
 
@@ -2488,7 +2482,8 @@ def _get_confounds(
         filters=filters,
         verbose=verbose,
     )
-    check_n_confounds_match_n_images(confounds_files, imgs)
+    if confounds_files:
+        check_n_confounds_match_n_images(confounds_files, imgs)
 
     if not confounds_files or kwargs_load_confounds is None:
         return None

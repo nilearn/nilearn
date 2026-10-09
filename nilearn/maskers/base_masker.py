@@ -951,7 +951,6 @@ class _BaseSurfaceMasker(_BaseMasker):
 
         %(sample_mask)s
 
-
         Returns
         -------
         %(signals_transform_surface)s

@@ -631,8 +631,9 @@ def clean(
         cleaned independently. Must be a 1D array of n_samples elements.
 
     confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
-                :class:`pandas.DataFrame` \
-                or :obj:`list` of confounds timeseries, default=None
+                :class:`pandas.DataFrame`, None, \
+                or :obj:`list` or :obj:`tuple` of confounds timeseries, \
+                default=None
         Shape must be (instant number, confound number), or just
         (instant number,).
         The number of time instants in ``signals`` and ``confounds`` must be

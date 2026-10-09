@@ -186,10 +186,7 @@ class _MultiMixin:
             assert all(isinstance(x, SurfaceImage) for x in imgs)
 
         return self.transform_imgs(
-            imgs,
-            confounds=confounds,
-            sample_mask=sample_mask,
-            n_jobs=self.n_jobs,
+            imgs, confounds=confounds, sample_mask=sample_mask
         )
 
     def _prepare_confounds(self, imgs_list, confounds):

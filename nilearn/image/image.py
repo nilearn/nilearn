@@ -2254,23 +2254,13 @@ def clean_img(
             'runs' replaces 'sessions' after release 0.10.0.
             Using 'session' will result in an error after release 0.10.0.
 
-
     detrend : :obj:`bool`, default=True
         If detrending should be applied on timeseries
         (before confound removal).
 
     %(standardize_zscore)s
 
-    confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of \
-        Confounds timeseries. default=None
-        Shape must be (instant number, confound number),
-        or just (instant number,)
-        The number of time instants in signals and confounds must be
-        identical (i.e. signals.shape[0] == confounds.shape[0]).
-        If a string is provided, it is assumed to be the name of a csv file
-        containing signals as columns, with an optional one-line header.
-        If a list is provided, all confounds are removed from the input
-        signal, as if all were in the same array.
+    %(confounds)s
 
     %(low_pass)s
 

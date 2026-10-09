@@ -593,15 +593,7 @@ class Parcellations(_MultiPCA):
         %(imgs)s
             Images to process.
 
-        confounds : :obj:`list` of CSV files, arrays-like,\
-            or :class:`pandas.DataFrame`, default=None
-            Each file or numpy array in a list should have shape
-            (number of scans, number of confounds)
-            Must be of same length as imgs.
-
-            .. note::
-                This parameter is passed to :func:`nilearn.signal.clean`.
-                Please see the related documentation for details.
+        %(confounds_multi)s
 
         Returns
         -------
@@ -678,16 +670,7 @@ class Parcellations(_MultiPCA):
 
         %(y_dummy)s
 
-        confounds : :obj:`list` of CSV files, arrays-like or\
-            :class:`pandas.DataFrame`, default=None
-            Each file or numpy array in a list should have shape
-            (number of scans, number of confounds).
-            Given confounds should have same length as images if
-            given as a list.
-
-            .. note::
-                This parameter is passed to :func:`nilearn.signal.clean`.
-                Please see the related documentation for details.
+        %(confounds_multi)s
 
             .. note::
                 Confounds will be used for cleaning signals before
