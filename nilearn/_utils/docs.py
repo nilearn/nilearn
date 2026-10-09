@@ -1816,9 +1816,11 @@ docdict["signals_transform_surface"] = signals_transform.format(1, 2, 1, 2)
 # signals returned Multi Nifti maskers by transform, fit_transform...
 docdict[
     "signals_transform_multi_nifti"
-] = """signals : :obj:`list` of :obj:`numpy.ndarray` or :obj:`numpy.ndarray`
+] = """signals : :obj:`numpy.ndarray`, :obj:`pandas.DataFrame`, polar.DataFrame
+                 :obj:`list` of
+                 :obj:`numpy.ndarray`, :obj:`pandas.DataFrame`, polar.DataFrame
         Signal for each :term:`voxel`.
-        Output shape for :
+        Output shape for arrays:
 
         - 3D images: (number of elements,) array
         - 4D images: (number of scans, number of elements) array

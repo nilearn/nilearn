@@ -537,7 +537,7 @@ class BaseMasker(_BaseMasker):
         imgs,
         confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
-    ):
+    ) -> Signals:
         """Apply mask, spatial and temporal preprocessing.
 
         Parameters
@@ -588,7 +588,7 @@ class BaseMasker(_BaseMasker):
         confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
         **fit_params,
-    ):
+    ) -> Signals:
         """Fit to data, then transform it.
 
         Parameters
@@ -834,7 +834,7 @@ class _BaseSurfaceMasker(_BaseMasker):
         imgs,
         confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
-    ):
+    ) -> Signals:
         """Apply mask, spatial and temporal preprocessing.
 
         Parameters
@@ -934,7 +934,7 @@ class _BaseSurfaceMasker(_BaseMasker):
         y: None = None,
         confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
-    ):
+    ) -> Signals:
         """Prepare and perform signal extraction from regions.
 
         Parameters

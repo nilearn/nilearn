@@ -23,7 +23,7 @@ from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import check_n_confounds_match_n_images
 from nilearn.image import high_variance_confounds
 from nilearn.image.image import get_indices_from_image, iter_check_niimg
-from nilearn.nilearn_typing import NiimgLike, NJobs, SingleConfound
+from nilearn.nilearn_typing import NiimgLike, NJobs, Signals, SingleConfound
 from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
 
@@ -42,7 +42,7 @@ class _MultiMixin:
         confounds: SingleConfound | list[SingleConfound | None] | None = None,
         sample_mask=None,
         **fit_params,
-    ):
+    ) -> Signals | list[Signals]:
         """
         Fit to data, then transform it.
 
@@ -141,7 +141,7 @@ class _MultiMixin:
         imgs,
         confounds: SingleConfound | list[SingleConfound | None] | None = None,
         sample_mask=None,
-    ):
+    ) -> Signals | list[Signals]:
         """Apply mask, spatial and temporal preprocessing.
 
         Parameters

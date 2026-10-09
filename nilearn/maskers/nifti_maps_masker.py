@@ -477,7 +477,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         y: None = None,
         confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
-    ):
+    ) -> Signals:
         """Prepare and perform signal extraction.
 
         Parameters
