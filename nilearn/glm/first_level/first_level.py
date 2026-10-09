@@ -57,7 +57,7 @@ from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import intersect_masks
-from nilearn.nilearn_typing import HrfModel, NiimgLike, Tr
+from nilearn.nilearn_typing import HrfModel, NiimgLike, SingleConfound, Tr
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 
@@ -882,12 +882,7 @@ class FirstLevelModel(BaseGLM):
         | Path
         | list[pd.DataFrame | pd.Series | str | Path]
         | None = None,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_masks=None,
         design_matrices: pd.DataFrame
         | str

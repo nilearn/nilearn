@@ -642,12 +642,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
     def transform_single_imgs(
         self,
         imgs,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):
         """Extract signals from a single 4D niimg.

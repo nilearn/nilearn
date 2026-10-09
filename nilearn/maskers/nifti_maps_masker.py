@@ -2,7 +2,6 @@
 
 import warnings
 from copy import deepcopy
-from pathlib import Path
 from typing import Any, ClassVar
 
 import numpy as np
@@ -477,12 +476,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self,
         imgs,
         y: None = None,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):
         """Prepare and perform signal extraction.

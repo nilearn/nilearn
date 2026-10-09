@@ -13,7 +13,6 @@ from string import Template
 from typing import Literal, Self, get_args
 
 import numpy as np
-import pandas as pd
 from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from scipy import linalg
@@ -270,12 +269,9 @@ def _mask_and_reduce(
 def _mask_and_reduce_single(
     masker,
     img,
-    confound: pd.DataFrame
-    | np.ndarray
-    | str
-    | Path
-    | list[pd.DataFrame | np.ndarray | str | Path]
-    | tuple[pd.DataFrame | np.ndarray | str | Path]
+    confound: SingleConfound
+    | list[SingleConfound]
+    | tuple[SingleConfound]
     | None,
     reduction_ratio=None,
     n_samples=None,
