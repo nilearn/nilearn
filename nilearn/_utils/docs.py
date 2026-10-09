@@ -1958,7 +1958,7 @@ def fill_doc(f: Callable) -> Callable:
 #   rendered by a sphinx extension at doc build time
 #   (see ``doc/sphinxext/dataset_descriptions.py``)
 #   and by :func:`render_description_directives` at runtime.
-# - to fill the "return" section of the doc strings of the fetcheers
+# - to fill the "return" section of the doc strings of the fetchers
 #
 # It must therefore not require downloading any data.
 
