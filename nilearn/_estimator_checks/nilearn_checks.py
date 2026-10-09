@@ -157,6 +157,11 @@ from nilearn.utils.tags import (
 NILEARN_DIR = Path(__file__).parents[1]
 
 
+def accepts_image(estimator):
+    """Check if estimator accepts volume of surface image."""
+    return accepts_volume(estimator) or accepts_surface(estimator)
+
+
 def _clone_estimator(estimator_orig):
     """Clone estimator, set random_state and return."""
     estimator = clone(estimator_orig)
@@ -301,7 +306,10 @@ def fit_estimator(
 
 
 def clone_estimator(check_func):
-    """Provide cloned estimator to check function."""
+    """Provide cloned estimator to check function.
+
+    This decorator should be set at the bottom of all decorators.
+    """
 
     @wraps(check_func)
     def wrapper(estimator):
@@ -662,6 +670,8 @@ def _check_mask_img_(estimator):
 
 
 @xfail_if_not_gil()
+@skip_if(lambda e: not accepts_image(e))
+@clone_estimator
 def check_img_estimator_verbose(estimator_orig) -> None:
     """Check verbose behavior.
 
@@ -673,8 +683,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
       - verbose True and verbose = 1
     - verbose 2 should have more than output verbose 1
     """
-    estimator = clone(estimator_orig)
-
+    estimator = _clone_estimator(estimator_orig)
     buffer = io.StringIO()
     with contextlib.redirect_stdout(buffer):
         fit_estimator(estimator)
@@ -682,7 +691,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     assert output == ""
 
     # verbose False == verbose 0
-    estimator = clone(estimator_orig)
+    estimator = _clone_estimator(estimator_orig)
     estimator.verbose = False
 
     buffer = io.StringIO()
@@ -691,7 +700,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     output_false = buffer.getvalue()
     assert output == output_false
 
-    estimator = clone(estimator_orig)
+    estimator = _clone_estimator(estimator_orig)
     estimator.verbose = 1
 
     buffer = io.StringIO()
@@ -702,6 +711,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
 
     # verbose True == verbose 1
     # should mostly be the same except for object reference
+    estimator = _clone_estimator(estimator_orig)
     estimator.verbose = True
 
     buffer = io.StringIO()
@@ -728,6 +738,7 @@ def check_img_estimator_verbose(estimator_orig) -> None:
 
 
 @xfail_if_not_gil()
+@clone_estimator
 def check_verbosity_embedded_masker(estimator_orig) -> None:
     """Check control of verbosity of embedded maskers / estimators.
 
@@ -740,7 +751,7 @@ def check_verbosity_embedded_masker(estimator_orig) -> None:
     """
     outputs = {}
     for verbose in [1, 2, 3]:
-        estimator = clone(estimator_orig)
+        estimator = _clone_estimator(estimator_orig)
         estimator.verbose = verbose
 
         buffer = io.StringIO()
@@ -762,7 +773,7 @@ def check_verbosity_embedded_masker(estimator_orig) -> None:
     assert "Extracting region signals" not in outputs[1]
 
     # verbosity = 2
-    assert f"{estimator.__class__.__name__}.fit" in outputs[1]
+    assert f"{estimator.__class__.__name__}.fit" in outputs[2]
     if not isinstance(estimator, (SearchLight, SecondLevelModel)):
         assert "Extracting region signals" in outputs[2]
 
@@ -925,13 +936,13 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig) -> None:
             )
 
 
-def check_fit_returns_self(estimator_orig) -> None:
+@skip_if(lambda e: not accepts_image(e))
+@clone_estimator
+def check_fit_returns_self(estimator) -> None:
     """Check maskers return itself after fit.
 
     Replace sklearn check_estimators_fit_returns_self
     """
-    estimator = clone(estimator_orig)
-
     fitted_estimator = fit_estimator(estimator)
     assert fitted_estimator is estimator
 
@@ -1502,6 +1513,8 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
                         assert_array_equal(s1, s2)
 
 
+@skip_if(lambda e: not accepts_image(e), lambda e: not hasattr(e, "dtype"))
+@clone_estimator
 def check_img_estimator_dtypes(estimator_orig) -> None:
     """Check estimator can fit and run several methods \
        with inputs of varying dtypes.
@@ -1514,17 +1527,15 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
 
     input_dtype np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    dtype_list: list[Any] = [None]
-    if hasattr(estimator_orig, "dtype"):
-        dtype_list = [
-            np.float32,
-            "float64",
-            np.int32,
-            np.int64,
-            "i4",
-            "auto",
-            None,
-        ]
+    dtype_list: list[Any] = [
+        np.float32,
+        "float64",
+        np.int32,
+        np.int64,
+        "i4",
+        "auto",
+        None,
+    ]
 
     memory_list: list[Any] = [None]
     if hasattr(estimator_orig, "memory"):
@@ -1533,10 +1544,8 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
     for input_dtype in [np.float32, "float64", np.int32, "i4"]:
         for dtype in dtype_list:
             for memory in memory_list:
-                estimator = clone(estimator_orig)
-
-                if hasattr(estimator, "dtype"):
-                    estimator.dtype = dtype
+                estimator = _clone_estimator(estimator_orig)
+                estimator.dtype = dtype
 
                 if hasattr(estimator, "memory"):
                     estimator.memory = memory
