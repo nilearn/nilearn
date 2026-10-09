@@ -5,6 +5,7 @@ from typing import Literal
 
 import numpy as np
 import pandas as pd
+from matplotlib.colors import Colormap
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
@@ -881,7 +882,7 @@ def plot_surf_roi(
     hemi=DEFAULT_HEMI,
     view=None,
     engine: Literal["matplotlib", "plotly"] = DEFAULT_ENGINE,
-    cmap="gist_ncar",
+    cmap: Colormap | str | Path | pd.DataFrame = "gist_ncar",
     colorbar: ColorBar = True,
     avg_method=None,
     threshold=None,

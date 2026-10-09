@@ -782,7 +782,9 @@ def test_one_confound_missing(tmp_path_factory):
     )
     Path(confound_files[-1]).unlink()
 
-    with pytest.raises(ValueError, match="Same number of confound"):
+    with pytest.raises(
+        ValueError, match=r"Number of confounds .* must match number of images"
+    ):
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",

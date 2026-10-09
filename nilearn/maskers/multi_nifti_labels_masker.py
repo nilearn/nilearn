@@ -1,8 +1,25 @@
 """Transformer for computing ROI signals of multiple 4D images."""
 
+from pathlib import Path
+
+import pandas as pd
+
 from nilearn._utils.docs import fill_doc
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.nifti_labels_masker import NiftiLabelsMasker
+from nilearn.nilearn_typing import (
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    Memory,
+    MemoryLevel,
+    NJobs,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 
 
 @fill_doc
@@ -120,26 +137,26 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
         self,
         labels_img=None,
         labels=None,
-        lut=None,
+        lut: pd.DataFrame | str | Path | None = None,
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=None,
-        standardize_confounds=True,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
         high_variance_confounds=False,
-        detrend=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
+        detrend: Detrend = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
         resampling_target="data",
-        memory=None,
-        memory_level=1,
-        verbose=0,
+        memory: Memory = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
         strategy="mean",
-        reports=True,
+        reports: bool = True,
         cmap="CMRmap_r",
-        n_jobs=1,
+        n_jobs: NJobs = 1,
         clean_args=None,
     ):
         self.n_jobs = n_jobs

@@ -1,5 +1,7 @@
 """Miscellaneous matrix plotting utilities."""
 
+from collections.abc import Sequence
+from pathlib import Path
 from typing import Literal
 
 import matplotlib.patches as mpatches
@@ -319,7 +321,7 @@ def plot_matrix(
 @fill_doc
 def plot_contrast_matrix(
     contrast_def,
-    design_matrix,
+    design_matrix: pd.DataFrame,
     colorbar: ColorBar = True,
     axes: Axes | None = None,
     output_file: OutputFile = None,
@@ -399,7 +401,7 @@ def plot_contrast_matrix(
 
 @fill_doc
 def plot_design_matrix(
-    design_matrix,
+    design_matrix: pd.DataFrame | str | Path,
     rescale: bool = True,
     axes: Axes | None = None,
     output_file: OutputFile = None,
@@ -487,7 +489,13 @@ def plot_design_matrix(
 
 @fill_doc
 def plot_event(
-    model_event, cmap=None, output_file: OutputFile = None, **fig_kwargs
+    model_event: pd.DataFrame
+    | str
+    | Path
+    | Sequence[str | Path | pd.DataFrame],
+    cmap=None,
+    output_file: OutputFile = None,
+    **fig_kwargs,
 ) -> Figure:
     """Create plot for event visualization.
 
@@ -632,7 +640,7 @@ def plot_event(
 
 @fill_doc
 def plot_design_matrix_correlation(
-    design_matrix,
+    design_matrix: pd.DataFrame | str | Path,
     tri: Literal["full", "diag"] = "full",
     cmap=DEFAULT_DIVERGING_CMAP,
     colorbar: ColorBar = True,

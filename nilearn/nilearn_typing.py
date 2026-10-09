@@ -21,15 +21,20 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Literal, TypeAlias
 
 import numpy as np
+import pandas as pd
 from joblib.memory import Memory
 from nibabel import Nifti1Image
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
+if TYPE_CHECKING:
+    import polars as pl
+
 Integer: TypeAlias = int | np.integer
 Float: TypeAlias = float | np.floating
 NonNullScalar: TypeAlias = Float | Integer
 Scalar: TypeAlias = NonNullScalar | None
+SingleConfound: TypeAlias = pd.DataFrame | np.ndarray | str | pathlib.Path
 
 Annotate: TypeAlias = bool
 AvailableMeshes: TypeAlias = Literal[
@@ -107,6 +112,10 @@ ResamplingInterpolation: TypeAlias = Literal["continuous", "nearest"]
 Resolution: TypeAlias = Integer | None
 Resume: TypeAlias = bool
 ScreeningPercentile: TypeAlias = Scalar
+if TYPE_CHECKING:
+    Signals: TypeAlias = np.ndarray | pd.DataFrame | pl.DataFrame
+else:
+    Signals: TypeAlias = np.ndarray | pd.DataFrame
 SmoothingFwhm: TypeAlias = Scalar
 Standardize: TypeAlias = Literal["zscore_sample", "psc", None]
 StandardizeConfounds: TypeAlias = bool

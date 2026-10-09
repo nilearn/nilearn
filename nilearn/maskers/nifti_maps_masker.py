@@ -33,6 +33,7 @@ from nilearn.maskers.base_masker import (
     sanitize_displayed_maps,
 )
 from nilearn.masking import load_mask_img
+from nilearn.nilearn_typing import Signals, SingleConfound
 
 
 class _ExtractionFunctor:
@@ -470,7 +471,13 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
 
     @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+    def fit_transform(
+        self,
+        imgs,
+        y: None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ) -> Signals:
         """Prepare and perform signal extraction.
 
         Parameters
@@ -498,7 +505,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         )
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -507,10 +519,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             See :ref:`extracting_data`.
             Images to process.
 
-        confounds : CSV file or array-like, default=None
-            This parameter is passed to :func:`nilearn.signal.clean`.
-            Please see the related documentation for details.
-            shape: (number of scans, number of confounds)
+        %(confounds)s
 
         %(sample_mask)s
 
@@ -697,7 +706,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, region_signals) -> Nifti1Image:
+    def inverse_transform(self, region_signals: Signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from region signals.
 
         Any mask given at initialization is taken into account.

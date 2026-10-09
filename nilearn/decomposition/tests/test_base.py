@@ -63,6 +63,7 @@ def test_mask_reducer_multiple_image(
         masker=decomposition_masker,
         imgs=decomposition_images,
         n_components=n_components,
+        confounds=[None] * len(decomposition_images),
         reduction_ratio=reduction_ratio,
     )
     if data_type == "nifti":
@@ -93,6 +94,7 @@ def test_mask_reducer_single_image_same_with_multiple_jobs(
         masker=decomposition_masker,
         imgs=decomposition_img,
         n_components=n_components,
+        confounds=[None],
     )
     if data_type == "nifti":
         assert data_single.shape == (
@@ -111,6 +113,7 @@ def test_mask_reducer_single_image_same_with_multiple_jobs(
         masker=decomposition_masker,
         imgs=decomposition_img,
         n_components=n_components,
+        confounds=[None],
         n_jobs=2,
         random_state=RANDOM_STATE,
     )
@@ -138,6 +141,7 @@ def test_mask_reducer_reduced_data_is_orthogonal(
         masker=decomposition_masker,
         imgs=decomposition_img,
         n_components=n_components,
+        confounds=[None],
         random_state=RANDOM_STATE,
     )
 
@@ -173,12 +177,14 @@ def test_mask_reducer_reduced_reproducible(
         masker=decomposition_masker,
         imgs=decomposition_img,
         n_components=n_components,
+        confounds=[None],
         random_state=RANDOM_STATE,
     )
     data2 = _mask_and_reduce(
         masker=decomposition_masker,
         imgs=[decomposition_img] * 2,
         n_components=n_components,
+        confounds=[None] * 2,
         random_state=RANDOM_STATE,
     )
 

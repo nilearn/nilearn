@@ -30,6 +30,7 @@ from nilearn.masking import (
     compute_multi_brain_mask,
     load_mask_img,
 )
+from nilearn.nilearn_typing import SingleConfound
 
 
 class _ExtractionFunctor:
@@ -633,7 +634,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     def transform_single_imgs(
         self,
         imgs,
-        confounds=None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
         copy=True,
     ):

@@ -5,6 +5,7 @@ from math import floor, sqrt
 from typing import Self
 
 import numpy as np
+import pandas as pd
 from scipy import linalg
 from sklearn.base import TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
@@ -553,7 +554,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                 raise ValueError(error_message)
 
     @fill_doc
-    def fit(self, X, y=None) -> Self:
+    def fit(self, X, y: None = None) -> Self:
         """Fit the covariance estimator to the given time series for each \
         subject.
 
@@ -690,7 +691,12 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         return connectivities
 
     @fill_doc
-    def fit_transform(self, X, y=None, confounds=None):
+    def fit_transform(
+        self,
+        X,
+        y: None = None,
+        confounds: pd.DataFrame | np.ndarray | None = None,
+    ):
         """Fit the covariance estimator to the given time series \
         for each subject. \
         Then apply transform to covariance matrices for the chosen kind.
@@ -725,7 +731,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             X, do_fit=True, do_transform=True, confounds=confounds
         )
 
-    def transform(self, X, confounds=None):
+    def transform(self, X, confounds: pd.DataFrame | np.ndarray | None = None):
         """Apply transform to covariances matrices to get the connectivity \
         matrices for the chosen kind.
 

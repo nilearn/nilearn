@@ -31,6 +31,7 @@ from nilearn.maskers.base_masker import (
     mask_logger,
     sanitize_displayed_maps,
 )
+from nilearn.nilearn_typing import Signals, SingleConfound
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -185,7 +186,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._reset_report()
 
     @fill_doc
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y: None = None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -282,7 +283,12 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         return hasattr(self, "n_elements_")
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from surface object.
 
         Parameters
@@ -371,7 +377,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, region_signals) -> SurfaceImage:
+    def inverse_transform(self, region_signals: Signals) -> SurfaceImage:
         """Compute :term:`vertex` signals from region signals.
 
         Parameters

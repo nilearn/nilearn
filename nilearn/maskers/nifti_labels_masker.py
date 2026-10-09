@@ -2,6 +2,7 @@
 
 import warnings
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, ClassVar
 
 import numpy as np
@@ -34,6 +35,20 @@ from nilearn.maskers.base_masker import (
     mask_logger,
 )
 from nilearn.masking import load_mask_img
+from nilearn.nilearn_typing import (
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    Memory,
+    MemoryLevel,
+    Signals,
+    SingleConfound,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 
 
 class _ExtractionFunctor:
@@ -210,24 +225,24 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         self,
         labels_img=None,
         labels=None,
-        lut=None,
+        lut: pd.DataFrame | str | Path | None = None,
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=None,
-        standardize_confounds=True,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
         high_variance_confounds=False,
-        detrend=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
+        detrend: Detrend = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
         resampling_target="data",
-        memory=None,
-        memory_level=1,
-        verbose=0,
+        memory: Memory = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
         strategy="mean",
-        reports=True,
+        reports: bool = True,
         cmap=None,
         clean_args=None,
     ):
@@ -599,7 +614,13 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             )
 
     @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+    def fit_transform(
+        self,
+        imgs,
+        y: None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ) -> Signals:
         """Prepare and perform signal extraction from regions.
 
         Parameters
@@ -631,7 +652,12 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         return hasattr(self, "labels_img_") and hasattr(self, "lut_")
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -855,7 +881,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         return labels_img_
 
     @fill_doc
-    def inverse_transform(self, signals) -> Nifti1Image:
+    def inverse_transform(self, signals: Signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from region signals.
 
         Any mask given at initialization is taken into account.

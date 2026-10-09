@@ -705,7 +705,7 @@ class ReNA(
             )
 
     @fill_doc
-    def fit(self, X, y=None) -> Self:
+    def fit(self, X, y: None = None) -> Self:
         """Compute clustering of the data.
 
         Parameters
@@ -793,11 +793,7 @@ class ReNA(
         return hasattr(self, "labels_")
 
     @fill_doc
-    def transform(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-    ):
+    def transform(self, X, y: None = None):
         """Apply clustering, reduce the dimensionality of the data.
 
         Parameters
@@ -813,6 +809,7 @@ class ReNA(
             Data reduced with agglomerated signal for each cluster.
 
         """
+        del y
         check_is_fitted(self)
 
         X = validate_data(self, X, reset=False)

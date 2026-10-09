@@ -24,6 +24,7 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
     check_parameter_in_allowed,
     check_params,
 )
@@ -75,7 +76,10 @@ def _check_second_level_input(
     "df_object", "pd_series", "nii_object", "surf_img_object", "flm_object"
 ]:
     """Check second_level_input type."""
-    _check_design_matrix(design_matrix)
+    if design_matrix is not None:
+        check_is_of_allowed_type(
+            design_matrix, (str, Path, pd.DataFrame), "design_matrix"
+        )
 
     input_type = _check_input_type(second_level_input)
     _check_input_as_type(
@@ -332,18 +336,6 @@ def _check_first_level_contrast(
             " then first_level_contrast is mandatory. "
             "It corresponds to the second_level_contrast argument "
             "of the compute_contrast method of FirstLevelModel."
-        )
-
-
-def _check_design_matrix(design_matrix) -> None:
-    """Check design_matrix type."""
-    if design_matrix is not None and not isinstance(
-        design_matrix, (str, Path, pd.DataFrame)
-    ):
-        raise TypeError(
-            "'design_matrix' must be a "
-            "str, pathlib.Path or a pandas.DataFrame.\n"
-            f"Got {design_matrix.__class__.__name__}"
         )
 
 
@@ -619,7 +611,16 @@ class SecondLevelModel(BaseGLM):
 
     @fill_doc
     def fit(
-        self, second_level_input, confounds=None, design_matrix=None
+        self,
+        second_level_input: list[FirstLevelModel]
+        | pd.DataFrame
+        | pd.Series
+        | NiimgLike
+        | list[NiimgLike]
+        | SurfaceImage
+        | list[SurfaceImage],
+        confounds: pd.DataFrame | None = None,
+        design_matrix: pd.DataFrame | str | Path | None = None,
     ) -> Self:
         """Fit the second-level :term:`GLM`.
 
@@ -966,9 +967,15 @@ class SecondLevelModel(BaseGLM):
 
 @overload
 def non_parametric_inference(
-    second_level_input,
-    confounds=...,
-    design_matrix=...,
+    second_level_input: list[FirstLevelModel]
+    | pd.DataFrame
+    | pd.Series
+    | NiimgLike
+    | list[NiimgLike]
+    | SurfaceImage
+    | list[SurfaceImage],
+    confounds: pd.DataFrame | None = ...,
+    design_matrix: pd.DataFrame | str | Path | None = ...,
     second_level_contrast=...,
     first_level_contrast=...,
     mask=...,
@@ -986,9 +993,15 @@ def non_parametric_inference(
 
 @overload
 def non_parametric_inference(
-    second_level_input,
-    confounds=...,
-    design_matrix=...,
+    second_level_input: list[FirstLevelModel]
+    | pd.DataFrame
+    | pd.Series
+    | NiimgLike
+    | list[NiimgLike]
+    | SurfaceImage
+    | list[SurfaceImage],
+    confounds: pd.DataFrame | None = ...,
+    design_matrix: pd.DataFrame | str | Path | None = ...,
     second_level_contrast=...,
     first_level_contrast=...,
     mask=...,
@@ -1006,9 +1019,15 @@ def non_parametric_inference(
 
 @fill_doc
 def non_parametric_inference(
-    second_level_input,
-    confounds=None,
-    design_matrix=None,
+    second_level_input: list[FirstLevelModel]
+    | pd.DataFrame
+    | pd.Series
+    | NiimgLike
+    | list[NiimgLike]
+    | SurfaceImage
+    | list[SurfaceImage],
+    confounds: pd.DataFrame | None = None,
+    design_matrix: pd.DataFrame | str | Path | None = None,
     second_level_contrast=None,
     first_level_contrast=None,
     mask=None,
@@ -1172,11 +1191,21 @@ def non_parametric_inference(
     check_params(locals())
     _check_second_level_input(second_level_input, design_matrix)
     _check_confounds(confounds)
-    design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     if isinstance(second_level_input, pd.DataFrame):
         second_level_input = _sort_input_dataframe(second_level_input)
-    sample_map, _ = _process_second_level_input(second_level_input)
+    sample_map, subjects_label = _process_second_level_input(
+        second_level_input
+    )
+
+    if design_matrix is None:
+        design_matrix = make_second_level_design_matrix(
+            subjects_label, confounds
+        )
+    else:
+        design_matrix = check_and_load_tables(design_matrix, "design_matrix")[
+            0
+        ]
 
     if (isinstance(sample_map, SurfaceImage)) and (tfce or threshold):
         tfce = False
