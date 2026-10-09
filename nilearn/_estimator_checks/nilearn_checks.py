@@ -184,7 +184,7 @@ def check_verbose(estimator) -> None:
 @skip_if(lambda e: isinstance(e, (SearchLight, ReNA)))
 @skip_if_not(
     (
-        lambda e: not hasattr(e, "transform"),
+        lambda e: hasattr(e, "transform"),
         "'transform' attribute is not implemented.",
     ),
 )
@@ -1759,9 +1759,9 @@ def check_img_estimator_n_elements(estimator_orig) -> None:
 
 
 @xfail_if_not_gil()
-@skip_if(
+@skip_if_not(
     (
-        lambda e: not hasattr(e, "standardize"),
+        lambda e: hasattr(e, "standardize"),
         "'standardize' attribute is not implemented.",
     )
 )
@@ -2939,9 +2939,9 @@ def check_masker_inverse_transform(estimator_orig) -> None:
 
 
 @xfail_if_not_gil()
-@skip_if(
+@skip_if_not(
     (
-        lambda e: not hasattr(e, "resampling_target"),
+        lambda e: hasattr(e, "resampling_target"),
         "'resampling_target' attribute is not implemented.",
     )
 )
@@ -3075,7 +3075,7 @@ def check_masker_transform_resampling(estimator_orig) -> None:
 
 
 # TODO enforce for other maskers
-@skip_if(lambda e: not isinstance(e, NiftiMasker))
+@skip_if_not(lambda e: isinstance(e, NiftiMasker))
 def check_masker_shelving(estimator_orig) -> None:
     """Check behavior when shelving masker."""
     estimator = clone(estimator_orig)
