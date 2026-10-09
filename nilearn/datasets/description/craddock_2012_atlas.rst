@@ -15,7 +15,7 @@ Collection of regions of interest (ROI) that have been generated from applying
 spatially constrained clustering on :term:`resting-state` data.
 
 Several clustering statistics are used to compare methodological trade-offs
-as well as determine an adequate number of clusters.
+as well as to determine an adequate number of clusters.
 The proposed functional and random parcellations perform equivalently for most of the metrics evaluated.
 The online release also contains the scripts to derive these ROI atlases
 by using spatially constrained Ncut spectral clustering.
