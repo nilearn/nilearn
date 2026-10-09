@@ -158,6 +158,7 @@ NILEARN_DIR = Path(__file__).parents[1]
 
 
 def _clone_estimator(estimator_orig):
+    """Clone estimator, set random_state and return."""
     estimator = clone(estimator_orig)
     # sets random_state to 0 if parameter exists for the estimator
     set_random_state(estimator)
@@ -299,6 +300,17 @@ def fit_estimator(
             return estimator.fit(X)
 
 
+def clone_estimator(check_func):
+    """Provide cloned estimator to check function."""
+
+    @wraps(check_func)
+    def wrapper(estimator):
+        estimator = _clone_estimator(estimator)
+        return check_func(estimator)
+
+    return wrapper
+
+
 def skip_if(*conditions):
     """Skip a check if estimator satisfies one of the conditions."""
 
@@ -375,7 +387,8 @@ def check_verbose(estimator) -> None:
         "'transform' attribute is not implemented.",
     ),
 )
-def check_set_output(estimator_orig) -> None:
+@clone_estimator
+def check_set_output(estimator) -> None:
     """Check that set_output can be used.
 
     Check that:
@@ -386,14 +399,12 @@ def check_set_output(estimator_orig) -> None:
 
     Regression test for https://github.com/nilearn/nilearn/issues/5969
     """
-    if isinstance(estimator_orig, (_BaseDecomposition, ConnectivityMeasure)):
+    if isinstance(estimator, (_BaseDecomposition, ConnectivityMeasure)):
         for output in ["pandas", "polars"]:
             with pytest.raises(NotImplementedError):
-                estimator_orig.set_output(transform=output)
+                estimator.set_output(transform=output)
         return
 
-    # default
-    estimator = clone(estimator_orig)
     img, _ = generate_data_to_fit(estimator)
     if isinstance(estimator, NiftiSpheresMasker):
         mask_img = new_img_like(img, np.ones(img.shape[:3]))
@@ -458,11 +469,11 @@ def check_set_output(estimator_orig) -> None:
         "Only tests estimators that accept surface image.",
     ),
 )
-def check_set_output_accepts_surface(estimator_orig) -> None:
+@clone_estimator
+def check_set_output_accepts_surface(estimator) -> None:
     """Check that set_output can be used with estimators that accept surface
     image and can deal with 1D image.
     """
-    estimator = clone(estimator_orig)
     estimator = fit_estimator(estimator)
 
     for output in ["default", "pandas", "polars"]:
@@ -542,6 +553,7 @@ def check_doc_parameters_at_init(estimator) -> None:
         "GroupSparseCovarianceCV",
     ),
 )
+@clone_estimator
 def check_doc_attributes_after_fit(estimator) -> None:
     """Check attributes after fit.
 
@@ -604,7 +616,8 @@ def check_doc_attributes_after_fit(estimator) -> None:
         )
 
 
-def check_doc_link(estimator_orig) -> None:
+@clone_estimator
+def check_doc_link(estimator) -> None:
     """Check that _get_doc_link provides the correct link to the doc.
 
     All estimators but the GLM ones follow the same pattern.
@@ -613,7 +626,6 @@ def check_doc_link(estimator_orig) -> None:
     ----------
     estimator_orig : a Nilearn estimator instance
     """
-    estimator = clone(estimator_orig)
     estimator_name = estimator.__class__.__name__
 
     modules = estimator.__class__.__module__.split(".")
