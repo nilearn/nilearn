@@ -610,7 +610,7 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
         self.verbose = verbose
 
     @fill_doc
-    def fit(self, subjects, y=None) -> Self:
+    def fit(self, subjects, y: None = None) -> Self:
         """Fits the group sparse precision model according \
         to the given training data and parameters.
 
@@ -1112,7 +1112,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         self.early_stopping = early_stopping
 
     @fill_doc
-    def fit(self, subjects, y=None) -> Self:
+    def fit(self, subjects, y: None = None) -> Self:
         """Compute cross-validated group-sparse precisions.
 
         Parameters

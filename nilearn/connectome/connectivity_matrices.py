@@ -554,7 +554,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                 raise ValueError(error_message)
 
     @fill_doc
-    def fit(self, X, y=None) -> Self:
+    def fit(self, X, y: None = None) -> Self:
         """Fit the covariance estimator to the given time series for each \
         subject.
 
@@ -692,7 +692,10 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
 
     @fill_doc
     def fit_transform(
-        self, X, y=None, confounds: pd.DataFrame | np.ndarray | None = None
+        self,
+        X,
+        y: None = None,
+        confounds: pd.DataFrame | np.ndarray | None = None,
     ):
         """Fit the covariance estimator to the given time series \
         for each subject. \

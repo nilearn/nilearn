@@ -571,7 +571,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     def fit_transform(
         self,
         imgs,
-        y=None,
+        y: None = None,
         confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):

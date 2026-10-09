@@ -371,7 +371,7 @@ class BaseMasker(_BaseMasker):
     _template_name = "body_masker.jinja"
 
     @fill_doc
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y: None = None) -> Self:
         """Compute the mask corresponding to the data.
 
         Parameters
@@ -584,7 +584,7 @@ class BaseMasker(_BaseMasker):
     def fit_transform(
         self,
         imgs,
-        y=None,
+        y: None = None,
         confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
         **fit_params,
@@ -825,7 +825,7 @@ class _BaseSurfaceMasker(_BaseMasker):
         return mask_img_
 
     @abc.abstractmethod
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y: None = None) -> Self:
         """Present only to comply with sklearn estimators checks."""
 
     @fill_doc
@@ -931,7 +931,7 @@ class _BaseSurfaceMasker(_BaseMasker):
     def fit_transform(
         self,
         imgs,
-        y=None,
+        y: None = None,
         confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):

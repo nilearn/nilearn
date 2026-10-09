@@ -476,7 +476,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     def fit_transform(
         self,
         imgs,
-        y=None,
+        y: None = None,
         confounds: pd.DataFrame
         | np.ndarray
         | str

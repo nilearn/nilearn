@@ -665,7 +665,7 @@ class Parcellations(_MultiPCA):
     def fit_transform(
         self,
         imgs,
-        y=None,
+        y: None = None,
         confounds: SingleConfound | list[SingleConfound | None] | None = None,
     ):
         """Fit the images to :term:`parcellations<parcellation>` and \

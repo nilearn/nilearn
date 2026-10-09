@@ -491,7 +491,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
     def fit(
         self,
         imgs,
-        y=None,
+        y: None = None,
         confounds: SingleConfound
         | Sequence[SingleConfound | None]
         | None = None,
@@ -747,7 +747,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
     def score(
         self,
         imgs,
-        y=None,
+        y: None = None,
         confounds: SingleConfound
         | Sequence[SingleConfound | None]
         | None = None,
