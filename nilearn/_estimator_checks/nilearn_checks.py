@@ -1536,12 +1536,37 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
         "auto",
         None,
     ]
+    input_np_dtypes = [
+        np.dtype(np.float32),
+        np.dtype("float64"),
+        np.dtype(np.int32),
+        np.dtype("i4"),
+    ]
 
     memory_list: list[Any] = [None]
     if hasattr(estimator_orig, "memory"):
         memory_list = [None, Path(mkdtemp())]
 
-    for input_dtype in [np.float32, "float64", np.int32, "i4"]:
+    def generate_adjust_fit_data(estimator, input_dtype):
+        """Adjust generated fit data for this check."""
+        X, y = generate_data_to_fit(estimator)
+        if isinstance(estimator, NiftiMasker) and input_dtype == np.int32:
+            # Needed for NiftiMasker because the default strategy
+            # returns an empty mask
+            estimator.mask_strategy = "epi"
+
+        if isinstance(X, Nifti1Image):
+            data = get_data(X)
+            X = Nifti1Image(
+                data.astype(input_dtype),
+                affine=_affine_eye(),
+                dtype=input_dtype,
+            )
+        else:
+            X.data._set_dtype(input_dtype)
+        return X, y
+
+    for input_dtype in input_np_dtypes:
         for dtype in dtype_list:
             for memory in memory_list:
                 estimator = _clone_estimator(estimator_orig)
@@ -1552,42 +1577,16 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
                     if memory is not None:
                         estimator.memory_level = 1
 
-                input_np_dtype = np.dtype(cast(Any, input_dtype))
-
-                X, y = generate_data_to_fit(estimator)
-                if (
-                    isinstance(estimator, NiftiMasker)
-                    and input_np_dtype == np.int32
-                ):
-                    # Needed for NiftiMasker because the default strategy
-                    # returns an empty mask
-                    estimator.mask_strategy = "epi"
-
-                if isinstance(X, Nifti1Image):
-                    data = get_data(X)
-                    X = Nifti1Image(
-                        data.astype(input_np_dtype),
-                        affine=_affine_eye(),
-                        dtype=input_np_dtype,
-                    )
-                else:
-                    X.data._set_dtype(input_np_dtype)
-
+                X, y = generate_adjust_fit_data(estimator, input_dtype)
                 estimator = fit_estimator(estimator, X, y)
 
-                for method in [
-                    "predict",
-                    "score",
-                    "decision_function",
-                ]:
-                    if not hasattr(estimator, method):
-                        continue
-
-                    # for now we only check the output dtype for transform
-                    if method == "score":
-                        getattr(estimator, method)(X, y)
-                    else:
-                        getattr(estimator, method)(X)
+                # for now we only check the output dtype for transform
+                if hasattr(estimator, "predict"):
+                    estimator.predict(X)
+                if hasattr(estimator, "score"):
+                    estimator.score(X, y)
+                if hasattr(estimator, "decision_function"):
+                    estimator.decision_function(X)
 
 
 @skip_if(
