@@ -1,5 +1,6 @@
 """Miscellaneous matrix plotting utilities."""
 
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Literal
 
@@ -491,8 +492,7 @@ def plot_event(
     model_event: pd.DataFrame
     | str
     | Path
-    | list[pd.DataFrame | str | Path]
-    | tuple[pd.DataFrame | str | Path, ...],
+    | Sequence[str | Path | pd.DataFrame],
     cmap=None,
     output_file: OutputFile = None,
     **fig_kwargs,
