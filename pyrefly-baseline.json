@@ -41,26 +41,6 @@
       "concise_description": "Argument `Iterable[Unknown] | list[Unknown]` is not assignable to parameter `obj` with type `Sized` in function `len`"
     },
     {
-      "concise_description": "Argument `DataFrame | Path | list[DataFrame | Path | ndarray | str | None] | ndarray | str` is not assignable to parameter `obj` with type `Sized` in function `len`",
-      "name": "bad-argument-type",
-      "path": "nilearn/decomposition/_base.py"
-    },
-    {
-      "concise_description": "Argument `DataFrame | Path | list[DataFrame | Path | ndarray | str | None] | ndarray | str` is not assignable to parameter `obj` with type `Sized` in function `len`",
-      "name": "bad-argument-type",
-      "path": "nilearn/decomposition/_base.py"
-    },
-    {
-      "concise_description": "Argument `DataFrame | Path | list[DataFrame | Path | ndarray | str | None] | ndarray | str` is not assignable to parameter `obj` with type `Sized` in function `len`",
-      "name": "bad-argument-type",
-      "path": "nilearn/decomposition/_base.py"
-    },
-    {
-      "concise_description": "Argument `DataFrame | Path | list[DataFrame | Path | ndarray | str | None] | ndarray | str` is not assignable to parameter `obj` with type `Sized` in function `len`",
-      "name": "bad-argument-type",
-      "path": "nilearn/decomposition/_base.py"
-    },
-    {
       "concise_description": "Argument `DataFrame | Path | list[DataFrame | Path | ndarray | str | None] | ndarray | str` is not assignable to parameter `iter2` with type `Iterable[Hashable]` in function `zip.__new__`",
       "name": "bad-argument-type",
       "path": "nilearn/decomposition/_base.py"

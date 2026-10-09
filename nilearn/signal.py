@@ -1168,7 +1168,9 @@ def _sanitize_runs(n_time, runs):
     return n_runs, runs
 
 
-def _sanitize_confound_dtype(n_signal: int, confound) -> np.ndarray:
+def _sanitize_confound_dtype(
+    n_signal: int, confound: pd.DataFrame | str | Path | np.ndarray
+) -> np.ndarray:
     """Check confound is the correct datatype."""
     if isinstance(confound, pd.DataFrame):
         confound = confound.to_numpy()

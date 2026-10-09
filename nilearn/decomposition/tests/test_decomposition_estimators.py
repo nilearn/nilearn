@@ -1,5 +1,7 @@
 """Common test for multi_pca, dict_learning, canica."""
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal, assert_raises
@@ -68,6 +70,14 @@ def test_fit_errors(
         * len(decomposition_images)
         * 2
     )
+    with pytest.raises(
+        ValueError,
+        match=r"Number of confounds .* must match number of images .*",
+    ):
+        est.fit(decomposition_images, confounds=confounds)
+
+    # test mismatch len confounds and input to fit with path
+    confounds = Path("foo")
     with pytest.raises(
         ValueError,
         match=r"Number of confounds .* must match number of images .*",
@@ -186,6 +196,9 @@ def test_with_confounds(
     assert_raises(
         AssertionError, assert_array_equal, components, components_clean
     )
+
+    # smoke test of score with confounds
+    est.score(decomposition_images, confounds=confounds)
 
 
 @pytest.mark.slow

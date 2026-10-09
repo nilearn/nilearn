@@ -209,8 +209,8 @@ class _MultiMixin:
             confounds = list(itertools.repeat(None, len(imgs_list)))
         elif len(confounds) != len(imgs_list):
             raise ValueError(
-                f"number of confounds ({len(confounds)}) unequal to "
-                f"number of images ({len(imgs_list)})."
+                f"Number of confounds ({len(confounds)=}) "
+                f"must match number of images ({len(imgs_list)=})."
             )
 
         if self.high_variance_confounds:
