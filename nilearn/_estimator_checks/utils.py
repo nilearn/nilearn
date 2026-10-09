@@ -59,8 +59,34 @@ def skip_if(*conditions):
                 if condition(estimator):
                     print(
                         f"\n'{check_func.__name__}' does not apply to class "
-                        f"'{estimator.__class__.__name__}'. "
+                        f"'{estimator.__class__.__name__}' for {condition}. "
                         f"{reason}"
+                    )
+                    return estimator
+            return check_func(estimator)
+
+        return wrapper
+
+    return decorator
+
+
+def skip_if_not(*conditions):
+    """Skip a check if estimator does not satisfy one of the conditions."""
+
+    def decorator(check_func):
+
+        @wraps(check_func)
+        def wrapper(estimator):
+            for condition in conditions:
+                if isinstance(condition, tuple):
+                    condition, reason = condition
+                else:
+                    reason = ""
+                if not condition(estimator):
+                    print(
+                        f"\n'{check_func.__name__}' does not apply to class "
+                        f"'{estimator.__class__.__name__}' for not "
+                        f"{condition}. {reason}"
                     )
                     return estimator
             return check_func(estimator)
