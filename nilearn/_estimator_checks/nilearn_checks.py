@@ -1258,7 +1258,7 @@ def _dtype_case_generator(estimator_orig):
     ),
 )
 @skip_if_not(
-    lambda e: accepts_image(e),
+    (lambda e: accepts_image(e), "Estimator does not accept image."),
     (
         lambda e: hasattr(e, "transform"),
         "'transform' attribute is not implemented.",
@@ -1268,6 +1268,7 @@ def _dtype_case_generator(estimator_orig):
         "'dtype' attribute is not implemented.",
     ),
 )
+@clone_estimator
 def check_img_estimator_dtypes_transform(estimator_orig) -> None:
     """Check estimator can fit and run for transform \
        with inputs of varying dtypes.
@@ -1324,7 +1325,10 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
                 assert_array_equal(s1, s2)
 
 
-@skip_if_not(lambda e: accepts_image(e), lambda e: hasattr(e, "dtype"))
+@skip_if_not(
+    (lambda e: accepts_image(e), "Estimator does not accept image."),
+    (lambda e: hasattr(e, "dtype"), "'dtype' attribute is not implemented."),
+)
 @clone_estimator
 def check_img_estimator_dtypes(estimator_orig) -> None:
     """Check estimator can fit and run several methods \
@@ -1338,7 +1342,7 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
 
     input_dtype np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    for estimator, X, y, _, _ in _dtype_case_generator(estimator_orig):
+    for estimator, X, y, _, _, _ in _dtype_case_generator(estimator_orig):
         estimator = fit_estimator(estimator, X, y)
         # for now we only check the output dtype for transform
         if hasattr(estimator, "predict"):
