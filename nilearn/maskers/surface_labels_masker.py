@@ -24,7 +24,20 @@ from nilearn._utils.param_validation import (
 from nilearn.image import mean_img
 from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
-from nilearn.nilearn_typing import Signals, SingleConfound
+from nilearn.nilearn_typing import (
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    Memory,
+    MemoryLevel,
+    Signals,
+    SingleConfound,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -183,19 +196,19 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=None,
-        standardize_confounds=True,
-        detrend=False,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        detrend: Detrend = False,
         high_variance_confounds=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
-        memory=None,
-        memory_level=1,
-        verbose=0,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
+        memory: Memory = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
         strategy="mean",
-        reports=True,
+        reports: bool = True,
         cmap=DEFAULT_SEQUENTIAL_CMAP,
         clean_args=None,
     ):

@@ -35,7 +35,20 @@ from nilearn.maskers.base_masker import (
     mask_logger,
 )
 from nilearn.masking import load_mask_img
-from nilearn.nilearn_typing import Signals, SingleConfound
+from nilearn.nilearn_typing import (
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    Memory,
+    MemoryLevel,
+    Signals,
+    SingleConfound,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 
 
 class _ExtractionFunctor:
@@ -216,20 +229,20 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=None,
-        standardize_confounds=True,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
         high_variance_confounds=False,
-        detrend=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
+        detrend: Detrend = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
         resampling_target="data",
-        memory=None,
-        memory_level=1,
-        verbose=0,
+        memory: Memory = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
         strategy="mean",
-        reports=True,
+        reports: bool = True,
         cmap=None,
         clean_args=None,
     ):
