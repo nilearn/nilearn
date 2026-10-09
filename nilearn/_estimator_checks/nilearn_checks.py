@@ -70,6 +70,7 @@ from nilearn._estimator_checks.utils import (
     fit_estimator,
     generate_data_to_fit,
     skip_if,
+    skip_if_not,
     xfail_if_not_gil,
 )
 from nilearn._utils.cache_mixin import CacheMixin
@@ -180,8 +181,8 @@ def check_verbose(estimator) -> None:
     assert default_verbose == 0
 
 
-@skip_if(
-    lambda e: isinstance(e, (SearchLight, ReNA)),
+@skip_if(lambda e: isinstance(e, (SearchLight, ReNA)))
+@skip_if_not(
     (
         lambda e: not hasattr(e, "transform"),
         "'transform' attribute is not implemented.",
@@ -256,16 +257,19 @@ def check_set_output(estimator) -> None:
             )
 
 
+# TODO this seems to apply only to surface maskers
 @skip_if(
     lambda e: isinstance(
         e, (SearchLight, ReNA, _BaseDecomposition, ConnectivityMeasure)
-    ),
+    )
+)
+@skip_if_not(
     (
-        lambda e: not hasattr(e, "transform"),
+        lambda e: hasattr(e, "transform"),
         "'transform' attribute is not implemented.",
     ),
     (
-        lambda e: not accepts_surface(e),
+        lambda e: accepts_surface(e),
         "Only tests estimators that accept surface image.",
     ),
 )
@@ -462,7 +466,7 @@ def _check_mask_img_(estimator):
 
 
 @xfail_if_not_gil()
-@skip_if(lambda e: not accepts_image(e))
+@skip_if_not(lambda e: accepts_image(e))
 @clone_estimator
 def check_img_estimator_verbose(estimator_orig) -> None:
     """Check verbose behavior.
@@ -728,7 +732,7 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig) -> None:
             )
 
 
-@skip_if(lambda e: not accepts_image(e))
+@skip_if_not(lambda e: accepts_image(e))
 @clone_estimator
 def check_fit_returns_self(estimator) -> None:
     """Check maskers return itself after fit.
@@ -791,9 +795,7 @@ def check_img_estimator_dont_overwrite_parameters(estimator_orig) -> None:
     )
 
 
-@skip_if(
-    lambda e: not isinstance(e, CacheMixin),
-)
+@skip_if_not(lambda e: isinstance(e, CacheMixin))
 def check_img_estimator_cache_warning(estimator_orig) -> None:
     """Check estimator behavior with caching.
 
@@ -1251,16 +1253,19 @@ def _dtype_case_generator(estimator_orig):
 
 @skip_if(
     (
-        lambda e: not hasattr(e, "transform"),
+        lambda e: isinstance(e, SearchLight),
+        "'SearchLight.transform()' behaves differently.",
+    ),
+)
+@skip_if_not(
+    lambda e: accepts_image(e),
+    (
+        lambda e: hasattr(e, "transform"),
         "'transform' attribute is not implemented.",
     ),
     (
-        lambda e: not hasattr(e, "dtype"),
+        lambda e: hasattr(e, "dtype"),
         "'dtype' attribute is not implemented.",
-    ),
-    (
-        lambda e: isinstance(e, SearchLight),
-        "'SearchLight.transform()' behaves differently.",
     ),
 )
 def check_img_estimator_dtypes_transform(estimator_orig) -> None:
@@ -1319,7 +1324,7 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
                 assert_array_equal(s1, s2)
 
 
-@skip_if(lambda e: not accepts_image(e), lambda e: not hasattr(e, "dtype"))
+@skip_if_not(lambda e: accepts_image(e), lambda e: hasattr(e, "dtype"))
 @clone_estimator
 def check_img_estimator_dtypes(estimator_orig) -> None:
     """Check estimator can fit and run several methods \
@@ -1344,9 +1349,10 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
             estimator.decision_function(X)
 
 
-@skip_if(
+@skip_if_not(
+    lambda e: accepts_image(e),
     (
-        lambda e: not hasattr(e, "inverse_transform"),
+        lambda e: hasattr(e, "inverse_transform"),
         "'inverse_transform' attribute is not implemented.",
     ),
 )
@@ -1469,13 +1475,14 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
                 ) from e
 
 
-@skip_if(
+@skip_if_not(
+    lambda e: accepts_image(e),
     (
-        lambda e: not hasattr(e, "transform"),
+        lambda e: hasattr(e, "transform"),
         "'transform' attribute is not implemented.",
     ),
     (
-        lambda e: not hasattr(e, "dtype"),
+        lambda e: hasattr(e, "dtype"),
         "'dtype' attribute is not implemented.",
     ),
 )
