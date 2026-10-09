@@ -201,21 +201,6 @@
       "path": "nilearn/maskers/multi_nifti_masker.py"
     },
     {
-      "concise_description": "Argument `DataFrame | ndarray` is not assignable to parameter `signals` with type `ndarray` in function `nilearn.maskers.base_masker._BaseSurfaceMasker._check_array`",
-      "name": "bad-argument-type",
-      "path": "nilearn/maskers/surface_labels_masker.py"
-    },
-    {
-      "concise_description": "Argument `DataFrame | ndarray` is not assignable to parameter `signals` with type `ndarray` in function `nilearn.maskers.base_masker._BaseSurfaceMasker._check_array`",
-      "name": "bad-argument-type",
-      "path": "nilearn/maskers/surface_maps_masker.py"
-    },
-    {
-      "concise_description": "Argument `DataFrame | ndarray` is not assignable to parameter `signals` with type `ndarray` in function `nilearn.maskers.base_masker._BaseSurfaceMasker._check_array`",
-      "name": "bad-argument-type",
-      "path": "nilearn/maskers/surface_masker.py"
-    },
-    {
       "path": "nilearn/masking.py",
       "name": "unsupported-operation",
       "concise_description": "`>` is not supported between `None` and `float`"

@@ -1008,7 +1008,7 @@ class _BaseSurfaceMasker(_BaseMasker):
         return imgs
 
     def _check_array(
-        self, signals: np.ndarray, sklearn_check: bool = True
+        self, signals: np.ndarray | pd.DataFrame, sklearn_check: bool = True
     ) -> np.ndarray:
         """Check array to inverse transform.
 
