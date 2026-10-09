@@ -187,7 +187,7 @@ view
 from nilearn.datasets import fetch_coords_power_2011
 
 power = fetch_coords_power_2011()
-print(f"Power atlas comes with {power.keys()}.")
+print(f"Power atlas comes with {power.description.content}.")
 
 # %%
 # .. note::

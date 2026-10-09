@@ -1,0 +1,10 @@
+{
+    "data_dir": {
+        "type": "str",
+        "desc": "Fullpath to downloaded dataset."
+    },
+    "func": {
+        "type": "list[str]",
+        "desc": "Fullpaths of downloaded files on disk. The data is organized in a BIDS like fashion."
+    }
+}

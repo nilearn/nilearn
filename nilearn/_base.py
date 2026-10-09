@@ -1,12 +1,26 @@
 """Base classes for all estimators and various utility functions."""
 
 import itertools
+from pathlib import Path
 
 from packaging.version import parse
 from sklearn.base import BaseEstimator
 
 from nilearn._version import __version__
 from nilearn.utils.tags import InputTags
+
+PACKAGE_DIRECTORY = Path(__file__).parent
+
+
+def documentation_url():
+    version_url = "dev"
+    nil_version = parse(__version__)
+    if nil_version.dev is None:
+        version_url = (
+            f"{nil_version.major}.{nil_version.minor}.{nil_version.micro}"
+        )
+
+    return f"https://nilearn.github.io/{version_url}"
 
 
 class _NilearnHTMLDocumentationLinkMixin:
@@ -20,15 +34,8 @@ class _NilearnHTMLDocumentationLinkMixin:
 
     @property
     def _doc_link_template(self):
-        version_url = "dev"
-        nil_version = parse(__version__)
-        if nil_version.dev is None:
-            version_url = (
-                f"{nil_version.major}.{nil_version.minor}.{nil_version.micro}"
-            )
-
         return (
-            f"https://nilearn.github.io/{version_url}/modules/generated/"
+            f"{documentation_url()}/modules/generated/"
             "{estimator_module}.{estimator_name}.html"
         )
 

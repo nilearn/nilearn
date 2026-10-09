@@ -19,7 +19,7 @@ from nilearn._utils.bids import (
     check_look_up_table,
     generate_atlas_look_up_table,
 )
-from nilearn._utils.docs import fill_doc
+from nilearn._utils.docs import Description, fill_doc
 from nilearn._utils.niimg import _get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -29,7 +29,6 @@ from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
     fetch_single_file,
-    get_dataset_descr,
     get_dataset_dir,
 )
 from nilearn.image import check_niimg, new_img_like, reorder_img
@@ -159,23 +158,15 @@ def fetch_atlas_difumo(
     :term:`probabilistic atlases<Probabilistic atlas>` to extract
     functional signals with different dimensionalities (64, 128,
     256, 512, and 1024).
-    These modes are optimized to represent well raw :term:`BOLD` timeseries,
-    over a with range of experimental conditions.
-    See :footcite:t:`Dadi2020`.
+
+    For more information,
+    see the :ref:`dataset description <difumo_atlas>`.
 
     .. nilearn_versionadded:: 0.7.1
 
     Notes
     -----
     %(fetcher_note)s
-
-    Direct download links from OSF:
-
-    - 64: https://osf.io/pqu9r/download
-    - 128: https://osf.io/wjvd5/download
-    - 256: https://osf.io/3vrct/download
-    - 512: https://osf.io/9b76y/download
-    - 1024: https://osf.io/34792/download
 
     Parameters
     ----------
@@ -196,28 +187,9 @@ def fetch_atlas_difumo(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
-        - 'maps': :obj:`str`, path to 4D nifti file containing regions
-            definition. The shape of the image is
-            ``(104, 123, 104, dimension)`` where ``dimension`` is the
-            requested dimension of the atlas.
-
-        - 'labels': :class:`pandas.DataFrame` containing the labels of
-            the regions.
-            The length of the label array corresponds to the
-            number of dimensions requested. ``data.labels[i]`` is the label
-            corresponding to volume ``i`` in the 'maps' image.
-
-        - %(description)s
-
-        - %(atlas_type)s
-
-        - %(template)s
-
-    References
-    ----------
-    .. footbibliography::
+        %(difumo_atlas_content)s
 
     """
     check_params(locals())
@@ -251,7 +223,7 @@ def fetch_atlas_difumo(
         (nifti_file, url, opts),
     ]
 
-    dataset_name = "difumo_atlases"
+    dataset_name = "difumo_atlas"
 
     dataset_dir = get_dataset_dir(
         dataset_name=dataset_name, data_dir=data_dir, verbose=verbose
@@ -272,7 +244,7 @@ def fetch_atlas_difumo(
     return Atlas(
         maps=files_[1],
         labels=labels,
-        description=get_dataset_descr(dataset_name),
+        description=Description.from_registry(dataset_name),
         atlas_type=atlas_type,
         template="MNI152NLin6Asym",
     )
@@ -290,14 +262,8 @@ def fetch_atlas_craddock_2012(
     """Download and return file names \
        for the Craddock 2012 :term:`parcellation`.
 
-    This function returns a :term:`probabilistic atlas<Probabilistic atlas>`.
-    The provided images are in MNI152 space. All images are 4D with
-    shapes equal to ``(47, 56, 46, 43)``.
-
-    See :footcite:t:`CreativeCommons` for the license.
-
-    See :footcite:t:`Craddock2012` and :footcite:t:`nitrcClusterROI`
-    for more information on this :term:`parcellation`.
+    For more information,
+    see the :ref:`dataset description <craddock_2012_atlas>`.
 
     Parameters
     ----------
@@ -315,41 +281,16 @@ def fetch_atlas_craddock_2012(
     grp_mean : :obj:`bool`, default=True
         The choice of the :term:`parcellation` (with group_mean or without)
 
-
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
-        - ``'scorr_mean'``: :obj:`str`, path to nifti file containing
-            the group-mean :term:`parcellation`
-            when emphasizing spatial homogeneity.
+        %(craddock_2012_atlas_content)s
 
-        - ``'tcorr_mean'``: :obj:`str`, path to nifti file containing
-            the group-mean parcellation when emphasizing temporal homogeneity.
-
-        - ``'scorr_2level'``: :obj:`str`, path to nifti file containing
-            the :term:`parcellation` obtained
-            when emphasizing spatial homogeneity.
-
-        - ``'tcorr_2level'``: :obj:`str`, path to nifti file containing
-            the :term:`parcellation` obtained
-            when emphasizing temporal homogeneity.
-
-        - ``'random'``: :obj:`str`, path to nifti file containing
-            the :term:`parcellation` obtained with random clustering.
-
-        - %(description)s
-
-        - %(atlas_type)s
-
-        - %(template)s
-
-
-    References
-    ----------
-    .. footbibliography::
-
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
     atlas_type = "probabilistic"
@@ -361,20 +302,14 @@ def fetch_atlas_craddock_2012(
         )
     opts = {"uncompress": True}
 
-    dataset_name = "craddock_2012"
+    dataset_name = "craddock_2012_atlas"
 
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
-    fdescr = get_dataset_descr(dataset_name)
-
     allowed_homogeneity = {"spatial", "temporal", "random"}
-    if homogeneity not in allowed_homogeneity:
-        raise ValueError(
-            f"'homogeneity' must be one of {allowed_homogeneity}. "
-            f"Got {homogeneity=}."
-        )
+    check_parameter_in_allowed(homogeneity, allowed_homogeneity, "homogeneity")
 
     if homogeneity in ["spatial", "temporal"]:
         if grp_mean:
@@ -389,8 +324,9 @@ def fetch_atlas_craddock_2012(
 
     return Atlas(
         maps=data[0],
-        description=fdescr,
+        description=Description.from_registry(dataset_name),
         atlas_type=atlas_type,
+        template="MNI152",
     )
 
 
@@ -405,8 +341,8 @@ def fetch_atlas_destrieux_2009(
     """Download and load the Destrieux cortical \
     :term:`deterministic atlas<Deterministic atlas>` (dated 2009).
 
-    See :footcite:t:`Fischl2004`,
-    and :footcite:t:`Destrieux2009`.
+    For more information,
+    see the :ref:`dataset description <destrieux_2009_atlas>`.
 
     .. note::
 
@@ -420,9 +356,13 @@ def fetch_atlas_destrieux_2009(
     lateralized : :obj:`bool`, default=True
         If True, returns an atlas with distinct regions for right and left
         hemispheres.
+
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -430,27 +370,15 @@ def fetch_atlas_destrieux_2009(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'maps': :obj:`str`
-            path to nifti file containing the
-            :class:`~nibabel.nifti1.Nifti1Image` defining the cortical
-            ROIs, lateralized or not. The image has shape ``(76, 93, 76)``,
-            and contains integer values which can be interpreted as the
-            indices in the list of labels.
+        %(destrieux_2009_atlas_content)s
 
-        - %(labels)s
+    Notes
+    -----
+    %(fetcher_note)s
 
-        - %(description)s
-
-        - %(lut)s
-
-        - %(template)s
-
-        - %(atlas_type)s
-
-    References
-    ----------
-    .. footbibliography::
-
+    See Also
+    --------
+    nilearn.datasets.fetch_atlas_surf_destrieux
     """
     check_params(locals())
 
@@ -469,7 +397,7 @@ def fetch_atlas_destrieux_2009(
         ("destrieux2009.rst", url, opts),
     ]
 
-    dataset_name = "destrieux_2009"
+    dataset_name = "destrieux_2009_atlas"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
@@ -480,7 +408,7 @@ def fetch_atlas_destrieux_2009(
     return Atlas(
         maps=files_[1],
         labels=labels.name.to_list(),
-        description=Path(files_[2]).read_text(encoding="utf-8"),
+        description=Description.from_registry(dataset_name),
         atlas_type=atlas_type,
         lut=pd.read_csv(files_[0]),
         template="fsaverage",
@@ -502,18 +430,18 @@ def fetch_atlas_harvard_oxford(
 
     This function can also load Harvard Oxford atlas from your local directory
     specified by your FSL installed path given in `data_dir` argument.
-    See documentation for details.
+
+    For more information,
+    see the :ref:`dataset description <harvard_oxford_atlas>`.
 
     .. note::
 
         For atlases 'cort-prob-1mm', 'cort-prob-2mm', 'cortl-prob-1mm',
         'cortl-prob-2mm', 'sub-prob-1mm', and 'sub-prob-2mm', the function
         returns a :term:`Probabilistic atlas`, and the
-        :class:`~nibabel.nifti1.Nifti1Image` returned is 4D, with shape
-        ``(182, 218, 182, 48)``.
+        :class:`~nibabel.nifti1.Nifti1Image` returned is 4D.
         For :term:`deterministic atlases<Deterministic atlas>`, the
-        :class:`~nibabel.nifti1.Nifti1Image` returned is 3D, with
-        shape ``(182, 218, 182)`` and 48 regions (+ background).
+        :class:`~nibabel.nifti1.Nifti1Image` returned is 3D.
 
     Parameters
     ----------
@@ -531,6 +459,7 @@ def fetch_atlas_harvard_oxford(
         "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
         "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
         "sub-prob-1mm", "sub-prob-2mm".
+
     %(data_dir)s
         Optionally, it can also be a FSL installation directory (which is
         dependent on your installation).
@@ -550,44 +479,28 @@ def fetch_atlas_harvard_oxford(
             for full :term:`Probabilistic atlas` (*-prob-* atlases).
 
     %(resume)s
+
     %(verbose)s
 
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
-        - 'maps': :obj:`str`
-            path to nifti file containing the
-            atlas :class:`~nibabel.nifti1.Nifti1Image`.
-            It is a 4D image
-            if a :term:`Probabilistic atlas` is requested, and a 3D image
-            if a :term:`maximum probability atlas<Deterministic atlas>` is
-            requested.
-            In the latter case, the image contains integer
-            values which can be interpreted as the indices in the list
-            of labels.
+            %(harvard_oxford_atlas_content)s
 
-            .. note::
+        .. note::
 
-                For some atlases, it can be the case that some regions
-                are empty. In this case, no :term:`voxels<voxel>` in the
-                map are assigned to these regions. So the number of
-                unique values in the map can be strictly smaller than the
-                number of region names in ``labels``.
+            For some atlases, it can be the case that some regions are empty.
+            In this case, no :term:`voxels<voxel>` in the map are assigned
+            to these regions.
+            So the number of unique values in the map
+            can be strictly smaller
+            than the number of region names in ``labels``.
 
-        - %(labels)s
-
-        - 'filename': Same as 'maps', kept for backward compatibility only.
-
-        - %(description)s
-
-        - %(lut)s
-            Only for deterministic version of the atlas.
-
-        - %(template)s
-
-        - %(atlas_type)s
+    Notes
+    -----
+    %(fetcher_note)s
 
     See Also
     --------
@@ -632,7 +545,6 @@ def fetch_atlas_harvard_oxford(
         )
     (
         atlas_img,
-        atlas_filename,
         names,
         is_lateralized,
     ) = _get_atlas_data_and_labels(
@@ -645,16 +557,18 @@ def fetch_atlas_harvard_oxford(
     )
 
     atlas_niimg = check_niimg(atlas_img)
+
+    description = Description.from_registry("harvard_oxford_atlas")
+
     if not symmetric_split or is_lateralized:
         return Atlas(
             maps=atlas_niimg,
             labels=names,
-            description=get_dataset_descr("harvard_oxford"),
+            description=description,
             atlas_type=atlas_type,
             lut=generate_atlas_look_up_table(
                 "fetch_atlas_harvard_oxford", name=names
             ),
-            filename=atlas_filename,
             template="MNI152NLin6Asym",
         )
 
@@ -664,16 +578,14 @@ def fetch_atlas_harvard_oxford(
     new_atlas_niimg = new_img_like(
         atlas_niimg, new_atlas_data, atlas_niimg.affine
     )
-
     return Atlas(
         maps=new_atlas_niimg,
         labels=new_names,
-        description=get_dataset_descr("harvard_oxford"),
+        description=description,
         atlas_type=atlas_type,
         lut=generate_atlas_look_up_table(
             "fetch_atlas_harvard_oxford", name=new_names
         ),
-        filename=atlas_filename,
         template="MNI152NLin6Asym",
     )
 
@@ -693,7 +605,9 @@ def fetch_atlas_juelich(
 
     This function can also load Juelich atlas from your local directory
     specified by your FSL installed path given in `data_dir` argument.
-    See documentation for details.
+
+    For more information,
+    see the :ref:`dataset description <juelich_atlas>`.
 
     .. nilearn_versionadded:: 0.8.1
 
@@ -701,11 +615,9 @@ def fetch_atlas_juelich(
 
         For atlases 'prob-1mm', and 'prob-2mm', the function returns a
         :term:`Probabilistic atlas`, and the
-        :class:`~nibabel.nifti1.Nifti1Image` returned is 4D, with shape
-        ``(182, 218, 182, 62)``.
+        :class:`~nibabel.nifti1.Nifti1Image` returned is 4D.
         For :term:`deterministic atlases<Deterministic atlas>`, the
-        :class:`~nibabel.nifti1.Nifti1Image` returned is 3D, with shape
-        ``(182, 218, 182)`` and 62 regions (+ background).
+        :class:`~nibabel.nifti1.Nifti1Image` returned is 3D.
 
     Parameters
     ----------
@@ -715,6 +627,7 @@ def fetch_atlas_juelich(
         "maxprob-thr25-1mm", "maxprob-thr25-2mm",
         "maxprob-thr50-1mm", "maxprob-thr50-2mm",
         "prob-1mm", "prob-2mm".
+
     %(data_dir)s
         Optionally, it can also be a FSL installation directory (which is
         dependent on your installation).
@@ -734,41 +647,28 @@ def fetch_atlas_juelich(
             (``*-prob-*`` atlases).
 
     %(resume)s
+
     %(verbose)s
 
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
-        - 'maps': :class:`~nibabel.nifti1.Nifti1Image`.
-            It is a 4D image if a :term:`Probabilistic atlas` is requested,
-            and a 3D image
-            if a :term:`maximum probability atlas<Deterministic atlas>`
-            is requested.
-            In the latter case, the image contains integer values
-            which can be interpreted as the indices in the list of labels.
+            %(juelich_atlas_content)s
 
-            .. note::
+        .. note::
 
-                For some atlases, it can be the case that some regions
-                are empty. In this case, no :term:`voxels<voxel>` in the
-                map are assigned to these regions. So the number of
-                unique values in the map can be strictly smaller than the
-                number of region names in ``labels``.
+            For some atlases, it can be the case that some regions are empty.
+            In this case, no :term:`voxels<voxel>` in the map are assigned
+            to these regions.
+            So the number of unique values in the map
+            can be strictly smaller
+            than the number of region names in ``labels``.
 
-        - %(labels)s
-
-        - 'filename': Same as 'maps', kept for backward compatibility only.
-
-        - %(description)s
-
-        - %(lut)s
-            Only for deterministic version of the atlas.
-
-        - %(template)s
-
-        - %(atlas_type)s
+    Notes
+    -----
+    %(fetcher_note)s
 
     See Also
     --------
@@ -797,7 +697,7 @@ def fetch_atlas_juelich(
         raise ValueError(
             "Region splitting not supported for probabilistic atlases"
         )
-    atlas_img, atlas_filename, names, _ = _get_atlas_data_and_labels(
+    atlas_img, names, _ = _get_atlas_data_and_labels(
         "Juelich",
         atlas_name,
         data_dir=data_dir,
@@ -825,12 +725,12 @@ def fetch_atlas_juelich(
     return Atlas(
         maps=new_atlas_niimg,
         labels=list(new_names),
-        description=get_dataset_descr("juelich"),
+        description=Description.from_registry("juelich_atlas"),
         atlas_type=atlas_type,
         lut=generate_atlas_look_up_table(
             "fetch_atlas_juelich", name=list(new_names)
         ),
-        filename=atlas_filename,
+        template="?",
     )
 
 
@@ -909,7 +809,7 @@ def _get_atlas_data_and_labels(
     # The label indices should range from 0 to nlabel + 1
     assert list(names.keys()) == list(range(len(all_labels) + 1))
     names = [item[1] for item in sorted(names.items())]
-    return atlas_img, atlas_file, names, is_lateralized
+    return atlas_img, names, is_lateralized
 
 
 def _merge_probabilistic_maps_juelich(atlas_data, names):
@@ -1012,51 +912,29 @@ def fetch_atlas_msdl(
 ) -> Atlas:
     """Download and load the MSDL brain :term:`Probabilistic atlas`.
 
-    It can be downloaded at :footcite:t:`atlas_msdl`, and cited
-    using :footcite:t:`Varoquaux2011`.
-    See also :footcite:t:`Varoquaux2013` for more information.
+    For more information,
+    see the :ref:`dataset description <msdl_atlas>`.
 
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
-        - 'maps': :obj:`str`
-            path to nifti file containing the
-            :term:`Probabilistic atlas` image
-            (shape is equal to ``(40, 48, 35, 39)``).
+        %(msdl_atlas_content)s
 
-        - %(labels)s
-            There are 39 labels such that ``data.labels[i]``
-            corresponds to map ``i``.
-
-        - 'region_coords': :obj:`list` of length-3 :obj:`tuple`
-            ``data.region_coords[i]`` contains the coordinates ``(x, y, z)``
-            of region ``i`` in :term:`MNI` space.
-
-        - 'networks': :obj:`list` of :obj:`str`
-            list containing the names of the networks.
-            There are 39 network names such that
-            ``data.networks[i]`` is the network name of region ``i``.
-
-        - %(description)s
-
-        - %(atlas_type)s
-
-        - %(template)s
-
-    References
-    ----------
-    .. footbibliography::
-
-
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -1084,7 +962,7 @@ def fetch_atlas_msdl(
     return Atlas(
         maps=files[1],
         labels=[name.strip() for name in csv_data["name"].to_list()],
-        description=get_dataset_descr(dataset_name),
+        description=Description.from_registry(dataset_name),
         atlas_type=atlas_type,
         region_coords=csv_data[["x", "y", "z"]].to_numpy().tolist(),
         networks=net_names,
@@ -1095,30 +973,26 @@ def fetch_atlas_msdl(
 def fetch_coords_power_2011() -> Bunch[str, pd.DataFrame | str]:
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
-    See :footcite:t:`Power2011`.
+    For more information
+    see the :ref:`dataset description <power_2011_atlas>`.
 
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'rois': :class:`pandas.DataFrame`
-            Contains the coordinates of 264 ROIs in :term:`MNI` space.
-
-        - %(description)s
-
-
-    References
-    ----------
-    .. footbibliography::
+        %(power_2011_atlas_content)s
 
     """
-    dataset_name = "power_2011"
-    fdescr = get_dataset_descr(dataset_name)
     csv = PACKAGE_DIRECTORY / "data" / "power_2011.csv"
     rois = pd.read_csv(csv)
     rois = rois.rename(columns={c: c.lower() for c in rois.columns})
-    params = {"rois": rois, "description": fdescr}
+    params = {
+        "rois": rois,
+        "description": Description.from_registry("power_2011_atlas"),
+        "template": "MNI?",
+        "atlas_type": "deterministic",
+    }
     return Bunch(**params)
 
 
@@ -1135,7 +1009,8 @@ def fetch_atlas_smith_2009(
     """Download and load the Smith :term:`ICA` and BrainMap \
     :term:`Probabilistic atlas` (2009).
 
-    See :footcite:t:`Smith2009b` and :footcite:t:`Laird2011`.
+    For more information
+    see the :ref:`dataset description <smith_2009_atlas>`.
 
     Parameters
     ----------
@@ -1164,28 +1039,11 @@ def fetch_atlas_smith_2009(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - ``maps``: :obj:`str`
-            Path to nifti file containing the requested resting fMRI or
-            or BrainMap components image with the number of requested
-            dimenensions.
-            The shape of the image is ``(91, 109, 91, dimension)``.
-
-        - %(description)s
-
-        - %(atlas_type)s
-
-        - %(template)s
-
-    References
-    ----------
-    .. footbibliography::
+        %(smith_2009_atlas_content)s
 
     Notes
     -----
     %(fetcher_note)s
-
-    For more information about this dataset's structure:
-    https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
     """
     check_params(locals())
 
@@ -1218,12 +1076,12 @@ def fetch_atlas_smith_2009(
     elif isinstance(url, str):
         list_url = [url] * len(files)
 
-    dataset_name = "smith_2009"
+    dataset_name = "smith_2009_atlas"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
-    fdescr = get_dataset_descr(dataset_name)
+    fdescr = Description.from_registry(dataset_name)
 
     key = f"{'rsn' if resting else 'bm'}{dimension}"
     key_index = list(files).index(key)
@@ -1251,21 +1109,17 @@ def fetch_atlas_yeo_2011(
 ) -> Atlas:
     """Download and return file names for the Yeo 2011 :term:`parcellation`.
 
-    This function retrieves the so-called yeo
-    :term:`deterministic atlases<Deterministic atlas>`. The provided images
-    are in MNI152 space and have shapes equal to ``(256, 256, 256, 1)``.
-    They contain consecutive integers values from 0 (background) to either
-    7 or 17 depending on the atlas version considered.
-
-    For more information on this dataset's structure,
-    see :footcite:t:`CorticalParcellation_Yeo2011`,
-    and :footcite:t:`Yeo2011`.
+    For more information
+    see the :ref:`dataset description <yeo_2011_atlas>`.
 
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     n_networks : {7, 17}, default = 7
@@ -1295,33 +1149,13 @@ def fetch_atlas_yeo_2011(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object.
+        Dictionary-like object, contains:
 
-        - 'anat': :obj:`str`
-            Path to nifti file containing the anatomy image.
-
-        - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`.
-          The image contains integer values for each network.
-
-        - %(labels)s
-
-        - %(lut)s
-
-        - %(description)s
-
-        - %(template)s
-
-        - %(atlas_type)s
-
-    References
-    ----------
-    .. footbibliography::
+        %(yeo_2011_atlas_content)s
 
     Notes
     -----
     %(fetcher_note)s
-
-    License: unknown.
     """
     check_params(locals())
 
@@ -1337,7 +1171,7 @@ def fetch_atlas_yeo_2011(
         )
     opts = {"uncompress": True}
 
-    dataset_name = "yeo_2011"
+    dataset_name = "yeo_2011_atlas"
     keys = (
         "thin_7",
         "thick_7",
@@ -1368,7 +1202,7 @@ def fetch_atlas_yeo_2011(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = get_dataset_descr(dataset_name)
+    fdescr = Description.from_registry(dataset_name)
 
     params = dict(
         [
@@ -1464,42 +1298,9 @@ def fetch_atlas_aal(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
-        - 'maps': :obj:`str`
-            Path to nifti file containing the regions.
-            The image has shape ``(91, 109, 91)`` and contains
-            117 unique integer values defining the parcellation in version
-            SPM 5, 8 and 12, and 167 unique integer values defining the
-            parcellation in version 3v2. Please refer to the main description
-            to see how to link labels to regions IDs.
-
-        - %(labels)s
-            There are 117 names in version SPM 5, 8, and 12,
-            and 167 names in version 3v2.
-            Please refer to the main description
-            to see how to link labels to regions IDs.
-
-        - 'indices': :obj:`list` of :obj:`str`
-            Indices mapping 'labels'
-            to values in the 'maps' image.
-            This list has 117 elements in
-            version SPM 5, 8 and 12, and 167 elements in version 3v2.
-            Since the values in the 'maps' image do not correspond to
-            indices in ``labels``, but rather to values in ``indices``, the
-            location of a label in the ``labels`` list does not necessary
-            match the associated value in the image.
-            Use the ``indices``
-            list to identify the appropriate image value for a given label
-            (See main description above).
-
-        - %(description)s
-
-        - %(lut)s
-
-        - %(template)s
-
-        - %(atlas_type)s
+        %(aal_atlas_content)s
 
     Notes
     -----
@@ -1568,7 +1369,6 @@ def fetch_atlas_aal(
             data_dir, filenames, resume=resume, verbose=verbose
         )
 
-    fdescr = get_dataset_descr("aal")
     labels = ["Background"]
     indices = ["0"]
     if version in ("SPM12", "3v2"):
@@ -1590,12 +1390,11 @@ def fetch_atlas_aal(
                 _, label, index = line.strip().split("\t")
                 indices.append(index)
                 labels.append(label)
-        fdescr = fdescr.replace("SPM 12", version)
 
     return Atlas(
         maps=atlas_img,
         labels=labels,
-        description=fdescr,
+        description=Description.from_registry("aal_atlas"),
         lut=generate_atlas_look_up_table(
             "fetch_atlas_aal",
             index=np.array([int(x) for x in indices]),
@@ -1623,22 +1422,8 @@ def fetch_atlas_basc_multiscale_2015(
     :term:`functional magnetic resonance images<fMRI>` from about 200 young
     healthy subjects.
 
-    Multiple resolutions (number of networks) are available, among
-    7, 12, 20, 36, 64, 122, 197, 325, 444. The brain parcellations
-    have been generated using a method called bootstrap analysis of
-    stable clusters called as BASC :footcite:t:`Bellec2010`,
-    and the resolutions have been selected using a data-driven method
-    called MSTEPS :footcite:t:`Bellec2013`.
-
-    Note that two versions of the template are available, 'sym' or 'asym'.
-    The 'asym' type contains brain images that have been registered in the
-    asymmetric version of the :term:`MNI` brain template (reflecting that
-    the brain is asymmetric), while the 'sym' type contains images registered
-    in the symmetric version of the :term:`MNI` template.
-    The symmetric template has been forced to be symmetric anatomically, and
-    is therefore ideally suited to study homotopic functional connections in
-    :term:`fMRI`: finding homotopic regions simply consists of flipping the
-    x-axis of the template.
+    For more information
+    see the :ref:`dataset description <basc_multiscale_2015_atlas>`.
 
     .. nilearn_versionadded:: 0.2.3
 
@@ -1669,7 +1454,7 @@ def fetch_atlas_basc_multiscale_2015(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, Keys are:
+        Dictionary-like object, contains:
 
         - maps: :obj:`str`
             Path to Nifti file of the brain parcellation.
@@ -1684,16 +1469,10 @@ def fetch_atlas_basc_multiscale_2015(
 
         - %(atlas_type)s
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
     %(fetcher_note)s
 
-    For more information on this dataset's structure, see
-    https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615
     """
     check_params(locals())
 
@@ -1714,13 +1493,12 @@ def fetch_atlas_basc_multiscale_2015(
 
     opts = {"uncompress": True}
 
-    dataset_name = "basc_multiscale_2015"
+    dataset_name = "basc_multiscale_2015_atlas"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
     folder_name = Path(f"template_cambridge_basc_multiscale_nii_{version}")
-    fdescr = get_dataset_descr(dataset_name)
 
     basename = (
         "template_cambridge_basc_multiscale_"
@@ -1738,7 +1516,7 @@ def fetch_atlas_basc_multiscale_2015(
     return Atlas(
         maps=data[0],
         labels=labels,
-        description=fdescr,
+        description=Description.from_registry("basc_multiscale_2015_atlas"),
         lut=generate_atlas_look_up_table(
             "fetch_atlas_basc_multiscale_2015", name=labels
         ),
@@ -1756,7 +1534,8 @@ def fetch_coords_dosenbach_2010(
     These ROIs cover much of the cerebral cortex
     and cerebellum and are assigned to 6 networks.
 
-    See :footcite:t:`Dosenbach2010`.
+    For more information
+    see the :ref:`dataset description <dosenbach_2010_atlas>`.
 
     Parameters
     ----------
@@ -1769,23 +1548,9 @@ def fetch_coords_dosenbach_2010(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'rois':  :class:`pandas.DataFrame` with the coordinates
-          of the 160 ROIs in :term:`MNI` space.
-
-        - %(labels)s
-
-        - 'networks': :class:`numpy.ndarray` of :obj:`str`, list of network
-          names for the 160 ROI.
-
-        - %(description)s
-
-    References
-    ----------
-    .. footbibliography::
+        %(seitzman_2018_atlas_content)s
 
     """
-    dataset_name = "dosenbach_2010"
-    fdescr = get_dataset_descr(dataset_name)
     csv = PACKAGE_DIRECTORY / "data" / "dosenbach_2010.csv"
     out_csv = pd.read_csv(csv)
 
@@ -1803,9 +1568,9 @@ def fetch_coords_dosenbach_2010(
         "rois": out_csv[["x", "y", "z"]],
         "labels": labels,
         "networks": out_csv["network"],
-        "description": fdescr,
+        "description": Description.from_registry("dosenbach_2010_atlas"),
+        "template": "MNI",
     }
-
     return Bunch(**params)
 
 
@@ -1815,14 +1580,8 @@ def fetch_coords_seitzman_2018(
 ) -> Bunch[str, str | pd.DataFrame | np.ndarray]:
     """Load the Seitzman et al. 300 ROIs.
 
-    These ROIs cover cortical, subcortical and cerebellar regions and are
-    assigned to one of 13 networks (Auditory, CinguloOpercular, DefaultMode,
-    DorsalAttention, FrontoParietal, MedialTemporalLobe, ParietoMedial,
-    Reward, Salience, SomatomotorDorsal, SomatomotorLateral, VentralAttention,
-    Visual) and have a regional label (cortexL, cortexR, cerebellum, thalamus,
-    hippocampus, basalGanglia, amygdala, cortexMid).
-
-    See :footcite:t:`Seitzman2020`.
+    For more information
+    see the :ref:`dataset description <seitzman_2018_atlas>`.
 
     .. nilearn_versionadded:: 0.5.1
 
@@ -1837,27 +1596,9 @@ def fetch_coords_seitzman_2018(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'rois': :class:`pandas.DataFrame` with the coordinates
-          of the 300 ROIs in :term:`MNI` space.
-
-        - 'radius': :class:`numpy.ndarray` of :obj:`int`
-            Radius of each ROI in mm.
-
-        - 'networks': :class:`numpy.ndarray` of :obj:`str`
-            Names of the corresponding network for each ROI.
-
-        - 'regions': :class:`numpy.ndarray` of :obj:`str`
-            Names of the regions.
-
-        - %(description)s
-
-    References
-    ----------
-    .. footbibliography::
+        %(seitzman_2018_atlas_content)s
 
     """
-    dataset_name = "seitzman_2018"
-    fdescr = get_dataset_descr(dataset_name)
     roi_file = (
         PACKAGE_DIRECTORY
         / "data"
@@ -1893,9 +1634,9 @@ def fetch_coords_seitzman_2018(
         "radius": np.array(rois["radius"]),
         "networks": np.array(rois["network"]),
         "regions": np.array(rois["region"]),
-        "description": fdescr,
+        "description": Description.from_registry("seitzman_2018_atlas"),
+        "template": "MNI",
     }
-
     return Bunch(**params)
 
 
@@ -1925,40 +1666,9 @@ def fetch_atlas_allen_2011(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object, contains:
 
-        - 'maps': :obj:`str`
-            Path to nifti file containing the
-            T-maps of all 75 unthresholded components.
-            The image has shape ``(53, 63, 46, 75)``.
-
-        - 'rsn28': :obj:`str`
-            Path to nifti file containing the
-            T-maps of 28 RSNs included in :footcite:t:`Allen2011`.
-            The image has shape ``(53, 63, 46, 28)``.
-
-        - 'networks': :obj:`list` of :obj:`list` of :obj:`str`
-            List containing the names for the 28 RSNs.
-
-        - 'rsn_indices': :obj:`list` of :obj:`tuple`, each tuple is a \
-          (:obj:`str`, :obj:`list` of :`int`).
-            This maps the network names to the map indices.
-            For example, the map indices for the 'Visual' network
-            can be obtained:
-
-            .. code-block:: python
-
-                # Should return [46, 64, 67, 48, 39, 59]
-                dict(data.rsn_indices)["Visual"]
-
-        - 'comps': :obj:`str`
-            Path to nifti file containing the aggregate :term:`ICA` components.
-
-        - %(description)s
-
-        - %(atlas_type)s
-
-        - %(template)s
+        %(allen_2011_atlas_content)s
 
     Notes
     -----
@@ -1972,7 +1682,6 @@ def fetch_atlas_allen_2011(
     if url is None:
         url = "https://osf.io/hrcku/download"
 
-    dataset_name = "allen_rsn_2011"
     keys = ("maps", "rsn28", "comps")
 
     opts = {"uncompress": True}
@@ -1997,22 +1706,24 @@ def fetch_atlas_allen_2011(
     filenames = [(Path("allen_rsn_2011", f), url, opts) for f in files]
 
     data_dir = get_dataset_dir(
-        dataset_name, data_dir=data_dir, verbose=verbose
+        "allen_rsn_2011_atlas", data_dir=data_dir, verbose=verbose
     )
     sub_files = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = get_dataset_descr(dataset_name)
-
     params = [
-        ("description", fdescr),
+        (
+            "description",
+            Description.from_registry("allen_2011_atlas"),
+        ),
         ("atlas_type", atlas_type),
         ("rsn_indices", labels),
         ("networks", networks),
         ("template", "MNI152"),
         *list(zip(keys, sub_files, strict=False)),
     ]
+
     return Bunch(**dict(params))
 
 
@@ -2026,18 +1737,22 @@ def fetch_atlas_surf_destrieux(
     """Download and load Destrieux et al, 2010 cortical \
     :term:`Deterministic atlas`.
 
-    See :footcite:t:`Destrieux2010`.
-
     This atlas returns 76 labels per hemisphere based on sulco-gryal patterns
     as distributed with Freesurfer in fsaverage5 surface space.
+
+    For more information,
+    see the :ref:`dataset description <surf_destrieux_atlas>`.
 
     .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -2045,33 +1760,36 @@ def fetch_atlas_surf_destrieux(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - %(labels)s
-
-        - 'map_left': :class:`numpy.ndarray` of :obj:`int`
-            Maps each vertex on the left hemisphere
-            of the fsaverage5 surface to its index
-            into the list of label name.
-
-        - 'map_right': :class:`numpy.ndarray` of :obj:`int`
-            Maps each :term:`vertex` on the right hemisphere
-            of the fsaverage5 surface to its index
-            into the list of label name.
-
-        - %(description)s
-
-        - %(lut)s
-
-        - %(template)s
-
-        - %(atlas_type)s
+        %(surf_destrieux_atlas_content)s
 
     See Also
     --------
     nilearn.datasets.fetch_surf_fsaverage
+    nilearn.datasets.fetch_atlas_destrieux_2009
 
-    References
-    ----------
-    .. footbibliography::
+    Notes
+    -----
+    %(fetcher_note)s
+
+    Examples
+    --------
+    The code snippet below shows how to use this dataset
+    to generate a :class:`~nilearn.surface.SurfaceImage`.
+
+    .. code-block::
+
+        from nilearn.datasets import load_fsaverage, fetch_atlas_surf_destrieux
+        from nilearn.surface import SurfaceImage
+
+        fsaverage = load_fsaverage("fsaverage5")
+        destrieux = fetch_atlas_surf_destrieux()
+        labels_img = SurfaceImage(
+            mesh=fsaverage.pial,
+            data={
+                "left": destrieux.map_left,
+                "right": destrieux.map_right,
+            },
+        )
 
     """
     check_params(locals())
@@ -2081,8 +1799,7 @@ def fetch_atlas_surf_destrieux(
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/"
 
-    dataset_name = "destrieux_surface"
-    fdescr = get_dataset_descr(dataset_name)
+    dataset_name = "surf_destrieux_atlas"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
@@ -2122,7 +1839,7 @@ def fetch_atlas_surf_destrieux(
         labels=labels,
         map_left=annot_left[0],
         map_right=annot_right[0],
-        description=fdescr,
+        description=Description.from_registry(dataset_name),
         lut=lut,
         atlas_type=atlas_type,
         template="fsaverage",
@@ -2227,28 +1944,11 @@ def fetch_atlas_talairach(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`
-            The image has
-            shape ``(141, 172, 110)`` and contains consecutive integer
-            values from 0 to the number of regions, which are indices
-            in the list of labels.
+        %(talairach_atlas_content)s
 
-        - %(labels)s
-
-            The list starts with 'Background' (region ID 0 in the image).
-
-        - %(description)s
-
-        - %(lut)s
-
-        - %(template)s
-
-        - %(atlas_type)s
-
-    References
-    ----------
-    .. footbibliography::
-
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -2271,7 +1971,7 @@ def fetch_atlas_talairach(
     return Atlas(
         maps=atlas_img,
         labels=labels,
-        description=get_dataset_descr("talairach_atlas").format(level_name),
+        description=Description.from_registry("talairach_atlas"),
         lut=generate_atlas_look_up_table("fetch_atlas_talairach", name=labels),
         atlas_type=atlas_type,
         template="Talairach",
@@ -2286,8 +1986,8 @@ def fetch_atlas_pauli_2017(
 ) -> Atlas:
     """Download the Pauli et al. (2017) atlas.
 
-    This atlas has 12 subcortical nodes in total. See
-    :footcite:t:`pauli_atlas` and :footcite:t:`Pauli2018`.
+    For more information,
+    see the :ref:`dataset description <pauli_2017_atlas>`.
 
     Parameters
     ----------
@@ -2295,7 +1995,9 @@ def fetch_atlas_pauli_2017(
         Which type of the atlas should be download. This can be
         'probabilistic' for the :term:`Probabilistic atlas`, or 'deterministic'
         for the :term:`Deterministic atlas`.
+
     %(data_dir)s
+
     %(verbose)s
 
     Returns
@@ -2303,33 +2005,11 @@ def fetch_atlas_pauli_2017(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'maps': :obj:`str`,
-            path to nifti file containing the
-            :class:`~nibabel.nifti1.Nifti1Image`.
-            If ``atlas_type='probabilistic'``,
-            the image shape is ``(193, 229, 193, 16)``.
-            If ``atlas_type='deterministic'`` the image shape is
-            ``(198, 263, 212)``, and values are indices in the list of labels
-            (integers from 0 to 16).
+        %(pauli_2017_atlas_content)s
 
-        - %(labels)s
-            The list contains values for both
-            :term:`probabilistic<Probabilistic atlas>` and
-            :term:`deterministic<Deterministic atlas>` types.
-
-        - %(description)s
-
-        - %(lut)s
-            Only when atlas_type="deterministic"
-
-        - %(template)s
-
-        - %(atlas_type)s
-
-    References
-    ----------
-    .. footbibliography::
-
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
     check_parameter_in_allowed(
@@ -2343,7 +2023,7 @@ def fetch_atlas_pauli_2017(
         filename = "pauli_2017_det.nii.gz"
 
     url_labels = "https://osf.io/6qrcb/download"
-    dataset_name = "pauli_2017"
+    dataset_name = "pauli_2017_atlas"
 
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
@@ -2360,7 +2040,7 @@ def fetch_atlas_pauli_2017(
     return Atlas(
         maps=atlas_file,
         labels=labels,
-        description=get_dataset_descr(dataset_name),
+        description=Description.from_registry(dataset_name),
         lut=generate_atlas_look_up_table(
             "fetch_atlas_pauli_2017", name=labels
         ),
@@ -2385,9 +2065,8 @@ def fetch_atlas_schaefer_2018(
     This function returns a :term:`Deterministic atlas`, and the provided
     images are in MNI152 space.
 
-    For more information on this dataset, see :footcite:t:`schaefer_atlas`,
-    :footcite:t:`Schaefer2017`,
-    and :footcite:t:`Yeo2011`.
+    For more information
+    see the :ref:`dataset description <schaefer_2018_atlas>`.
 
     Parameters
     ----------
@@ -2399,11 +2078,15 @@ def fetch_atlas_schaefer_2018(
 
     resolution_mm : {1, 2}, default=1
         Spatial resolution of atlas image, in mm.
+
     %(data_dir)s
+
     base_url : :obj:`str`,  default=None
         Base URL of files to download (``None`` results in
         default ``base_url``).
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -2411,38 +2094,11 @@ def fetch_atlas_schaefer_2018(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'maps': :obj:`str`, path to nifti file containing the
-            3D :class:`~nibabel.nifti1.Nifti1Image` (its shape is
-            ``(182, 218, 182)``).
-            The values are consecutive integers
-            between 0 and ``n_rois`` which can be interpreted as indices
-            in the list of labels.
-
-        - %(labels)s
-
-        - %(description)s
-
-        - %(lut)s
-
-        - %(template)s
-
-        - %(atlas_type)s
-
-    References
-    ----------
-    .. footbibliography::
-
+        %(schaefer_2018_atlas_content)s
 
     Notes
     -----
     %(fetcher_note)s
-
-    Release v0.14.3 of the Schaefer 2018 parcellation is used by
-    default. Versions prior to v0.14.3 are known to contain erroneous region
-    label names. For more details, see
-    https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/Updates/Update_20190916_README.md
-
-    License: MIT.
     """
     check_params(locals())
 
@@ -2481,7 +2137,7 @@ def fetch_atlas_schaefer_2018(
         ]
     ]
 
-    dataset_name = "schaefer_2018"
+    dataset_name = "schaefer_2018_atlas"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
@@ -2499,7 +2155,7 @@ def fetch_atlas_schaefer_2018(
     return Atlas(
         maps=atlas_file,
         labels=list(lut["name"]),
-        description=get_dataset_descr(dataset_name),
+        description=Description.from_registry(dataset_name),
         lut=lut,
         atlas_type=atlas_type,
         template="MNI152NLin6Asym",

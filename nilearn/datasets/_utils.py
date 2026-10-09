@@ -20,7 +20,10 @@ import pandas as pd
 import requests
 
 from nilearn._utils import logger
-from nilearn._utils.docs import fill_doc
+from nilearn._utils.docs import (
+    fill_doc,
+    render_description_directives,
+)
 from nilearn._utils.logger import _has_rich, find_stack_level, readable_time
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -216,13 +219,18 @@ def _chunk_read_(
             total=total_size,
             completed=initial_size,
         )
-        progress.start()
 
     bytes_so_far = initial_size
 
     t0 = time_last_display = time.time()
 
     try:
+        # Start the progress bar in the try block
+        # so it is always stopped:
+        # otherwise the progress bar stays as the active live display
+        # and all subsequent downloads fail.
+        if use_rich:
+            progress.start()
         for chunk in response.iter_content(chunk_size):
             bytes_so_far += len(chunk)
 
@@ -765,10 +773,12 @@ def fetch_single_file(
 def get_dataset_descr(ds_name: str) -> str:
     """Return the description of a dataset."""
     try:
+        # read in text mode to normalize line endings across platforms
+        # (CRLF on windows)
         with (PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst").open(
-            "rb"
+            encoding="utf-8"
         ) as rst_file:
-            descr = rst_file.read().decode("utf-8")
+            descr = rst_file.read()
     except OSError:
         descr = ""
 
@@ -778,7 +788,7 @@ def get_dataset_descr(ds_name: str) -> str:
             stacklevel=find_stack_level(),
         )
 
-    return str(descr)
+    return render_description_directives(str(descr))
 
 
 def movetree(src, dst) -> None:

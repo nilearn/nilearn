@@ -26,11 +26,11 @@ from nilearn.surface import SurfaceImage
 
 fsaverage = load_fsaverage("fsaverage5")
 destrieux = fetch_atlas_surf_destrieux()
-destrieux_atlas = SurfaceImage(
-    mesh=fsaverage["pial"],
+labels_img = SurfaceImage(
+    mesh=fsaverage.pial,
     data={
-        "left": destrieux["map_left"],
-        "right": destrieux["map_right"],
+        "left": destrieux.map_left,
+        "right": destrieux.map_right,
     },
 )
 
@@ -60,7 +60,7 @@ print(f"{fsaverage_sulcal=}")
 from nilearn.plotting import plot_surf_roi, show
 
 common_plotting_params = {
-    "roi_map": destrieux_atlas,
+    "roi_map": labels_img,
     "hemi": "left",
     "bg_on_data": True,
     "bg_map": fsaverage_sulcal,
@@ -120,8 +120,8 @@ from nilearn.plotting import plot_connectome, view_connectome
 
 coordinates = []
 for hemi in ["left", "right"]:
-    data = destrieux_atlas.data.parts[hemi]
-    mesh_coordinates = destrieux_atlas.mesh.parts[hemi].coordinates
+    data = labels_img.data.parts[hemi]
+    mesh_coordinates = labels_img.mesh.parts[hemi].coordinates
     coordinates.extend(
         np.mean(mesh_coordinates[data == k], axis=0)
         for k, label in enumerate(destrieux.labels)
@@ -166,7 +166,7 @@ from nilearn.plotting import view_surf
 
 view = view_surf(
     surf_mesh=fsaverage_meshes["inflated"],
-    surf_map=destrieux_atlas,
+    surf_map=labels_img,
     cmap="gist_ncar",
     symmetric_cmap=False,
 )
@@ -186,7 +186,7 @@ view
 #
 view = view_surf(
     surf_mesh=fsaverage_meshes["inflated"],
-    surf_map=destrieux_atlas,
+    surf_map=labels_img,
     cmap="gist_ncar",
     symmetric_cmap=False,
     engine="niivue",

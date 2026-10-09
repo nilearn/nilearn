@@ -38,7 +38,7 @@ than using a subject-tailored mesh.
 .. seealso::
 
     For more information about the dataset
-    see its :ref:`description <localizer_first_level_dataset>`.
+    see its :ref:`description <localizer_first_level>`.
 """
 
 # %%

@@ -1,0 +1,22 @@
+{
+    "random": {
+        "type": "str",
+        "desc": "Fullpath to 4D nifti file (with shape ``(47, 56, 46, 43)``) containing the :term:`parcellation` obtained with random clustering (for comparison)."
+    },
+    "scorr_2level": {
+        "type": "str",
+        "desc": "Fullpath to 4D nifti file (with shape ``(47, 56, 46, 43)``) containing the :term:`parcellation` results when emphasizing spatial homogeneity"
+    },
+    "scorr_mean": {
+        "type": "str",
+        "desc": "Fullpath to 4D nifti file (with shape ``(47, 56, 46, 43)``) containing the group-mean :term:`parcellation` results when emphasizing spatial homogeneity"
+    },
+    "tcorr_2level": {
+        "type": "str",
+        "desc": "Fullpath to 4D nifti file (with shape ``(47, 56, 46, 43)``) containing the :term:`parcellation` results when emphasizing temporal homogeneity"
+    },
+    "tcorr_mean": {
+        "type": "str",
+        "desc": "Fullpath to 4D nifti file (with shape ``(47, 56, 46, 43)``) containing the group-mean :term:`parcellation` results when emphasizing temporal homogeneity"
+    }
+}

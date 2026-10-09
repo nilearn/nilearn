@@ -1,0 +1,6 @@
+{
+    "maps": {
+        "type": "str",
+        "desc": "Path to 4D nifti file containing the requested resting fMRI or BrainMap components (depending on the value passed to ``resting``) image with the number of requested dimensions. The shape of the image is ``(91, 109, 91, dimension)`` where dimension is the value passed to ``dimension``."
+    }
+}

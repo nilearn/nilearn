@@ -1,0 +1,10 @@
+{
+    "labels": {
+        "type": "list[str]",
+        "desc": "List of the names of the regions. The list contains values for both :term:`probabilistic<Probabilistic atlas>` and :term:`deterministic<Deterministic atlas>` types."
+    },
+    "maps": {
+        "type": "str",
+        "desc": "Path to nifti file containing the :class:`~nibabel.nifti1.Nifti1Image`. If ``atlas_type='probabilistic'``, the image shape is ``(193, 229, 193, 16)``. If ``atlas_type='deterministic'`` the image shape is ``(198, 263, 212)``, and values are indices in the list of labels (integers from 0 to 16)."
+    }
+}

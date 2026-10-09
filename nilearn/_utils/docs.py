@@ -11,8 +11,17 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 
 # sourcery skip: merge-dict-assign
 
+import json
+import re
 import sys
+import types
+import typing
 from collections.abc import Callable
+
+import pandas as pd
+from sklearn.utils import Bunch
+
+from nilearn._base import PACKAGE_DIRECTORY, documentation_url
 
 ##############################################################################
 #
@@ -1430,9 +1439,11 @@ y : None
 #
 
 # atlas_type
-docdict["atlas_type"] = """'atlas_type' : :obj:`str`
+atlas_type = """
         Type of atlas.
         See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
+docdict["atlas_type"] = f"""'atlas_type' : :obj:`str`
+        {atlas_type}"""
 
 docdict["base_decomposition_fit_attributes"] = """
 Attributes
@@ -1746,8 +1757,9 @@ docdict[
         """
 
 # atlas labels
-docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
-        List of the names of the regions."""
+labels = "List of the names of the regions."
+docdict["labels"] = f"""'labels' : :obj:`list` of :obj:`str`
+        {labels}"""
 
 # mask_img_ for most nifti maskers
 docdict[
@@ -1761,11 +1773,15 @@ docdict[
         (for example across timepoints) is finite value different from 0."""
 
 # look up table
-docdict["lut"] = """lut : :obj:`pandas.DataFrame`
+lut = """
         Act as a look up table (lut)
         with at least columns 'index' and 'name'.
         Formatted according to 'dseg.tsv' format from
-        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_.
+"""
+docdict["lut"] = f"""lut : :obj:`pandas.DataFrame`
+{lut}
+       """
 
 
 signals_transform = """signals : :obj:`numpy.ndarray`, \
@@ -1822,9 +1838,9 @@ docdict[
 
 
 # template
-docdict["template"] = """'template' : :obj:`str`
-        The standardized space of analysis
-        in which the atlas results are provided.
+template = "The standardized space of analysis in which the data is provided."
+docdict["template"] = f"""'template' : :obj:`str`
+        {template}
         When known it should be a valid template name
         taken from the spaces described in
         `the BIDS specification <https://bids-specification.readthedocs.io/en/latest/appendices/coordinate-systems.html#image-based-coordinate-systems>`_."""
@@ -1929,3 +1945,330 @@ def fill_doc(f: Callable) -> Callable:
             "Did you forget to escape a character with an extra '%'"
         ) from exp
     return f
+
+
+# Structured descriptions of what dataset fetchers return.
+#
+# The content of this registry is used:
+#
+# - by the fetchers, to build the ``description`` they return,
+# - by the dataset description pages (``nilearn/datasets/description/*.rst``)
+#   via the ``nilearn_dataset_content`` and ``nilearn_dataset_license``
+#   directives:
+#   rendered by a sphinx extension at doc build time
+#   (see ``doc/sphinxext/dataset_descriptions.py``)
+#   and by :func:`render_description_directives` at runtime.
+# - to fill the "return" section of the doc strings of the fetchers
+#
+# It must therefore not require downloading any data.
+
+
+DATASET_DESCRIPTIONS: dict[str, Bunch] = {
+    "aal_atlas": Bunch(
+        content=Bunch(
+            lut=Bunch(type=pd.DataFrame, desc=lut),
+        )
+    ),
+    "allen_2011_atlas": Bunch(license="unknown"),
+    "basc_multiscale_2015_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="Creative Commons -- Attribution Non-commercial",
+    ),
+    "craddock_2012_atlas": Bunch(
+        license="Creative Commons Attribution Non-commercial Share Alike."
+    ),
+    "destrieux_2009_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+    ),
+    "difumo_atlas": Bunch(
+        license="usage is unrestricted for non-commercial research purposes.",
+    ),
+    "dosenbach_2010_atlas": Bunch(),
+    "fiac": Bunch(license="unknown"),
+    "harvard_oxford_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
+    ),
+    "juelich_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
+    ),
+    "language_localizer_demo": Bunch(license="ODC-BY-SA"),
+    "localizer_first_level": Bunch(
+        content=Bunch(template=Bunch(type=str, desc=template))
+    ),
+    "msdl_atlas": Bunch(
+        license="usage is unrestricted for non-commercial research purposes."
+    ),
+    "pauli_2017_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="UCC-By Attribution 4.0 International",
+    ),
+    "power_2011_atlas": Bunch(),
+    "spm_multimodal": Bunch(),
+    "seitzman_2018_atlas": Bunch(),
+    "schaefer_2018_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+    ),
+    "smith_2009_atlas": Bunch(),
+    "surf_destrieux_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+    ),
+    "talairach_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+    ),
+    "yeo_2011_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="MIT",
+    ),
+}
+
+
+def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
+    # import some packages that are needed
+    # for the eval below
+    # to turn string into an actual type
+    import nibabel  # noqa : F401
+    import numpy as np  # noqa : F401
+
+    json_file_path = PACKAGE_DIRECTORY / "datasets" / "description" / json_file
+
+    if not json_file_path.exists():
+        return content
+
+    with (PACKAGE_DIRECTORY / "datasets" / "description" / json_file).open(
+        "rb"
+    ) as f:
+        metadata = json.load(f)
+
+    for key, value in metadata.items():
+        if key in content:
+            raise ValueError(
+                f"Cannot add {key} from {json_file} "
+                "to dataset description: key already present."
+            )
+        content[key] = Bunch(**value)
+        content[key].type = eval(content[key].type)
+
+    return content
+
+
+# update the content of DATASET_DESCRIPTIONS from the dataset json
+for k in DATASET_DESCRIPTIONS:
+    if "content" not in DATASET_DESCRIPTIONS[k]:
+        DATASET_DESCRIPTIONS[k]["content"] = Bunch()
+
+    if "license" not in DATASET_DESCRIPTIONS[k]:
+        DATASET_DESCRIPTIONS[k]["license"] = "unknown"
+
+    DATASET_DESCRIPTIONS[k]["content"] = _fill_content_from_json(
+        DATASET_DESCRIPTIONS[k]["content"], f"{k}.json"
+    )
+
+    # All atlases have an "atlas_type" and "template"
+    if "atlas" in k:
+        DATASET_DESCRIPTIONS[k]["content"]["atlas_type"] = Bunch(
+            type=str, desc=atlas_type
+        )
+        DATASET_DESCRIPTIONS[k]["content"]["template"] = Bunch(
+            type=str, desc=template
+        )
+
+
+def content_to_rst(name: str, indent="") -> str:
+    """Render the content of the dataset ``name`` as a sorted list.
+
+    Parameters
+    ----------
+    name : str
+        key to use in DATASET_DESCRIPTIONS
+
+    indent : str
+        indent value to use to indent list
+        (useful for proper rendering in HTML)
+    """
+    content = dict(sorted(DATASET_DESCRIPTIONS[name].content.items()))
+    tmp = []
+    for key, value in content.items():
+        sanitized_value = "".join(value.desc.split("\n"))
+        sanitized_value = re.sub(" +", " ", sanitized_value)
+        tmp.append(
+            f"\n{indent}- ``{key}``: "
+            f"{type_to_rst(value.type)}. {sanitized_value}"
+        )
+
+    return "".join(tmp)
+
+
+def type_to_rst(type_) -> str:
+    """Render a type (or type hint) as restructured text."""
+    if isinstance(type_, str):
+        return type_
+    if type_ is None or type_ is type(None):
+        return "``None``"
+
+    origin = typing.get_origin(type_)
+    if origin is None:
+        module = type_.__module__
+        if module == "builtins":
+            return f":obj:`{type_.__qualname__}`"
+        # pandas documents its classes at the top level
+        # (e.g. pandas.DataFrame and not pandas.core.frame.DataFrame)
+        if module.split(".")[0] == "pandas":
+            module = "pandas"
+        return f":class:`{module}.{type_.__qualname__}`"
+
+    args = typing.get_args(type_)
+    if origin in (typing.Union, types.UnionType):
+        return " or ".join(type_to_rst(x) for x in args)
+    if not args:
+        return type_to_rst(origin)
+    if len(args) == 1:
+        return f"{type_to_rst(origin)} of {type_to_rst(args[0])}"
+    inner = ", ".join(type_to_rst(x) for x in args)
+    return f"{type_to_rst(origin)} of ({inner})"
+
+
+for k in DATASET_DESCRIPTIONS:
+    docdict[f"{k}_content"] = content_to_rst(k, indent="    ")
+
+
+_DIRECTIVE_REGEX = re.compile(
+    r"^\.\. nilearn_dataset_(?P<kind>content|license):: *(?P<name>\S+) *\r?$",
+    flags=re.MULTILINE,
+)
+
+
+def license_to_rst(name: str) -> str:
+    """Render the license of the dataset ``name``."""
+    return DATASET_DESCRIPTIONS[name].license or "unknown"
+
+
+_RENDERERS = {"content": content_to_rst, "license": license_to_rst}
+
+
+def render_description_directives(rst: str) -> str:
+    """Replace nilearn_dataset_* directives by their rendered content."""
+    return _DIRECTIVE_REGEX.sub(
+        lambda m: _RENDERERS[m["kind"]](m["name"]), rst
+    )
+
+
+def _matches_type(value, type_) -> bool:
+    """Check if value matches a type (or type hint).
+
+    Types given as strings cannot be checked and are considered a match.
+    """
+    if isinstance(type_, str):
+        return True
+    if type_ is None or type_ is type(None):
+        return value is None
+
+    origin = typing.get_origin(type_)
+    if origin is None:
+        return isinstance(value, type_)
+
+    args = typing.get_args(type_)
+    if origin in (typing.Union, types.UnionType):
+        return any(_matches_type(value, x) for x in args)
+    if not isinstance(value, origin):
+        return False
+    return not args or _container_items_match(value, origin, args)
+
+
+def _container_items_match(value, origin, args) -> bool:
+    """Check that the items of a container match the type arguments."""
+    if issubclass(origin, tuple):
+        if len(args) == 2 and args[1] is Ellipsis:
+            return all(_matches_type(x, args[0]) for x in value)
+        return len(value) == len(args) and all(
+            _matches_type(x, t) for x, t in zip(value, args, strict=True)
+        )
+    if issubclass(origin, dict):
+        key_type, value_type = args
+        return all(
+            _matches_type(k, key_type) and _matches_type(v, value_type)
+            for k, v in value.items()
+        )
+    # other containers: list, set...
+    return all(_matches_type(x, args[0]) for x in value)
+
+
+def check_content_types(data, content) -> list[str]:
+    """Check that data returned by a fetcher matches its described content
+    and that all data is described.
+
+    Parameters
+    ----------
+    data : :obj:`sklearn.utils.Bunch`
+        Data returned by a fetcher.
+
+    content : :obj:`sklearn.utils.Bunch`
+        Content of the description of the data:
+        see ``DATASET_DESCRIPTIONS``.
+
+    Returns
+    -------
+    :obj:`list` of :obj:`str`
+        Description of each mismatch. Empty if everything matches.
+    """
+    errors = []
+    for key, value in content.items():
+        if key not in data and key != "lut":
+            # look up table (lut) is missing FOR NOW
+            # for some probabilistic atlases (juelich and harvard_oxford)
+            # but present for their deterministic version
+            # so we skip this check for lut for now
+            errors.append(f"'{key}' is described but missing from the data")
+
+        if key in data and not _matches_type(data[key], value.type):
+            errors.append(
+                f"'{key}' expected type '{value.type}', "
+                f"got '{type(data[key]).__name__}'"
+            )
+
+    for key in data:
+        if key == "description":
+            continue
+        if key not in content:
+            errors.append(
+                f"'{key}' is present in data but not described in content"
+            )
+
+    return errors
+
+
+class Description(Bunch):
+    """Class to help inject content description in fetcher docstrings."""
+
+    def __init__(
+        self,
+        documentation: str,
+        content: Bunch,
+        license: str | None,
+    ):
+
+        super().__init__(
+            documentation=documentation,
+            content=content,
+            license=license,
+        )
+
+    @classmethod
+    def from_registry(cls, name: str):
+        """Build the description of dataset ``name`` from the registry.
+
+        See ``nilearn.datasets._descriptions.DATASET_DESCRIPTIONS``.
+        """
+        assert (
+            PACKAGE_DIRECTORY / "datasets" / "description" / f"{name}.rst"
+        ).exists()
+
+        entry = DATASET_DESCRIPTIONS[name]
+        return cls(
+            documentation=(
+                f"{documentation_url()}/modules/description/{name}.html"
+            ),
+            content=entry.content,
+            license=entry.license,
+        )

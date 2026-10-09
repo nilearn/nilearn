@@ -1,0 +1,14 @@
+{
+    "labels": {
+        "type": "list[str]",
+        "desc": "List of the names of the regions."
+    },
+    "map_left": {
+        "type": "np.ndarray",
+        "desc": "Maps each :term:`vertex` on the left hemisphere of the fsaverage5 surface to its index into the list of label name."
+    },
+    "map_right": {
+        "type": "np.ndarray",
+        "desc": "Maps each :term:`vertex` on the right hemisphere of the fsaverage5 surface to its index into the list of label name."
+    }
+}

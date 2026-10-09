@@ -1,0 +1,10 @@
+{
+    "labels": {
+        "type": "list[str]",
+        "desc": "List of the names of the regions. The list starts with 'Background' (region ID 0 in the image)."
+    },
+    "maps": {
+        "type": "nibabel.nifti1.Nifti1Image",
+        "desc": "Nifti1Image object containing the label image. The image has shape ``(141, 172, 110)`` and contains consecutive integer values from 0 to the number of regions, which are indices in the list of labels."
+    }
+}

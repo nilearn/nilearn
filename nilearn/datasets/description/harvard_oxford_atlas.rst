@@ -19,21 +19,17 @@ The T1-weighted images were affine-registered to MNI152 space using FLIRT (FSL),
 and the transforms then applied to the individual labels.
 Finally, these were combined across subjects to form population probability maps for each label.
 
-For more details: https://fsl.fmrib.ox.ac.uk/fsl/docs/#/other/datasets
-
 See also :footcite:t:`Makris2006`, :footcite:t:`Desikan2006`,
 :footcite:t:`Frazier2005`, :footcite:t:`Goldstein2007`.
 
 Content
 -------
-    :'maps': nifti image containing regions or their probability
-    :'labels': list of labels for the regions in the atlas.
+.. nilearn_dataset_content:: harvard_oxford_atlas
 
 References
 ----------
-
 .. footbibliography::
 
 License
 -------
-See https://fsl.fmrib.ox.ac.uk/fsl/docs/#/license?id=fsl-license
+.. nilearn_dataset_license:: harvard_oxford_atlas

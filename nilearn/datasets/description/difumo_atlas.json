@@ -1,0 +1,10 @@
+{
+    "labels": {
+        "type": "pd.DataFrame",
+        "desc": "Containing the labels of the regions. The length of the dataframe corresponds to the number of dimensions requested. ``data.labels[i]`` is the label corresponding to volume ``i`` in the 'maps' image."
+    },
+    "maps": {
+        "type": "str",
+        "desc": "Path to 4D nifti file containing regions definition. The shape of the image is ``(104, 123, 104, dimension)`` where ``dimension`` is the requested dimension of the atlas."
+    }
+}

@@ -1,0 +1,38 @@
+{
+    "anat": {
+        "type": "str",
+        "desc": "Fullpath to 3D nifti image (in .img format) of the anatomical image."
+    },
+    "func1": {
+        "type": "list[str]",
+        "desc": "List of fullpaths to 3D nifti image (in .img format) for the functional image of the run 1 (one file per time point)."
+    },
+    "func2": {
+        "type": "list[str]",
+        "desc": "List of fullpaths to 3D nifti image (in .img format) for the functional image of the run 2 (one file per time point)."
+    },
+    "events1": {
+        "type": "str",
+        "desc": "Fullpath to a tsv file describing the paradigm of the run 1."
+    },
+    "events2": {
+        "type": "str",
+        "desc": "Fullpath to a tsv file describing the paradigm of the run 2."
+    },
+    "slice_order": {
+        "type": "str",
+        "desc": "Order in which the slices of the functional runs were acquired."
+    },
+    "trials_ses1": {
+        "type": "str",
+        "desc": "Fullpath to .mat file containing onsets for run 1."
+    },
+    "trials_ses2": {
+        "type": "str",
+        "desc": "Fullpath to .mat file containing onsets for run 2."
+    },
+    "t_r": {
+        "type": "float",
+        "desc": "Repetition time in seconds."
+    }
+}

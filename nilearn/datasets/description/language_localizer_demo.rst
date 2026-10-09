@@ -1,4 +1,4 @@
-.. _language_localizer_dataset:
+.. _language_localizer_demo:
 
 language localizer demo dataset
 ===============================
@@ -23,14 +23,36 @@ Direct download link from OSF:  https://osf.io/k4jp8/
 
 Content
 -------
-    :'data_dir': Path to downloaded dataset.
-    :'downloaded_files': Absolute paths of downloaded files on disk
+.. nilearn_dataset_content:: language_localizer_demo
 
+.. code-block::
 
-References
-----------
-
+    ├── access_data.py
+    ├── CHANGES
+    ├── dataset_description.json
+    ├── derivatives
+    │   ├── dataset_description.json
+    │   ├── sub-01
+    │   │   └── func
+    │   │       ├── sub-01_task-languagelocalizer_desc-confounds_regressors.tsv
+    │   │       ├── sub-01_task-languagelocalizer_desc-preproc_bold.json
+    │   │       └── sub-01_task-languagelocalizer_desc-preproc_bold.nii.gz
+    │   ├── ...
+    │   └── sub-10
+    │       └── func
+    │           ├── sub-10_task-languagelocalizer_desc-confounds_regressors.tsv
+    │           ├── sub-10_task-languagelocalizer_desc-preproc_bold.json
+    │           └── sub-10_task-languagelocalizer_desc-preproc_bold.nii.gz
+    ├── participants.tsv
+    ├── README
+    ├── sub-01
+    │   └── func
+    │       └── sub-01_task-languagelocalizer_events.tsv
+    ├── ...
+    └── sub-10
+        └── func
+            └── sub-10_task-languagelocalizer_events.tsv
 
 License
 -------
-ODC-BY-SA
+.. nilearn_dataset_license:: language_localizer_demo

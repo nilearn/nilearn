@@ -1,4 +1,4 @@
-.. _power_atlas:
+.. _power_2011_atlas:
 
 Power 2011 atlas
 ================
@@ -15,13 +15,12 @@ See :footcite:t:`Power2011`.
 
 Content
 -------
-    :'rois': Coordinates of ROIs in :term:`MNI` space.
+.. nilearn_dataset_content:: power_2011_atlas
 
 References
 ----------
-
 .. footbibliography::
 
 License
 -------
-unknown
+.. nilearn_dataset_license:: power_2011_atlas

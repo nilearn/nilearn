@@ -15,11 +15,13 @@ to know which ones are shipped with Nilearn.
 from nilearn import datasets
 
 dataset_ho = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
-atlas_ho_filename = dataset_ho.filename
+print(dataset_ho.description.content.maps)
+atlas_ho_filename = dataset_ho.maps
 print(f"Atlas ROIs are located at: {atlas_ho_filename}")
 
 dataset_ju = datasets.fetch_atlas_juelich("maxprob-thr0-1mm")
-atlas_ju_filename = dataset_ju.filename
+print(dataset_ju.description.content.maps)
+atlas_ju_filename = dataset_ju.maps
 print(f"Atlas ROIs are located at: {atlas_ju_filename}")
 
 # %%
@@ -81,6 +83,7 @@ show()
 # that comes with a predefined colormap.
 dataset_yeo = datasets.fetch_atlas_yeo_2011(n_networks=17)
 
+print(dataset_yeo.description.content.lut)
 print(dataset_yeo.lut)
 
 # %%

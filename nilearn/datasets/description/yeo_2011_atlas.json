@@ -1,0 +1,14 @@
+{
+    "anat": {
+        "type": "str",
+        "desc": "Path to the 3D nifti file containing the anatomy image for reference and visualization."
+    },
+    "labels": {
+        "type": "list[str]",
+        "desc": "List of the names of the regions."
+    },
+    "maps": {
+        "type": "str",
+        "desc": "3D :class:`~nibabel.nifti1.Nifti1Image`. The image contains integer values for each network. The provided images are in MNI152 space and have shapes equal to ``(256, 256, 256, 1)``. They contain consecutive integers values from 0 (background) to either 7 or 17 depending on the atlas version considered."
+    }
+}

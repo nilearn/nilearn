@@ -90,7 +90,7 @@ def test_downloader(tmp_path, request_mocker):
     )
     url = "http://example.com/craddock_atlas"
     request_mocker.url_mapping["*craddock*"] = local_archive
-    datasetdir = tmp_path / "craddock_2012"
+    datasetdir = tmp_path / "craddock_2012_atlas"
     datasetdir.mkdir()
 
     # Create a dummy file. If sandboxing is successful, it won't be overwritten
@@ -108,7 +108,7 @@ def test_downloader(tmp_path, request_mocker):
 
     with pytest.raises(IOError):
         fetch_files(
-            str(tmp_path / "craddock_2012"),
+            str(tmp_path / "craddock_2012_atlas"),
             files,
             verbose=0,
         )
@@ -161,7 +161,6 @@ def _write_sample_atlas_metadata(ho_dir, filename, is_symm):
 
 
 def _test_atlas_instance_should_match_data(atlas, is_symm):
-    assert Path(atlas.filename).exists() and Path(atlas.filename).is_absolute()
     assert isinstance(atlas.maps, Nifti1Image)
     assert isinstance(atlas.labels, list)
 
@@ -301,7 +300,7 @@ def test_fetch_atlas_craddock_2012(
     )
 
     validate_atlas(bunch)
-    assert bunch["maps"] == str(tmp_path / "craddock_2012" / expected)
+    assert bunch["maps"] == str(tmp_path / "craddock_2012_atlas" / expected)
 
     assert request_mocker.url_count == 1
 
@@ -314,7 +313,7 @@ def test_fetch_atlas_smith_2009(tmp_path):
     bunch = fetch_atlas_smith_2009(data_dir=tmp_path, verbose=0, dimension=20)
 
     validate_atlas(bunch)
-    assert bunch["maps"] == str(tmp_path / "smith_2009" / "rsn20.nii.gz")
+    assert bunch["maps"] == str(tmp_path / "smith_2009_atlas" / "rsn20.nii.gz")
 
 
 def test_fetch_coords_power_2011():
@@ -376,7 +375,7 @@ def test_fetch_atlas_destrieux_2009(
     name = "_lateralized" if lateralized else ""
 
     assert bunch["maps"] == str(
-        tmp_path / "destrieux_2009" / f"destrieux2009_rois{name}.nii.gz"
+        tmp_path / "destrieux_2009_atlas" / f"destrieux2009_rois{name}.nii.gz"
     )
 
     check_fetcher_verbosity(
@@ -609,7 +608,7 @@ def test_fetch_atlas_aal_version_error(tmp_path):
 def test_fetch_atlas_basc_multiscale_2015(tmp_path, capsys):
     resolution = 7
 
-    dataset_name = "basc_multiscale_2015"
+    dataset_name = "basc_multiscale_2015_atlas"
     name_sym = "template_cambridge_basc_multiscale_nii_sym"
     basename_sym = "template_cambridge_basc_multiscale_sym_scale007.nii.gz"
 
@@ -685,14 +684,14 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker, capsys):
     assert request_mocker.url_count == 1
     for key, fn in zip(keys, filenames, strict=False):
         assert bunch[key] == str(
-            tmp_path / "allen_rsn_2011" / "allen_rsn_2011" / fn
+            tmp_path / "allen_rsn_2011_atlas" / "allen_rsn_2011" / fn
         )
 
     check_fetcher_verbosity(fetch_atlas_allen_2011, capsys, data_dir=tmp_path)
 
 
 def test_fetch_atlas_surf_destrieux(tmp_path, capsys):
-    data_dir = tmp_path / "destrieux_surface"
+    data_dir = tmp_path / "surf_destrieux_atlas"
     data_dir.mkdir()
 
     # Create mock annots
@@ -849,7 +848,7 @@ def test_fetch_atlas_schaefer_2018(
         }
     )
     basename = f"Schaefer2018_{n_rois}Parcels_{yeo_networks}Networks_order.txt"
-    mock_dir = tmp_path / "schaefer_2018"
+    mock_dir = tmp_path / "schaefer_2018_atlas"
     mock_dir.mkdir(exist_ok=True, parents=True)
     mock_file = mock_dir / basename
     mock_lut.to_csv(mock_file, sep="\t", header=False)
