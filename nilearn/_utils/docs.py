@@ -1972,7 +1972,7 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     "allen_2011_atlas": Bunch(license="unknown"),
     "basc_multiscale_2015_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
-        license="Creative Commons -- Attribution Non-Commercial",
+        license="Creative Commons -- Attribution Non-commercial",
     ),
     "craddock_2012_atlas": Bunch(
         license="Creative Commons Attribution Non-commercial Share Alike."
