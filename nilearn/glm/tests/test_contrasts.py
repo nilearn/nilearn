@@ -169,6 +169,19 @@ def test_contrast_mul(set_up_glm, rng):
         assert_almost_equal(con1.z_score(), con2.z_score())
 
 
+def test_contrast_z_score_baseline_after_other_baseline():
+    """z_score(baseline) must not depend on previously used baselines."""
+    effect = np.array([[2.0, 4.0]])
+    variance = np.array([1.0, 1.0])
+
+    con = Contrast(effect, variance, dof=40, stat_type="t")
+    con.z_score()
+    z_score = con.z_score(baseline=3.0)
+
+    fresh = Contrast(effect, variance, dof=40, stat_type="t")
+    assert_almost_equal(z_score, fresh.z_score(baseline=3.0))
+
+
 def test_contrast_values(set_up_glm, rng):
     # but this test is circular and should be removed
     labels, results, q = set_up_glm(rng, "ar1", bins=1)

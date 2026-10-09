@@ -225,10 +225,8 @@ class Contrast:
             statistical values, one per voxel
 
         """
-        if self.p_value_ is None or self.baseline != baseline:
-            self.p_value_ = self.p_value(baseline)
-        if self.one_minus_pvalue_ is None:
-            self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
+        self.p_value_ = self.p_value(baseline)
+        self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
 
         # Avoid inf values kindly supplied by scipy.
         self.z_score_ = z_score(
