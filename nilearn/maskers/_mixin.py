@@ -22,7 +22,7 @@ from nilearn._utils.niimg import repr_niimgs
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn.image import high_variance_confounds
 from nilearn.image.image import get_indices_from_image, iter_check_niimg
-from nilearn.nilearn_typing import NiimgLike
+from nilearn.nilearn_typing import NiimgLike, SingleConfound
 from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
 
@@ -36,12 +36,7 @@ class _MultiMixin:
         self,
         imgs,
         y=None,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path | None]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound | None] | None = None,
         sample_mask=None,
         **fit_params,
     ):
@@ -88,8 +83,7 @@ class _MultiMixin:
     def transform_imgs(
         self,
         imgs_list,
-        confounds: list[pd.DataFrame | np.ndarray | str | Path | None]
-        | None = None,
+        confounds: list[SingleConfound | None] | None = None,
         n_jobs=1,
         sample_mask=None,
     ):
@@ -145,12 +139,7 @@ class _MultiMixin:
     def transform(
         self,
         imgs,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path | None]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound | None] | None = None,
         sample_mask=None,
     ):
         """Apply mask, spatial and temporal preprocessing.

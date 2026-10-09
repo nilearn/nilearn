@@ -1,7 +1,6 @@
 """Masker for surface objects."""
 
 from copy import deepcopy
-from pathlib import Path
 from typing import Any, ClassVar, Self
 from warnings import warn
 
@@ -20,6 +19,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
+from nilearn.nilearn_typing import SingleConfound
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
 
@@ -285,12 +285,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     def transform_single_imgs(
         self,
         imgs,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):
         """Extract signals from fitted surface object.

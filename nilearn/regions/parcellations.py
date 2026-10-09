@@ -1,11 +1,9 @@
 """Parcellation tools such as KMeans or Ward for fMRI images."""
 
 import warnings
-from pathlib import Path
 from typing import ClassVar
 
 import numpy as np
-import pandas as pd
 from joblib import Parallel, delayed
 from scipy.sparse import coo_matrix
 from sklearn.base import clone
@@ -28,6 +26,7 @@ from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.image.image import iter_check_niimg, new_img_like
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
 from nilearn.maskers.surface_labels_masker import signals_to_surf_img_labels
+from nilearn.nilearn_typing import SingleConfound
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
 from nilearn.regions.rena_clustering import ReNA, make_edges_surface
 from nilearn.surface import SurfaceImage
@@ -584,12 +583,7 @@ class Parcellations(_MultiPCA):
     def transform(
         self,
         imgs,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path | None]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound | None] | None = None,
     ):
         """Extract signals from :term:`parcellations<parcellation>` learned \
         on :term:`fMRI` images.
@@ -672,12 +666,7 @@ class Parcellations(_MultiPCA):
         self,
         imgs,
         y=None,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path | None]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound | None] | None = None,
     ):
         """Fit the images to :term:`parcellations<parcellation>` and \
         then transform them.

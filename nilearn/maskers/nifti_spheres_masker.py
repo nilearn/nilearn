@@ -5,7 +5,6 @@ Mask nifti images by spherical volumes for seed-region analyses
 
 import contextlib
 import warnings
-from pathlib import Path
 from typing import Any, ClassVar
 
 import numpy as np
@@ -37,6 +36,7 @@ from nilearn.maskers.base_masker import (
     sanitize_displayed_maps,
 )
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
+from nilearn.nilearn_typing import SingleConfound
 
 
 def apply_mask_and_get_affinity(
@@ -572,12 +572,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self,
         imgs,
         y=None,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):
         """Prepare and perform signal extraction.
@@ -613,12 +608,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     def transform_single_imgs(
         self,
         imgs,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):
         """Extract signals from a single 4D niimg.

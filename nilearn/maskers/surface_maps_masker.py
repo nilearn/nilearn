@@ -3,7 +3,6 @@ brain regions.
 """
 
 import warnings
-from pathlib import Path
 from typing import Any, ClassVar, Self
 
 import numpy as np
@@ -33,6 +32,7 @@ from nilearn.maskers.base_masker import (
     mask_logger,
     sanitize_displayed_maps,
 )
+from nilearn.nilearn_typing import SingleConfound
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -287,12 +287,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     def transform_single_imgs(
         self,
         imgs,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):
         """Extract signals from surface object.

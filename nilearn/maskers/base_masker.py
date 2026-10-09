@@ -48,6 +48,7 @@ from nilearn.image.image import (
 from nilearn.image.resampling import resample_img
 from nilearn.maskers._mixin import MaskerReportMixin
 from nilearn.masking import load_mask_img, unmask
+from nilearn.nilearn_typing import SingleConfound
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
@@ -415,12 +416,7 @@ class BaseMasker(_BaseMasker):
     def transform_single_imgs(
         self,
         imgs,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
         copy=True,
     ):
@@ -539,12 +535,7 @@ class BaseMasker(_BaseMasker):
     def transform(
         self,
         imgs,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):
         """Apply mask, spatial and temporal preprocessing.
@@ -594,12 +585,7 @@ class BaseMasker(_BaseMasker):
         self,
         imgs,
         y=None,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
         **fit_params,
     ):
@@ -846,12 +832,7 @@ class _BaseSurfaceMasker(_BaseMasker):
     def transform(
         self,
         imgs,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):
         """Apply mask, spatial and temporal preprocessing.
@@ -939,12 +920,7 @@ class _BaseSurfaceMasker(_BaseMasker):
     def transform_single_imgs(
         self,
         imgs,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):
         """Extract signals from a single surface image."""
@@ -956,12 +932,7 @@ class _BaseSurfaceMasker(_BaseMasker):
         self,
         imgs,
         y=None,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):
         """Prepare and perform signal extraction from regions.

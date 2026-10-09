@@ -35,6 +35,7 @@ from nilearn.maskers.base_masker import (
     mask_logger,
 )
 from nilearn.masking import load_mask_img
+from nilearn.nilearn_typing import SingleConfound
 
 
 class _ExtractionFunctor:
@@ -604,12 +605,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         self,
         imgs,
         y=None,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):
         """Prepare and perform signal extraction from regions.

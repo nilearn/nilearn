@@ -21,6 +21,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Literal, TypeAlias
 
 import numpy as np
+import pandas as pd
 from joblib.memory import Memory
 from nibabel import Nifti1Image
 from numpy import ndarray
@@ -30,6 +31,7 @@ Integer: TypeAlias = int | np.integer
 Float: TypeAlias = float | np.floating
 NonNullScalar: TypeAlias = Float | Integer
 Scalar: TypeAlias = NonNullScalar | None
+SingleConfound: TypeAlias = pd.DataFrame | np.ndarray | str | pathlib.Path
 
 Annotate: TypeAlias = bool
 AvailableMeshes: TypeAlias = Literal[

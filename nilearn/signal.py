@@ -6,6 +6,7 @@ features
 """
 
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
@@ -31,6 +32,7 @@ from nilearn.nilearn_typing import (
     HighPass,
     LowPass,
     NonNullScalar,
+    SingleConfound,
     Standardize,
     StandardizeConfounds,
     Tr,
@@ -566,12 +568,7 @@ def clean(
     detrend: bool = True,
     standardize="zscore_sample",
     sample_mask=None,
-    confounds: pd.DataFrame
-    | np.ndarray
-    | str
-    | Path
-    | list[pd.DataFrame | np.ndarray | str | Path]
-    | None = None,
+    confounds: SingleConfound | Sequence[SingleConfound] | None = None,
     standardize_confounds: StandardizeConfounds = True,
     filter: Literal["butterworth", "cosine", False] = "butterworth",
     low_pass: LowPass = None,
@@ -1093,7 +1090,7 @@ def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     return signals, runs, confounds, sample_mask
 
 
-def sanitize_confounds(n_time, confounds):
+def sanitize_confounds(n_time, confounds) -> np.ndarray | None:
     """Check confounds are the correct type.
 
     When passing multiple runs, ensure the
@@ -1180,13 +1177,7 @@ def _sanitize_confound_dtype(
         if np.isnan(confound.flat[0]):
             # There may be a header
             confound = csv_to_array(filename, skip_header=1)
-        if confound.shape[0] != n_signal:
-            raise ValueError(
-                "Confound signal has an incorrect length. \n"
-                f"Signal length: {n_signal}; "
-                f"confound length: {confound.shape[0]}"
-            )
-    elif isinstance(confound, np.ndarray):
+    if isinstance(confound, np.ndarray):
         if confound.ndim == 1:
             confound = np.atleast_2d(confound).T
         elif confound.ndim != 2:
@@ -1256,7 +1247,7 @@ def _check_filter_parameters(
     return "butterworth", t_r, low_pass, high_pass
 
 
-def _sanitize_signals(signals, ensure_finite):
+def _sanitize_signals(signals, ensure_finite) -> np.ndarray:
     """Ensure signals are in the correct state."""
     check_parameter_in_allowed(ensure_finite, [True, False], "ensure_finite")
     signals = signals.copy()

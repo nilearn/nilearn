@@ -8,7 +8,7 @@ import pytest
 import scipy.signal
 from numpy import array_equal
 from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
-from pandas import read_csv
+from pandas import DataFrame, read_csv
 
 from nilearn.conftest import _rng
 from nilearn.exceptions import AllVolumesRemovedError
@@ -902,6 +902,85 @@ def test_clean_confounds_inputs():
             confounds[:, 2],
         ],
     )
+
+
+def _confound_as(kind: str, block: np.ndarray, filename: Path):
+    """Convert a block of confounds to the requested input type."""
+    if kind == "dataframe":
+        return DataFrame(block)
+    if kind in ("str", "path"):
+        np.savetxt(filename, block, delimiter=",")
+        return str(filename) if kind == "str" else filename
+    return block
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("container", [list, tuple])
+@pytest.mark.parametrize(
+    "kinds",
+    [
+        ("array", "array"),
+        ("array_1d", "array"),
+        ("dataframe", "dataframe"),
+        ("str", "str"),
+        ("path", "path"),
+        ("dataframe", "array", "array_1d", "str", "path"),
+    ],
+)
+def test_clean_confounds_collection(signals, tmp_path, container, kinds):
+    """Check that a list or tuple of confounds of mixed types \
+    is equivalent to passing all confounds stacked in a single array.
+    """
+    rng = _rng()
+    blocks = [
+        rng.standard_normal(signals.shape[0])
+        if kind == "array_1d"
+        else rng.standard_normal((signals.shape[0], 2))
+        for kind in kinds
+    ]
+
+    confounds = container(
+        _confound_as(kind, block, tmp_path / f"confounds_{i}.csv")
+        for i, (kind, block) in enumerate(zip(kinds, blocks, strict=True))
+    )
+    stacked = np.hstack([np.atleast_2d(b.T).T for b in blocks])
+
+    expected = clean(
+        signals, detrend=False, standardize=None, confounds=stacked
+    )
+    result = clean(
+        signals, detrend=False, standardize=None, confounds=confounds
+    )
+
+    assert_almost_equal(result, expected)
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("as_str", [True, False])
+@pytest.mark.parametrize("in_list", [True, False])
+def test_clean_confounds_single_column_file(
+    signals, tmp_path, as_str, in_list
+):
+    """Check that a confounds file with a single column can be used.
+
+    Regression test: such a file is loaded as a 1D array,
+    which used to make clean fail.
+    """
+    confound = _rng().standard_normal((signals.shape[0], 1))
+    filename = tmp_path / "confounds.csv"
+    np.savetxt(filename, confound)
+    confounds = str(filename) if as_str else filename
+    if in_list:
+        confounds = [confounds]
+
+    expected = clean(
+        signals, detrend=False, standardize=None, confounds=confound
+    )
+    result = clean(
+        signals, detrend=False, standardize=None, confounds=confounds
+    )
+
+    assert_almost_equal(result, expected)
 
 
 def test_clean_warning(signals):

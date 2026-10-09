@@ -5,8 +5,8 @@ Utilities for masking and dimension reduction of group data
 
 import glob
 import inspect
-import itertools
 import warnings
+from collections.abc import Sequence
 from math import ceil
 from pathlib import Path
 from string import Template
@@ -45,7 +45,7 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers.masker_validation import check_embedded_masker
-from nilearn.nilearn_typing import NiimgLike
+from nilearn.nilearn_typing import NiimgLike, SingleConfound
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
 from nilearn.utils.tags import InputTags
@@ -155,8 +155,7 @@ def _fast_svd(X, n_components, random_state=None):
 def _mask_and_reduce(
     masker,
     imgs,
-    confounds: list[pd.DataFrame | np.ndarray | str | Path | None]
-    | tuple[pd.DataFrame | np.ndarray | str | Path | None],
+    confounds: Sequence[SingleConfound | None],
     reduction_ratio="auto",
     n_components=None,
     random_state=None,
@@ -469,40 +468,32 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
     def _sanitize_confounds(
         self,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path | None]
-        | tuple[pd.DataFrame | np.ndarray | str | Path | None]
-        | None,
+        confounds: SingleConfound | Sequence[SingleConfound | None] | None,
         imgs,
-    ) -> (
-        list[pd.DataFrame | np.ndarray | str | Path | None]
-        | tuple[pd.DataFrame | np.ndarray | str | Path | None]
-    ):
+    ) -> Sequence[SingleConfound | None]:
+        confounds_sequence: Sequence[SingleConfound | None]
         if confounds is None:
-            confounds = list(itertools.repeat(confounds))
-        elif not isinstance(confounds, (list, tuple)):
-            confounds = [confounds]
-        if len(confounds) != len(imgs):
+            confounds_sequence = [None] * len(imgs)
+        elif isinstance(confounds, Sequence) and not isinstance(
+            confounds, str
+        ):
+            confounds_sequence = confounds
+        else:
+            confounds_sequence = [confounds]
+        if len(confounds_sequence) != len(imgs):
             raise ValueError(
-                f"Number of confounds ({len(confounds)=}) "
+                f"Number of confounds ({len(confounds_sequence)=}) "
                 f"must match number of images ({len(imgs)=})."
             )
-        return confounds
+        return confounds_sequence
 
     @fill_doc
     def fit(
         self,
         imgs,
         y=None,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path | None]
-        | tuple[pd.DataFrame | np.ndarray | str | Path | None]
+        confounds: SingleConfound
+        | Sequence[SingleConfound | None]
         | None = None,
     ) -> Self:
         """Compute the mask and the components across subjects.
@@ -661,12 +652,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
     def transform(
         self,
         imgs,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path | None]
-        | tuple[pd.DataFrame | np.ndarray | str | Path | None]
+        confounds: SingleConfound
+        | Sequence[SingleConfound | None]
         | None = None,
     ):
         """Project the data into a reduced representation.
@@ -761,12 +748,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         self,
         imgs,
         y=None,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path | None]
-        | tuple[pd.DataFrame | np.ndarray | str | Path | None]
+        confounds: SingleConfound
+        | Sequence[SingleConfound | None]
         | None = None,
         per_component: bool = False,
     ):
@@ -806,6 +789,9 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         """
         del y
         check_is_fitted(self)
+
+        if isinstance(imgs, (SurfaceImage, Nifti1Image)):
+            imgs = [imgs]
 
         confounds = self._sanitize_confounds(confounds, imgs)
 

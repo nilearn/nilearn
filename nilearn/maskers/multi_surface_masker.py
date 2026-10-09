@@ -1,10 +1,8 @@
 """Extract data from multiple 2D surface objects."""
 
-from pathlib import Path
 from typing import Self
 
 import numpy as np
-import pandas as pd
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP
@@ -16,6 +14,7 @@ from nilearn._utils.param_validation import check_params
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.base_masker import mask_logger
 from nilearn.maskers.surface_masker import SurfaceMasker
+from nilearn.nilearn_typing import SingleConfound
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 
@@ -168,12 +167,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
     def transform_single_imgs(
         self,
         imgs,
-        confounds: pd.DataFrame
-        | np.ndarray
-        | str
-        | Path
-        | list[pd.DataFrame | np.ndarray | str | Path]
-        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):
         """Extract signals from fitted surface object.
