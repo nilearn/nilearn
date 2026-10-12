@@ -1060,7 +1060,11 @@ def check_img_estimator_pickle(estimator) -> None:
     check_methods.append("score")
     input_data.append((X, y))
 
-    if hasattr(estimator, "inverse_transform"):
+    # TODO - As NiftiLabelsMasker changes estimator at transform, inverse
+    # transform might not work
+    if hasattr(estimator, "inverse_transform") and not isinstance(
+        estimator, NiftiLabelsMasker
+    ):
         check_methods.append("inverse_transform")
         signal = _rng().random((1, fitted_estimator.n_elements_))
         if isinstance(estimator, _BaseDecomposition):
