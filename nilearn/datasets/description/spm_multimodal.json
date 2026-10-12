@@ -13,11 +13,11 @@
     },
     "events1": {
         "type": "str",
-        "desc": "Full path to a tsv file describing the paradigm of the run 1."
+        "desc": "Full path to a TSV file describing the paradigm of the run 1."
     },
     "events2": {
         "type": "str",
-        "desc": "Full path to a tsv file describing the paradigm of the run 2."
+        "desc": "Full path to a TSV file describing the paradigm of the run 2."
     },
     "slice_order": {
         "type": "str",

@@ -934,7 +934,7 @@ class FirstLevelModel(BaseGLM):
             :term:`fMRI` events used to build design matrices.
             One events object expected per run_img.
             Ignored in case designs is not None.
-            If string, then a path to a csv or tsv file is expected.
+            If string, then a path to a CSV or TSV file is expected.
             See :func:`~nilearn.glm.first_level.make_first_level_design_matrix`
             for details on the required content of events files.
 
@@ -950,7 +950,7 @@ class FirstLevelModel(BaseGLM):
             The number of rows must match the number of volumes in the
             respective run_img.
             Ignored in case designs is not None.
-            If string, then a path to a csv file is expected.
+            If string, then a path to a CSV file is expected.
 
             .. warning::
 
@@ -1410,7 +1410,7 @@ class FirstLevelModel(BaseGLM):
 
 def _check_events_file_uses_tab_separators(events_files):
     """Raise a ValueError if provided list of text based data files \
-    (.csv, .tsv, etc) do not enforce \
+    (CSV, TSV, etc) do not enforce \
     the :term:`BIDS` convention of using Tabs as separators.
 
     Only scans their first row.

@@ -383,7 +383,7 @@ def fetch_adhd(
         data_dir, [phenotypic], resume=resume, verbose=verbose
     )[0]
 
-    # Load the csv file
+    # Load the CSV file
     phenotypic_df = pd.read_table(phenotypic, delimiter=",")
     phenotypic_df["Subject"] = phenotypic_df["Subject"].apply(
         lambda x: f"{x:07d}"
@@ -1349,7 +1349,7 @@ def fetch_abide_pcp(
     )
 
     # Note: the phenotypic file contains string that contains comma which mess
-    # up numpy array csv loading. This is why I do a pass to remove the last
+    # up numpy array CSV loading. This is why I do a pass to remove the last
     # field. This can be
     # done simply with pandas but we don't want such dependency ATM
     # pheno = pandas.read_csv(path_csv).to_records()
@@ -1907,7 +1907,7 @@ def fetch_surf_nki_enhanced(
         data_dir, [phenotypic], resume=resume, verbose=verbose
     )[0]
 
-    # Load the csv file
+    # Load the CSV file
     phenotypic_df = pd.read_csv(
         phenotypic,
         header=1,
@@ -2051,10 +2051,10 @@ def _fetch_development_fmri_participants(
 ):
     """Use in fetch_development_fmri function.
 
-    This function helps in downloading and loading participants data from .tsv
+    This function helps in downloading and loading participants data from TSV
     uploaded on Open Science Framework (OSF).
 
-    The original .tsv file contains many columns but this function picks only
+    The original TSV file contains many columns but this function picks only
     those columns that are relevant.
 
     Parameters
@@ -2150,7 +2150,7 @@ def _fetch_development_fmri_functional(
         ("key_bold", "U24"),
     ]
     names = ["participant_id", "key_r", "key_b"]
-    # csv file contains download information related to OpenScience(osf)
+    # CSV file contains download information related to OpenScience(osf)
     osf_data = csv_to_array(
         (PACKAGE_DIRECTORY / "data" / "development_fmri.csv"),
         skip_header=True,
@@ -2367,7 +2367,7 @@ def _filter_func_regressors_by_participants(participants, age_group):
 
 
 def _filter_csv_by_n_subjects(participants, n_adult, n_child):
-    """Restrict the csv files to the adequate number of subjects."""
+    """Restrict the CSV files to the adequate number of subjects."""
     child_ids = participants[participants["Child_Adult"] == "child"][
         "participant_id"
     ][:n_child]
