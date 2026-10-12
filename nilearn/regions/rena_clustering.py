@@ -11,7 +11,7 @@ from typing import Self
 
 import numpy as np
 from nibabel import Nifti1Image
-from scipy.sparse import coo_matrix, csgraph, dia_matrix
+from scipy.sparse import coo_array, csgraph, dia_array
 from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.utils.validation import check_is_fitted, validate_data
 
@@ -333,16 +333,16 @@ def _weighted_connectivity_graph(X, mask_img):
 
     if isinstance(mask_img, SurfaceImage):
         edges, weight = _make_edges_and_weights_surface(X, mask_img)
-        connectivity = coo_matrix((n_features, n_features))
+        connectivity = coo_array((n_features, n_features))
         for part in mask_img.mesh.parts:
-            conn_temp = coo_matrix(
+            conn_temp = coo_array(
                 (weight[part], edges[part]), (n_features, n_features)
             ).tocsr()
             connectivity += conn_temp
     else:
         edges, weight = _make_edges_and_weights(X, mask_img)
 
-        connectivity = coo_matrix(
+        connectivity = coo_array(
             (weight, edges), (n_features, n_features)
         ).tocsr()
 
@@ -369,18 +369,18 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     """
     n_features = connectivity.shape[0]
 
-    connectivity_ = coo_matrix(
+    connectivity_ = coo_array(
         (1.0 / connectivity.data, connectivity.nonzero()),
         (n_features, n_features),
     ).tocsr()
 
     # maximum on the axis = 0
-    max_connectivity = connectivity_.max(axis=0).toarray()[0]
-    inv_max = dia_matrix(
+    max_connectivity = connectivity_.max(axis=0).toarray().ravel()
+    inv_max = dia_array(
         (1.0 / max_connectivity, 0), shape=(n_features, n_features)
     )
 
-    connectivity_ = inv_max * connectivity_
+    connectivity_ = inv_max @ connectivity_
 
     # Dealing with eccentricities, there are probably many nearest neighbors
     edge_mask = connectivity_.data > 1 - threshold
@@ -392,7 +392,7 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     weight = np.ones_like(j_idx)
     edges = np.array([i_idx, j_idx])
 
-    nn_connectivity = coo_matrix((weight, edges), (n_features, n_features))
+    nn_connectivity = coo_array((weight, edges), (n_features, n_features))
 
     return nn_connectivity
 
@@ -433,23 +433,23 @@ def _reduce_data_and_connectivity(
     """
     n_features = len(labels)
 
-    incidence = coo_matrix(
+    incidence = coo_array(
         (np.ones(n_features), (labels, np.arange(n_features))),
         shape=(n_components, n_features),
         dtype=np.float32,
     ).tocsc()
 
-    inv_sum_col = dia_matrix(
+    inv_sum_col = dia_array(
         (np.array(1.0 / incidence.sum(axis=1)).squeeze(), 0),
         shape=(n_components, n_components),
     )
 
-    incidence = inv_sum_col * incidence
+    incidence = inv_sum_col @ incidence
 
-    reduced_X = (incidence * X.T).T
-    reduced_connectivity = (incidence * connectivity) * incidence.T
+    reduced_X = (incidence @ X.T).T
+    reduced_connectivity = (incidence @ connectivity) @ incidence.T
 
-    reduced_connectivity = reduced_connectivity - dia_matrix(
+    reduced_connectivity = reduced_connectivity - dia_array(
         (reduced_connectivity.diagonal(), 0),
         shape=(reduced_connectivity.shape),
     )
@@ -514,7 +514,7 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
         weight = np.ones(2 * n_edges)
         edges = np.hstack([edges[:, edge_mask], edges[::-1, edge_mask]])
 
-        nn_connectivity = coo_matrix((weight, edges), (n_features, n_features))
+        nn_connectivity = coo_array((weight, edges), (n_features, n_features))
 
     # Clustering step: getting the connected components of the nn matrix
     n_components, labels = csgraph.connected_components(nn_connectivity)
