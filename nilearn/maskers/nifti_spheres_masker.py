@@ -18,6 +18,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
+from nilearn._utils.versions import sparray_context
 from nilearn.datasets import load_mni152_template
 from nilearn.image import load_img, resample_img
 from nilearn.image.image import (
@@ -134,8 +135,10 @@ def apply_mask_and_get_affinity(
     mask_coords = np.asarray(mask_coords).T
 
     clf = neighbors.NearestNeighbors(radius=radius)
-    A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
-    A = A.tolil()
+    with sparray_context():
+        A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
+    # older sklearn versions return a sparse matrix
+    A = sparse.lil_array(A)
     for i, nearest in enumerate(nearests):
         if nearest is None:
             continue
@@ -718,9 +721,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if self.allow_overlap:
             n_adjacent_spheres = np.asarray(adjacency.sum(axis=0)).ravel()
             scale = 1 / np.maximum(1, n_adjacent_spheres)
-            adjacency = adjacency.dot(sparse.diags(scale))
+            adjacency = adjacency @ sparse.diags_array(scale)
 
-        img = adjacency.T.dot(region_signals.T).T
+        img = (adjacency.T @ region_signals.T).T
 
         img = unmask(img, self.mask_img_)
 
