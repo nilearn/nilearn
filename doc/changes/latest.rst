@@ -31,7 +31,7 @@ HIGHLIGHTS
 Fixes
 -----
 
-- :bdg-dark:`Code` Fix :meth:`~nilearn.glm.contrasts.Contrast.z_score` using a cached probability computed for a previous baseline (:gh:`6642` by `Mohammad Sadeghi Hardengi`_).
+- :bdg-dark:`Code` Fix :meth:`~nilearn.glm.contrasts.Contrast.z_score` using a cached probability computed for a previous baseline (:gh:`6647` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-dark:`Code` Use mesh faces, rather than adjacent vertex indices, when computing clusters for surface cluster-level inference (:gh:`6608` by `Donncha O'Toole`_).
 
