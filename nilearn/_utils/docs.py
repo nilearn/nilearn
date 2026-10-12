@@ -317,6 +317,7 @@ confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
     The number of rows must match the number of volumes in the
     respective image.
 """
+
 docdict["confounds_multi"] = """
 confounds : confounds, or :obj:`list` or :obj:`tuple` of confounds, \
             default=None
@@ -326,6 +327,7 @@ confounds : confounds, or :obj:`list` or :obj:`tuple` of confounds, \
     As confounds are passed to :func:`nilearn.signal.clean`,
     please see the related documentation for details about accepted types.
     Must be of same length than imgs.
+
 """
 
 # copy_header
@@ -1816,9 +1818,9 @@ docdict["signals_transform_surface"] = signals_transform.format(1, 2, 1, 2)
 # signals returned Multi Nifti maskers by transform, fit_transform...
 docdict[
     "signals_transform_multi_nifti"
-] = """signals : :obj:`numpy.ndarray`, :obj:`pandas.DataFrame`, polar.DataFrame
-                 :obj:`list` of
-                 :obj:`numpy.ndarray`, :obj:`pandas.DataFrame`, polar.DataFrame
+] = """signals : :obj:`numpy.ndarray`, :obj:`pandas.DataFrame`, \
+          polars.DataFrame, or :obj:`list` of :obj:`numpy.ndarray`, \
+          :obj:`pandas.DataFrame` or polars.DataFrame
         Signal for each :term:`voxel`.
         Output shape for arrays:
 

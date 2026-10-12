@@ -874,6 +874,7 @@ class FirstLevelModel(BaseGLM):
             and self.results_ is not None
         )
 
+    @fill_doc
     def fit(
         self,
         run_imgs,
