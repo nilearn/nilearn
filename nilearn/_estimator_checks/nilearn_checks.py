@@ -790,27 +790,27 @@ def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
 
 @skip_if_not(lambda e: isinstance(e, CacheMixin))
 @clone_estimator
-def check_img_estimator_cache_warning(estimator) -> None:
+def check_img_estimator_cache_warning(estimator_orig) -> None:
     """Check estimator behavior with caching.
 
     Make sure some warnings are thrown at the appropriate time.
     """
-    assert hasattr(estimator, "memory")
-    assert hasattr(estimator, "memory_level")
+    assert hasattr(estimator_orig, "memory")
+    assert hasattr(estimator_orig, "memory_level")
 
-    if hasattr(estimator, "smoothing_fwhm"):
+    if hasattr(estimator_orig, "smoothing_fwhm"):
         # to avoid not supported warnings
-        estimator.smoothing_fwhm = None
+        estimator_orig.smoothing_fwhm = None
 
-    X, _ = generate_data_to_fit(estimator)
-    if isinstance(estimator, NiftiSpheresMasker):
+    X, _ = generate_data_to_fit(estimator_orig)
+    if isinstance(estimator_orig, NiftiSpheresMasker):
         # NiftiSpheresMasker needs mask_img to do some caching during fit
         mask_img = new_img_like(X, np.ones(X.shape[:3]))
-        estimator.mask_img = mask_img
+        estimator_orig.mask_img = mask_img
 
     # ensure warnings are NOT thrown
     for memory, memory_level in zip([None, "tmp"], [0, 1], strict=False):
-        estimator = clone(estimator)
+        estimator = clone(estimator_orig)
         estimator.memory = memory
         estimator.memory_level = memory_level
 
@@ -829,7 +829,7 @@ def check_img_estimator_cache_warning(estimator) -> None:
         )
 
     # ensure warning are thrown
-    estimator = clone(estimator)
+    estimator = clone(estimator_orig)
     with TemporaryDirectory() as tmp_dir:
         estimator.memory = tmp_dir
         estimator.memory_level = 0
