@@ -757,9 +757,9 @@ def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
         key for key in dict_after_fit if _is_public_parameter(key)
     ]
 
-    attrs_added_by_fit = [
-        key for key in public_keys_after_fit if key not in dict_before_fit
-    ]
+    attrs_added_by_fit = list(
+        set(public_keys_after_fit) - set(dict_before_fit)
+    )
 
     # check that fit doesn't add any public attribute
     assert not attrs_added_by_fit, (
