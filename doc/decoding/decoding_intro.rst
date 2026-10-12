@@ -181,9 +181,13 @@ Decoding made easy
 Nilearn makes it easy to train a model with a principled pipeline using the
 :class:`nilearn.decoding.Decoder` object. Using the mask we defined before
 and an SVC estimator as we already introduced, we can create a pipeline in
-two lines. The additional ``standardize=True`` argument adds a normalization
-of images signal to a zero mean and unit variance, which will improve
-performance of most estimators.
+two lines. The decoder also standardizes the signal out of the box: by
+default it passes ``standardize="zscore_sample"`` to its masker, shifting
+each voxel's time series to a zero mean and scaling it to unit variance,
+which will improve performance of most estimators. Pass
+``standardize=None`` or ``standardize="psc"`` to change this behavior;
+see :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_standardize.py`
+for a comparison of the three options.
 
 .. code-block:: python
 

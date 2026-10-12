@@ -74,6 +74,11 @@ masker = NiftiSpheresMasker(
 func_filename = dataset.func[0]
 confounds_filename = dataset.confounds[0]
 
+# We also use set the output to be a pandas dataframe
+# instead of the default numpy array.
+
+time_series = masker.set_output(transform="pandas")
+
 time_series = masker.fit_transform(
     func_filename, confounds=[confounds_filename]
 )
@@ -90,17 +95,21 @@ report
 # %%
 # Display time series
 # -------------------
-import matplotlib.pyplot as plt
+from nilearn.plotting import show
 
-plt.figure(constrained_layout=True)
+columns_name_mapping = {
+    x: labels[i] for i, x in enumerate(time_series.columns)
+}
+time_series = time_series.rename(columns=columns_name_mapping)
 
-for time_serie, label in zip(time_series.T, labels, strict=False):
-    plt.plot(time_serie, label=label)
+time_series.plot(
+    title="Default Mode Network Time Series",
+    xlabel="Scan number",
+    ylabel="Normalized signal",
+)
 
-plt.title("Default Mode Network Time Series")
-plt.xlabel("Scan number")
-plt.ylabel("Normalized signal")
-plt.legend()
+show()
+
 
 # %%
 # Compute partial correlation matrix
@@ -114,9 +123,9 @@ from nilearn.connectome import ConnectivityMeasure
 connectivity_measure = ConnectivityMeasure(
     kind="partial correlation", verbose=1
 )
-partial_correlation_matrix = connectivity_measure.fit_transform([time_series])[
-    0
-]
+partial_correlation_matrix = connectivity_measure.fit_transform(
+    [time_series.to_numpy()]
+)[0]
 
 # %%
 # Display connectome
@@ -163,6 +172,7 @@ view
 
 # %%
 # uncomment this to open the plot in a web browser:
+#
 # view.open_in_browser()
 
 # %%

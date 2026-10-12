@@ -9,8 +9,6 @@ from matplotlib import rcParams as _rcParams
 ###############################################################################
 # Custom colormaps for two-tailed symmetric statistics
 
-# mypy: disable_error_code="attr-defined"
-
 __all__ = ["_cmap_d"]
 
 

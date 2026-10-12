@@ -15,8 +15,8 @@ import sklearn.preprocessing
 from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
 from nibabel.spatialimages import SpatialImage
-from scipy import interpolate, sparse
-from scipy.sparse import csr_matrix
+from scipy import interpolate
+from scipy.sparse import csr_array
 from scipy.sparse.csgraph import connected_components
 from sklearn.exceptions import EfficiencyWarning
 
@@ -712,7 +712,7 @@ def _face_outer_normals(mesh):
     return normals
 
 
-def _surrounding_faces(mesh):
+def _surrounding_faces(mesh) -> csr_array:
     """Get matrix indicating which faces the nodes belong to.
 
     i, j is set if node i is a vertex of triangle j.
@@ -722,7 +722,7 @@ def _surrounding_faces(mesh):
     vertices = mesh.coordinates
     faces = mesh.faces
     n_faces = faces.shape[0]
-    return sparse.csr_matrix(
+    return csr_array(
         (
             np.ones(3 * n_faces),
             (faces.ravel(), np.tile(np.arange(n_faces), (3, 1)).T.ravel()),
@@ -800,7 +800,7 @@ def _ball_sample_locations(
         Number of samples to draw for each vertex.
 
     depth : `None`
-        Raises a `ValueError` if not `None` because incompatible with this
+        Raises a `ValueError` if not ``None`` because incompatible with this
         sampling strategy.
 
     Returns
@@ -960,8 +960,8 @@ def _masked_indices(sample_locations, img_shape, mask=None):
     img_shape : :obj:`tuple`
         The dimensions of the image to be sampled.
 
-    mask : :obj:`numpy.ndarray` of shape img_shape or `None`, default=None
-        Part of the image to be masked. If `None`, don't apply any mask.
+    mask : :obj:`numpy.ndarray` of shape img_shape or ``None``, default=None
+        Part of the image to be masked. If ``None``, don't apply any mask.
 
     Returns
     -------
@@ -989,7 +989,7 @@ def _projection_matrix(
     mask=None,
     inner_mesh=None,
     depth=None,
-):
+) -> csr_array:
     """Get a sparse matrix that projects volume data onto a mesh.
 
     Parameters
@@ -1014,7 +1014,7 @@ def _projection_matrix(
         Ignored if `inner_mesh` is not None.
 
         - 'auto':
-            'depth' if `inner_mesh` is not `None`, otherwise 'line.
+            'depth' if `inner_mesh` is not ``None``, otherwise 'line.
         - 'depth':
             Sampled at the specified cortical depths between corresponding
             nodes of `mesh` and `inner_mesh`.
@@ -1026,18 +1026,19 @@ def _projection_matrix(
 
     radius : :obj:`float`, default=3.0
         The size (in mm) of the neighbourhood from which samples are drawn
-        around each node. Ignored if `inner_mesh` is not `None`.
+        around each node. Ignored if `inner_mesh` is not ``None``.
 
     n_points : :obj:`int` or None, default=20
-        How many samples are drawn around each vertex and averaged. If `None`,
-        use a reasonable default for the chosen sampling strategy (20 for
-        'ball' or 10 for lines ie using `line` or an `inner_mesh`).
+        How many samples are drawn around each vertex and averaged.
+        If ``None``,
+        use a reasonable default for the chosen sampling strategy
+        (20 for 'ball' or 10 for lines ie using `line` or an `inner_mesh`).
         For performance reasons, if using kind="ball", choose `n_points` in
         [10, 20, 40, 80, 160], because cached positions are
         available.
 
-    mask : :obj:`numpy.ndarray` of shape img_shape or `None`, default=None
-        Part of the image to be masked. If `None`, don't apply any mask.
+    mask : :obj:`numpy.ndarray` of shape img_shape or ``None``, default=None
+        Part of the image to be masked. If ``None``, don't apply any mask.
 
     inner_mesh : :obj:`str` or :obj:`numpy.ndarray`, default=None
         Either a file containing surface mesh or a pair of ndarrays
@@ -1049,14 +1050,15 @@ def _projection_matrix(
         are then sampled along the line joining these two points (if `kind` is
         'auto' or 'depth').
 
-    depth : sequence of :obj:`float` or `None`, default=None
+    depth : sequence of :obj:`float` or ``None``, default=None
         Cortical depth, expressed as a fraction of segment_half_width.
         overrides n_points. Should be None if kind is 'ball'
 
     Returns
     -------
-    proj : :obj:`scipy.sparse.csr_matrix`
-       Shape (n_voxels, n_mesh_vertices). The dot product of this matrix with
+    proj : :obj:`scipy.sparse.csr_array`
+       Shape (n_voxels, n_mesh_vertices).
+       The dot product of this matrix with
        an image (represented as a column vector) gives the projection onto mesh
        vertices.
 
@@ -1079,19 +1081,22 @@ def _projection_matrix(
         inner_mesh=inner_mesh,
         depth=depth,
     )
-    sample_locations = np.asarray(np.round(sample_locations), dtype=int)
-    n_vertices, n_points, _ = sample_locations.shape
-    masked = _masked_indices(np.vstack(sample_locations), img_shape, mask=mask)
-    sample_locations = np.rollaxis(sample_locations, -1)
+    sample_locations_array: np.ndarray = np.asarray(
+        np.round(sample_locations), dtype=int
+    )
+    n_vertices, n_points, _ = sample_locations_array.shape
+    masked = _masked_indices(
+        sample_locations_array.reshape(-1, 3), img_shape, mask=mask
+    )
     sample_indices = np.ravel_multi_index(
-        sample_locations, img_shape, mode="clip"
+        np.rollaxis(sample_locations_array, -1), img_shape, mode="clip"
     ).ravel()
     row_indices, _ = np.mgrid[:n_vertices, :n_points]
     row_indices = row_indices.ravel()
     row_indices = row_indices[~masked]
     sample_indices = sample_indices[~masked]
     weights = np.ones(len(row_indices))
-    proj = sparse.csr_matrix(
+    proj = csr_array(
         (weights, (row_indices, sample_indices.ravel())),
         shape=(n_vertices, np.prod(img_shape)),
     )
@@ -1315,17 +1320,17 @@ def vol_to_surf(
             Samples are regularly spaced inside a ball centered at the mesh
             vertex.
 
-    n_samples : :obj:`int` or `None`, default=None
+    n_samples : :obj:`int` or ``None``, default=None
         How many samples are drawn around each :term:`vertex` and averaged.
-        If `None`, use a reasonable default for the chosen sampling strategy
+        If ``None``, use a reasonable default for the chosen sampling strategy
         (20 for 'ball' or 10 for 'line').
         For performance reasons, if using `kind` ="ball", choose `n_samples` in
         [10, 20, 40, 80, 160] (defaults to 20 if None is passed),
         because cached positions are available.
 
-    mask_img : Niimg-like object or `None`, default=None
+    mask_img : Niimg-like object or ``None``, default=None
         Samples falling out of this mask or out of the image are ignored.
-        If `None`, don't apply any mask.
+        If ``None``, don't apply any mask.
 
     inner_mesh : :obj:`str` or :obj:`numpy.ndarray` or None, default=None
         Either a file containing a surface :term:`mesh` or a pair of ndarrays
@@ -1338,7 +1343,7 @@ def vol_to_surf(
         Image values for index i are then sampled along the line
         joining these two points (if `kind` is 'auto' or 'depth').
 
-    depth : sequence of :obj:`float` or `None`, default=None
+    depth : sequence of :obj:`float` or ``None``, default=None
         The cortical depth of samples. If provided, n_samples is ignored.
         When `inner_mesh` is provided, each element of `depth` is a fraction of
         the distance from `mesh` to `inner_mesh`: 0 is exactly on the outer
@@ -2143,7 +2148,9 @@ def get_data(img, ensure_finite: bool = False) -> np.ndarray:
     return concatenated_data
 
 
-def compute_adjacency_matrix(mesh: InMemoryMesh, values="ones", dtype=None):
+def compute_adjacency_matrix(
+    mesh: InMemoryMesh, values="ones", dtype=None
+) -> csr_array:
     """Compute the adjacency matrix for a surface.
 
     The adjacency matrix is a matrix
@@ -2166,7 +2173,7 @@ def compute_adjacency_matrix(mesh: InMemoryMesh, values="ones", dtype=None):
 
     Returns
     -------
-    matrix : scipy.sparse.csr_matrix
+    matrix : scipy.sparse.csr_array
         A sparse matrix representing the edge relationships in `surface`.
 
     """
@@ -2225,7 +2232,7 @@ def compute_adjacency_matrix(mesh: InMemoryMesh, values="ones", dtype=None):
     ee = np.concatenate([edge_lens, edge_lens])
     uv = np.concatenate([u, v])
     vu = np.concatenate([v, u])
-    return csr_matrix((ee, (uv, vu)), shape=(n, n))
+    return csr_array((ee, (uv, vu)), shape=(n, n))
 
 
 def find_surface_clusters(

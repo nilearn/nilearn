@@ -17,7 +17,7 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import InputTags
+from nilearn.utils.tags import InputTags
 
 
 def _remove_empty_labels(labels):
@@ -170,8 +170,11 @@ class HierarchicalKMeans(
 
     Parameters
     ----------
-    n_clusters : :obj:`int`
+    n_clusters : :obj:`int`, default=2
         The number of clusters to find.
+
+        .. nilearn_versionchanged:: 0.15.0
+            Changed default `n_clusters` from `None` to `2`.
 
     init : {'k-means++', 'random' or an ndarray}, default='k-means++'
         Method for initialization.
@@ -227,7 +230,7 @@ class HierarchicalKMeans(
 
     def __init__(
         self,
-        n_clusters=None,
+        n_clusters=2,
         init="k-means++",
         batch_size=1000,
         n_init=10,

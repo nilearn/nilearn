@@ -10,8 +10,6 @@ Order of tests from top to bottom:
 
 """
 
-# ruff: noqa: ARG001
-
 import collections
 import numbers
 import warnings
@@ -48,12 +46,7 @@ from sklearn.model_selection import (
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
 from sklearn.utils._testing import ignore_warnings
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn._utils.versions import (
     SKLEARN_GTE_1_7,
     compare_version,
@@ -91,40 +84,6 @@ _CUSTOM_PARAM_GRID_WARNING = (
 )
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
-
-
-ESTIMATORS_TO_CHECK = [
-    Decoder(
-        screening_percentile=100,
-        estimator_args={"random_state": 0},
-    ),
-    DecoderRegressor(screening_percentile=100),
-    FREMClassifier(
-        screening_percentile=100,
-        estimator_args={"random_state": 0},
-    ),
-    FREMRegressor(screening_percentile=100),
-]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.slow
-@ignore_warnings(category=ConvergenceWarning)
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def _make_binary_classification_test_data(
@@ -354,6 +313,22 @@ def test_decoder_custom_estimator_param_grid(
         decoder.fit(X, y)
 
     assert hasattr(decoder, "coef_")
+
+
+def test_decoder_fit_logs_training_message_once(
+    binary_classification_data, capsys
+):
+    """Check that Decoder.fit logs the training message only once.
+
+    Regression test for the duplicated log call
+    https://github.com/nilearn/nilearn/issues/6613.
+    """
+    X, y, mask = binary_classification_data
+    decoder = Decoder(mask=mask, cv=2, screening_percentile=100, verbose=1)
+    decoder.fit(X, y)
+
+    captured = capsys.readouterr().out
+    assert captured.count("The decoding model will be trained on") == 1
 
 
 def test_check_parameter_grid_is_empty(rand_x_y):

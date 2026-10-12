@@ -47,7 +47,6 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import InputTags
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import (
     SUPPORTED_ESTIMATORS,
@@ -60,6 +59,7 @@ from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.nilearn_typing import SupportedClassifiers, SupportedRegressors
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
+from nilearn.utils.tags import InputTags
 
 _MIN_N_FEATURES_FOR_SCREENING = 100
 
@@ -738,12 +738,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
                 verbose=self.verbose,
             )
 
-        log(
-            "The decoding model will be trained "
-            f"on {n_final_features} features. ",
-            verbose=self.verbose,
-        )
-
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
         parallel_fit_outputs = parallel(
@@ -1278,7 +1272,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             estimator_args=estimator_args,
         )
 
-    def decision_function(self, X):
+    def decision_function(self, X) -> np.ndarray:
         """Predict class labels for samples in X.
 
         Parameters
@@ -1843,7 +1837,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
 
         self.clustering_percentile = clustering_percentile
 
-    def decision_function(self, X):
+    def decision_function(self, X) -> np.ndarray:
         """Predict class labels for samples in X.
 
         Parameters

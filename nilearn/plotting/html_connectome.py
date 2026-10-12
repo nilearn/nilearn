@@ -4,7 +4,7 @@ import json
 
 import numpy as np
 from matplotlib import cm as mpl_cm
-from scipy import sparse
+from scipy.sparse import coo_array
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._assets import get_template
@@ -157,7 +157,7 @@ def _prepare_lines_metadata(
         adjacency_matrix[
             np.abs(adjacency_matrix) <= colors["abs_threshold"]
         ] = 0
-    s = sparse.coo_matrix(adjacency_matrix)
+    s = coo_array(adjacency_matrix)
     nodes = np.asarray([s.row, s.col], dtype=int).T
     edges = np.arange(len(nodes))
     path_edges, path_nodes = _prepare_line(edges, nodes)
@@ -245,7 +245,7 @@ def view_connectome(
     node_coords,
     edge_threshold=None,
     edge_cmap=DEFAULT_DIVERGING_CMAP,
-    symmetric_cmap=True,
+    symmetric_cmap: bool = True,
     linewidth=6.0,
     node_color="auto",
     node_size=3.0,
@@ -274,7 +274,7 @@ def view_connectome(
         If it is a number only connections of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%%", and only connections of amplitude above the
+        e.g. "25.3%%", and only the edges with a abs(value) above
         given percentile will be shown.
 
     edge_cmap : :obj:`str` or matplotlib colormap, default="RdBu_r"

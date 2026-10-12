@@ -23,11 +23,12 @@ from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import _has_rich, find_stack_level, readable_time
 from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
     check_parameter_in_allowed,
     check_params,
 )
 from nilearn.datasets.utils import get_data_dirs
-from nilearn.nilearn_typing import Verbose
+from nilearn.nilearn_typing import NSubject, Verbose
 
 _REQUESTS_TIMEOUT = (15.1, 61)
 PACKAGE_DIRECTORY = Path(__file__).absolute().parent
@@ -47,6 +48,39 @@ ALLOWED_MESH_TYPES = {
     "sphere",
     "flat",
 }
+
+
+def _validate_subjects(
+    n_subjects: NSubject,
+    max_subjects: int,
+    *,
+    warning_message: str | None = None,
+) -> tuple[int, ...]:
+    """Validate and normalize a dataset subject selection."""
+    check_params({"n_subjects": n_subjects})
+
+    if n_subjects is None:
+        return tuple(range(max_subjects))
+
+    if isinstance(n_subjects, (list, tuple)):
+        if not n_subjects:
+            raise ValueError("'n_subjects' cannot be an empty list or tuple.")
+        for subject_id in n_subjects:
+            check_is_of_allowed_type(subject_id, int, "subject id")
+            check_parameter_in_allowed(
+                subject_id, range(1, max_subjects + 1), "subject id"
+            )
+        return tuple(subject_id - 1 for subject_id in n_subjects)
+
+    if n_subjects < 1:
+        raise ValueError("'n_subjects' must be greater than zero.")
+
+    if n_subjects <= max_subjects:
+        return tuple(range(n_subjects))
+
+    if warning_message is not None:
+        warnings.warn(warning_message, stacklevel=find_stack_level())
+    return tuple(range(max_subjects))
 
 
 def md5_hash(string):
@@ -71,7 +105,7 @@ def _md5_sum_file(path):
 
 def read_md5_sum_file(path):
     """Read a MD5 checksum file and returns hashes as a dictionary."""
-    with Path(path).open() as f:
+    with Path(path).open(encoding="utf-8") as f:
         hashes = {}
         while True:
             line = f.readline()
@@ -157,8 +191,8 @@ def _chunk_read_(
     chunk_size : int, default=8192
         Size of downloaded chunks.
 
-    report_hook : :obj:`bool` or None, default=None
-        Whether or not to show downloading advancement. default=None
+    report_hook : :obj:`bool`, default=False
+        Whether or not to show downloading advancement.
 
     initial_size : int, default=0
         If resuming, indicate the initial size of the file.

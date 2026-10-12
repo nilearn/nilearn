@@ -41,6 +41,9 @@ license: BSD-4-Clause
 
 authors:
   - family-names: Nilearn contributors
+  - given-names: Achintya
+    family-names: Singh
+    website: https://github.com/Achintyasingh412
   - given-names: Ahmad
     family-names: Chamma
     website: https://github.com/achamma723
@@ -262,6 +265,9 @@ authors:
     website: https://github.com/DimitriPapadopoulos
     affiliation: NeuroSpin, CEA, Université Paris-Saclay, Gif-sur-Yvette, France
     orcid: https://orcid.org/0000-0002-1242-8990
+  - given-names: Donncha
+    family-names: O'Toole
+    website: https://github.com/dnncha
   - given-names: Elizabeth
     family-names: DuPre
     website: https://elizabeth-dupre.com/
@@ -753,6 +759,9 @@ authors:
     family-names: Meudec
     website: https://github.com/RaphaelMeudec
     affiliation: Inria, Saclay, France
+  - given-names: Reyyi
+    family-names: Shreyas
+    website: https://github.com/reyyishreyas
   - given-names: Rishika
     family-names: Kapil
     website: https://github.com/RishikaKaps
@@ -896,6 +905,9 @@ authors:
   - given-names: Vasco
     family-names: Diogo
     website: https://github.com/vascosa
+  - given-names: Venish
+    family-names: Paneliya
+    website: https://github.com/VenishPaneliya
   - given-names: Victoria
     family-names: Shevchenko
     website: https://github.com/victoris93
@@ -913,6 +925,9 @@ authors:
     family-names: Fritsch
     website: https://github.com/VirgileFritsch
     affiliation: Inria, Saclay, France
+  - given-names: Wolfgang
+    family-names: Aura
+    website: https://github.com/wolfgang-aura
   - given-names: Xichun
     family-names: Xu
     website: https://github.com/XichunXu

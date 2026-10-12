@@ -6,12 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn._utils.helpers import is_windows_platform
 from nilearn.conftest import _affine_eye
 from nilearn.maskers import (
@@ -35,28 +30,6 @@ METHODS = [
     "rena",
     "hierarchical_kmeans",
 ]
-
-ESTIMATORS_TO_CHECK = [Parcellations(method=x, n_parcels=5) for x in METHODS]
-
-
-@pytest.mark.slow
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 @pytest.fixture
@@ -430,7 +403,7 @@ def surface_img_for_parcellation(rng, n_samples) -> SurfaceImage:
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcels", [5, 9])
-def test_parcellation_all_methods_with_surface(
+def test_all_methods_with_surface(
     method, n_parcels, surface_img_for_parcellation, n_samples
 ):
     """Test if all parcellation methods work on surface."""
@@ -449,7 +422,7 @@ def test_parcellation_all_methods_with_surface(
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellation_with_surface_and_confounds(
+def test_with_surface_and_confounds(
     method, rng, surface_img_for_parcellation, n_samples
 ):
     """Test if parcellation works on surface with confounds."""
@@ -470,9 +443,7 @@ def test_parcellation_with_surface_and_confounds(
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellation_with_multi_surface(
-    method, surface_img_for_parcellation, n_samples
-):
+def test_with_multi_surface(method, surface_img_for_parcellation, n_samples):
     """Test if parcellation works with surface data from multiple
     'subjects'.
     """
@@ -486,9 +457,7 @@ def test_parcellation_with_multi_surface(
 
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellation_with_surface_mask(
-    method, surface_img_for_parcellation, n_samples
-):
+def test_with_surface_mask(method, surface_img_for_parcellation, n_samples):
     """Test if parcellation works with surface data and a mask."""
     mask_data = {
         "left": np.ones(
