@@ -5,6 +5,6 @@
     },
     "maps": {
         "type": "nibabel.nifti1.Nifti1Image",
-        "desc": "Nifti1Image object containing the label image. The image has shape ``(141, 172, 110)`` and contains consecutive integer values from 0 to the number of regions, which are indices in the list of labels."
+        "desc": "Nifti1Image containing the label image with shape ``(141, 172, 110)`` and contains consecutive integer values from 0 to the number of regions, which are indices in the list of labels."
     }
 }

@@ -5,6 +5,6 @@
     },
     "maps": {
         "type": "str",
-        "desc": "Path to 4D nifti file containing regions definition. The shape of the image is ``(104, 123, 104, dimension)`` where ``dimension`` is the requested dimension of the atlas."
+        "desc": "Full path to 4D nifti file containing regions definition. The shape of the image is ``(104, 123, 104, dimension)`` where ``dimension`` is the requested dimension of the atlas."
     }
 }

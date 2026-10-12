@@ -140,7 +140,8 @@ def test_check_content_types_missing_lut():
 
 def test_content_to_rst():
     """Ensure that Nifti1Image and pandas.DataFrame are properly printed."""
-    rst = content_to_rst(name="talairach_atlas", indent="   ")
+    indent = "   "
+    rst = content_to_rst(name="talairach_atlas", indent=indent)
 
-    assert "- ``maps``: :class:`nibabel.nifti1.Nifti1Image`" in rst
-    assert "- ``lut``: :class:`pandas.DataFrame`" in rst
+    assert f"{indent}- ``maps``: :class:`nibabel.nifti1.Nifti1Image`" in rst
+    assert f"{indent}- ``lut``: :class:`pandas.DataFrame`" in rst
