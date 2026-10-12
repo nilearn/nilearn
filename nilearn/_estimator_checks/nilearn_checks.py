@@ -571,14 +571,16 @@ def check_verbosity_embedded_masker(estimator_orig) -> None:
             assert re.search(r"Computation of .* done in", outputs[verbose])
 
 
-def check_warning_embedded_masker(estimator) -> None:
+def check_warning_embedded_masker(estimator_orig) -> None:
     """Check no excessive warning thrown by embedded masker."""
+    estimator = clone(estimator_orig)
     # no such warning is thrown when using fit_transform
     with warnings.catch_warnings(record=True) as warning_list:
         estimator = fit_estimator(estimator)
     for w in warning_list:
         assert "Given mask will be used" not in str(w)
 
+    estimator = clone(estimator_orig)
     # ensure that further fitting of masker
     # still throw the warning
     # regression test for
