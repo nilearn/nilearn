@@ -107,10 +107,8 @@ def transfer_deprecated_param_vals(replacement_params, kwargs):
 
     """
     for old_param, new_param in replacement_params.items():
-        old_param_val = kwargs.setdefault(old_param, None)
-        if old_param_val is not None:
-            kwargs[new_param] = old_param_val
-        kwargs.pop(old_param)
+        if old_param in kwargs:
+            kwargs[new_param] = kwargs.pop(old_param)
     return kwargs
 
 
