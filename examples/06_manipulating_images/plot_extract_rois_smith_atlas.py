@@ -14,6 +14,8 @@ using :class:`~nilearn.regions.RegionExtractor` from regions module
 from nilearn import datasets
 
 atlas_networks = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)
+
+# %%
 print(atlas_networks.description.content.maps)
 
 # %%

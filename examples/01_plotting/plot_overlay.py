@@ -28,6 +28,8 @@ with less control over the plot (see below)
 from nilearn import datasets
 
 atlas_data = datasets.fetch_atlas_msdl()
+
+# %%
 print(atlas_data.description.content.maps)
 
 # %%

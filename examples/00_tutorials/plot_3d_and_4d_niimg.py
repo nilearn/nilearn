@@ -52,6 +52,8 @@ show()
 from nilearn.datasets import fetch_atlas_smith_2009
 
 rsn = fetch_atlas_smith_2009(resting=True, dimension=10)
+
+# %%
 print(rsn.description.content.maps)
 print(rsn.maps)
 

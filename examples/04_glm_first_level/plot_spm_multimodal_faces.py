@@ -22,6 +22,7 @@ from nilearn.datasets import fetch_spm_multimodal_fmri
 
 subject_data = fetch_spm_multimodal_fmri()
 
+# %%
 print(subject_data.description.content.events1)
 print(subject_data.description.content.func1)
 print(subject_data.description.content.t_r)
@@ -84,7 +85,6 @@ hrf_model = "spm + derivative"
 
 from nilearn.glm.first_level import FirstLevelModel
 
-print("Fitting a GLM")
 fmri_glm = FirstLevelModel(
     smoothing_fwhm=None,
     t_r=subject_data.t_r,

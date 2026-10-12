@@ -21,6 +21,7 @@ from nilearn.datasets import fetch_development_fmri
 dataset = fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 
+# %%
 # print basic information on the dataset
 print(f"First functional nifti image (4D) is at: {func_filename}")
 
@@ -34,6 +35,8 @@ print(f"First functional nifti image (4D) is at: {func_filename}")
 from nilearn.datasets import fetch_atlas_harvard_oxford
 
 atlas = fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
+
+# %%
 print(atlas.description)
 print(f"The atlas contains {len(atlas.labels) - 1} non-overlapping regions")
 

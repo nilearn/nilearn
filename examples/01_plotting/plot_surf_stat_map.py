@@ -70,6 +70,8 @@ print(f"{fsaverage_meshes['pial'].parts['left']=}")
 
 # The fsaverage data contains SurfaceImage instances with meshes and data
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
+
+# %%
 print(f"{fsaverage_sulcal=}")
 print(f"{fsaverage_sulcal.mesh=}")
 print(f"{fsaverage_sulcal.data=}")

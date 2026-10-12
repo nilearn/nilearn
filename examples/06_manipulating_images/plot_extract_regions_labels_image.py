@@ -28,10 +28,11 @@ from nilearn.plotting import plot_roi, show
 
 atlas_yeo_2011 = fetch_atlas_yeo_2011()
 
+# %%
 print(atlas_yeo_2011.description.content.maps)
-
 atlas_yeo = atlas_yeo_2011.maps
 
+# %%
 # Let's now plot it
 plot_roi(
     atlas_yeo,
