@@ -23,6 +23,7 @@ from sklearn.utils import Bunch
 
 from nilearn._utils import logger
 from nilearn._utils.docs import Description, fill_doc
+from nilearn._utils.helpers import remove_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import (
@@ -3131,6 +3132,12 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
 
 
 @fill_doc
+# TODO (nilearn >= 0.17.0) remove 'data_name' parameter
+@remove_parameters(
+    removed_params=["data_name"],
+    reason="parameter is unused",
+    end_version="0.17.0",
+)
 def fetch_spm_multimodal_fmri(
     data_dir: DataDir = None,
     data_name: str = "spm_multimodal_fmri",
@@ -3147,6 +3154,8 @@ def fetch_spm_multimodal_fmri(
 
     data_name : :obj:`str`, default='spm_multimodal_fmri'
         Name of the dataset.
+
+        .. nilearn_deprecated:: 0.15.0
 
     %(verbose)s
 
