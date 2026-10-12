@@ -653,15 +653,17 @@ def check_img_estimator_fit_check_is_fitted(estimator) -> None:
         "score",
         "predict",
     ]
-    method_input = [_img_3d_rand(), _img_3d_rand(), [_img_3d_rand()], signals]
-    for meth, input in zip(methods_to_check, method_input, strict=False):
-        method = getattr(estimator, meth, None)
+    method_inputs = [_img_3d_rand(), [_img_3d_rand()], signals]
+    for method, method_input in zip(
+        methods_to_check, method_inputs, strict=False
+    ):
+        method = getattr(estimator, method, None)
         if method is None:
             continue
         with pytest.raises(
             ValueError, match=_not_fitted_error_message(estimator)
         ):
-            method(input)
+            method(method_input)
 
     estimator = fit_estimator(estimator)
 
