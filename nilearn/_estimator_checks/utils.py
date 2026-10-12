@@ -185,20 +185,6 @@ def fit_estimator(
 # ------------------------- Decorators ----------------------------
 
 
-def clone_estimator(check_func):
-    """Provide cloned estimator to check function.
-
-    This decorator should be set at the bottom of all decorators.
-    """
-
-    @wraps(check_func)
-    def wrapper(estimator):
-        estimator = clone(estimator)
-        return check_func(estimator)
-
-    return wrapper
-
-
 def skip_if(*conditions):
     """Skip a check if estimator satisfies one of the conditions."""
 
