@@ -127,6 +127,8 @@ class Contrast:
             statistical values, one per voxel.
 
         """
+        self.p_value_ = None
+        self.one_minus_pvalue_ = None
         self.baseline = baseline
 
         # Case: one-dimensional contrast ==> t or t**2
@@ -225,7 +227,11 @@ class Contrast:
             statistical values, one per voxel
 
         """
-        if self.p_value_ is None or self.baseline != baseline:
+        if self.baseline != baseline:
+            self.p_value_ = None
+            self.one_minus_pvalue_ = None
+
+        if self.p_value_ is None:
             self.p_value_ = self.p_value(baseline)
         if self.one_minus_pvalue_ is None:
             self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
