@@ -51,7 +51,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-success:`API` Add :meth:`~nilearn.glm.second_level.SecondLevelModel.compute_confidence_regions` to estimate inner and outer spatial confidence regions for second-level t-contrasts (:gh:`6341` by `Mohammad Sadeghi Hardengi`_).
+- :bdg-success:`API` Add :meth:`~nilearn.glm.second_level.SecondLevelModel.compute_confidence_regions` to estimate inner and outer spatial confidence regions for second-level t-contrasts (:gh:`6648` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
 
