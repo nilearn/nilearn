@@ -9,14 +9,14 @@
     },
     "func1": {
         "type": "str",
-        "desc": "Fullpath to 4D nifti file of run 1."
+        "desc": "Full path to 4D nifti file of run 1."
     },
     "func2": {
         "type": "str",
-        "desc": "Fullpath to 4D nifti file of run 2."
+        "desc": "Full path to 4D nifti file of run 2."
     },
     "mask": {
         "type": "str",
-        "desc": "Fullpath to 3D nifti mask."
+        "desc": "Full path to 3D nifti mask."
     }
 }

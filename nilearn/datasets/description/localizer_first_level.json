@@ -1,11 +1,11 @@
 {
     "epi_img": {
         "type": "str",
-        "desc": "Fullpath the 4D BOLD nifti image."
+        "desc": "Full path the 4D BOLD nifti image."
     },
     "events": {
         "type": "str",
-        "desc": "Fullpath to TSV file describing the paradigm."
+        "desc": "Full path to TSV file describing the paradigm."
     },
     "slice_time_ref": {
         "type": "float",

@@ -1,11 +1,11 @@
 {
     "comps": {
         "type": "str",
-        "desc": "Fullpath to 4D nifti file containing the aggregate ICA components."
+        "desc": "Full path to 4D nifti file containing the aggregate ICA components."
     },
     "maps": {
         "type": "str",
-        "desc": "Fullpath to 4D nifti file containing T-maps of all 75 unthresholded components. The image has shape ``(53, 63, 46, 75)``."
+        "desc": "Full path to 4D nifti file containing T-maps of all 75 unthresholded components. The image has shape ``(53, 63, 46, 75)``."
     },
     "networks": {
         "type": "list[list[str]]",
@@ -17,6 +17,6 @@
     },
     "rsn28": {
         "type": "str",
-        "desc": "Fullpath to 4D nifti file containing the 28 resting state networks from Allen et al 2011. The image has shape ``(53, 63, 46, 28)``."
+        "desc": "Full path to 4D nifti file containing the 28 resting state networks from Allen et al 2011. The image has shape ``(53, 63, 46, 28)``."
     }
 }
