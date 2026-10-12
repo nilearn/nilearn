@@ -5,7 +5,7 @@ import warnings
 import numpy as np
 import pytest
 from matplotlib.patches import FancyArrow
-from scipy import sparse
+from scipy.sparse import coo_array, coo_matrix
 
 from nilearn.plotting import plot_connectome
 
@@ -42,12 +42,12 @@ def test_plot_connectome_masked_array_sparse_matrix(
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=DeprecationWarning)
         warnings.filterwarnings("ignore", category=FutureWarning)
-        sparse_adjacency_matrix = sparse.coo_matrix(adjacency)
+        sparse_adjacency_matrix = coo_matrix(adjacency)
         plot_connectome(
             sparse_adjacency_matrix, node_coords, **params_plot_connectome
         )
 
-    sparse_adjacency_matrix = sparse.coo_array(adjacency)
+    sparse_adjacency_matrix = coo_array(adjacency)
     plot_connectome(
         sparse_adjacency_matrix, node_coords, **params_plot_connectome
     )

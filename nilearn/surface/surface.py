@@ -15,7 +15,9 @@ import sklearn.preprocessing
 from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
 from nibabel.spatialimages import SpatialImage
-from scipy import interpolate, sparse
+from scipy import interpolate
+from scipy.sparse import csr_array
+from scipy.sparse.csgraph import connected_components
 from sklearn.exceptions import EfficiencyWarning
 
 from nilearn._utils.helpers import stringify_path
@@ -710,7 +712,7 @@ def _face_outer_normals(mesh):
     return normals
 
 
-def _surrounding_faces(mesh) -> sparse.csr_array:
+def _surrounding_faces(mesh) -> csr_array:
     """Get matrix indicating which faces the nodes belong to.
 
     i, j is set if node i is a vertex of triangle j.
@@ -720,7 +722,7 @@ def _surrounding_faces(mesh) -> sparse.csr_array:
     vertices = mesh.coordinates
     faces = mesh.faces
     n_faces = faces.shape[0]
-    return sparse.csr_array(
+    return csr_array(
         (
             np.ones(3 * n_faces),
             (faces.ravel(), np.tile(np.arange(n_faces), (3, 1)).T.ravel()),
@@ -987,7 +989,7 @@ def _projection_matrix(
     mask=None,
     inner_mesh=None,
     depth=None,
-) -> sparse.csr_array:
+) -> csr_array:
     """Get a sparse matrix that projects volume data onto a mesh.
 
     Parameters
@@ -1094,7 +1096,7 @@ def _projection_matrix(
     row_indices = row_indices[~masked]
     sample_indices = sample_indices[~masked]
     weights = np.ones(len(row_indices))
-    proj = sparse.csr_array(
+    proj = csr_array(
         (weights, (row_indices, sample_indices.ravel())),
         shape=(n_vertices, np.prod(img_shape)),
     )
@@ -2148,7 +2150,7 @@ def get_data(img, ensure_finite: bool = False) -> np.ndarray:
 
 def compute_adjacency_matrix(
     mesh: InMemoryMesh, values="ones", dtype=None
-) -> sparse.csr_array:
+) -> csr_array:
     """Compute the adjacency matrix for a surface.
 
     The adjacency matrix is a matrix
@@ -2171,7 +2173,7 @@ def compute_adjacency_matrix(
 
     Returns
     -------
-    matrix : scipy.sparse.csr_matrix
+    matrix : scipy.sparse.csr_array
         A sparse matrix representing the edge relationships in `surface`.
 
     """
@@ -2230,7 +2232,7 @@ def compute_adjacency_matrix(
     ee = np.concatenate([edge_lens, edge_lens])
     uv = np.concatenate([u, v])
     vu = np.concatenate([v, u])
-    return sparse.csr_array((ee, (uv, vu)), shape=(n, n))
+    return csr_array((ee, (uv, vu)), shape=(n, n))
 
 
 def find_surface_clusters(
@@ -2276,9 +2278,7 @@ def find_surface_clusters(
     adj = compute_adjacency_matrix(mesh)
     sub_adj = adj[mask][:, mask]
 
-    _, labels_sub = sparse.csgraph.connected_components(
-        sub_adj, directed=False
-    )
+    _, labels_sub = connected_components(sub_adj, directed=False)
 
     # full label array (0 = background)
     labels = np.zeros(mesh.n_vertices, dtype=int)

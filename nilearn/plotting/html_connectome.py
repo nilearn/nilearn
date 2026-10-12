@@ -4,7 +4,7 @@ import json
 
 import numpy as np
 from matplotlib import cm as mpl_cm
-from scipy import sparse
+from scipy.sparse import coo_array
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._assets import get_template
@@ -157,7 +157,7 @@ def _prepare_lines_metadata(
         adjacency_matrix[
             np.abs(adjacency_matrix) <= colors["abs_threshold"]
         ] = 0
-    s = sparse.coo_array(adjacency_matrix)
+    s = coo_array(adjacency_matrix)
     nodes = np.asarray([s.row, s.col], dtype=int).T
     edges = np.arange(len(nodes))
     path_edges, path_nodes = _prepare_line(edges, nodes)
