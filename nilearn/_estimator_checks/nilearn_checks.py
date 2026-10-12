@@ -1040,8 +1040,6 @@ def check_img_estimator_pickle(estimator) -> None:
         mask_img = new_img_like(X, np.ones(X.shape[:3]))
         estimator.mask_img = mask_img
 
-    set_random_state(estimator)
-
     fitted_estimator = fit_estimator(estimator)
 
     pickled_estimator = pickle.dumps(fitted_estimator)
