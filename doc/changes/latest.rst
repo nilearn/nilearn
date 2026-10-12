@@ -51,6 +51,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` Add :meth:`~nilearn.glm.second_level.SecondLevelModel.compute_confidence_regions` to estimate inner and outer spatial confidence regions for second-level t-contrasts (:gh:`6341` by `Mohammad Sadeghi Hardengi`_).
+
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Add an example comparing the effect of ``standardize="zscore_sample"``, ``standardize="psc"`` and ``standardize=None`` on decoding performance (:gh:`6597` by `Reyyi Shreyas`_).

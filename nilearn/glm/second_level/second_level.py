@@ -14,6 +14,7 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from nibabel.funcs import four_to_three
 from sklearn.base import clone
+from sklearn.utils import check_random_state
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import logger
@@ -844,6 +845,192 @@ class SecondLevelModel(BaseGLM):
             outputs[output_type_] = output
 
         return outputs if output_type == "all" else output
+
+    @fill_doc
+    def compute_confidence_regions(
+        self,
+        second_level_contrast,
+        threshold,
+        *,
+        first_level_contrast=None,
+        confidence_level=0.95,
+        n_boot=1000,
+        random_state=None,
+    ) -> dict[str, Nifti1Image | SurfaceImage]:
+        """Compute spatial confidence regions for a second-level t-contrast.
+
+        A simultaneous confidence band is estimated for the contrast effect
+        using a wild multiplier bootstrap. The returned inner region is a
+        subset of the excursion set, and the outer region is a superset, at
+        approximately the requested confidence level. The bootstrap maximum
+        is taken over all elements in the fitted mask, which is conservative
+        compared with methods that bootstrap only over the estimated boundary.
+
+        Parameters
+        ----------
+        %(second_level_contrast)s
+
+        threshold : :obj:`float`
+            Threshold defining the excursion set of the contrast effect.
+
+        %(first_level_contrast)s
+
+        confidence_level : :obj:`float`, default=0.95
+            Desired confidence level, strictly between 0 and 1.
+
+        n_boot : :obj:`int`, default=1000
+            Number of wild multiplier bootstrap samples used to estimate the
+            simultaneous confidence band.
+
+        %(random_state)s
+
+        Returns
+        -------
+        regions : :obj:`dict`
+            Dictionary containing two binary images:
+
+            - ``"inner"``: locations that are confidently above
+              ``threshold``.
+            - ``"outer"``: locations that may be above ``threshold``.
+
+            The images have the same type and spatial layout as the data used
+            to fit the model.
+
+        Notes
+        -----
+        This method supports one-dimensional t-contrasts and assumes
+        independent observations at the second level; its coverage is
+        approximate and depends on the GLM and wild-bootstrap assumptions.
+        It uses a full-mask maximum statistic, so the regions can be wider
+        than confidence regions based on the estimated excursion-set
+        boundary. The simultaneous band construction follows the set-inclusion
+        approach described in Sommerfeld et al. (2018):
+        https://doi.org/10.1080/01621459.2017.1341838.
+
+        .. nilearn_versionadded:: 0.15.0
+        """
+        check_is_fitted(self)
+
+        if (
+            isinstance(threshold, (bool, np.bool_))
+            or not isinstance(threshold, (int, float, np.integer, np.floating))
+            or not np.isfinite(threshold)
+        ):
+            raise TypeError("threshold must be a finite real number.")
+        if (
+            isinstance(confidence_level, (bool, np.bool_))
+            or not isinstance(
+                confidence_level,
+                (int, float, np.integer, np.floating),
+            )
+            or not 0 < confidence_level < 1
+        ):
+            raise ValueError("confidence_level must be between 0 and 1.")
+        if (
+            isinstance(n_boot, (bool, np.bool_))
+            or not isinstance(n_boot, (int, np.integer))
+            or n_boot < 1
+        ):
+            raise ValueError("n_boot must be a positive integer.")
+
+        con_val = np.asarray(
+            _get_con_val(second_level_contrast, self.design_matrix_),
+            dtype=float,
+        )
+        if con_val.ndim == 2 and con_val.shape[0] == 1:
+            con_val = con_val[0]
+        if con_val.ndim != 1:
+            raise ValueError(
+                "compute_confidence_regions only supports a single t-contrast."
+            )
+
+        _check_first_level_contrast(
+            self.second_level_input_, first_level_contrast
+        )
+        effect_maps = _infer_effect_maps(
+            self.second_level_input_, first_level_contrast
+        )
+        _check_n_rows_desmat_vs_n_effect_maps(effect_maps, self.design_matrix_)
+        target_vars = np.asarray(self.masker_.transform(effect_maps))
+        design = self.design_matrix_.to_numpy(dtype=float)
+
+        n_samples = target_vars.shape[0]
+        design_pinv = np.linalg.pinv(design)
+        design_rank = np.linalg.matrix_rank(design)
+        residual_dof = n_samples - design_rank
+        if residual_dof <= 0:
+            raise ValueError(
+                "The design matrix must leave at least one residual degree "
+                "of freedom."
+            )
+        if con_val.shape != (design.shape[1],):
+            raise ValueError(
+                "second_level_contrast must have one value per design "
+                "matrix column."
+            )
+
+        row_space_projection = design_pinv @ design
+        if not np.allclose(
+            row_space_projection @ con_val,
+            con_val,
+            rtol=1e-7,
+            atol=1e-10,
+        ):
+            raise ValueError(
+                "second_level_contrast must be estimable under the fitted "
+                "design matrix."
+            )
+
+        beta = design_pinv @ target_vars
+        effect = con_val @ beta
+        residuals = target_vars - design @ beta
+        contrast_weights = design_pinv.T @ con_val
+        residual_variance = np.sum(residuals**2, axis=0) / residual_dof
+        standard_error = np.sqrt(
+            residual_variance * np.sum(contrast_weights**2)
+        )
+
+        valid = (
+            np.isfinite(effect)
+            & np.isfinite(standard_error)
+            & (standard_error > 0)
+            & np.all(np.isfinite(residuals), axis=0)
+        )
+        rng = check_random_state(random_state)
+        critical_value = 0.0
+        if valid.any():
+            leverage = np.diag(design @ design_pinv)
+            leverage_scale = np.sqrt(
+                np.maximum(1.0 - leverage, np.finfo(float).eps)
+            )
+            adjusted_residuals = residuals / leverage_scale[:, np.newaxis]
+            weighted_residuals = (
+                contrast_weights[:, np.newaxis] * adjusted_residuals[:, valid]
+            )
+
+            bootstrap_maxima = np.empty(n_boot)
+            chunk_size = 32
+            for start in range(0, n_boot, chunk_size):
+                stop = min(start + chunk_size, n_boot)
+                # Shared weights retain the observed dependence across voxels.
+                multipliers = rng.randint(0, 2, size=(stop - start, n_samples))
+                multipliers = 2 * multipliers - 1
+                bootstrap_effects = multipliers @ weighted_residuals
+                bootstrap_t = np.abs(bootstrap_effects / standard_error[valid])
+                bootstrap_maxima[start:stop] = np.max(bootstrap_t, axis=1)
+            critical_value = np.quantile(
+                bootstrap_maxima, confidence_level, method="higher"
+            )
+
+        lower_bound = effect - critical_value * standard_error
+        upper_bound = effect + critical_value * standard_error
+        inner = np.isfinite(lower_bound) & (lower_bound > threshold)
+        outer = (~np.isfinite(upper_bound)) | (upper_bound > threshold)
+
+        return {
+            "inner": self.masker_.inverse_transform(inner.astype(np.uint8)),
+            "outer": self.masker_.inverse_transform(outer.astype(np.uint8)),
+        }
 
     @fill_doc
     def _make_stat_maps(
