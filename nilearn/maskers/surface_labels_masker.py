@@ -2,11 +2,9 @@
 
 import warnings
 from copy import deepcopy
-from pathlib import Path
 from typing import Any, ClassVar, Self
 
 import numpy as np
-import pandas as pd
 from scipy import ndimage
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -35,6 +33,7 @@ from nilearn.nilearn_typing import (
     SingleConfound,
     Standardize,
     StandardizeConfounds,
+    TableLike,
     Tr,
     Verbose,
 )
@@ -192,7 +191,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self,
         labels_img=None,
         labels=None,
-        lut: pd.DataFrame | str | Path | None = None,
+        lut: TableLike | None = None,
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,

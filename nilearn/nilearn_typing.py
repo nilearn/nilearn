@@ -137,6 +137,7 @@ SupportedClassifiers: TypeAlias = Literal[
     "ridge_classifier",
     "dummy_classifier",
 ]
+TableLike: TypeAlias = str | pathlib.Path | pd.DataFrame
 TargetAffine: TypeAlias = ndarray | list | tuple | None
 
 # Note that this is usable as for static type checking,

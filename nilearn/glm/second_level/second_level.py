@@ -49,7 +49,7 @@ from nilearn.image.image import (
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.mass_univariate import permuted_ols
-from nilearn.nilearn_typing import NiimgLike
+from nilearn.nilearn_typing import NiimgLike, TableLike
 from nilearn.surface.surface import (
     SurfaceImage,
 )
@@ -620,7 +620,7 @@ class SecondLevelModel(BaseGLM):
         | SurfaceImage
         | list[SurfaceImage],
         confounds: pd.DataFrame | None = None,
-        design_matrix: pd.DataFrame | str | Path | None = None,
+        design_matrix: TableLike | None = None,
     ) -> Self:
         """Fit the second-level :term:`GLM`.
 
@@ -975,7 +975,7 @@ def non_parametric_inference(
     | SurfaceImage
     | list[SurfaceImage],
     confounds: pd.DataFrame | None = ...,
-    design_matrix: pd.DataFrame | str | Path | None = ...,
+    design_matrix: TableLike | None = ...,
     second_level_contrast=...,
     first_level_contrast=...,
     mask=...,
@@ -1001,7 +1001,7 @@ def non_parametric_inference(
     | SurfaceImage
     | list[SurfaceImage],
     confounds: pd.DataFrame | None = ...,
-    design_matrix: pd.DataFrame | str | Path | None = ...,
+    design_matrix: TableLike | None = ...,
     second_level_contrast=...,
     first_level_contrast=...,
     mask=...,
@@ -1027,7 +1027,7 @@ def non_parametric_inference(
     | SurfaceImage
     | list[SurfaceImage],
     confounds: pd.DataFrame | None = None,
-    design_matrix: pd.DataFrame | str | Path | None = None,
+    design_matrix: TableLike | None = None,
     second_level_contrast=None,
     first_level_contrast=None,
     mask=None,

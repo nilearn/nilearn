@@ -21,7 +21,7 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
-from nilearn.nilearn_typing import ColorBar, OutputFile, Title
+from nilearn.nilearn_typing import ColorBar, OutputFile, TableLike, Title
 from nilearn.plotting._engine_utils import save_figure_if_needed
 from nilearn.plotting.matrix._utils import (
     mask_matrix,
@@ -401,7 +401,7 @@ def plot_contrast_matrix(
 
 @fill_doc
 def plot_design_matrix(
-    design_matrix: pd.DataFrame | str | Path,
+    design_matrix: TableLike,
     rescale: bool = True,
     axes: Axes | None = None,
     output_file: OutputFile = None,
@@ -640,7 +640,7 @@ def plot_event(
 
 @fill_doc
 def plot_design_matrix_correlation(
-    design_matrix: pd.DataFrame | str | Path,
+    design_matrix: TableLike,
     tri: Literal["full", "diag"] = "full",
     cmap=DEFAULT_DIVERGING_CMAP,
     colorbar: ColorBar = True,

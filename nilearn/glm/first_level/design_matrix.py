@@ -30,7 +30,6 @@ Design matrices contain three different types of regressors:
    estimates.
 """
 
-from pathlib import Path
 from warnings import warn
 
 import numpy as np
@@ -49,7 +48,7 @@ from nilearn.glm.first_level.hemodynamic_models import (
     compute_regressor,
     orthogonalize,
 )
-from nilearn.nilearn_typing import HrfModel
+from nilearn.nilearn_typing import HrfModel, TableLike
 from nilearn.signal import create_cosine_drift
 
 ######################################################################
@@ -236,7 +235,7 @@ def _convolve_regressors(
 @fill_doc
 def make_first_level_design_matrix(
     frame_times,
-    events: pd.DataFrame | str | Path | None = None,
+    events: TableLike | None = None,
     hrf_model: HrfModel = "glover",
     drift_model="cosine",
     high_pass=0.01,
