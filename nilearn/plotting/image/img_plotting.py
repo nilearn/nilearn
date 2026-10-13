@@ -14,6 +14,7 @@ from typing import Literal
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import scipy
 from matplotlib import get_backend
 from matplotlib.axes import Axes
 from matplotlib.colors import LinearSegmentedColormap, Normalize
@@ -1663,7 +1664,10 @@ def plot_glass_brain(
 
 @fill_doc
 def plot_connectome(
-    adjacency_matrix,
+    adjacency_matrix: np.ndarray
+    | np.ma.masked_array
+    | scipy.sparse.coo_matrix
+    | scipy.sparse.coo_array,
     node_coords,
     node_color="auto",
     node_size=50,
@@ -1694,10 +1698,11 @@ def plot_connectome(
 
     Parameters
     ----------
-    adjacency_matrix : numpy array of shape (n, n)
-        Represents the link strengths of the graph. The matrix can be
-        symmetric which will result in an undirected graph, or not
-        symmetric which will result in a directed graph.
+    adjacency_matrix : :class:`numpy.ndarray` of shape ``(n, n)``, \
+            or :class:`scipy.sparse.coo_array`.
+        Represents the link strengths of the graph.
+        The matrix can be symmetric which will result in an undirected graph,
+        or not symmetric which will result in a directed graph.
 
     node_coords : numpy array_like of shape (n, 3)
         3d coordinates of the graph nodes in world space.

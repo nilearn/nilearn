@@ -14,6 +14,7 @@ HIGHLIGHTS
  | **Minimum supported versions of the following packages have been bumped up:**
  | - joblib -- 1.5.0
  | - scikit-learn -- 1.6.0
+ | - scipy -- 1.12.0
  |
 
 ..
@@ -30,11 +31,19 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix :meth:`~nilearn.glm.Contrast.z_score` returning stale z-scores when called with a different ``baseline`` than a previous call on the same object (:gh:`6642` by `Ishaan Gupta`_).
+
 - :bdg-dark:`Code` Use mesh faces, rather than adjacent vertex indices, when computing clusters for surface cluster-level inference (:gh:`6608` by `Donncha O'Toole`_).
 
 - :bdg-primary:`Doc` Use run-aware cross-validation in the Haxby multiclass decoding example to avoid splitting samples from the same run between training and validation sets (:gh:`6591` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-primary:`Doc` Fix documented defaults that did not match the signatures in :func:`~nilearn.datasets.fetch_atlas_smith_2009`, :func:`~nilearn.datasets.fetch_atlas_difumo`, :func:`~nilearn.datasets.fetch_atlas_schaefer_2018` and in several private helpers (:gh:`6582` by `Venish Paneliya`_).
+
+- :bdg-primary:`Doc` Replace the removed boolean values of ``standardize`` in code examples of the user guide and in the ``FirstLevelModel.standardize_`` docstring (:gh:`6597` by `Reyyi Shreyas`_).
+
+- :bdg-info:`Plotting` Avoid overlapping colorbar tick labels when ``0`` is very close to the minimum or maximum value of the colorbar (:gh:`6609` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Fixes a bug where calling :func:`~nilearn.plotting.plot_anat` with ``black_bg=False`` inadvertently introduced spurious negative values into non-negative structural scans (:gh:`6625` by `Achintya Singh`_).
 
 - :bdg-dark:`Code` Fix :meth:`~nilearn.decoding.Decoder.fit` logging ``The decoding model will be trained on N features`` twice per fit (:gh:`6614` by `Reyyi Shreyas`_).
 
@@ -45,6 +54,8 @@ Enhancements
 ------------
 
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
+
+- :bdg-primary:`Doc` Add an example comparing the effect of ``standardize="zscore_sample"``, ``standardize="psc"`` and ``standardize=None`` on decoding performance (:gh:`6597` by `Reyyi Shreyas`_).
 
 - :bdg-primary:`Doc` Docstring examples can now be run in the browser via `jupyterlite <https://jupyterlite.readthedocs.io/en/stable/>`_ (:gh:`6581` by `Elizabeth DuPre`_).
 
@@ -57,6 +68,7 @@ Enhancements
 Changes
 -------
 
+
 - :bdg-danger:`Deprecation` The ``return_label_maps`` parameter of :func:`~reporting.get_clusters_table` is deprecated and will be removed in version 0.17.0, when cluster label maps will always be returned together with the table (:gh:`6376` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-danger:`Deprecation` The functions ``nilearn.reporting.make_glm_report`` and ``nilearn.interfaces.bids.glm.save_glm_to_bids`` have been removed: instead now use :meth:`~nilearn.glm.first_level.FirstLevelModel.generate_report` or :meth:`~nilearn.glm.second_level.SecondLevelModel.generate_report`, and :func:`nilearn.glm.save_glm_to_bids` respectively (:gh:`6548` by `Rémi Gau`_).
@@ -68,6 +80,8 @@ Changes
 - :bdg-danger:`Deprecation` The parameter name ``filename`` of the :meth:`~nilearn.plotting.displays.BaseSlicer.savefig` will be permanently replaced by ``output_file`` in version 0.17.0 (:gh:`6471` by `Aniket Singh Yadav`_).
 
 - :bdg-danger:`Deprecation` The parameter name ``output_dict`` of the :func:`~nilearn.mass_univariate.permuted_ols` has been removed and the function will only output its results as :obj:`dict` (:gh:`6550` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The parameter name ``subjects`` of the :func:`~nilearn.datasets.fetch_haxby` is deprecated will be completely removed in version 0.17.0. Use ``n_subjects`` instead (:gh:`6462` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-danger:`Deprecation` The function :func:`~nilearn.datasets.fetch_localizer_calculation_task` is deprecated and will be removed in version 0.17.0. Use :func:`~nilearn.datasets.fetch_localizer_contrasts` with ``contrasts=["calculation (auditory and visual cue)"]`` instead (:gh:`6538` by `Aniket Singh Yadav`_).
 

@@ -192,6 +192,7 @@ def _apply_dimming(
             f"You provided dim={dim} in {dim.__class__.__name__}."
         )
 
+    orig_vmin = vmin
     vmean = 0.5 * (vmin + vmax)
     ptp = 0.5 * (vmax - vmin)
 
@@ -203,6 +204,8 @@ def _apply_dimming(
         if not isinstance(dim, numbers.Number):
             dim = 0.6
         vmin = 0.5 * (2 - dim) * vmean - (1 + dim) * ptp
+        if orig_vmin >= 0:
+            vmin = max(orig_vmin, vmin)
 
     return vmin, vmax
 

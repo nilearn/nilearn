@@ -30,8 +30,13 @@ def test_percentile_range(rng, canica_data_single_img):
     edge_case = rng.integers(low=1, high=10)
 
     # stress thresholding via edge case
+    # use a single init to keep the test fast
     canica = CanICA(
-        n_components=edge_case, threshold=float(edge_case), smoothing_fwhm=None
+        n_components=edge_case,
+        threshold=float(edge_case),
+        smoothing_fwhm=None,
+        n_init=1,
+        random_state=0,
     )
 
     with pytest.warns(UserWarning, match="obtained a critical threshold"):

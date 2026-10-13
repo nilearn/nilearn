@@ -497,7 +497,7 @@ class FirstLevelModel(BaseGLM):
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
 
-    standardize_ :  any of: 'zscore_sample', 'zscore', 'psc', or None
+    standardize_ :  any of: 'zscore_sample', 'psc', or None
         This value may differ from the ``standardize`` parameters
         as it is set to ``None`` when ``signal_scaling`` is not False.
     """

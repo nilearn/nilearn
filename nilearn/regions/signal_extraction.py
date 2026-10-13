@@ -7,6 +7,7 @@ or as weights in one image per region (maps).
 
 import warnings
 from functools import partial
+from typing import Literal
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -345,7 +346,11 @@ def img_to_signals_labels(
 
 
 def signals_to_img_labels(
-    signals, labels_img, mask_img=None, background_label=0, order="F"
+    signals,
+    labels_img,
+    mask_img=None,
+    background_label=0,
+    order: Literal["C", "F"] = "F",
 ) -> Nifti1Image:
     """Create image from region signals defined as labels.
 
@@ -433,7 +438,8 @@ def signals_to_img_labels(
 
     signals = np.asarray(signals)
 
-    target_shape = labels_img.shape[:3]
+    target_shape: tuple[int, ...] = labels_img.shape[:3]
+    # TODO use nditer
     # nditer is not available in numpy 1.3: using multiple loops.
     # Using these loops still gives a much faster code (6x) than this one:
     # for n, label in enumerate(labels):
