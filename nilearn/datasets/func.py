@@ -22,9 +22,7 @@ from sklearn.utils import Bunch
 
 from nilearn._utils import logger
 from nilearn._utils.docs import Description, fill_doc
-from nilearn._utils.helpers import remove_parameters
-from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import rename_parameters
+from nilearn._utils.helpers import remove_parameters, rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import (
