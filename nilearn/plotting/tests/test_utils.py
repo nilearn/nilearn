@@ -9,11 +9,14 @@ import numpy as np
 import pytest
 
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn.image import new_img_like
+from nilearn.plotting import plot_anat
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
     set_mpl_backend,
 )
+from nilearn.plotting.image.utils import _apply_dimming, load_anat
 
 
 @pytest.mark.thread_unsafe
@@ -350,6 +353,24 @@ def test_get_cbar_ticks_int_tick_format(
     assert np.allclose(ticks, expected, rtol=1e-02)
 
 
+@pytest.mark.parametrize(
+    "vmin,vmax,expected",
+    [
+        (-9.2e-04, 4.6, [-9.2e-04, 1.1, 2.3, 3.4, 4.6]),
+        (-4.6, 9.2e-04, [-4.6, -3.4, -2.3, -1.1, 9.2e-04]),
+    ],
+)
+def test_get_cbar_ticks_zero_close_to_vmin_vmax(vmin, vmax, expected):
+    """Check 0 is not added as a tick when very close to vmin or vmax.
+
+    Otherwise tick labels would overlap in the colorbar.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/6595
+    """
+    ticks = get_cbar_ticks(vmin, vmax)
+    assert np.allclose(ticks, expected, rtol=1e-02)
+
+
 def test_get_cbar_ticks_int_threshold_float():
     """Test nilearn.plotting._utils.get_cbar_ticks for when integer tick
     format with threshold of type float specified.
@@ -360,3 +381,51 @@ def test_get_cbar_ticks_int_threshold_float():
         get_cbar_ticks(
             vmin=3, vmax=5, threshold=2.4, n_ticks=5, tick_format="%i"
         )
+
+
+def test_load_anat_black_bg_false_non_negative_data(img_3d_rand_eye):
+    """Test load_anat and plot_anat with black_bg=False on non-negative data.
+
+    Regression test for issue #6313: plot_anat with black_bg = False can
+    introduce spurious negative values.
+    """
+    # load_anat should not return negative vmin for non-negative data
+    _, _, vmin, vmax = load_anat(img_3d_rand_eye, black_bg=False)
+    assert vmin >= 0.0
+    assert vmin <= vmax
+
+    # plot_anat display colorbar should not have negative limits
+    display = plot_anat(img_3d_rand_eye, black_bg=False, colorbar=True)
+    assert display._cbar.mappable.norm.vmin >= 0.0
+
+
+def test_load_anat_black_bg_false_negative_data(img_3d_rand_eye):
+    """Test load_anat with black_bg=False when image data.
+
+    contains negative values.
+    """
+    # Image data with negative values
+    neg_img = new_img_like(
+        img_3d_rand_eye, img_3d_rand_eye.get_fdata() * 100.0 - 50.0
+    )
+
+    # When orig_vmin < 0, load_anat should allow negative vmin
+    _, _, vmin, vmax = load_anat(neg_img, black_bg=False)
+    assert vmin < 0.0
+    assert vmin <= vmax
+
+
+def test_apply_dimming_coverage():
+    """Test _apply_dimming for both non-negative and negative.
+
+    initial vmin values.
+    """
+    # Non-negative orig_vmin (orig_vmin >= 0)
+    vmin, _ = _apply_dimming(dim="auto", black_bg=False, vmin=0.0, vmax=100.0)
+    assert vmin == 0.0
+
+    # Negative orig_vmin (orig_vmin < 0)
+    vmin, _ = _apply_dimming(
+        dim="auto", black_bg=False, vmin=-10.0, vmax=100.0
+    )
+    assert vmin < -10.0

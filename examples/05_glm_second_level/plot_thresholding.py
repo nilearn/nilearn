@@ -15,10 +15,13 @@ narrative sentence reading/listening.
 # Prepare some images for a simple t test
 # ---------------------------------------
 # This is a simple manually performed second level analysis.
+# We fetch the "calculation (auditory and visual cue)" :term:`contrast`
+# maps of 20 subjects from the Localizer dataset.
 from nilearn import datasets
 
 n_samples = 20
-localizer_dataset = datasets.fetch_localizer_calculation_task(
+localizer_dataset = datasets.fetch_localizer_contrasts(
+    ["calculation (auditory and visual cue)"],
     n_subjects=n_samples,
 )
 

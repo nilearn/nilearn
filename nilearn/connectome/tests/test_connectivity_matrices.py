@@ -8,12 +8,7 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 from pandas import DataFrame
 from scipy import linalg
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn._utils.extmath import is_spd
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
@@ -39,30 +34,6 @@ CONNECTIVITY_KINDS = (
 N_FEATURES = 49
 
 N_SUBJECTS = 5
-
-
-ESTIMATORS_TO_CHECK = [
-    ConnectivityMeasure(cov_estimator=EmpiricalCovariance()),
-    ConnectivityMeasure(),
-]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn_2(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def random_diagonal(p, v_min=1.0, v_max=2.0, random_state=0):
@@ -129,12 +100,11 @@ def random_spd(p, eig_min, cond, random_state=0):
 
 
 def _signals(
-    n_subjects: int = N_SUBJECTS,
+    n_subjects: int = N_SUBJECTS, n_features: int = N_FEATURES
 ) -> tuple[list[np.ndarray], np.ndarray]:
     """Generate signals and compute covariances \
     and apply confounds while computing covariances.
     """
-    n_features = N_FEATURES
     signals = []
     for k in range(n_subjects):
         n_samples = 200 + k
@@ -628,6 +598,7 @@ def test_connectivity_measure_errors():
         )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
 )
@@ -652,6 +623,7 @@ def test_connectivity_measure_generic(
         assert is_spd(covs[k], decimal=7)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
 )
@@ -674,6 +646,23 @@ def test_connectivity_measure_generic_3d_array(kind, cov_estimator, signals):
     connectivities = conn_measure.fit_transform(signals_as_tuple)
 
     assert isinstance(connectivities, np.ndarray)
+
+
+def test_connectivity_measure_refit():
+    """Ensure ConnectivityMeasure can be refitted \
+        with data of different shape.
+
+    Regression test for issue
+    https://github.com/nilearn/nilearn/pull/6511#issuecomment-5566552823
+    """
+    conn_measure = ConnectivityMeasure()
+
+    signals = _signals(n_subjects=1)[0]
+    conn_measure.fit_transform(signals)
+
+    signals_different_shape = _signals(n_subjects=1, n_features=100)[0]
+
+    conn_measure.fit_transform(signals_different_shape)
 
 
 def _assert_connectivity_tangent(connectivities, conn_measure, covs):
@@ -784,6 +773,7 @@ def _assert_connectivity_partial_correlation(connectivities, covs):
         )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "kind",
     ["tangent", "precision", "correlation", "partial correlation"],
@@ -903,6 +893,7 @@ def test_connectivity_measure_check_inverse_transformation_discard_diag(
             conn_measure.inverse_transform(vectorized_connectivities)
 
 
+@pytest.mark.slow
 def test_connectivity_measure_inverse_transform_tangent(
     signals,
 ):

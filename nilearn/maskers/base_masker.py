@@ -36,7 +36,6 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn._utils.tags import InputTags
 from nilearn.image.image import (
     check_niimg,
     check_volume_for_fit,
@@ -51,6 +50,7 @@ from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
+from nilearn.utils.tags import InputTags
 
 
 def filter_and_extract(
@@ -465,7 +465,7 @@ class BaseMasker(_BaseMasker):
         ignore : None or list of strings
             Names of the parameters that are not returned.
 
-        deep : :obj:`bool`, default=True
+        deep : :obj:`bool`, default=False
             If True, will return the parameters for this estimator
             and contained subobjects that are estimators.
 
@@ -606,7 +606,7 @@ class BaseMasker(_BaseMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, X):
+    def inverse_transform(self, X) -> Nifti1Image:
         """Transform the data matrix back to an image in brain space.
 
         This step only performs spatial unmasking,

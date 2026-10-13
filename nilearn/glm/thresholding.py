@@ -33,7 +33,11 @@ from nilearn.nilearn_typing import (
     NonNullScalar,
     Scalar,
 )
-from nilearn.surface.surface import SurfaceImage, check_surf_img
+from nilearn.surface.surface import (
+    SurfaceImage,
+    check_surf_img,
+    find_surface_clusters,
+)
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
 
@@ -277,7 +281,10 @@ def _cluster_level_inference_surface(
         ).ravel()
 
         for threshold_ in sorted(threshold):
-            label_map, n_labels = label(stat_map > threshold_)
+            clusters, label_map = find_surface_clusters(
+                stat_img.mesh.parts[hemi], stat_map > threshold_
+            )
+            n_labels = len(clusters)
             labels = label_map[masker.mask_img_.data.parts[hemi] > 0]
 
             for label_ in range(1, n_labels + 1):

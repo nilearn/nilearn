@@ -90,6 +90,25 @@ def test_ar_degenerate(X, Y):
     assert results.df_residuals == 31
 
 
+@pytest.mark.parametrize(
+    "model_cls, kwargs", [(OLSModel, {}), (ARModel, {"rho": 0.4})]
+)
+def test_dispersion_rank_deficient(X, Y, model_cls, kwargs):
+    """Check that dispersion and t do not depend on a redundant column.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/6607
+    """
+    X_redundant = np.column_stack([X, X[:, 1] + X[:, 2]])
+    full_rank = model_cls(design=X, **kwargs).fit(Y)
+    rank_deficient = model_cls(design=X_redundant, **kwargs).fit(Y)
+
+    assert rank_deficient.df_residuals == full_rank.df_residuals
+    assert_array_almost_equal(rank_deficient.dispersion, full_rank.dispersion)
+    assert_array_almost_equal(
+        rank_deficient.t(column=0), full_rank.t(column=0)
+    )
+
+
 def test_simple_results(X, Y):
     """Test that SimpleRegressionResults matches the full results object."""
     model = OLSModel(X)

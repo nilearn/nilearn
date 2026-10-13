@@ -243,7 +243,7 @@ def _plot_surf(
     hemi=DEFAULT_HEMI,
     view=None,
     cmap=None,
-    symmetric_cmap=None,
+    symmetric_cmap: bool | None = None,
     colorbar=True,
     avg_method=None,
     threshold=None,

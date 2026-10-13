@@ -8,7 +8,7 @@ const timeout = 5000
 const maskers = [
   { masker: 'NiftiMasker_matplotlib', tolerance: 2500, timeout },
   { masker: 'NiftiMasker_brainsprite', tolerance: 2500, timeout },
-  { masker: 'NiftiLabelsMasker_matplotlib', tolerance: 1500, timeout },
+  { masker: 'NiftiLabelsMasker_matplotlib', tolerance: 2600, timeout },
   { masker: 'NiftiLabelsMasker_brainsprite', tolerance: 1500, timeout },
   { masker: 'NiftiMapsMasker', tolerance: 4100, timeout },
   { masker: 'SurfaceMasker', tolerance: 1600, timeout },

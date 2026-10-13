@@ -91,15 +91,15 @@ def main(args=sys.argv) -> None:
         datasets.fetch_haxby()
         datasets.fetch_language_localizer_demo_dataset()
         datasets.fetch_localizer_button_task()
-        datasets.fetch_localizer_calculation_task(n_subjects=20)
         for contrast, n_subjects in zip(
             [
+                "calculation (auditory and visual cue)",
                 "vertical checkerboard",
                 "horizontal checkerboard",
                 "left vs right button press",
                 "left button press (auditory cue)",
             ],
-            [16, 16, 16, 94],
+            [20, 16, 16, 16, 94],
             strict=False,
         ):
             datasets.fetch_localizer_contrasts(

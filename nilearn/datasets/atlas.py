@@ -183,8 +183,8 @@ def fetch_atlas_difumo(
         Number of dimensions in the dictionary. Valid resolutions
         available are {64, 128, 256, 512, 1024}.
 
-    resolution_mm : :obj:`int`, default=2mm
-        The resolution in mm of the atlas to fetch. Valid options
+    resolution_mm : :obj:`int`, default=2
+        The resolution of the atlas to fetch, in mm. Valid options
         available are {2, 3}.
 
     %(data_dir)s
@@ -480,7 +480,7 @@ def fetch_atlas_destrieux_2009(
     return Atlas(
         maps=files_[1],
         labels=labels.name.to_list(),
-        description=Path(files_[2]).read_text(),
+        description=Path(files_[2]).read_text(encoding="utf-8"),
         atlas_type=atlas_type,
         lut=pd.read_csv(files_[0]),
         template="fsaverage",
@@ -1152,7 +1152,7 @@ def fetch_atlas_smith_2009(
         atlas. Specifying "nitrc" will force download from a mirror, with
         potentially higher bandwidth.
 
-    dimension : :obj:`int`, default=None
+    dimension : :obj:`int`, default=10
         Number of dimensions in the dictionary. Valid dimension
         available are {10, 20, 70}.
 
@@ -1585,7 +1585,7 @@ def fetch_atlas_aal(
             indices.append(idx.text)
             labels.append(name.text)
     else:
-        with Path(labels_file).open() as fp:
+        with Path(labels_file).open(encoding="utf-8") as fp:
             for line in fp:
                 _, label, index = line.strip().split("\t")
                 indices.append(index)
@@ -2397,8 +2397,8 @@ def fetch_atlas_schaefer_2018(
     yeo_networks : {7, 17}, default=7
         ROI annotation according to yeo networks.
 
-    resolution_mm : {1, 2}, default=1mm
-        Spatial resolution of atlas image in mm.
+    resolution_mm : {1, 2}, default=1
+        Spatial resolution of atlas image, in mm.
     %(data_dir)s
     base_url : :obj:`str`,  default=None
         Base URL of files to download (``None`` results in

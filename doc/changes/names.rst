@@ -4,6 +4,8 @@
     please edit CITATION.cff and run maint_tools/citation_cff_maint.py.
 
 
+.. _Achintya Singh: https://github.com/Achintyasingh412
+
 .. _Ahmad Chamma: https://github.com/achamma723
 
 .. _Aina Frau-Pascual: https://github.com/ainafp
@@ -36,6 +38,8 @@
 .. _Andrew Chen: https://github.com/chuenchen309
 
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
+
+.. _Aniket Singh Yadav: https://github.com/Aniketsy
 
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
 
@@ -101,6 +105,8 @@
 
 .. _Dimitri Papadopoulos Orfanos: https://github.com/DimitriPapadopoulos
 
+.. _Donncha O'Toole: https://github.com/dnncha
+
 .. _Elizabeth DuPre: https://elizabeth-dupre.com/
 
 .. _Elvis Dohmatob: https://dohmatob.github.io/
@@ -148,6 +154,8 @@
 .. _Ian Abenes: https://github.com/boredStats
 
 .. _Idrissa Traore: https://github.com/badrinini
+
+.. _Ishaan Gupta: https://github.com/guptaishaan
 
 .. _Jake Vogel: https://github.com/illdopejake
 
@@ -315,6 +323,8 @@
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
+.. _Reyyi Shreyas: https://github.com/reyyishreyas
+
 .. _Rishika Kapil: https://github.com/RishikaKaps
 
 .. _Robert Luke: https://github.com/rob-luke
@@ -381,6 +391,8 @@
 
 .. _Vasco Diogo: https://github.com/vascosa
 
+.. _Venish Paneliya: https://github.com/VenishPaneliya
+
 .. _Victoria Shevchenko: https://github.com/victoris93
 
 .. _Victoria McCray: https://github.com/victoriamccray
@@ -388,6 +400,8 @@
 .. _Vincent Michel: https://github.com/vmichel
 
 .. _Virgile Fritsch: https://github.com/VirgileFritsch
+
+.. _Wolfgang Aura: https://github.com/wolfgang-aura
 
 .. _Xichun Xu: https://github.com/XichunXu
 
