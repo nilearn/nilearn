@@ -155,6 +155,8 @@
 
 .. _Idrissa Traore: https://github.com/badrinini
 
+.. _Ishaan Gupta: https://github.com/guptaishaan
+
 .. _Jake Vogel: https://github.com/illdopejake
 
 .. _Jan Margeta: https://github.com/jmargeta
