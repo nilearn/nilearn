@@ -31,6 +31,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Check tar extraction destinations by path components so sibling directories with a shared name prefix are rejected (:gh:`6653` by `Jeffrey Cooney <https://github.com/jdotc1>`_).
+
 - :bdg-dark:`Code` Fix :meth:`~nilearn.glm.Contrast.z_score` returning stale z-scores when called with a different ``baseline`` than a previous call on the same object (:gh:`6642` by `Ishaan Gupta`_).
 
 - :bdg-dark:`Code` Use mesh faces, rather than adjacent vertex indices, when computing clusters for surface cluster-level inference (:gh:`6608` by `Donncha O'Toole`_).
