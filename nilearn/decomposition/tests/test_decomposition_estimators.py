@@ -188,6 +188,7 @@ def test_with_confounds(
     )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 @pytest.mark.parametrize("single_subject", [True, False])
@@ -231,6 +232,7 @@ def test_transform(
     est.inverse_transform(signals)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform_errors(

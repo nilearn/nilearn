@@ -10,7 +10,7 @@ from scipy.ndimage import label, maximum_filter
 ###############################################################################
 
 
-def largest_connected_component(volume) -> np.ndarray:
+def largest_connected_component(volume: np.ndarray) -> np.ndarray:
     """Return the largest connected component of a 3D array.
 
     Parameters
@@ -44,7 +44,7 @@ def largest_connected_component(volume) -> np.ndarray:
     # Get the new byteorder to handle issues like "Big-endian buffer not
     # supported on little-endian compiler" with scipy ndimage label.
     if not volume.dtype.isnative:
-        volume.dtype = volume.dtype.newbyteorder("N")
+        volume = volume.view(volume.dtype.newbyteorder("N"))
 
     # We use asarray to be able to work with masked arrays.
     volume = np.asarray(volume)

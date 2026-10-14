@@ -3,7 +3,7 @@
 import pytest
 
 from nilearn._base import NilearnBaseEstimator
-from nilearn._utils.estimator_checks import (
+from nilearn._estimator_checks.nilearn_checks import (
     check_img_estimator_dict_unchanged,
     check_img_estimator_fit_check_is_fitted,
 )
@@ -42,6 +42,10 @@ def test_check_estimator_has_sklearn_is_fitted():
 
 
 def test_check_masker_dict_unchanged():
+    """Check if check_img_estimator_dict_unchanged catches when transform
+    changes the masker parameters.
+    """
+
     class DummyEstimator(BaseMasker):
         """Estimator with a transform method that adds a new attribute."""
 

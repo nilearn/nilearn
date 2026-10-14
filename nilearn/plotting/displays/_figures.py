@@ -3,7 +3,7 @@ from importlib.util import find_spec
 
 import numpy as np
 from scipy import linalg
-from scipy.spatial import distance_matrix
+from scipy.spatial.distance import cdist
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -375,9 +375,11 @@ class PlotlySurfaceFigure(SurfaceFigure):
                     if vertex not in visited_vertices
                 ]
             )
-            remaining_distances = distance_matrix(
+            remaining_distances = cdist(
                 centroids[current_vertex].reshape(1, -1),
                 centroids[remaining_vertices],
+                "minkowski",
+                p=2.0,
             )
             # Occasionally, the next closest centroid is one that would
             # cause a loop. This is common when a vertex is a neighbor
