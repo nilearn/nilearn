@@ -350,7 +350,12 @@ junit_family = "xunit2"
 log_cli_level = "INFO"
 log_level = "INFO"
 markers = [
-    "slow",  # for tests that exceed the timeout allowed for each test
+    # For tests that exceed the timeout allowed for each test.
+    # Slow tests are run separately from the others in a different pytest invocation
+    # with no timeout limit so that slow tests are only run if all "fasts" tests pass.
+    # Also helps find tests that could point
+    # to potential performance issues (in the code or in the test).
+    "slow",
     "single_process",  # for test that require testing n_jobs>1 or that are flaky when used xdist testing parallelization
     "thread_unsafe",  # used by pytest-run-parallel: adding it here to avoid warning and not always install the extension
     "ai_generated",  # used by AI agents to flag tests they generate or modify
