@@ -319,6 +319,11 @@ html_css_files = [
     f"{font_awesome}brands.min.css",
 ]
 
+# Privacy-friendly page view analytics with GoatCounter
+# (https://nilearn.goatcounter.com).
+# Only active on https://nilearn.github.io (see themes/goatcounter.js).
+html_js_files = ["goatcounter.js"]
+
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
