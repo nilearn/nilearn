@@ -1171,7 +1171,7 @@ def fetch_atlas_yeo_2011(
         )
     opts = {"uncompress": True}
 
-    dataset_name = "yeo_2011_atlas"
+    dataset_name = "yeo_2011"
     keys = (
         "thin_7",
         "thick_7",
@@ -1202,7 +1202,7 @@ def fetch_atlas_yeo_2011(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = Description.from_registry(dataset_name)
+    fdescr = Description.from_registry("yeo_2011_atlas")
 
     params = dict(
         [
