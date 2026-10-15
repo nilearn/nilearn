@@ -4,6 +4,8 @@
     please edit CITATION.cff and run maint_tools/citation_cff_maint.py.
 
 
+.. _Achintya Singh: https://github.com/Achintyasingh412
+
 .. _Ahmad Chamma: https://github.com/achamma723
 
 .. _Aina Frau-Pascual: https://github.com/ainafp
@@ -152,6 +154,8 @@
 .. _Ian Abenes: https://github.com/boredStats
 
 .. _Idrissa Traore: https://github.com/badrinini
+
+.. _Ishaan Gupta: https://github.com/guptaishaan
 
 .. _Jake Vogel: https://github.com/illdopejake
 

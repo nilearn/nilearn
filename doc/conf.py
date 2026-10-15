@@ -68,6 +68,7 @@ warnings.filterwarnings(
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     "changelog_anchors",
+    "dataset_descriptions",
     "gh_substitutions",
     "myst_parser",
     "numpydoc",
@@ -248,6 +249,9 @@ linkcheck_ignore = [
     # ignore nilearn github issues mostly for the sake of speed
     # given that there many of those in our changelog
     r"https://github.com/nilearn/nilearn/issues.*",
+    r"https://github.com/nilearn/nilearn/XXXX",
+    r"https://hal\.science/.*",
+    r"https://inria\.hal\.science/.*",
     # those are needed because figures
     # cannot take sphinx gallery reference as target
     r"../auto_examples/.*html",

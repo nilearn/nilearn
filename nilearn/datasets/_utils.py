@@ -20,14 +20,18 @@ import pandas as pd
 import requests
 
 from nilearn._utils import logger
-from nilearn._utils.docs import fill_doc
+from nilearn._utils.docs import (
+    fill_doc,
+    render_description_directives,
+)
 from nilearn._utils.logger import _has_rich, find_stack_level, readable_time
 from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
     check_parameter_in_allowed,
     check_params,
 )
 from nilearn.datasets.utils import get_data_dirs
-from nilearn.nilearn_typing import Verbose
+from nilearn.nilearn_typing import NSubject, Verbose
 
 _REQUESTS_TIMEOUT = (15.1, 61)
 PACKAGE_DIRECTORY = Path(__file__).absolute().parent
@@ -47,6 +51,39 @@ ALLOWED_MESH_TYPES = {
     "sphere",
     "flat",
 }
+
+
+def _validate_subjects(
+    n_subjects: NSubject,
+    max_subjects: int,
+    *,
+    warning_message: str | None = None,
+) -> tuple[int, ...]:
+    """Validate and normalize a dataset subject selection."""
+    check_params({"n_subjects": n_subjects})
+
+    if n_subjects is None:
+        return tuple(range(max_subjects))
+
+    if isinstance(n_subjects, (list, tuple)):
+        if not n_subjects:
+            raise ValueError("'n_subjects' cannot be an empty list or tuple.")
+        for subject_id in n_subjects:
+            check_is_of_allowed_type(subject_id, int, "subject id")
+            check_parameter_in_allowed(
+                subject_id, range(1, max_subjects + 1), "subject id"
+            )
+        return tuple(subject_id - 1 for subject_id in n_subjects)
+
+    if n_subjects < 1:
+        raise ValueError("'n_subjects' must be greater than zero.")
+
+    if n_subjects <= max_subjects:
+        return tuple(range(n_subjects))
+
+    if warning_message is not None:
+        warnings.warn(warning_message, stacklevel=find_stack_level())
+    return tuple(range(max_subjects))
 
 
 def md5_hash(string):
@@ -216,13 +253,18 @@ def _chunk_read_(
             total=total_size,
             completed=initial_size,
         )
-        progress.start()
 
     bytes_so_far = initial_size
 
     t0 = time_last_display = time.time()
 
     try:
+        # Start the progress bar in the try block
+        # so it is always stopped:
+        # otherwise the progress bar stays as the active live display
+        # and all subsequent downloads fail.
+        if use_rich:
+            progress.start()
         for chunk in response.iter_content(chunk_size):
             bytes_so_far += len(chunk)
 
@@ -765,10 +807,12 @@ def fetch_single_file(
 def get_dataset_descr(ds_name: str) -> str:
     """Return the description of a dataset."""
     try:
+        # read in text mode to normalize line endings across platforms
+        # (CRLF on windows)
         with (PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst").open(
-            "rb"
+            encoding="utf-8"
         ) as rst_file:
-            descr = rst_file.read().decode("utf-8")
+            descr = rst_file.read()
     except OSError:
         descr = ""
 
@@ -778,7 +822,7 @@ def get_dataset_descr(ds_name: str) -> str:
             stacklevel=find_stack_level(),
         )
 
-    return str(descr)
+    return render_description_directives(str(descr))
 
 
 def movetree(src, dst) -> None:

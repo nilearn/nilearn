@@ -11,7 +11,7 @@ sampled in different positions (encoded by different affine functions).
 .. seealso::
 
     For more information
-    see the :ref:`dataset description <spm_multimodal_dataset>`.
+    see the :ref:`dataset description <spm_multimodal>`.
 """
 
 # %%
@@ -28,6 +28,11 @@ sampled in different positions (encoded by different affine functions).
 from nilearn.datasets import fetch_spm_multimodal_fmri
 
 subject_data = fetch_spm_multimodal_fmri()
+
+# %%
+print(subject_data.description.content.events1)
+print(subject_data.description.content.func1)
+print(subject_data.description.content.t_r)
 
 # %%
 # Let's inspect one of the event files before using them.
@@ -54,6 +59,8 @@ import warnings
 
 from nilearn.image import concat_imgs, mean_img, resample_img
 
+print("Concatenating and resampling images (this takes time)...")
+
 # Avoid getting too many warnings due to resampling
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -62,7 +69,6 @@ with warnings.catch_warnings():
         concat_imgs(subject_data.func2, auto_resample=True),
     ]
 affine, shape = fmri_img[0].affine, fmri_img[0].shape
-print("Resampling the second image (this takes time)...")
 fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
 
 # %%
@@ -86,7 +92,6 @@ hrf_model = "spm + derivative"
 
 from nilearn.glm.first_level import FirstLevelModel
 
-print("Fitting a GLM")
 fmri_glm = FirstLevelModel(
     smoothing_fwhm=None,
     t_r=subject_data.t_r,

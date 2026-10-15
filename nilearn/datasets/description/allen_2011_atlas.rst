@@ -30,17 +30,12 @@ Direct download link from OSF: https://osf.io/hrcku
 
 Content
 -------
-    :"maps": T-maps of all 75 unthresholded components.
-    :"rsn28": T-maps of 28 RSNs included in :footcite:t:`Allen2011`.
-    :"networks": string list containing the names for the 28 RSNs.
-    :"rsn_indices": dict[rsn_name] -> list of int, indices in the "maps" file of the 28 RSNs.
-    :"comps": The aggregate :term:`ICA` Components.
+.. nilearn_dataset_content:: allen_2011_atlas
 
 References
 ----------
-
 .. footbibliography::
 
 License
 -------
-unknown
+.. nilearn_dataset_license:: allen_2011_atlas

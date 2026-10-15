@@ -41,6 +41,9 @@ license: BSD-4-Clause
 
 authors:
   - family-names: Nilearn contributors
+  - given-names: Achintya
+    family-names: Singh
+    website: https://github.com/Achintyasingh412
   - given-names: Ahmad
     family-names: Chamma
     website: https://github.com/achamma723
@@ -383,6 +386,9 @@ authors:
     family-names: Traore
     affiliation: IMT Atlantique, Brest, France
     website: https://github.com/badrinini
+  - given-names: Ishaan
+    family-names: Gupta
+    website: https://github.com/guptaishaan
   - given-names: Jake
     family-names: Vogel
     website: https://github.com/illdopejake

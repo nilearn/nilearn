@@ -18,9 +18,10 @@ from the :mod:`~nilearn.regions` module.
 # Fetching the Smith atlas 10 resting state networks.
 from nilearn import datasets
 
-atlas_networks = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)[
-    "maps"
-]
+atlas_networks = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)
+
+# %%
+print(atlas_networks.description.content.maps)
 
 # %%
 # Import region extractor to extract atlas networks
@@ -28,7 +29,7 @@ from nilearn.regions import RegionExtractor
 
 # min_region_size in voxel volume mm^3
 extraction = RegionExtractor(
-    atlas_networks,
+    atlas_networks.maps,
     min_region_size=800,
     threshold=98,
     thresholding_strategy="percentile",
@@ -59,7 +60,7 @@ plotting.plot_prob_atlas(
 # extracted from network 3
 import numpy as np
 
-DMN_network = index_img(atlas_networks, 3)
+DMN_network = index_img(atlas_networks.maps, 3)
 plotting.plot_stat_map(
     DMN_network,
     display_mode="z",

@@ -48,6 +48,7 @@ Other contributors
 
 Some other past or present contributors are:
 
+* `Achintya Singh`_
 * `Ahmad Chamma`_: Inria, Saclay, France
 * `Aina Frau-Pascual`_
 * `Alex Rothberg`_: Free Agency, New York, USA
@@ -123,6 +124,7 @@ Some other past or present contributors are:
 * `Hugo Delhaye`_: SIMEXP, Université de Montréal, Montréal, Canada
 * `Ian Abenes`_
 * `Idrissa Traore`_: IMT Atlantique, Brest, France
+* `Ishaan Gupta`_
 * `Jake Vogel`_: Department of Clinical Sciences, SciLifeLab, Lund University, Lund, Sweden
 * `Jan Margeta`_: KardioMe, Nova Dubnica, Slovakia
 * `Jaques Grobler`_: Anyline GmbH, Vienna, Austria
