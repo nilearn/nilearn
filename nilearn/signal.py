@@ -635,7 +635,7 @@ def clean(
         (instant number,).
         The number of time instants in ``signals`` and ``confounds`` must be
         identical (i.e. ``signals.shape[0] == confounds.shape[0]``).
-        If a string is provided, it is assumed to be the name of a csv file
+        If a string is provided, it is assumed to be the name of a CSV file
         containing signals as columns, with an optional one-line header.
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.

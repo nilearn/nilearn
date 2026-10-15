@@ -58,7 +58,7 @@ destrieux = fetch_atlas_surf_destrieux()
 # Create a surface image instance
 # with the Destrieux parcellation
 destrieux_atlas = SurfaceImage(
-    mesh=fsaverage_meshes["pial"],
+    mesh=fsaverage_meshes.pial,
     data={
         "left": destrieux.map_left,
         "right": destrieux.map_right,
@@ -70,6 +70,8 @@ print(f"{fsaverage_meshes['pial'].parts['left']=}")
 
 # The fsaverage data contains SurfaceImage instances with meshes and data
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
+
+# %%
 print(f"{fsaverage_sulcal=}")
 print(f"{fsaverage_sulcal.mesh=}")
 print(f"{fsaverage_sulcal.data=}")

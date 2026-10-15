@@ -39,7 +39,7 @@ def _get_metadata_from_bids(
         List of path to json files, for example returned by get_bids_files.
 
     bids_path : :obj:`str` or :obj:`pathlib.Path` or None, default=None
-        Fullpath to the BIDS dataset.
+        Full path to the BIDS dataset.
 
     Returns
     -------
@@ -83,7 +83,7 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     Parameters
     ----------
     bids_path : :obj:`str` or :obj:`pathlib.Path`
-        Fullpath to the derivatives folder of the BIDS dataset.
+        Full path to the derivatives folder of the BIDS dataset.
 
     filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`)
         Filters are of the form (field, label). Only one filter per field
@@ -131,7 +131,7 @@ def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
     Parameters
     ----------
     bids_path : :obj:`str` or :obj:`pathlib.Path`
-        Fullpath to the raw folder of the BIDS dataset.
+        Full path to the raw folder of the BIDS dataset.
 
     filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`)
         Filters are of the form (field, label). Only one filter per field

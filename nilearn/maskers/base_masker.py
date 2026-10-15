@@ -154,7 +154,7 @@ def filter_and_extract(
     # --------
     # Detrending (optional)
     # Filtering
-    # Confounds removing (from csv file or numpy array)
+    # Confounds removing (from CSV file or numpy array)
     # Normalizing
 
     mask_logger("cleaning", verbose=verbose)

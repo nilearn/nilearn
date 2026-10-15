@@ -58,7 +58,7 @@ min_plotting = [
     "plotly==6.1.1"
 ]
 # For prettier printing
-rich = ["rich>=12.0.0"]
+rich = ["rich>=12.3.0"]
 # Applying style guide
 style = ['prek']
 test = [

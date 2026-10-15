@@ -40,7 +40,7 @@ from nilearn.datasets import fetch_language_localizer_demo_dataset
 data = fetch_language_localizer_demo_dataset()
 
 # %%
-# We can verify the location of the dataset on disk.
+# The dataset is organized in BIDS-like fashion on disk at this location.
 print(data.data_dir)
 
 # %%

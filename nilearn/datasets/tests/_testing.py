@@ -5,6 +5,7 @@ import pickle
 import shutil
 import tempfile
 from pathlib import Path
+from types import GenericAlias
 
 import pandas as pd
 from nibabel import Nifti1Image
@@ -134,7 +135,7 @@ def check_type_fetcher(data):
     """Check type content of datasets.
 
     Recursively checks the content returned by fetchers
-    to make sure they do not contain only some allowed type of objects.
+    to make sure they contain only allowed type of objects.
 
     If the data is a Bunch and contains a dataset description,
     ensures the description is not empty.
@@ -150,13 +151,14 @@ def check_type_fetcher(data):
             pd.DataFrame,
             PolyMesh,
             pathlib.Path,
+            type,
+            GenericAlias,
         ),
     ):
         pass
     elif isinstance(data, (Bunch, dict)):
         for k, v in data.items():
-            if k == "description":
-                assert isinstance(v, str)
+            if k == "description" and isinstance(v, str):
                 assert v != ""
             if not check_type_fetcher(v):
                 raise TypeError(f"Found {k} : {v.__class__.__name__}")

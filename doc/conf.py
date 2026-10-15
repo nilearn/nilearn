@@ -68,6 +68,7 @@ warnings.filterwarnings(
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     "changelog_anchors",
+    "dataset_descriptions",
     "gh_substitutions",
     "myst_parser",
     "numpydoc",
