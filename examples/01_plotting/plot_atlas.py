@@ -19,7 +19,6 @@ dataset_ho = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
 # %%
 print(dataset_ho.description.content.maps)
 atlas_ho_filename = dataset_ho.maps
-print(f"Atlas ROIs are located at: {atlas_ho_filename}")
 
 # %%
 dataset_ju = datasets.fetch_atlas_juelich("maxprob-thr0-1mm")
@@ -27,7 +26,6 @@ dataset_ju = datasets.fetch_atlas_juelich("maxprob-thr0-1mm")
 # %%
 print(dataset_ju.description.content.maps)
 atlas_ju_filename = dataset_ju.maps
-print(f"Atlas ROIs are located at: {atlas_ju_filename}")
 
 # %%
 # Visualizing the Harvard-Oxford atlas
