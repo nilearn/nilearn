@@ -23,7 +23,7 @@ More specifically, this example will be divided into three sections:
 # .. admonition:: dataset
 #
 #    This example uses the :ref:`language localizer demo dataset
-#    <language_localizer_dataset>`.
+#    <language_localizer_demo>`.
 #
 
 # %%

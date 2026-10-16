@@ -29,7 +29,7 @@ and only then run this tutorial example.
 #
 #    - the :ref:`ICBM 152 template <icbm_152_template>`
 #    - the :ref:`localizer first level dataset
-#      <localizer_first_level_dataset>`
+#      <localizer_first_level>`
 #
 
 # %%

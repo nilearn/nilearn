@@ -19,7 +19,7 @@ task-based functional connectivity analysis.
 # .. admonition:: dataset
 #
 #    This example uses the :ref:`language localizer demo dataset
-#    <language_localizer_dataset>`.
+#    <language_localizer_demo>`.
 #
 
 # %%
