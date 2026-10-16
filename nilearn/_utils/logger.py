@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
-from nilearn._base import NilearnBaseEstimator
+from nilearn._base import PACKAGE_DIRECTORY, NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
 from nilearn.nilearn_typing import Verbose
 
@@ -167,10 +167,6 @@ def find_stack_level() -> int:
     Taken from the pandas codebase.
     https://github.com/pandas-dev/pandas/tree/main/pandas/util/_exceptions.py#L37
     """
-    import nilearn as nil
-
-    pkg_dir = Path(nil.__file__).parent
-
     # list of stack frames to skip
     skip_list = [
         Path("sklearn") / "utils" / "_set_output.py",
@@ -188,7 +184,7 @@ def find_stack_level() -> int:
 
             is_test_file = Path(filename).name.startswith("test_")
 
-            in_nilearn_code = filename.startswith(str(pkg_dir))
+            in_nilearn_code = filename.startswith(str(PACKAGE_DIRECTORY))
             skip = any(str(x) in filename for x in skip_list)
             if (not in_nilearn_code and not skip) or is_test_file:
                 break

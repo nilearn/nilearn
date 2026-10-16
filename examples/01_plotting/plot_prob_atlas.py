@@ -36,9 +36,7 @@ allen = datasets.fetch_atlas_allen_2011()
 icbm = datasets.fetch_icbm152_2009()
 
 # Smith ICA BrainMap 2009
-smith_bm20 = datasets.fetch_atlas_smith_2009(resting=False, dimension=20)[
-    "maps"
-]
+smith_bm20 = datasets.fetch_atlas_smith_2009(resting=False, dimension=20)
 
 # %%
 # Visualization
@@ -53,7 +51,7 @@ plotting.plot_prob_atlas(
 
 # "filled_contours" example.
 plotting.plot_prob_atlas(
-    smith_bm20,
+    smith_bm20.maps,
     title="Smith2009 20 Brainmap",
 )
 

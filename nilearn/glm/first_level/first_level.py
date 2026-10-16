@@ -950,7 +950,7 @@ class FirstLevelModel(BaseGLM):
             :term:`fMRI` events used to build design matrices.
             One events object expected per run_img.
             Ignored in case designs is not None.
-            If string, then a path to a csv or tsv file is expected.
+            If string, then a path to a CSV or TSV file is expected.
             See :func:`~nilearn.glm.first_level.make_first_level_design_matrix`
             for details on the required content of events files.
 
@@ -1420,7 +1420,7 @@ class FirstLevelModel(BaseGLM):
 
 def _check_events_file_uses_tab_separators(events_files):
     """Raise a ValueError if provided list of text based data files \
-    (.csv, .tsv, etc) do not enforce \
+    (CSV, TSV, etc) do not enforce \
     the :term:`BIDS` convention of using Tabs as separators.
 
     Only scans their first row.
@@ -2078,7 +2078,7 @@ def _report_found_files(files, text, sub_label, filters, verbose) -> None:
     Parameters
     ----------
     files : :obj:`list` of :obj:`str`
-        List of fullpath of files.
+        List of full path of files.
 
     text :  :obj:`str`
         Text description of the file type.
@@ -2134,12 +2134,12 @@ def _get_processed_imgs(
     -------
     imgs : :obj:`list` of :obj:`str`, \
         or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`
-        List of fullpath to the imgs files
+        List of full path to the imgs files
         If fsaverage5 is passed then both hemisphere for each run
         will be loaded into a single SurfaceImage.
 
     files_to_check : : :obj:`list` of :obj:`str`
-        List of fullpath to imgs files.
+        List of full path to imgs files.
         Used for validation
         when finding events or confounds associated with images.
     """
@@ -2252,7 +2252,7 @@ def _get_events_files(
         Only one filter per field allowed.
 
     imgs : :obj:`list` of :obj:`str`
-        List of fullpath to the preprocessed images
+        List of full path to the preprocessed images
 
     verbose : :obj:`integer`
         Indicate the level of verbosity.
@@ -2260,7 +2260,7 @@ def _get_events_files(
     Returns
     -------
     events : :obj:`list` of :obj:`str`
-        List of fullpath to the events files
+        List of full path to the events files
     """
     # pop the derivatives filter
     # it would otherwise trigger some meaningless warnings
@@ -2353,7 +2353,7 @@ def _get_masks_files(
         Only one filter per field allowed.
 
     imgs : :obj:`list` of :obj:`str`
-        List of fullpath to the preprocessed images
+        List of full path to the preprocessed images
 
     verbose : :obj:`integer`
         Indicate the level of verbosity.
@@ -2451,7 +2451,7 @@ def _get_confounds(
         Only one filter per field allowed.
 
     imgs : :obj:`list` of :obj:`str`
-        List of fullpath to the preprocessed images
+        List of full path to the preprocessed images
 
     verbose : :obj:`integer`
         Indicate the level of verbosity.
@@ -2508,6 +2508,30 @@ def _get_confounds(
     return load_confounds(img_files=imgs, **kwargs_load_confounds)[0]
 
 
+def _check_confounds_list(confounds, imgs) -> None:
+    """Check the number of confounds.tsv files.
+
+    If no file is found, it will be assumed there are none,
+    but if there are any confounds files, there must be one per run.
+
+    Parameters
+    ----------
+    confounds : :obj:`list` of :obj:`str`
+        List of full path to the confounds.tsv files
+
+    imgs : :obj:`list` of :obj:`str`
+        List of full path to the preprocessed images
+
+    """
+    if confounds and len(confounds) != len(imgs):
+        raise ValueError(
+            f"{len(confounds)} confounds.tsv files found "
+            f"for {len(imgs)} bold files. "
+            "Same number of confound files as "
+            "the number of runs is expected"
+        )
+
+
 def _check_args_first_level_from_bids(
     dataset_path,
     task_label,
@@ -2530,7 +2554,7 @@ def _check_args_first_level_from_bids(
     Parameters
     ----------
     dataset_path : :obj:`str`
-        Fullpath of the BIDS dataset root folder.
+        Full path of the BIDS dataset root folder.
 
     task_label : :obj:`str`
         Task_label as specified in the file names like _task-<task_label>_.
@@ -2550,7 +2574,7 @@ def _check_args_first_level_from_bids(
         Only one filter per field allowed.
 
     derivatives_folder : :obj:`str`
-        Fullpath of the BIDS dataset derivative folder.
+        Full path of the BIDS dataset derivative folder.
 
     """
     check_is_of_allowed_type(dataset_path, (str, Path), "dataset_path")
@@ -2697,7 +2721,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
     Parameters
     ----------
     imgs : :obj:`list` of :obj:`str` or None
-        List of image fullpath filenames.
+        List of image full path filenames.
 
     sub_label : :obj:`str`
         Subject label as specified in the file names like _sub-<sub_label>_.
@@ -2777,10 +2801,10 @@ def _check_bids_events_list(
     Parameters
     ----------
     events : :obj:`list` of :obj:`str` or None
-        List of events.tsv fullpath filenames.
+        List of events.tsv full path filenames.
 
     imgs : :obj:`list` of :obj:`str`
-        List of image fullpath filenames.
+        List of image full path filenames.
 
     sub_label : :obj:`str`
         Subject label as specified in the file names like sub-<sub_label>_.
@@ -2789,7 +2813,7 @@ def _check_bids_events_list(
         Task label as specified in the file names like _task-<task_label>_.
 
     dataset_path : :obj:`str`
-        Fullpath to the BIDS dataset.
+        Full path to the BIDS dataset.
 
     events_filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters of the form (field, label) used to select the files.

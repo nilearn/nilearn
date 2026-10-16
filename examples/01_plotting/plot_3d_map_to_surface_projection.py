@@ -165,11 +165,11 @@ from nilearn.datasets import fetch_atlas_surf_destrieux
 
 fsaverage = load_fsaverage("fsaverage5")
 destrieux = fetch_atlas_surf_destrieux()
-destrieux_atlas = SurfaceImage(
-    mesh=fsaverage["inflated"],
+labels_img = SurfaceImage(
+    mesh=fsaverage.inflated,
     data={
-        "left": destrieux["map_left"],
-        "right": destrieux["map_right"],
+        "left": destrieux.map_left,
+        "right": destrieux.map_right,
     },
 )
 
@@ -205,7 +205,7 @@ figure = plot_surf_stat_map(
 )
 if engine == "matplotlib":
     figure = plot_surf_contours(
-        roi_map=destrieux_atlas,
+        roi_map=labels_img,
         hemi=hemi,
         labels=labels,
         levels=regions_indices,
@@ -215,7 +215,7 @@ if engine == "matplotlib":
     )
 elif engine == "plotly":
     figure.add_contours(
-        roi_map=destrieux_atlas,
+        roi_map=labels_img,
         levels=regions_indices,
         labels=labels,
         lines=[{"width": 5}],
