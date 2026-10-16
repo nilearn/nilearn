@@ -585,8 +585,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             Reference string for the title of the plots.
         figsize : tuple of int, default = (10,8)
             Size of the figure.
-        close : bool, default = True
-            Whether to close the figure after creation.
 
         Returns
         -------
