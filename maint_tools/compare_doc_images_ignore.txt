@@ -20,3 +20,20 @@ sphx_glr_plot_ica_neurovault_*.png
 sphx_glr_plot_nifti_simple_002.png
 
 # --------------- Changes to ignore since last version ---------------
+# REASON: stimuli are now displayed in alphabetical order
+sphx_glr_plot_haxby_stimuli_*.png
+
+
+# REASON: change (probably) due black background of figure
+sphx_glr_plot_3d_and_4d_niimg_011.png
+sphx_glr_plot_compare_decomposition_016.png
+sphx_glr_plot_compare_decomposition_018.png
+sphx_glr_plot_compare_decomposition_027.png
+sphx_glr_plot_compare_decomposition_037.png
+sphx_glr_plot_compare_decomposition_039.png
+sphx_glr_plot_compare_decomposition_040.png
+sphx_glr_plot_templateflow_002.png
+
+
+# REASON: change of figure layout
+sphx_glr_plot_sphere_based_connectome_001.png
