@@ -60,7 +60,6 @@ t0 = time.time()
 masker = MultiNiftiMasker(
     mask_img=miyawaki_dataset.mask,
     detrend=True,
-    standardize=False,
     n_jobs=2,
     verbose=1,
 )

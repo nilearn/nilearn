@@ -8,6 +8,7 @@ import warnings
 from typing import Any, ClassVar
 
 import numpy as np
+from nibabel import Nifti1Image
 from scipy import sparse
 from sklearn import neighbors
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
@@ -17,6 +18,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
+from nilearn._utils.versions import sparray_context
 from nilearn.datasets import load_mni152_template
 from nilearn.image import load_img, resample_img
 from nilearn.image.image import (
@@ -133,8 +135,10 @@ def apply_mask_and_get_affinity(
     mask_coords = np.asarray(mask_coords).T
 
     clf = neighbors.NearestNeighbors(radius=radius)
-    A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
-    A = A.tolil()
+    with sparray_context():
+        A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
+    # older sklearn versions return a sparse matrix
+    A = sparse.lil_array(A)
     for i, nearest in enumerate(nearests):
         if nearest is None:
             continue
@@ -243,7 +247,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
-    radius : :obj:`float`, default=None
+    radius : :obj:`float` | None, default=None
         Indicates, in millimeters, the radius for the sphere around the seed.
         By default signal is extracted on a single voxel.
 
@@ -254,18 +258,24 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     allow_overlap : :obj:`bool`, default=False
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
+
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
+
     %(detrend)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
     %(dtype)s
@@ -322,7 +332,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_img=None,
         allow_overlap=False,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         high_variance_confounds=False,
         detrend=False,
@@ -387,6 +397,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             tmp = [0]
             tmp.extend((np.asarray(spheres_to_be_displayed) + 1).tolist())
             self._report_content["displayed_maps"] = tmp
+
+            spheres_names = self.get_feature_names_out()
+            self._report_content["name_maps"] = [""] + [
+                f"Sphere {i + 1}<br>{spheres_names[i]}"
+                for i in spheres_to_be_displayed
+            ]
 
             img = self._reporting_data["images"]
             if img is None:
@@ -658,8 +674,23 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         else:
             return np.atleast_1d(signals)
 
+    def get_feature_names_out(self, input_features=None) -> list[str]:
+        """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features : default=None
+            Only for sklearn API compatibility.
+        """
+        del input_features
+        radius_suffix = ""
+        if self.radius is not None:
+            radius_suffix = f"; r={np.round(self.radius, decimals=1)}mm"
+        seeds = np.round(np.asarray(self.seeds), decimals=1)
+        return [str(tuple(x)) + radius_suffix for x in seeds.tolist()]
+
     @fill_doc
-    def inverse_transform(self, region_signals):
+    def inverse_transform(self, region_signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from spheres signals.
 
         Any mask given at initialization is taken into account. Throws an error
@@ -696,9 +727,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if self.allow_overlap:
             n_adjacent_spheres = np.asarray(adjacency.sum(axis=0)).ravel()
             scale = 1 / np.maximum(1, n_adjacent_spheres)
-            adjacency = adjacency.dot(sparse.diags(scale))
+            adjacency = adjacency @ sparse.diags_array(scale)
 
-        img = adjacency.T.dot(region_signals.T).T
+        img = (adjacency.T @ region_signals.T).T
 
         img = unmask(img, self.mask_img_)
 

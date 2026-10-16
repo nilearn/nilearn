@@ -37,7 +37,7 @@ rule_settings:
 
     rule_types:
     -   refactoring
-    python_version: '3.10'
+    python_version: '3.11'
 
 metrics:
     quality_threshold: 25.0

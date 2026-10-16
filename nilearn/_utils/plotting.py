@@ -3,6 +3,7 @@ import warnings
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
 from sklearn.utils import Bunch
 
 from nilearn.plotting import (
@@ -196,7 +197,7 @@ def resize_plot_inches(plot, width_change=0, height_change=0):
         The matplotlib Figure/Axes object after being resized.
 
     """
-    if not isinstance(plot, (plt.Figure)):
+    if not isinstance(plot, (Figure)):
         orig_size = plot.figure.get_size_inches()
     else:
         orig_size = plot.get_size_inches()
@@ -206,7 +207,7 @@ def resize_plot_inches(plot, width_change=0, height_change=0):
         orig_size[1] + height_change,
     )
 
-    if not isinstance(plot, (plt.Figure)):
+    if not isinstance(plot, (Figure)):
         plot.figure.set_size_inches(new_size, forward=True)
     else:
         plot.set_size_inches(new_size, forward=True)

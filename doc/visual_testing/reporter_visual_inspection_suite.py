@@ -48,7 +48,7 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
-from nilearn.reporting.glm_reporter import HTMLReport
+from nilearn.reporting import HTMLReport
 from nilearn.surface import SurfaceImage
 
 with contextlib.suppress(Exception):

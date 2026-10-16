@@ -56,7 +56,6 @@ body:
         -   label: '3.13'
         -   label: '3.12'
         -   label: '3.11'
-        -   label: '3.10'
 
 -   type: textarea
     attributes:

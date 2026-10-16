@@ -20,7 +20,7 @@ of the statistics across the two runs.
 
 .. seealso::
 
-    See the :ref:`dataset description <fiac_dataset>`
+    See the :ref:`dataset description <fiac>`
     for more information on the data used in this example.
 """
 
@@ -41,12 +41,14 @@ print(f"Output will be saved to: {output_dir}")
 from nilearn.datasets.func import fetch_fiac_first_level
 
 data = fetch_fiac_first_level()
-fmri_imgs = [data["func1"], data["func2"]]
+print(data.description.content.func1)
+print(data.description.content.func2)
 
 # %%
 # Create a mean image for plotting purpose.
 from nilearn.image import mean_img
 
+fmri_imgs = [data["func1"], data["func2"]]
 mean_img_ = mean_img(fmri_imgs[0])
 
 # %%

@@ -85,7 +85,6 @@ from sklearn.feature_selection import VarianceThreshold
 from nilearn.maskers import NiftiMasker
 
 nifti_masker = NiftiMasker(
-    standardize=None,
     smoothing_fwhm=2,
     memory="nilearn_cache",  # cache options
     verbose=verbose,
@@ -202,7 +201,6 @@ from nilearn.image import get_data
 from nilearn.mass_univariate import permuted_ols
 
 gm_maps_masked = NiftiMasker(
-    standardize=None,
     memory="nilearn_cache",  # cache options
     verbose=verbose,
 ).fit_transform(gray_matter_map_filenames)

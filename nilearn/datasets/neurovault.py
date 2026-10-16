@@ -27,6 +27,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
+from nilearn._utils.versions import sparray_context
 from nilearn.datasets._utils import (
     fetch_single_file,
     get_dataset_descr,
@@ -816,35 +817,25 @@ class ResultFilter:
             for callable_filter in self.callable_filters_
         )
 
-    def OR(self, other_filter):  # noqa: N802
+    def OR(self, other_filter) -> "ResultFilter":  # noqa: N802
         """Implement the OR operator between two filters."""
         filt1, filt2 = deepcopy(self), deepcopy(other_filter)
-        new_filter = ResultFilter(
-            callable_filter=lambda r: filt1(r) or filt2(r)
-        )
-        return new_filter
+        return ResultFilter(callable_filter=lambda r: filt1(r) or filt2(r))
 
-    def AND(self, other_filter):  # noqa: N802
+    def AND(self, other_filter) -> "ResultFilter":  # noqa: N802
         """Implement the AND operator between two filters."""
         filt1, filt2 = deepcopy(self), deepcopy(other_filter)
-        new_filter = ResultFilter(
-            callable_filter=lambda r: filt1(r) and filt2(r)
-        )
-        return new_filter
+        return ResultFilter(callable_filter=lambda r: filt1(r) and filt2(r))
 
-    def XOR(self, other_filter):  # noqa: N802
+    def XOR(self, other_filter) -> "ResultFilter":  # noqa: N802
         """Implement the XOR operator between two filters."""
         filt1, filt2 = deepcopy(self), deepcopy(other_filter)
-        new_filter = ResultFilter(
-            callable_filter=lambda r: filt1(r) != filt2(r)
-        )
-        return new_filter
+        return ResultFilter(callable_filter=lambda r: filt1(r) != filt2(r))
 
-    def NOT(self):  # noqa: N802
+    def NOT(self) -> "ResultFilter":  # noqa: N802
         """Implement the NOT operator between two filters."""
         filt = deepcopy(self)
-        new_filter = ResultFilter(callable_filter=lambda r: not filt(r))
-        return new_filter
+        return ResultFilter(callable_filter=lambda r: not filt(r))
 
     def __getitem__(self, item):
         """Get item from query_terms_."""
@@ -1275,7 +1266,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
         )
         return None, None
     vectorizer = DictVectorizer(**kwargs)
-    frequencies = vectorizer.fit_transform(words).toarray()
+    with sparray_context():
+        frequencies = vectorizer.fit_transform(words).toarray()
     vocabulary = np.asarray(vectorizer.feature_names_)
     logger.log(
         f"Computing word features done; vocabulary size: {vocabulary.size}",

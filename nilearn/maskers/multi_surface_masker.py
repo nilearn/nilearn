@@ -1,5 +1,7 @@
 """Extract data from multiple 2D surface objects."""
 
+from typing import Self
+
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -32,7 +34,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -92,7 +94,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         self,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         high_variance_confounds=False,
@@ -130,7 +132,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         self.n_jobs = n_jobs
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y=None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters

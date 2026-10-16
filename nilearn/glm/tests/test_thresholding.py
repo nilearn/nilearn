@@ -20,7 +20,7 @@ from nilearn.glm import (
 )
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD, _compute_hommel_value
 from nilearn.image import get_data, new_img_like
-from nilearn.surface.surface import PolyData
+from nilearn.surface.surface import InMemoryMesh, PolyData, SurfaceImage
 from nilearn.surface.surface import get_data as get_surf_data
 
 
@@ -549,9 +549,9 @@ def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
 @pytest.mark.parametrize(
     "threshold, expected_n_unique_values",
     [
-        (2.5, 19),
-        ([2.5, 3.5], 23),
-        ([2.5, 3.0, 3.5], 27),
+        (2.5, 3),
+        ([2.5, 3.5], 7),
+        ([2.5, 3.0, 3.5], 12),
     ],
 )
 def test_cluster_level_inference_surface_realistic_data(
@@ -562,6 +562,45 @@ def test_cluster_level_inference_surface_realistic_data(
     th_map = cluster_level_inference(stat_img, threshold=threshold)
     vals = get_surf_data(th_map)
     assert len(np.unique(vals)) == expected_n_unique_values
+
+
+@pytest.mark.ai_generated
+def test_cluster_level_inference_surface_uses_mesh_connectivity():
+    """Clusters follow mesh edges rather than consecutive vertex indices."""
+    n_vertices = 100
+    coordinates = np.column_stack(
+        [
+            np.arange(n_vertices),
+            np.arange(n_vertices) % 2,
+            np.zeros(n_vertices),
+        ]
+    ).astype(float)
+    faces = []
+    for start in (0, 1):
+        vertices = np.arange(start, n_vertices, 2)
+        faces.extend([vertices[i : i + 3] for i in range(len(vertices) - 2)])
+    mesh = InMemoryMesh(coordinates, np.asarray(faces))
+    right_mesh = InMemoryMesh(coordinates[:3], np.asarray([[0, 1, 2]]))
+
+    values = np.zeros(n_vertices)
+    values[[0, 2, 4]] = 3.1
+    stat_img = SurfaceImage(
+        mesh={"left": mesh, "right": right_mesh},
+        data={"left": values, "right": np.zeros(3)},
+    )
+    mask_img = SurfaceImage(
+        mesh=stat_img.mesh,
+        data={
+            "left": np.ones(n_vertices, dtype=bool),
+            "right": np.zeros(3, dtype=bool),
+        },
+    )
+
+    result = cluster_level_inference(
+        stat_img, mask_img=mask_img, threshold=3.0, alpha=0.05
+    )
+
+    assert_equal(result.data.parts["left"][[0, 2, 4]], 2 / 3)
 
 
 def test_threshold_stats_img_surface_output(surf_img_1d):
@@ -592,29 +631,22 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     )
 
     # one sided positive
-    with pytest.warns(
-        FutureWarning,
-        match=r"nilearn version>=0\.15, the default 'threshold'",
-    ):
-        result, _ = threshold_stats_img(
-            surf_img_1d, height_control=None, two_sided=False
-        )
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, two_sided=False, threshold=3.0
+    )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
     assert_equal(
         result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 3.0])
     )
 
-    with pytest.warns(
-        FutureWarning,
-        match=r"nilearn version>=0\.15, the default 'threshold'",
-    ):
-        result, _ = threshold_stats_img(
-            surf_img_1d,
-            height_control=None,
-            two_sided=False,
-            cluster_threshold=3,
-        )
+    result, _ = threshold_stats_img(
+        surf_img_1d,
+        height_control=None,
+        two_sided=False,
+        cluster_threshold=3,
+        threshold=3.0,
+    )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 0.0]))
     assert_equal(
@@ -669,61 +701,3 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
     assert_equal(
         result.data.parts["right"], np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
     )
-
-
-@pytest.mark.thread_unsafe
-@pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
-@pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
-def test_deprecation_threshold(surf_img_1d, height_control, threshold):
-    """Check warning thrown when threshold==old threshold.
-
-    # TODO (nilearn >= 0.15.0)
-    # remove
-    """
-    if height_control is None and threshold == 3.0:
-        with pytest.warns(
-            FutureWarning,
-            match=r"From nilearn version>=0\.15, the default 'threshold'",
-        ):
-            threshold_stats_img(
-                surf_img_1d, height_control=height_control, threshold=threshold
-            )
-    else:
-        with warnings.catch_warnings(record=True) as warning_list:
-            threshold_stats_img(
-                surf_img_1d, height_control=height_control, threshold=threshold
-            )
-
-        n_warnings = len(
-            [x for x in warning_list if issubclass(x.category, FutureWarning)]
-        )
-        assert n_warnings == 0, [str(x) for x in warning_list]
-
-
-@pytest.mark.thread_unsafe
-@pytest.mark.parametrize("threshold", [3, 3.0, 2.9, DEFAULT_Z_THRESHOLD])
-def test_deprecation_threshold_cluster_level_inference(
-    threshold, img_3d_rand_eye, surf_img_1d
-):
-    """Check cluster_level_inference warns when threshold==old threshold .
-
-    # TODO (nilearn >= 0.15.0)
-    # remove
-    """
-    for stat_img in [img_3d_rand_eye, surf_img_1d]:
-        if threshold == 3.0:
-            with pytest.warns(
-                FutureWarning, match="the default 'threshold' will be set to"
-            ):
-                cluster_level_inference(stat_img, threshold=threshold)
-        else:
-            with warnings.catch_warnings(record=True) as warning_list:
-                cluster_level_inference(stat_img, threshold=threshold)
-            n_warnings = len(
-                [
-                    x
-                    for x in warning_list
-                    if issubclass(x.category, FutureWarning)
-                ]
-            )
-            assert n_warnings == 0

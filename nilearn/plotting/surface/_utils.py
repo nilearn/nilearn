@@ -272,7 +272,7 @@ def check_surface_plotting_inputs(
     objects are passed to be able to give them to the surface plotting
     functions.
 
-    - ``surf_mesh`` and ``surf_map`` cannot be `None` at the same time.
+    - ``surf_mesh`` and ``surf_map`` cannot be ``None`` at the same time.
     - If ``surf_mesh=None``, then ``surf_map`` should be of type
     :obj:`~nilearn.surface.SurfaceImage`.
     - ``surf_mesh`` cannot be of type :obj:`~nilearn.surface.SurfaceImage`.
@@ -286,7 +286,7 @@ def check_surface_plotting_inputs(
               | None
 
     %(surf_mesh)s
-        If `None` is passed, then ``surf_map`` must be a
+        If ``None`` is passed, then ``surf_map`` must be a
         :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
         :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
@@ -409,7 +409,7 @@ def get_faces_on_edge(faces, parc_idx):
 
 
 def sanitize_hemi_view(hemi, view):
-    """Check ``hemi`` and ``view``, if ``view`` is `None`, set value for
+    """Check ``hemi`` and ``view``, if ``view`` is ``None``, set value for
     ``view`` depending on the ``hemi`` value and return ``view``.
     """
     check_hemispheres([hemi])

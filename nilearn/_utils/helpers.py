@@ -107,14 +107,14 @@ def transfer_deprecated_param_vals(replacement_params, kwargs):
 
     """
     for old_param, new_param in replacement_params.items():
-        old_param_val = kwargs.setdefault(old_param, None)
-        if old_param_val is not None:
-            kwargs[new_param] = old_param_val
-        kwargs.pop(old_param)
+        if old_param in kwargs:
+            kwargs[new_param] = kwargs.pop(old_param)
     return kwargs
 
 
-def remove_parameters(removed_params, reason, end_version="future"):
+def remove_parameters(
+    removed_params: list[str], reason: str, end_version: str = "future"
+):
     """Use this decorator to deprecate \
     but not renamed parameters in the decorated functions and methods.
 
@@ -127,7 +127,7 @@ def remove_parameters(removed_params, reason, end_version="future"):
     reason : :obj:`str`
         Detailed reason of deprecated parameter and alternative solutions.
 
-    end_version : :obj:`str` {'future' | 'next' | <version>}, default='future'
+    end_version : :obj:`str`, default='future'
         Version when using the deprecated parameters will raise an error.
         For informational purpose in the warning text.
 
@@ -247,9 +247,7 @@ def is_notebook() -> bool:
         import marimo as mo
 
         is_marimo = mo.running_in_notebook()
-    except (ImportError, AttributeError):
-        # TODO (joblib >= 1.5.0) remove AttributeError
-        # marimo does not seem to play well with joblib
+    except ImportError:
         is_marimo = False
 
     if shell:

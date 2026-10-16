@@ -171,7 +171,7 @@ class OLSModel:
         """
         return X
 
-    def fit(self, Y):
+    def fit(self, Y) -> "RegressionResults":
         """Fit model to data `Y`.
 
         Full fit of the model including estimate of covariance matrix,
@@ -193,9 +193,7 @@ class OLSModel:
         wY = self.whiten(Y)
         beta = np.dot(self.calc_beta, wY)
         wresid = wY - np.dot(self.whitened_design, beta)
-        dispersion = np.sum(wresid**2, 0) / (
-            self.whitened_design.shape[0] - self.whitened_design.shape[1]
-        )
+        dispersion = np.sum(wresid**2, 0) / self.df_residuals
         lfit = RegressionResults(
             beta,
             Y,

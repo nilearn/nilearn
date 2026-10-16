@@ -46,7 +46,7 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -82,8 +82,6 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
     %(verbose0)s
 
     %(strategy)s
-
-    %(keep_masked_labels)s
 
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
@@ -126,7 +124,7 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         high_variance_confounds=False,
         detrend=False,
@@ -139,7 +137,6 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
         memory_level=1,
         verbose=0,
         strategy="mean",
-        keep_masked_labels=False,
         reports=True,
         cmap="CMRmap_r",
         n_jobs=1,
@@ -169,5 +166,4 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
             reports=reports,
             cmap=cmap,
             clean_args=clean_args,
-            keep_masked_labels=keep_masked_labels,
         )

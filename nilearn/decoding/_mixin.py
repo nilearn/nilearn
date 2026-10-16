@@ -1,13 +1,15 @@
 """Replacement for sklearn mixins."""
 
+from typing import Self
+
 import numpy as np
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.utils import ClassifierTags, RegressorTags
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import (
     check_params,
 )
-from nilearn._utils.versions import SKLEARN_LT_1_6
 
 
 class _ClassifierMixin:
@@ -19,15 +21,7 @@ class _ClassifierMixin:
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn >= 1.6) get rid of if block
-        # when bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            return tags
-
-        from sklearn.utils import ClassifierTags
-
         tags.estimator_type = "classifier"
         tags.classifier_tags = ClassifierTags()
 
@@ -65,22 +59,14 @@ class _RegressorMixin:
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn >= 1.6) get rid of if block
-        # when bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            tags["multioutput"] = True
-            return tags
-        from sklearn.utils import RegressorTags
-
         tags.estimator_type = "regressor"
         tags.regressor_tags = RegressorTags()
 
         return tags
 
     @fill_doc
-    def fit(self, X, y, groups=None):
+    def fit(self, X, y, groups=None) -> Self:
         """Fit the decoder (learner).
 
         Parameters
@@ -102,7 +88,9 @@ class _RegressorMixin:
         """
         check_params(self.__dict__)
         self._classes_ = ["beta"]
-        return super().fit(X, y, groups=groups)
+        # _RegressorMixin is only ever used together with a class
+        # defining fit() (e.g. _BaseDecoder, BaseSpaceNet).
+        return super().fit(X, y, groups=groups)  # type: ignore[misc]
 
     def _n_problems(self):
         return 1

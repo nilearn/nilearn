@@ -1,10 +1,13 @@
 ---
-# TL;DR: this workflow runs the benchmarks on the latest commit.
-# It runs on PR.
-# On main, it will also run on a schedule at regular interval
-# or can be triggered manually via the GitHub UI.
-# When run on main it will deploy the updated benchmarks to
-# `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
+# .. admonition:: TL;DR
+#
+#    this workflow runs the benchmarks on the latest commit.
+#    It runs on PR.
+#    On main, it will also run on a schedule at regular interval
+#    or can be triggered manually via the GitHub UI.
+#    When run on main it will deploy the updated benchmarks to
+#    `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
+#
 #
 # Step-wise details:
 #
@@ -58,7 +61,8 @@
 # - Then we push the new results back to the `benchmarks <https://github.com/nilearn/benchmarks>`_ repo.
 #   This will automatically deploy the new results to `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
 #
-# A second, independent set of jobs, run only on schedule or manual trigger
+# A second, independent set of jobs (``list-history-commits``, ``benchmark-history``, ``benchmark-history``, ``combine-history``),
+# run only on schedule or manual trigger
 # (running the full suite for several commits is too expensive to also run on every pull request),
 # benchmarks the fixed list of release commits in ``asv_benchmarks/hashestobenchmark.txt``
 # (see :ref:`CONTRIBUTING.rst <performance>`).
@@ -79,6 +83,15 @@
 #    Any performance difference spotted here should therefore be treated as a lead, not a conclusion,
 #    and confirmed by rerunning the specific benchmark locally for the relevant commits on the same machine,
 #    for example with ``asv run -b <benchmark_name> HASHFILE:hashestobenchmark.txt``.
+#
+# The job ``sync-benchmark-dependencies`` keeps asv_benchmarks/asv.conf.json's "pythons" / dependency matrix
+# from silently drifting behind pyproject.toml's "min_plotting" dependency group and "requires-python" floor
+# (see :gh:`6592` / :gh:`6593`).
+# A stale pin here can lose its pre-built wheel and break this workflow's "benchmark" job.
+# If a drift is detected this job will open a PR to fix it.
+#
+# The ``check-history-commits-installable`` ensures that old Nilearn releases listed in asv_benchmarks/hashestobenchmark.txt
+# are still installable after an update of the the asv config.
 #
 ###
 name: Run and deploy Nilearn benchmarks
@@ -133,8 +146,11 @@ concurrency:
 
 env:
     FORCE_COLOR: true
-    MIN_PYTHON: 3.10.18
+    MIN_PYTHON: 3.11.0
 
+
+permissions:
+    contents: read
 
 jobs:
     benchmark:
@@ -145,7 +161,7 @@ jobs:
                 working-directory: ./asv_benchmarks
 
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             with:
                 # fetch all branches and tags
                 fetch-depth: 0
@@ -153,8 +169,9 @@ jobs:
                 # check out the actual HEAD of the PR branch
                 # instead of the default synthetic merge commit
                 ref: ${{ github.event.pull_request.head.sha || github.sha }}
+                persist-credentials: false
 
-        -   uses: actions/setup-python@v6
+        -   uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ env.MIN_PYTHON }}
 
@@ -260,29 +277,45 @@ jobs:
             if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
             run: |
                 asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                echo "${PIPESTATUS[0]}" > asv_run_exit_code
 
         -   name: Run all benchmarks on the PR HEAD and upstream main (PR only)
             if: github.event_name == 'pull_request'
             run: |
-                FILTER="${{ steps.prepare-pr-comparison.outputs.benchmarks_filter }}"
+                FILTER="${STEPS_PREPARE_PR_COMPARISON_OUTPUTS_BENCHMARKS_FILTER}"
                 if [ -n "$FILTER" ]; then
                     asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 -b "$FILTER" HASHFILE:pr_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
                 else
                     asv run --show-stderr --verbose --append-samples --parallel 2 --machine fv-az1113-357 HASHFILE:pr_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
                 fi
+                echo "${PIPESTATUS[0]}" > asv_run_exit_code
 
         -   name: Run all benchmarks on main HEAD and latest release (push only)
             if: github.event_name == 'push'
             run: |
                 asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 HASHFILE:main_release_hashes.txt 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                echo "${PIPESTATUS[0]}" > asv_run_exit_code
 
         -   name: Fail if any benchmark reported as failed
             # asv run keeps going and exits 0 even when individual benchmarks fail
             # (it only reports them as "asv: benchmark failed" in the log),
             # and piping its output through "tee" above already discards its own exit code regardless.
             # So check the log content explicitly instead of relying on the exit code of the "asv run" steps above.
+            # However a hard failure
+            # (e.g. it could not even build/install one of the dependencies pinned in asv_benchmarks/asv.conf.json)
+            # does not print "asv: benchmark failed" and would otherwise pass this check silently,
+            # only to fail later and less clearly in "asv publish"
+            # (missing results/benchmarks.json).
+            # So the exit code saved by the "asv run" steps above
+            # (via PIPESTATUS, since it is also lost through the "tee" pipe) is checked explicitly as well.
             run: |
                 LOG_FILE=log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                EXIT_CODE=$(cat asv_run_exit_code)
+                if [ "$EXIT_CODE" -ne 0 ]; then
+                    echo "::error::'asv run' exited with status $EXIT_CODE, see the excerpt below"
+                    tail -n 100 "$LOG_FILE"
+                    exit 1
+                fi
                 if grep -q "asv: benchmark failed" "$LOG_FILE"; then
                     echo "::error::One or more benchmarks failed, see the excerpt(s) below"
                     grep -B 5 "asv: benchmark failed" "$LOG_FILE"
@@ -293,7 +326,7 @@ jobs:
             run: |
                 asv publish
 
-        -   uses: actions/upload-artifact@v7
+        -   uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: Upload asv benchmark results as artifacts
                 path: |
@@ -368,7 +401,9 @@ jobs:
             commits: ${{ steps.list.outputs.commits }}
 
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
 
         -   id: list
             # one matrix entry per non-empty, non-comment line
@@ -394,9 +429,11 @@ jobs:
                 working-directory: ./asv_benchmarks
 
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
 
-        -   uses: actions/setup-python@v6
+        -   uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ env.MIN_PYTHON }}
 
@@ -415,17 +452,31 @@ jobs:
         -   name: Run all benchmarks for this commit
             # "<commit>^!" is git's syntax for "just this one commit"
             run: |
-                asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 "${{ matrix.commit }}^!" 2>&1 | tee log_${{ matrix.commit }}
+                asv run --show-stderr --verbose --parallel 2 --machine fv-az1113-357 "${MATRIX_COMMIT}^!" 2>&1 | tee log_${MATRIX_COMMIT}
+                echo "${PIPESTATUS[0]}" > asv_run_exit_code
+            env:
+                MATRIX_COMMIT: ${{ matrix.commit }}
 
         -   name: Fail if any benchmark reported as failed
+            # see the "Fail if any benchmark reported as failed" step of the
+            # "benchmark" job above for why both the exit code and the log
+            # content are checked here.
             run: |
-                if grep -q "asv: benchmark failed" log_${{ matrix.commit }}; then
-                    echo "::error::One or more benchmarks failed for commit ${{ matrix.commit }}, see the excerpt(s) below"
-                    grep -B 5 "asv: benchmark failed" log_${{ matrix.commit }}
+                EXIT_CODE=$(cat asv_run_exit_code)
+                if [ "$EXIT_CODE" -ne 0 ]; then
+                    echo "::error::'asv run' exited with status $EXIT_CODE for commit ${MATRIX_COMMIT}, see the excerpt below"
+                    tail -n 100 log_${MATRIX_COMMIT}
                     exit 1
                 fi
+                if grep -q "asv: benchmark failed" log_${MATRIX_COMMIT}; then
+                    echo "::error::One or more benchmarks failed for commit ${MATRIX_COMMIT}, see the excerpt(s) below"
+                    grep -B 5 "asv: benchmark failed" log_${MATRIX_COMMIT}
+                    exit 1
+                fi
+            env:
+                MATRIX_COMMIT: ${{ matrix.commit }}
 
-        -   uses: actions/upload-artifact@v7
+        -   uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: history-results-${{ matrix.commit }}
                 path: ./asv_benchmarks/results
@@ -439,9 +490,11 @@ jobs:
                 working-directory: ./asv_benchmarks
 
         steps:
-        -   uses: actions/checkout@v7
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
 
-        -   uses: actions/setup-python@v6
+        -   uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
             with:
                 python-version: ${{ env.MIN_PYTHON }}
 
@@ -451,7 +504,7 @@ jobs:
                 pip install asv
 
         -   name: Download every commit's results
-            uses: actions/download-artifact@v8
+            uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
             with:
                 pattern: history-results-*
                 path: ./asv_benchmarks/downloaded_results
@@ -487,10 +540,123 @@ jobs:
         -   name: Create html with the combined results
             run: asv publish
 
-        -   uses: actions/upload-artifact@v7
+        -   uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: Upload combined history benchmark results as an artifact
                 path: |
                     ./asv_benchmarks/html
                     ./asv_benchmarks/results
                 compression-level: 9
+
+    sync-benchmark-dependencies:
+        if: |
+            github.repository == 'nilearn/nilearn' &&
+            github.event_name == 'push'
+        runs-on: ubuntu-24.04
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
+
+        -   name: Set up Python
+            uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+            with:
+                python-version: ${{ env.MIN_PYTHON }}
+
+        -   name: Install dependencies
+            run: python -m pip install --upgrade pip packaging
+
+        -   name: Sync asv.conf.json with pyproject.toml
+            id: sync
+            continue-on-error: true
+            run: python asv_benchmarks/check_dependencies_in_sync.py --fix
+
+        -   name: Create Pull Request
+            uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+            with:
+                commit-message: sync asv_benchmarks/asv.conf.json with pyproject.toml
+                base: main
+                token: ${{ secrets.GITHUB_TOKEN }}
+                delete-branch: true
+                title: '[BOT] sync asv_benchmarks/asv.conf.json with pyproject.toml'
+                body: done via this [GitHub Action](https://github.com/${{ github.repository_owner }}/nilearn/blob/main/.github/workflows/benchmark.yml)
+
+        -   name: Fail if some mismatches could not be auto-fixed
+            # continue-on-error above lets the PR step run (and pick up
+            # whatever was fixed) even when the sync script also reports
+            # a mismatch it cannot resolve on its own (e.g. a matrix
+            # package with no "==" pinned version in pyproject.toml);
+            # surface that case as a failed job instead of staying silent.
+            if: steps.sync.outcome == 'failure'
+            run: |
+                echo "::error::asv_benchmarks/asv.conf.json still has unresolved mismatches, see the 'Sync asv.conf.json with pyproject.toml' step above."
+                exit 1
+
+    check-history-commits-installable:
+        if: |
+            github.repository == 'nilearn/nilearn' &&
+            (github.event_name == 'pull_request' || github.event_name == 'push')
+        runs-on: ubuntu-24.04
+        defaults:
+            run:
+                working-directory: ./asv_benchmarks
+
+        steps:
+        -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            with:
+                persist-credentials: false
+
+        -   uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+            with:
+                python-version: ${{ env.MIN_PYTHON }}
+
+        -   name: Install asv
+            run: |
+                pip install --upgrade pip
+                pip install asv
+                pip install nilearn
+
+        -   name: Get all the machine info
+            run: asv machine --yes
+
+        -   name: Edit asv-machine.json to a custom machine name
+            run: python ../build_tools/github/set_machine_name.py fv-az1113-357
+
+        -   name: Check hashestobenchmark.txt commits build and import
+            # only running the discovery benchmark as they are quick to run
+            run: |
+                asv run --show-stderr --verbose -b discovery --machine fv-az1113-357 HASHFILE:hashestobenchmark.txt 2>&1 | tee history_install_check_log
+                echo "${PIPESTATUS[0]}" > asv_run_exit_code
+
+        -   name: Fail if a commit is no longer installable/importable
+            # see the "Fail if any benchmark reported as failed" step of
+            # the "benchmark" job above for why both the exit code and
+            # the log content are checked here.
+            #
+            # Neither of those two checks catches a commit/environment
+            # that fails at *discovery* time (asv building the benchmark
+            # suite's list of benchmarks, which needs to import nilearn):
+            # asv treats that as a soft, recoverable
+            # "Failed: trying different commit/environment" and moves on
+            # to the next combination, so "asv run" still exits 0, and
+            # the failure never becomes "asv: benchmark failed" -- that
+            # string is specific to a benchmark actually being invoked
+            # and erroring, not to the discovery step itself failing.
+            run: |
+                EXIT_CODE=$(cat asv_run_exit_code)
+                if [ "$EXIT_CODE" -ne 0 ]; then
+                    echo "::error::Building the asv environment failed for at least one commit in asv_benchmarks/hashestobenchmark.txt with the current asv.conf.json matrix, see the excerpt below"
+                    tail -n 100 history_install_check_log
+                    exit 1
+                fi
+                if grep -q "asv: benchmark failed" history_install_check_log; then
+                    echo "::error::The 'discovery' smoke benchmark failed for at least one commit in asv_benchmarks/hashestobenchmark.txt with the current matrix, see the excerpt(s) below"
+                    grep -B 5 "asv: benchmark failed" history_install_check_log
+                    exit 1
+                fi
+                if grep -q "Failed: trying different commit/environment" history_install_check_log; then
+                    echo "::error::At least one commit in asv_benchmarks/hashestobenchmark.txt could not be built/installed/imported with the current asv.conf.json matrix, see the excerpt(s) below"
+                    grep -B 30 "Failed: trying different commit/environment" history_install_check_log
+                    exit 1
+                fi

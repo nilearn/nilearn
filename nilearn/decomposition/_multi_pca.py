@@ -47,7 +47,7 @@ class _MultiPCA(_BaseDecomposition):
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
@@ -115,7 +115,7 @@ class _MultiPCA(_BaseDecomposition):
         smoothing_fwhm=None,
         do_cca=True,
         random_state=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         low_pass=None,

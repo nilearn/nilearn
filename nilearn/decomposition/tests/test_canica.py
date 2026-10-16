@@ -20,12 +20,7 @@ def test_threshold_bound_error(canica_data_single_img):
     than the number of components.
     """
     with pytest.raises(ValueError, match="Threshold must not be higher"):
-        canica = CanICA(
-            n_components=4,
-            threshold=5.0,
-            smoothing_fwhm=None,
-            standardize="zscore_sample",
-        )
+        canica = CanICA(n_components=4, threshold=5.0, smoothing_fwhm=None)
         canica.fit(canica_data_single_img)
 
 
@@ -35,11 +30,13 @@ def test_percentile_range(rng, canica_data_single_img):
     edge_case = rng.integers(low=1, high=10)
 
     # stress thresholding via edge case
+    # use a single init to keep the test fast
     canica = CanICA(
         n_components=edge_case,
         threshold=float(edge_case),
         smoothing_fwhm=None,
-        standardize="zscore_sample",
+        n_init=1,
+        random_state=0,
     )
 
     with pytest.warns(UserWarning, match="obtained a critical threshold"):
@@ -64,7 +61,6 @@ def test_canica_square_img(
         mask=decomposition_mask_img,
         smoothing_fwhm=smoothing_fwhm,
         n_init=50,
-        standardize="zscore_sample",
     )
     canica.fit(canica_data)
     maps = get_data(canica.components_img_)
@@ -87,6 +83,7 @@ def test_canica_square_img(
     assert_array_almost_equal(K_abs, 0, 1)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_component_sign(canica_data, data_type):
     """Check sign of extracted components.
@@ -98,10 +95,7 @@ def test_component_sign(canica_data, data_type):
     """
     # run CanICA many times (this is known to produce different results)
     canica = CanICA(
-        n_components=4,
-        random_state=RANDOM_STATE,
-        smoothing_fwhm=None,
-        standardize="zscore_sample",
+        n_components=4, random_state=RANDOM_STATE, smoothing_fwhm=None
     )
 
     for _ in range(3):

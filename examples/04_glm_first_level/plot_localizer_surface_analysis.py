@@ -38,7 +38,7 @@ than using a subject-tailored mesh.
 .. seealso::
 
     For more information about the dataset
-    see its :ref:`description <localizer_first_level_dataset>`.
+    see its :ref:`description <localizer_first_level>`.
 """
 
 # %%
@@ -211,11 +211,12 @@ results = {}
 for contrast_id, contrast_val in contrasts.items():
     results[contrast_id] = glm.compute_contrast(contrast_val, stat_type="t")
 
-    table = get_clusters_table(
+    table, _ = get_clusters_table(
         results[contrast_id],
         stat_threshold=threshold,
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
+        return_label_maps=True,
     )
     print(f"\n{contrast_id=}")
     print(table)

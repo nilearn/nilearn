@@ -17,8 +17,7 @@ display.
 As the MSDL atlas comes with (x, y, z) :term:`MNI` coordinates for
 the different regions, we can visualize the matrix as a graph of
 interaction in a brain. To avoid having too dense a graph, we
-represent only the 20% edges with the highest values.
-
+represent only the edges above 80% of the values.
 """
 
 # %%
@@ -27,14 +26,19 @@ represent only the 20% edges with the highest values.
 from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 
 atlas = fetch_atlas_msdl()
-# Loading atlas image stored in 'maps'
-atlas_filename = atlas["maps"]
-# Loading atlas data stored in 'labels'
-labels = atlas["labels"]
 
+# %%
+print(atlas.description.content)
+
+# Loading atlas image and labels
+atlas_filename = atlas.maps
+labels = atlas.labels
+
+# %%
 # Loading the functional datasets
 data = fetch_development_fmri(n_subjects=1)
 
+# %%
 # print basic information on the dataset
 print(f"First subject functional nifti images (4D) are at: {data.func[0]}")
 
@@ -63,8 +67,10 @@ estimator = GraphicalLassoCV(verbose=True)
 estimator.fit(time_series)
 
 # %%
-# Display the connectome matrix
-# -----------------------------
+# Visualization: covariance
+# -------------------------
+# The covariance can be found at ``estimator.covariance_``.
+# We plot it along with its connectome graph.
 from nilearn.plotting import (
     plot_connectome,
     plot_matrix,
@@ -72,9 +78,6 @@ from nilearn.plotting import (
     view_connectome,
 )
 
-# Display the covariance
-
-# The covariance can be found at estimator.covariance_
 plot_matrix(
     estimator.covariance_,
     labels=labels,
@@ -84,18 +87,19 @@ plot_matrix(
     title="Covariance",
 )
 
-# %%
-# And now display the corresponding graph
-# ---------------------------------------
 coords = atlas.region_coords
 
-plot_connectome(estimator.covariance_, coords, title="Covariance")
+plot_connectome(
+    estimator.covariance_, coords, title="Covariance", edge_threshold="80%"
+)
+
+show()
 
 
 # %%
-# Display the sparse inverse covariance
-# -------------------------------------
-# we negate it to get partial correlations
+# Visualization: sparse inverse covariance
+# ----------------------------------------
+# We negate the precision to get partial correlations.
 plot_matrix(
     -estimator.precision_,
     labels=labels,
@@ -105,11 +109,11 @@ plot_matrix(
     title="Sparse inverse covariance",
 )
 
-# %%
-# And now display the corresponding graph
-# ----------------------------------------
 plot_connectome(
-    -estimator.precision_, coords, title="Sparse inverse covariance"
+    -estimator.precision_,
+    coords,
+    title="Sparse inverse covariance",
+    edge_threshold="80%",
 )
 
 show()
@@ -119,11 +123,11 @@ show()
 # ---------------------------------
 # An alternative to :func:`~nilearn.plotting.plot_connectome` is to use
 # :func:`~nilearn.plotting.view_connectome` that gives more interactive
-# visualizations in a web browser. See :ref:`interactive-connectome-plotting`
-# for more details.
+# visualizations in a web browser.
+# See :ref:`interactive-connectome-plotting` for more details.
 
 
-view = view_connectome(-estimator.precision_, coords)
+view = view_connectome(-estimator.precision_, coords, edge_threshold="80%")
 
 # In a notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell

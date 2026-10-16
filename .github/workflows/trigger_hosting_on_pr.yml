@@ -21,15 +21,20 @@
 #
 ###
 name: Documentation push trigger
-on:
+on:  # zizmor: ignore[dangerous-triggers]
     workflow_run:
         # Run the workflow after the separate "DocumentationBuilder" workflow completes
         workflows: [DocumentationBuilder]
         types:
         -   completed
 
+permissions: {}
+
 jobs:
     push:
+        permissions:
+            contents: read
+            pull-requests: read
         runs-on: ubuntu-latest
         # Run the job only if the "DocumentationBuilder" workflow succeeded
         # Prevents this workflow from running on a fork.
@@ -43,8 +48,8 @@ jobs:
         -   name: Trigger hosting job on circle ci
             run: |4
 
-                COMMIT_SHA=${{ github.event.workflow_run.head_sha }}
-                REPO_NAME=${{ github.event.workflow_run.head_repository.full_name }}
+                COMMIT_SHA=${GITHUB_EVENT_WORKFLOW_RUN_HEAD_SHA}
+                REPO_NAME=${GITHUB_EVENT_WORKFLOW_RUN_HEAD_REPOSITORY_FULL_NAME}
 
                 PULL_REQUEST_NUMBER=$(curl \
                     -H "Accept: application/vnd.github.v3+json" \
@@ -76,3 +81,6 @@ jobs:
                 --header "x-attribution-actor-id: github_actions" \
                 --header "x-attribution-login: github_actions" \
                 --data \{\"branch\":\"$BRANCH\",\"parameters\":\{\"GITHUB_RUN_URL\":\"$GITHUB_RUN_URL\"\}\}
+            env:
+                GITHUB_EVENT_WORKFLOW_RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+                GITHUB_EVENT_WORKFLOW_RUN_HEAD_REPOSITORY_FULL_NAME: ${{ github.event.workflow_run.head_repository.full_name }}

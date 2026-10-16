@@ -7,25 +7,25 @@ import inspect
 import itertools
 import warnings
 from pathlib import Path
+from typing import Self
 
 import numpy as np
 from nibabel import Nifti1Image
-from scipy.sparse import coo_matrix, csgraph, dia_matrix
+from scipy.sparse import coo_array, csgraph, dia_array
 from sklearn.base import ClusterMixin, TransformerMixin
-from sklearn.utils import check_array
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_is_fitted, validate_data
 
-from nilearn._base import NilearnBaseEstimator
+from nilearn._base import PACKAGE_DIRECTORY, NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
 from nilearn.surface import SurfaceImage
+from nilearn.utils.tags import InputTags
 
 
 def _compute_weights(X, mask_img):
@@ -333,16 +333,16 @@ def _weighted_connectivity_graph(X, mask_img):
 
     if isinstance(mask_img, SurfaceImage):
         edges, weight = _make_edges_and_weights_surface(X, mask_img)
-        connectivity = coo_matrix((n_features, n_features))
+        connectivity = coo_array((n_features, n_features))
         for part in mask_img.mesh.parts:
-            conn_temp = coo_matrix(
+            conn_temp = coo_array(
                 (weight[part], edges[part]), (n_features, n_features)
             ).tocsr()
             connectivity += conn_temp
     else:
         edges, weight = _make_edges_and_weights(X, mask_img)
 
-        connectivity = coo_matrix(
+        connectivity = coo_array(
             (weight, edges), (n_features, n_features)
         ).tocsr()
 
@@ -369,18 +369,18 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     """
     n_features = connectivity.shape[0]
 
-    connectivity_ = coo_matrix(
+    connectivity_ = coo_array(
         (1.0 / connectivity.data, connectivity.nonzero()),
         (n_features, n_features),
     ).tocsr()
 
     # maximum on the axis = 0
-    max_connectivity = connectivity_.max(axis=0).toarray()[0]
-    inv_max = dia_matrix(
+    max_connectivity = connectivity_.max(axis=0).toarray().ravel()
+    inv_max = dia_array(
         (1.0 / max_connectivity, 0), shape=(n_features, n_features)
     )
 
-    connectivity_ = inv_max * connectivity_
+    connectivity_ = inv_max @ connectivity_
 
     # Dealing with eccentricities, there are probably many nearest neighbors
     edge_mask = connectivity_.data > 1 - threshold
@@ -392,7 +392,7 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     weight = np.ones_like(j_idx)
     edges = np.array([i_idx, j_idx])
 
-    nn_connectivity = coo_matrix((weight, edges), (n_features, n_features))
+    nn_connectivity = coo_array((weight, edges), (n_features, n_features))
 
     return nn_connectivity
 
@@ -433,23 +433,23 @@ def _reduce_data_and_connectivity(
     """
     n_features = len(labels)
 
-    incidence = coo_matrix(
+    incidence = coo_array(
         (np.ones(n_features), (labels, np.arange(n_features))),
         shape=(n_components, n_features),
         dtype=np.float32,
     ).tocsc()
 
-    inv_sum_col = dia_matrix(
+    inv_sum_col = dia_array(
         (np.array(1.0 / incidence.sum(axis=1)).squeeze(), 0),
         shape=(n_components, n_components),
     )
 
-    incidence = inv_sum_col * incidence
+    incidence = inv_sum_col @ incidence
 
-    reduced_X = (incidence * X.T).T
-    reduced_connectivity = (incidence * connectivity) * incidence.T
+    reduced_X = (incidence @ X.T).T
+    reduced_connectivity = (incidence @ connectivity) @ incidence.T
 
-    reduced_connectivity = reduced_connectivity - dia_matrix(
+    reduced_connectivity = reduced_connectivity - dia_array(
         (reduced_connectivity.diagonal(), 0),
         shape=(reduced_connectivity.shape),
     )
@@ -514,7 +514,7 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
         weight = np.ones(2 * n_edges)
         edges = np.hstack([edges[:, edge_mask], edges[::-1, edge_mask]])
 
-        nn_connectivity = coo_matrix((weight, edges), (n_features, n_features))
+        nn_connectivity = coo_array((weight, edges), (n_features, n_features))
 
     # Clustering step: getting the connected components of the nn matrix
     n_components, labels = csgraph.connected_components(nn_connectivity)
@@ -670,27 +670,12 @@ class ReNA(
         self.memory_level = memory_level
         self.verbose = verbose
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO (sklearn >= 1.6.0) remove
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(niimg_like=False)
         return tags
@@ -700,15 +685,11 @@ class ReNA(
 
         Only works in during sklearn checks during tests.
         """
-        import nilearn as nil
-
-        pkg_dir = Path(nil.__file__).parent
-
         frame = inspect.currentframe()
         while frame:
             filename = inspect.getfile(frame)
             is_test_file = Path(filename).name.startswith("test_")
-            in_nilearn_code = filename.startswith(str(pkg_dir))
+            in_nilearn_code = filename.startswith(str(PACKAGE_DIRECTORY))
             if is_test_file:
                 break
             frame = frame.f_back
@@ -720,7 +701,7 @@ class ReNA(
             )
 
     @fill_doc
-    def fit(self, X, y=None):
+    def fit(self, X, y=None) -> Self:
         """Compute clustering of the data.
 
         Parameters
@@ -738,21 +719,14 @@ class ReNA(
         del y
         check_params(self.__dict__)
 
-        if SKLEARN_LT_1_6:
-            X = check_array(
-                X, ensure_min_features=2, ensure_min_samples=2, estimator=self
-            )
-            self.n_features_in_ = X.shape[1]
-        else:
-            from sklearn.utils.validation import validate_data
-
-            X = validate_data(
-                self,
-                X,
-                reset=True,
-                ensure_min_features=2,
-                ensure_min_samples=2,
-            )
+        X = validate_data(
+            self,
+            X,
+            reset=True,
+            ensure_min_features=2,
+            ensure_min_samples=2,
+        )
+        self.n_features_in_ = X.shape[1]
 
         self.mask_img_ = self.mask_img
         self._set_mask_img_for_tests()
@@ -837,18 +811,7 @@ class ReNA(
         """
         check_is_fitted(self)
 
-        # TODO (sklearn >= 1.6.0) simplify
-        if SKLEARN_LT_1_6:
-            X = check_array(
-                X,
-                ensure_2d=True,
-                estimator=self,
-                ensure_min_features=self.n_features_in_,
-            )
-        else:
-            from sklearn.utils.validation import validate_data
-
-            X = validate_data(self, X, reset=False)
+        X = validate_data(self, X, reset=False)
 
         unique_labels = np.unique(self.labels_)
 

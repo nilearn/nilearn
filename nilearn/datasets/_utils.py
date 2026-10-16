@@ -20,13 +20,18 @@ import pandas as pd
 import requests
 
 from nilearn._utils import logger
-from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level, readable_time
+from nilearn._utils.docs import (
+    fill_doc,
+    render_description_directives,
+)
+from nilearn._utils.logger import _has_rich, find_stack_level, readable_time
 from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
     check_parameter_in_allowed,
     check_params,
 )
 from nilearn.datasets.utils import get_data_dirs
+from nilearn.nilearn_typing import NSubject, Verbose
 
 _REQUESTS_TIMEOUT = (15.1, 61)
 PACKAGE_DIRECTORY = Path(__file__).absolute().parent
@@ -46,6 +51,39 @@ ALLOWED_MESH_TYPES = {
     "sphere",
     "flat",
 }
+
+
+def _validate_subjects(
+    n_subjects: NSubject,
+    max_subjects: int,
+    *,
+    warning_message: str | None = None,
+) -> tuple[int, ...]:
+    """Validate and normalize a dataset subject selection."""
+    check_params({"n_subjects": n_subjects})
+
+    if n_subjects is None:
+        return tuple(range(max_subjects))
+
+    if isinstance(n_subjects, (list, tuple)):
+        if not n_subjects:
+            raise ValueError("'n_subjects' cannot be an empty list or tuple.")
+        for subject_id in n_subjects:
+            check_is_of_allowed_type(subject_id, int, "subject id")
+            check_parameter_in_allowed(
+                subject_id, range(1, max_subjects + 1), "subject id"
+            )
+        return tuple(subject_id - 1 for subject_id in n_subjects)
+
+    if n_subjects < 1:
+        raise ValueError("'n_subjects' must be greater than zero.")
+
+    if n_subjects <= max_subjects:
+        return tuple(range(n_subjects))
+
+    if warning_message is not None:
+        warnings.warn(warning_message, stacklevel=find_stack_level())
+    return tuple(range(max_subjects))
 
 
 def md5_hash(string):
@@ -70,7 +108,7 @@ def _md5_sum_file(path):
 
 def read_md5_sum_file(path):
     """Read a MD5 checksum file and returns hashes as a dictionary."""
-    with Path(path).open() as f:
+    with Path(path).open(encoding="utf-8") as f:
         hashes = {}
         while True:
             line = f.readline()
@@ -134,12 +172,16 @@ def _chunk_read_(
     response,
     local_file,
     chunk_size=8192,
-    report_hook=None,
+    report_hook: bool = False,
     initial_size=0,
     total_size=None,
-    verbose=1,
+    verbose: Verbose = 1,
 ) -> None:
     """Download a file chunk by chunk and show advancement.
+
+    If ``rich`` is installed, a :class:`rich.progress.Progress` bar is
+    used to display advancement. Otherwise, a fallback text-based report
+    is printed instead (see :func:`_chunk_report_`).
 
     Parameters
     ----------
@@ -152,8 +194,8 @@ def _chunk_read_(
     chunk_size : int, default=8192
         Size of downloaded chunks.
 
-    report_hook : :obj:`bool` or None, default=None
-        Whether or not to show downloading advancement. default=None
+    report_hook : :obj:`bool`, default=False
+        Whether or not to show downloading advancement.
 
     initial_size : int, default=0
         If resuming, indicate the initial size of the file.
@@ -185,25 +227,67 @@ def _chunk_read_(
             msg_level=3,
         )
         total_size = None
+
+    use_rich = report_hook and _has_rich()
+    if use_rich:
+        from rich.progress import (
+            BarColumn,
+            DownloadColumn,
+            Progress,
+            TextColumn,
+            TimeRemainingColumn,
+            TransferSpeedColumn,
+        )
+
+        description = Path(getattr(local_file, "name", "")).name
+        description = description.removesuffix(".part") or "file"
+        progress = Progress(
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            DownloadColumn(),
+            TransferSpeedColumn(),
+            TimeRemainingColumn(),
+        )
+        task_id = progress.add_task(
+            f"Downloading {description}",
+            total=total_size,
+            completed=initial_size,
+        )
+
     bytes_so_far = initial_size
 
     t0 = time_last_display = time.time()
-    for chunk in response.iter_content(chunk_size):
-        bytes_so_far += len(chunk)
-        time_last_read = time.time()
-        if (
-            report_hook
-            and
-            # Refresh report every second or when download is
-            # finished.
-            (time_last_read > time_last_display + 1.0 or not chunk)
-        ):
-            _chunk_report_(bytes_so_far, total_size, initial_size, t0, verbose)
-            time_last_display = time_last_read
-        if chunk:
-            local_file.write(chunk)
-        else:
-            break
+
+    try:
+        # Start the progress bar in the try block
+        # so it is always stopped:
+        # otherwise the progress bar stays as the active live display
+        # and all subsequent downloads fail.
+        if use_rich:
+            progress.start()
+        for chunk in response.iter_content(chunk_size):
+            bytes_so_far += len(chunk)
+
+            if use_rich:
+                progress.update(task_id, completed=bytes_so_far)
+
+            elif report_hook:
+                time_last_read = time.time()
+                # Refresh report every second or when download is finished.
+                if time_last_read > time_last_display + 1.0 or not chunk:
+                    _chunk_report_(
+                        bytes_so_far, total_size, initial_size, t0, verbose
+                    )
+                    time_last_display = time_last_read
+
+            if chunk:
+                local_file.write(chunk)
+            else:
+                break
+
+    finally:
+        if use_rich:
+            progress.stop()
 
 
 @fill_doc
@@ -543,7 +627,7 @@ def fetch_single_file(
     md5sum=None,
     username=None,
     password=None,
-    verbose=1,
+    verbose: Verbose = 1,
     session=None,
 ):
     """Load requested file, downloading it if needed or requested.
@@ -661,7 +745,7 @@ def fetch_single_file(
                         _chunk_read_(
                             resp,
                             fh,
-                            report_hook=(verbose > 0),
+                            report_hook=bool(verbose > 0),
                             initial_size=initial_size,
                             verbose=verbose,
                         )
@@ -693,7 +777,7 @@ def fetch_single_file(
                     _chunk_read_(
                         resp,
                         fh,
-                        report_hook=(verbose > 0),
+                        report_hook=bool(verbose > 0),
                         initial_size=initial_size,
                         verbose=verbose,
                     )
@@ -723,10 +807,12 @@ def fetch_single_file(
 def get_dataset_descr(ds_name: str) -> str:
     """Return the description of a dataset."""
     try:
+        # read in text mode to normalize line endings across platforms
+        # (CRLF on windows)
         with (PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst").open(
-            "rb"
+            encoding="utf-8"
         ) as rst_file:
-            descr = rst_file.read().decode("utf-8")
+            descr = rst_file.read()
     except OSError:
         descr = ""
 
@@ -736,7 +822,7 @@ def get_dataset_descr(ds_name: str) -> str:
             stacklevel=find_stack_level(),
         )
 
-    return str(descr)
+    return render_description_directives(str(descr))
 
 
 def movetree(src, dst) -> None:

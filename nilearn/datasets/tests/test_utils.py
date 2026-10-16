@@ -47,29 +47,58 @@ DATASET_NAMES = {
 }
 
 
-@pytest.mark.parametrize("name", DATASET_NAMES)
-def test_get_dataset_descr(name):
-    """Test function ``get_dataset_descr()``.
+@pytest.mark.parametrize(
+    ("n_subjects", "expected"),
+    [
+        (None, (0, 1, 2, 3, 4, 5)),
+        (2, (0, 1)),
+        ([1, 3], (0, 2)),
+        ((1, 3), (0, 2)),
+    ],
+)
+def test_validate_subjects(n_subjects, expected):
+    """Check valid subject selections."""
+    assert _utils._validate_subjects(n_subjects, 6) == expected
 
-    Not needed for atlas datasets as this is checked in
-    nilearn/datasets/tests/test_atlas.py
-    """
-    descr = _utils.get_dataset_descr(name)
 
-    assert isinstance(descr, str)
-    assert len(descr) > 0
+def test_validate_subjects_above_maximum_uses_max():
+    """Use the maximum when a subject count exceeds it."""
+    with pytest.warns(UserWarning, match="Only 6 subjects are available"):
+        result = _utils._validate_subjects(
+            7,
+            max_subjects=6,
+            warning_message="Only 6 subjects are available.",
+        )
+
+    assert result == (0, 1, 2, 3, 4, 5)
 
 
-def test_get_dataset_descr_warning():
-    """Tests that function ``get_dataset_descr()`` gives a warning \
-       when no description is available.
-    """
-    with pytest.warns(
-        UserWarning, match="Could not find dataset description."
-    ):
-        descr = _utils.get_dataset_descr("")
+@pytest.mark.parametrize("n_subjects", [[], (), [0], [7]])
+def test_validate_subjects_invalid_selection(n_subjects):
+    """Reject empty and out-of-range subject selections."""
+    with pytest.raises(ValueError):
+        _utils._validate_subjects(n_subjects, max_subjects=6)
 
-    assert descr == ""
+
+@pytest.mark.parametrize("n_subjects", [True, 1.0, "1", {1}])
+def test_validate_subjects_invalid_type(n_subjects):
+    """Reject unsupported subject selection types."""
+    with pytest.raises(TypeError, match="'n_subjects' must be of type"):
+        _utils._validate_subjects(n_subjects, max_subjects=6)
+
+
+@pytest.mark.parametrize("n_subjects", [["1"], [True]])
+def test_validate_subjects_invalid_subject_id_type(n_subjects):
+    """Reject non-integer subject IDs."""
+    with pytest.raises(TypeError, match="'subject id' must be of type"):
+        _utils._validate_subjects(n_subjects, max_subjects=6)
+
+
+@pytest.mark.parametrize("n_subjects", [0, -1])
+def test_validate_subjects_invalid_count(n_subjects):
+    """Reject non-positive subject counts."""
+    with pytest.raises(ValueError, match="must be greater than zero"):
+        _utils._validate_subjects(n_subjects, max_subjects=6)
 
 
 def test_get_dataset_dir(tmp_path):
@@ -602,10 +631,10 @@ def test_fetch_files_overwrite(
 
     assert request_mocker.url_count == 1
     assert fil.exists()
-    assert not fil.read_text()
+    assert not fil.read_text(encoding="utf-8")
 
     # Modify content
-    fil.write_text("some content")
+    fil.write_text("some content", encoding="utf-8")
 
     # Don't overwrite existing file.
     fil = Path(
@@ -647,3 +676,55 @@ def test_naive_ftp_adapter():
         resp = sender.send(
             requests.Request("GET", "ftp://example.com").prepare()
         )
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("headers", [{}, {"Content-Length": "13"}])
+def test_chunk_read_rich(tmp_path, headers):
+    """Check download with a rich progress bar with known or unknown size."""
+    pytest.importorskip("rich")
+
+    resp = Response(b"dummy content", "http://foo")
+    resp.headers = headers
+
+    with (tmp_path / "foo.txt").open("wb") as f:
+        _utils._chunk_read_(resp, f, report_hook=True)
+
+    assert (tmp_path / "foo.txt").read_bytes() == b"dummy content"
+
+
+@pytest.mark.ai_generated
+def test_chunk_read_progress_stopped_if_start_fails(tmp_path, monkeypatch):
+    """Check the progress bar is stopped even if it fails to start.
+
+    Older versions of rich register the live display
+    before failing to render it.
+    If the progress bar is not stopped,
+    it remains the active live display of the rich console
+    and all subsequent downloads fail with a rich.errors.LiveError.
+    """
+    progress = pytest.importorskip("rich.progress")
+    original_start = progress.Progress.start
+    original_stop = progress.Progress.stop
+    stop_calls = []
+
+    def failing_start(self):
+        original_start(self)
+        raise TypeError("failed to render")
+
+    def recording_stop(self):
+        stop_calls.append(self)
+        original_stop(self)
+
+    monkeypatch.setattr(progress.Progress, "start", failing_start)
+    monkeypatch.setattr(progress.Progress, "stop", recording_stop)
+
+    resp = Response(b"dummy content", "http://foo")
+    resp.headers = {"Content-Length": "13"}
+    with (
+        (tmp_path / "foo.txt").open("wb") as f,
+        pytest.raises(TypeError, match="failed to render"),
+    ):
+        _utils._chunk_read_(resp, f, report_hook=True)
+
+    assert len(stop_calls) == 1

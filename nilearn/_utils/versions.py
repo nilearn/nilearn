@@ -1,10 +1,12 @@
 """Utilities and constants for version comparisons."""
 
 import operator
+from contextlib import nullcontext
 from typing import Literal
 
 from packaging.version import Version, parse
 from sklearn import __version__ as sklearn_version
+from sklearn import config_context as sk_config_context
 
 from nilearn._utils.testing import (
     are_tests_running,
@@ -69,6 +71,14 @@ def compare_version(
     return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))
 
 
-SKLEARN_LT_1_6 = compare_version(sklearn_version, "<", "1.6.0")
 SKLEARN_GTE_1_7 = compare_version(sklearn_version, ">=", "1.7.0")
 SKLEARN_GTE_1_8 = compare_version(sklearn_version, ">=", "1.8.0")
+SKLEARN_GTE_1_9 = compare_version(sklearn_version, ">=", "1.9.0")
+
+
+def sparray_context():
+    # TODO (sklearn >= 1.9): call config_context directly
+    # this is here to handle scipy sparse matrix deprecation
+    if SKLEARN_GTE_1_9:
+        return sk_config_context(sparse_interface="sparray")
+    return nullcontext()

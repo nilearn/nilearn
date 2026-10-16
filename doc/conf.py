@@ -68,10 +68,12 @@ warnings.filterwarnings(
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     "changelog_anchors",
+    "dataset_descriptions",
     "gh_substitutions",
     "myst_parser",
     "numpydoc",
     "sphinx_copybutton",
+    "sphinx_prompt",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.autodoc",
@@ -97,21 +99,21 @@ autodoc_default_options = {
     "member-order": "bysource",
 }
 
-# try:
-#     import jupyterlite_sphinx
+try:
+    import jupyterlite_sphinx  # noqa: F401
 
-#     extensions.append("jupyterlite_sphinx")
-#     with_jupyterlite = True
-# except ImportError:
-#     # In some cases we don't want to require jupyterlite_sphinx
-#     # to be installed,
-#     # e.g. the doc-min-dependencies build
-#     warnings.warn(
-#         "jupyterlite_sphinx is not installed, you need to install it "
-#         "if you want JupyterLite links to appear in the API documentation",
-#         stacklevel=2,
-#     )
-#     with_jupyterlite = False
+    extensions.append("jupyterlite_sphinx")
+    with_jupyterlite = True
+except ImportError:
+    # In some cases we don't want to require jupyterlite_sphinx
+    # to be installed,
+    # e.g. the doc-min-dependencies build
+    warnings.warn(
+        "jupyterlite_sphinx is not installed, you need to install it "
+        "if you want JupyterLite links to appear in the API documentation",
+        stacklevel=2,
+    )
+    with_jupyterlite = False
 
 
 # Get rid of spurious warnings due to some interaction between
@@ -247,6 +249,9 @@ linkcheck_ignore = [
     # ignore nilearn github issues mostly for the sake of speed
     # given that there many of those in our changelog
     r"https://github.com/nilearn/nilearn/issues.*",
+    r"https://github.com/nilearn/nilearn/XXXX",
+    r"https://hal\.science/.*",
+    r"https://inria\.hal\.science/.*",
     # those are needed because figures
     # cannot take sphinx gallery reference as target
     r"../auto_examples/.*html",
@@ -307,11 +312,17 @@ html_theme = "furo"
 font_awesome = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/"
 html_css_files = [
     "custom.css",
+    "button_styling.css",
     f"{font_awesome}all.min.css",
     f"{font_awesome}fontawesome.min.css",
     f"{font_awesome}solid.min.css",
     f"{font_awesome}brands.min.css",
 ]
+
+# Privacy-friendly page view analytics with GoatCounter
+# (https://nilearn.goatcounter.com).
+# Only active on https://nilearn.github.io (see themes/goatcounter.js).
+html_js_files = ["goatcounter.js"]
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
@@ -457,7 +468,7 @@ copybutton_prompt_is_regexp = True
 
 trim_doctests_flags = True
 
-_python_doc_base = "https://docs.python.org/3.10"
+_python_doc_base = "https://docs.python.org/3.11"
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
@@ -512,34 +523,28 @@ sphinx_gallery_conf = {
     },
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
     "within_subsection_order": "ExampleTitleSortKey",
-    # # Disallow jupyterlite for examples in gallery
-    # # as most of them requires loading too much data in the browser
-    # "jupyterlite": None,
+    # Disallow jupyterlite for examples in gallery
+    # as most of them requires loading too much data in the browser
+    "jupyterlite": None,
 }
 
 
-# if with_jupyterlite:
-#     global_enable_try_examples = True
-#     jupyterlite_bind_ipynb_suffix = False
-#     try_examples_global_button_text = "Try it in your browser!"
-#     try_examples_global_warning_text = (
-#         "Running the nilearn examples in JupyterLite is experimental"
-#         " and you may encounter some unexpected behavior.\n\n"
-#         " The main difference is that imports will take a lot longer"
-#         " than usual, for example the first `import nilearn` can take"
-#         " roughly 10-20s.\n\nIf you notice problems, feel free to open"
-#         " an [issue](https://github.com/nilearn/nilearn/issues/new/choose) "
-#         "about it."
-#     )
-#     # Work around https://github.com/jupyterlite/pyodide-kernel/issues/166
-#     # and https://github.com/pyodide/micropip/issues/223 by installing the
-#     # dependencies first, and then nilearn from Anaconda.org.
-#     try_examples_preamble = """
-#     # Jupyterlite specific code
-#     import matplotlib
-#     import pandas
-#     %pip install -q nilearn
-#     """
+if with_jupyterlite:
+    global_enable_try_examples = True
+    jupyterlite_bind_ipynb_suffix = False
+    try_examples_global_button_text = "Try it in your browser!"
+    try_examples_global_warning_text = (
+        "Running the Nilearn examples in JupyterLite is experimental"
+        " and you may encounter unexpected behavior.\n\n"
+        " In particular, note that load times may take a lot longer"
+        " than usual—for example, the `%pip install -q nilearn`"
+        " call can take roughly 10-20s—and that the "
+        " version of Nilearn used in Jupyterlite might be different "
+        " than the one used to generate the documentation.\n\n"
+        " If you encounter any problems, please report them in a new"
+        " [issue](https://github.com/nilearn/nilearn/issues/new/choose)."
+    )
+    try_examples_preamble = "%pip install -q nilearn"
 
 mermaid_version = "11.4.0"
 

@@ -5,10 +5,10 @@ from typing import ClassVar
 
 import numpy as np
 from joblib import Parallel, delayed
-from scipy.sparse import coo_matrix
+from scipy.sparse import coo_array
 from sklearn.base import clone
 from sklearn.cluster import AgglomerativeClustering, MiniBatchKMeans
-from sklearn.feature_extraction import image
+from sklearn.feature_extraction import image as sk_image_feature_extraction
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
 
@@ -22,6 +22,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     sanitize_verbose,
 )
+from nilearn._utils.versions import sparray_context
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.image.image import iter_check_niimg, new_img_like
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
@@ -65,7 +66,7 @@ def _connectivity_surface(mask_img):
     n_vertices = (
         mask_img.data.parts["left"].sum() + mask_img.data.parts["right"].sum()
     )
-    connectivity = coo_matrix((n_vertices, n_vertices))
+    connectivity = coo_array((n_vertices, n_vertices))
     len_previous_mask = 0
     for part in mask_img.mesh.parts:
         face_part = mask_img.mesh.parts[part].faces
@@ -87,7 +88,7 @@ def _connectivity_surface(mask_img):
         edges = order[edges]
         len_previous_mask += mask_part.sum()
         # update the connectivity matrix
-        conn_temp = coo_matrix(
+        conn_temp = coo_array(
             (np.ones((edges.shape[1])), edges),
             (n_vertices, n_vertices),
         ).tocsr()
@@ -133,7 +134,8 @@ def _estimator_fit(data, estimator, method=None):
     # they cluster first dimension of data (samples) but we want to cluster
     # features (voxels)
     else:
-        estimator.fit(data.T)
+        with sparray_context():
+            estimator.fit(data.T)
     labels_ = estimator.labels_
 
     return labels_
@@ -178,7 +180,7 @@ def _labels_masker_extraction(img, masker, confound):
     masker : instance of NiftiLabelsMasker
         Used for extracting signals with fit_transform.
 
-    confound : csv file, numpy ndarray or pandas DataFrame
+    confound : CSV file, numpy ndarray or pandas DataFrame
         Confound used for signal cleaning while extraction.
         Passed to signal.clean.
 
@@ -257,7 +259,7 @@ class Parcellations(_MultiPCA):
     %(smoothing_fwhm)s
         default=4.0.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
@@ -392,7 +394,7 @@ class Parcellations(_MultiPCA):
         random_state=0,
         mask=None,
         smoothing_fwhm=4.0,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         low_pass=None,
@@ -526,9 +528,10 @@ class Parcellations(_MultiPCA):
             else:
                 mask_ = safe_get_data(mask_img_).astype(bool)
                 shape = mask_.shape
-                connectivity = image.grid_to_graph(
-                    n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
-                )
+                with sparray_context():
+                    connectivity = sk_image_feature_extraction.grid_to_graph(
+                        n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
+                    )
 
             agglomerative = AgglomerativeClustering(
                 n_clusters=self.n_parcels,
@@ -568,7 +571,7 @@ class Parcellations(_MultiPCA):
         return self
 
     @property
-    def n_elements_(self):
+    def n_elements_(self) -> int:
         """Return number of regions."""
         return self._n_elements_
 
@@ -613,21 +616,13 @@ class Parcellations(_MultiPCA):
         # Required for special cases like extracting signals on list of
         # 3D images or SurfaceImages.
 
-        # TODO (nilearn > 0.15.0)
-        # remove casting to None or "zscore_sample"
-        standardize = self.standardize
-        if standardize is False:
-            standardize = None
-        elif standardize is True:
-            standardize = "zscore_sample"
-
         if isinstance(self.masker_.mask_img_, SurfaceImage):
             imgs_list = imgs.copy()
             masker = SurfaceLabelsMasker(
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
                 smoothing_fwhm=self.smoothing_fwhm,
-                standardize=standardize,
+                standardize=self.standardize,
                 detrend=self.detrend,
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,
@@ -643,7 +638,7 @@ class Parcellations(_MultiPCA):
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
                 smoothing_fwhm=self.smoothing_fwhm,
-                standardize=standardize,
+                standardize=self.standardize,
                 detrend=self.detrend,
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,

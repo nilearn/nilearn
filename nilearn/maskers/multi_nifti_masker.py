@@ -86,7 +86,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -184,7 +184,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         mask_img=None,
         runs=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         high_variance_confounds=False,
