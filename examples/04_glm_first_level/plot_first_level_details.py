@@ -221,7 +221,7 @@ def plot_contrast(first_level_model):
         )
 
     first_level_model.plot_predicted_signal_and_residuals(
-        coords=[((-60.0, -15.0, 3.0))], show=True
+        coords=[((-60.0, -15.0, 3.0))]
     )
 
 

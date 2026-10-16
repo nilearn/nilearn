@@ -111,7 +111,7 @@ report
 # We can plot the predicted and observed time series together
 # for a more direct comparison.
 time_series_dfs, figs = fmri_glm.plot_predicted_signal_and_residuals(
-    coords=coords[0:2], show=True
+    coords=coords[0:2]
 )
 
 

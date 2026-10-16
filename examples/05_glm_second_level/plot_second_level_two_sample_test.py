@@ -206,7 +206,7 @@ coords = table.loc[main_peak_main_cluster, ["X", "Y", "Z"]].to_numpy()
 # between predicted and observed values.
 time_series_dfs, figs = (
     second_level_model_unpaired.plot_predicted_signal_and_residuals(
-        coords=coords, show=True
+        coords=coords
     )
 )
 show()
@@ -216,7 +216,7 @@ show()
 # Such error is not observed for the paired model.
 time_series_dfs, figs = (
     second_level_model_paired.plot_predicted_signal_and_residuals(
-        coords=coords, show=True
+        coords=coords
     )
 )
 show()

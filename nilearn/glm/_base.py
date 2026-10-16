@@ -570,7 +570,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         residuals_ts,
         title_ref: str | None = None,
         figsize: tuple[int, int] = (10, 8),
-        close: bool = True,
     ):
         """Help plot observed vs predicted signal and residuals.
 
@@ -670,8 +669,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             fig.suptitle(f"{title_ref}", fontsize=16)
 
         plt.tight_layout()
-        if close:
-            plt.close(fig)
         return fig
 
     def _get_predicted_signal_and_residuals(
@@ -800,7 +797,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         mask=None,
         radius=3.0,
         figsize=(10, 8),
-        show=False,
     ):
         """Plot the predicted and residuals for a small region.
 
@@ -830,9 +826,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
 
         figsize : :obj:`tuple`, default = (10, 8)
             Size of the figure.
-
-        show : :obj:`bool`, default = False
-            Whether to display the figure.
 
         Returns
         -------
@@ -870,10 +863,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
                 residuals_ts=df[f"{region_name}; residuals"].values,
                 title_ref=region_name if len(dfs) > 1 else None,
                 figsize=figsize,
-                close=not show,
             )
-            if show:
-                fig.show()
             figs.append(fig)
 
         return dfs, figs
