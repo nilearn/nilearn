@@ -8,13 +8,11 @@ In order to speed up computing, in this example,
 Searchlight is run only on one slice on
 the :term:`fMRI` (see the generated figures).
 
-"""
+.. admonition:: dataset
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-#
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+
+"""
 
 # %%
 # Load Haxby dataset

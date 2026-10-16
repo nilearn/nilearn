@@ -26,14 +26,13 @@ following the approach of :footcite:t:`Anderson2001`.
 
 We find that Bonferroni correction is a bit more conservative,
 as revealed by the higher detection rate.
-"""
 
-# %%
-# .. admonition:: dataset
-#
-#    As in many other examples, we compare two visual categories from the
-#    the :ref:`Haxby dataset <haxby_dataset>`: "face" and "house" images.
-#
+.. admonition:: dataset
+
+    As in many other examples, we compare two visual categories from the
+    the :ref:`Haxby dataset <haxby_dataset>`: "face" and "house" images.
+
+"""
 
 # %%
 # Load one subject from the Haxby dataset

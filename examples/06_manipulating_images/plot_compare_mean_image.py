@@ -6,14 +6,13 @@ The goal of this example is to illustrate the use of the function
 :func:`~nilearn.image.math_img` with a list of images as input.
 We compare the means of 2 movie watching 4D images. The mean of the images
 could have been computed with nilearn :func:`~nilearn.image.mean_img` function.
-"""
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`development fMRI dataset
-#    <development_dataset>`.
-#
+.. admonition:: dataset
+
+   This example uses the :ref:`development fMRI dataset
+   <development_dataset>`.
+
+"""
 
 # %%
 # Fetching 2 subject movie watching brain development :term:`fMRI` datasets.

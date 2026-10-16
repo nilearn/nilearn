@@ -21,16 +21,15 @@ More specifically:
 
 Notice that in this case the preprocessed :term:`bold<BOLD>` images
 were already normalized to the same :term:`MNI` space.
-"""
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses:
-#
-#    - the :ref:`language localizer demo dataset <language_localizer_demo>`
-#    - the :ref:`fsaverage template <fs_average_template>`
-#
+.. admonition:: dataset
+
+   This example uses:
+
+   - the :ref:`language localizer demo dataset <language_localizer_demo>`
+   - the :ref:`fsaverage template <fs_average_template>`
+
+"""
 
 # %%
 # Fetch example :term:`BIDS` dataset

@@ -9,13 +9,11 @@ We compare their overall cross-validated accuracy and their confusion matrix.
 See the scikit-learn documentation
 about `multiclass classification <https://scikit-learn.org/stable/modules/multiclass.html>`_.
 
-"""
+.. admonition:: dataset
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-#
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+
+"""
 
 import numpy as np
 import pandas as pd

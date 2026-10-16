@@ -15,13 +15,11 @@ a multiscale prediction on the images seen by the subject.
     For an encoding approach for the same dataset, see
     :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
 
-"""
+.. admonition:: dataset
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`Miyawaki 2008 dataset <miyawaki_dataset>`.
-#
+    This example uses the :ref:`Miyawaki 2008 dataset <miyawaki_dataset>`.
+.
+"""
 
 # %%
 import sys

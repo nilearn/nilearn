@@ -2,21 +2,12 @@
 Show stimuli of Haxby dataset
 =============================
 
-In this script we plot an overview of the stimuli used
-in :footcite:t:`Haxby2001`.
+.. admonition:: dataset
+
+    This example plots an overview of the stimuli used
+    in the :ref:`Haxby dataset <haxby_dataset>`.
+
 """
-
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-#
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
-import matplotlib.pyplot as plt
 
 # %%
 from nilearn import datasets
@@ -26,6 +17,7 @@ haxby_dataset = datasets.fetch_haxby(n_subjects=1, fetch_stimuli=True)
 stimulus_information = haxby_dataset.stimuli
 
 # %%
+import matplotlib.pyplot as plt
 
 for stim_type in stimulus_information:
     # skip control images, there are too many
@@ -42,12 +34,5 @@ for stim_type in stimulus_information:
             ax.axis("off")
 
 show()
-
-# %%
-# References
-# ----------
-#
-# .. footbibliography::
-
 
 # sphinx_gallery_dummy_images=7

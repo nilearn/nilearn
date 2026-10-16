@@ -12,13 +12,12 @@ thus returning a very robust decoder
 at a lower computational cost than other spatially regularized methods.
 
 To have more details, see: :ref:`frem`.
-"""
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-#
+.. admonition:: dataset
+
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+
+"""
 
 # %%
 # Load the Haxby dataset

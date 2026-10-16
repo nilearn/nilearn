@@ -15,17 +15,14 @@ If some concepts seem unclear,
 please refer to the :ref:`documentation on decoding <decoding_intro>`
 and in particular to the :ref:`advanced section <going_further>`.
 
+.. admonition:: dataset
+
+    As in many other examples, we decode the visual category of
+    stimuli in the the :ref:`Haxby dataset <haxby_dataset>`,
+    focusing on distinguishing two categories:
+    "face" and "cat" images.
+
 """
-
-# %%
-# .. admonition:: dataset
-#
-#    As in many other examples, we decode the visual category of
-#    stimuli in the the :ref:`Haxby dataset <haxby_dataset>`,
-#    focusing on distinguishing two categories:
-#    "face" and "cat" images.
-#
-
 # %%
 # Retrieve and load the :term:`fMRI` data from the Haxby study
 # ------------------------------------------------------------

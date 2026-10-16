@@ -43,17 +43,15 @@ However, when the fMRI image is loaded once and then passed to
 multiple times. We will see that this can already be a significant
 improvement over the naive usage of :class:`~nilearn.maskers.NiftiMasker` with
 file paths.
+
+.. admonition:: dataset
+
+   This example uses:
+
+   - the :ref:`ADHD dataset <adhd_dataset>`
+   - the :ref:`BASC multiscale atlas <basc_multiscale_2015_atlas>`
+
 """
-
-# %%
-# .. admonition:: dataset
-#
-#    This example uses:
-#
-#    - the :ref:`ADHD dataset <adhd_dataset>`
-#    - the :ref:`BASC multiscale atlas <basc_multiscale_2015_atlas>`
-#
-
 # %%
 # Create a large fMRI image
 # -------------------------

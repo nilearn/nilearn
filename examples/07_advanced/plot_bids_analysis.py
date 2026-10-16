@@ -17,14 +17,13 @@ More specifically, this example will be divided into three sections:
    from the :term:`BIDS` dataset.
 3. Fitting a :term:`GLM` second-level model directly from
    the fitted :term:`GLM` first-level models.
-"""
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`language localizer demo dataset
-#    <language_localizer_demo>`.
-#
+.. admonition:: dataset
+
+   This example uses the :ref:`language localizer demo dataset
+   <language_localizer_demo>`.
+
+"""
 
 # %%
 # Fetch example :term:`BIDS` dataset

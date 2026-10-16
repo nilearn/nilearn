@@ -13,14 +13,13 @@ to two common beta-series modeling approaches,
 Least Squares All (LSA) and Least Squares Separate (LSS).
 Then, we show how to use the resulting beta-series for a simple
 task-based functional connectivity analysis.
-"""
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`language localizer demo dataset
-#    <language_localizer_demo>`.
-#
+.. admonition:: dataset
+
+   This example uses the :ref:`language localizer demo dataset
+   <language_localizer_demo>`.
+
+"""
 
 # %%
 # Prepare data and analysis parameters

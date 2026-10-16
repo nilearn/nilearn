@@ -5,9 +5,12 @@ SearchLight with a custom correlation estimator
 This example shows how to use :class:`~nilearn.decoding.SearchLight`
 with a user-defined
 :sklearn:`scikit-learn compatible estimator </developers/develop.html>`.
-As in many other examples, we fetch the Haxby dataset using
-:func:`~nilearn.datasets.fetch_haxby`
-and compare two of the visual task categories: "face" and "house" images.
+
+.. admonition:: dataset
+
+    As in many other examples,
+    we fetch the :ref:`Haxby dataset <haxby_dataset>`
+    and compare two of the visual task categories: "face" and "house" images.
 
 The example is divided into the following sections:
 
@@ -20,12 +23,6 @@ The example is divided into the following sections:
 3. Run a whole-brain :term:`SearchLight` analysis with this estimator.
 4. Visualize the resulting correlation-score map.
 """
-
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-#
 
 # %%
 # Load Haxby dataset

@@ -4,9 +4,7 @@ Extract signals on spheres and plot a connectome
 
 This example shows how to extract signals from spherical regions.
 We show how to build spheres around user-defined coordinates, as well as
-centered on coordinates
-from the :ref:`Power 2011 atlas <power_2011_atlas>`
-and the :ref:`Dosenbach 2010 atlas <dosenbach_2010_atlas>`.
+centered on coordinates specific atlases.
 
 We estimate connectomes using two different methods: **sparse inverse
 covariance** and **partial_correlation**,

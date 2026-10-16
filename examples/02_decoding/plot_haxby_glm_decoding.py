@@ -13,14 +13,12 @@ More specifically:
 2. Extract the information to generate a glm
    representing the blocks of stimuli.
 3. Analyze the decoding performance using a classifier.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+
 """
-
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-#
-
 # %%
 # Fetch example Haxby dataset
 # ---------------------------

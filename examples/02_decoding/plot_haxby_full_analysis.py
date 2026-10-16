@@ -14,13 +14,11 @@ three different masks:
 
 The masks were defined via a standard GLM-based analysis.
 
-"""
+.. admonition:: dataset
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-#
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+
+"""
 
 # We ignore some warnings that would otherwise
 # be thrown when reading images

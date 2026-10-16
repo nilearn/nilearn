@@ -10,13 +10,12 @@ The header information contains metadata about the image, such as the
 dimensions, the voxel sizes, the affine matrix, repetition time (:term:`TR`),
 etc. Some of this information might be important for downstream analyses
 depending on the software used.
-"""
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`ADHD dataset <adhd_dataset>`.
-#
+.. admonition:: dataset
+
+   This example uses the :ref:`ADHD dataset <adhd_dataset>`.
+
+"""
 
 # %%
 # Let's fetch two subjects from the dataset.
