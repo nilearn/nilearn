@@ -151,7 +151,7 @@ def test_flm_plot_predicted_signal_and_residuals(
     rng, shape_3d_default, affine_eye, img_3d_ones_eye
 ):
     """Test plot_predicted_signal_and_residuals with FirstLevelModel."""
-    n_frames = 512
+    n_frames = 128
     t_r = 1.0
     frame_times = np.linspace(0, (n_frames - 1) * t_r, n_frames)
 
