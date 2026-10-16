@@ -56,6 +56,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-primary:`Doc` Add privacy-friendly page view analytics with `GoatCounter <https://www.goatcounter.com/>`_ to the documentation website (:gh:`6393` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Add an example comparing the effect of ``standardize="zscore_sample"``, ``standardize="psc"`` and ``standardize=None`` on decoding performance (:gh:`6597` by `Reyyi Shreyas`_).
