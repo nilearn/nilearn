@@ -40,7 +40,7 @@ events = pd.read_csv(subject_data.events, sep="\t")
 # Fit model
 # ---------
 # Note that `minimize_memory` is set to `False` so that `FirstLevelModel`
-# stores the residuals.
+# stores and plot the residuals.
 # `signal_scaling` is set to False, so we keep the same scaling as the
 # original data in `fmri_img`.
 from nilearn.glm.first_level import FirstLevelModel

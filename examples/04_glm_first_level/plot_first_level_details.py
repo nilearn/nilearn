@@ -80,8 +80,11 @@ events
 # ---------------------
 #
 # First we specify a linear model.
-# The .fit() functionality of FirstLevelModel function creates the design
-# matrix and the beta maps.
+# The ``.fit()`` functionality of FirstLevelModel function
+# creates the design matrix and the beta maps.
+# We instantiate the model with ``minimize_memory=False``
+# because this is required to use ``plot_predicted_signal_and_residuals``
+# to visualize the residuals time series.
 #
 from nilearn.glm.first_level import FirstLevelModel
 
@@ -199,6 +202,7 @@ from nilearn import plotting
 
 def plot_contrast(first_level_model):
     """Specify, estimate and plot the main contrasts \
+        and reresidual time series \
         for given a first model.
     """
     design_matrix = first_level_model.design_matrices_[0]
@@ -220,6 +224,9 @@ def plot_contrast(first_level_model):
             cut_coords=1,
         )
 
+    # Note that the coordinates were chosen
+    # to be apprximately in the middle of the main cluster
+    # of the main effect on a F contrast of the first model of this example.
     first_level_model.plot_predicted_signal_and_residuals(
         coords=[((-60.0, -15.0, 3.0))]
     )

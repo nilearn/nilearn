@@ -104,6 +104,9 @@ show()
 
 # %%
 # We specify the analysis models and fit them.
+# We instantiate the models with ``minimize_memory=False``
+# because this is required to use ``plot_predicted_signal_and_residuals``
+# to visualize the residuals time series.
 from nilearn.glm.second_level import SecondLevelModel
 
 second_level_model_unpaired = SecondLevelModel(
