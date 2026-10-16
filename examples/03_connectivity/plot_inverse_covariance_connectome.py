@@ -27,15 +27,18 @@ from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 
 atlas = fetch_atlas_msdl()
 
-# Loading atlas image stored in 'maps'
-atlas_filename = atlas["maps"]
+# %%
+print(atlas.description.content)
 
-# Loading atlas data stored in 'labels'
-labels = atlas["labels"]
+# Loading atlas image and labels
+atlas_filename = atlas.maps
+labels = atlas.labels
 
+# %%
 # Loading the functional datasets
 data = fetch_development_fmri(n_subjects=1)
 
+# %%
 # print basic information on the dataset
 print(f"First subject functional nifti images (4D) are at: {data.func[0]}")
 

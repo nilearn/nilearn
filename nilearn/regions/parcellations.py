@@ -180,7 +180,7 @@ def _labels_masker_extraction(img, masker, confound):
     masker : instance of NiftiLabelsMasker
         Used for extracting signals with fit_transform.
 
-    confound : csv file, numpy ndarray or pandas DataFrame
+    confound : CSV file, numpy ndarray or pandas DataFrame
         Confound used for signal cleaning while extraction.
         Passed to signal.clean.
 

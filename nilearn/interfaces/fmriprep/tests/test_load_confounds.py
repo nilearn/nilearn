@@ -567,7 +567,7 @@ def test_non_steady_state(tmp_path, fmriprep_version):
 
 def test_load_non_nifti(tmp_path):
     """Test non-nifti and invalid file type as input."""
-    # tsv file - unsupported input
+    # TSV file - unsupported input
     _, tsv = create_tmp_filepath(tmp_path, copy_confounds=True, copy_json=True)
 
     with pytest.raises(ValueError, match="Unsupported input"):

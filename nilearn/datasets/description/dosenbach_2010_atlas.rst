@@ -1,4 +1,4 @@
-.. _dosenbach_atlas:
+.. _dosenbach_2010_atlas:
 
 Dosenbach 2010 atlas
 ====================
@@ -18,14 +18,12 @@ See :footcite:t:`Dosenbach2010`.
 
 Content
 -------
-    :'rois': Coordinates of ROIs in :term:`MNI` space.
-    :'labels': ROIs labels.
-    :'networks': Networks names.
+.. nilearn_dataset_content:: dosenbach_2010_atlas
 
 References
 ----------
-
 .. footbibliography::
 
 License
 -------
+.. nilearn_dataset_license:: dosenbach_2010_atlas

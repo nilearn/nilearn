@@ -200,7 +200,7 @@ def load_confounds(
         Path of processed nii.gz/dtseries.nii/func.gii file reside in a
         :term:`fMRIPrep` generated functional derivative directory (i.e.The
         associated confound files should be in the same directory as the image
-        file). As long as the image file, confound related tsv and json are in
+        file). As long as the image file, confound related TSV and json are in
         the same directory with BIDS-complied names, `load_confounds` can
         retrieve the relevant files correctly.
 
@@ -558,7 +558,7 @@ def _load_single_confounds_file(
     # tedana will load multiple files so we need to handle if
     # before loading "regular" confounds from other sources
 
-    # Convert tsv file to pandas dataframe
+    # Convert TSV file to pandas dataframe
     confounds_all = load_confounds_file_as_dataframe(
         confounds_file, flag_tedana=flag_tedana
     )

@@ -14,7 +14,7 @@ from a single subject dataset from the "Neurospin Localizer".
 .. seealso::
 
     For more information about the dataset
-    see its :ref:`description <localizer_first_level_dataset>`.
+    see its :ref:`description <localizer_first_level>`.
 """
 
 # %%
