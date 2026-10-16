@@ -175,8 +175,9 @@ def test_slm_plot_predicted_signal_and_residuals(
     rng, affine_eye, shape_3d_default
 ):
     """Test plot_predicted_signal_and_residuals with SecondLevelModel."""
+    n_subjects = 128
     images = []
-    for _ in range(500):
+    for _ in range(n_subjects):
         data = rng.random(shape_3d_default)
         images.append(Nifti1Image(data, affine_eye))
 
