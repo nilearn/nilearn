@@ -1,0 +1,18 @@
+{
+   "gray_matter_maps": {
+      "type": "list[str]",
+      "desc": "Full Paths to nifti gray matter density probability maps."
+   },
+   "white_matter_maps": {
+      "type": "list[str]",
+      "desc": "Full Paths to nifti white matter density probability maps."
+   },
+   "ext_vars": {
+      "type": "pandas.DataFrame",
+      "desc": "Data from the CSV file with information about selected subjects."
+   },
+   "data_usage_agreement": {
+      "type": "str",
+      "desc": "Full path to the .txt file containing the data usage agreement."
+   }
+}

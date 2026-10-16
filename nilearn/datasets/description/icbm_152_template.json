@@ -1,0 +1,42 @@
+{
+   "csf": {
+      "type": "str",
+      "desc": "Full path to probabilistic map for cerebrospinal fluid"
+   },
+   "gm": {
+      "type": "str",
+      "desc": "Full path to probabilistic map for gray matter"
+   },
+   "wm": {
+      "type": "str",
+      "desc": "Full path to probabilistic map for white matter"
+   },
+   "pd": {
+      "type": "str",
+      "desc": "Full path to proton density-weighted anatomical templates (non-linear average)"
+   },
+   "t1": {
+      "type": "str",
+      "desc": "Full path to T1-weighted anatomical template (non-linear average)"
+   },
+   "t2": {
+      "type": "str",
+      "desc": "Full path to T2-weighted anatomical template (non-linear average)"
+   },
+   "t2_relax": {
+      "type": "str",
+      "desc": "Full path to T2-weighted/relaxed anatomical template"
+   },
+   "eye_mask": {
+      "type": "str",
+      "desc": "Full path to eye mask useful to mask out part of MRI images"
+   },
+   "face_mask": {
+      "type": "str",
+      "desc": "Full path  to face mask useful to mask out part of MRI images"
+   },
+   "mask": {
+      "type": "str",
+      "desc": "Full path  to whole brain mask useful to mask out skull areas"
+   }
+}
