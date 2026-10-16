@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import inspect
 import json
+import shutil
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
+from tempfile import mkdtemp
 from typing import TYPE_CHECKING, overload
 
 if TYPE_CHECKING:
@@ -16,6 +18,7 @@ if TYPE_CHECKING:
 
 from nilearn import __version__
 from nilearn._utils import logger
+from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -337,6 +340,15 @@ def save_glm_to_bids(
         model=model,
     )
 
+    # force to do some caching as some computations
+    # are done twice: once during saving the GLM
+    # and then during report creation
+    # called at the end of this function
+    original_location = deepcopy(model.memory.location)
+    if original_location is None:
+        temp_dir = mkdtemp()
+        model.memory = check_memory(temp_dir)
+
     contrasts = coerce_to_dict(contrasts)
 
     out_dir = Path(out_dir)
@@ -513,12 +525,17 @@ def save_glm_to_bids(
         else:
             glm_report = model.generate_report(contrasts=contrasts, **kwargs)
 
-    model.verbose += 1
     glm_report.save_as_html(out_dir / f"{prefix}report.html")
 
     # make sure that any new report generated
     # will use absolute paths to the figures, images, tables...
     model._reporting_data["filenames"]["use_absolute_path"] = True
+
+    # clean up
+    model.verbose += 1
+    if original_location is None:
+        model.memory = check_memory(None)
+        shutil.rmtree(temp_dir)
 
     return model
 
