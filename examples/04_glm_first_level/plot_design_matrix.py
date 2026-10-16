@@ -6,8 +6,6 @@ Three examples of design matrices specification and computation for first-level
 :term:`fMRI` data analysis (event-related design, block design,
 :term:`FIR` design).
 
-This examples requires matplotlib.
-
 """
 
 # %%

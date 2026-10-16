@@ -35,29 +35,18 @@ On the other hand,
 it is obviously less accurate
 than using a subject-tailored mesh.
 
-.. seealso::
+.. admonition:: dataset
 
-    For more information about the dataset
-    see its :ref:`description <localizer_first_level>`.
+    This example uses:
+
+    - the :ref:`localizer first level dataset <localizer_first_level>`
+    - the :ref:`fsaverage template <fs_average_template>`
+
 """
-
-# %%
-# .. admonition:: dataset
-#
-#    This example uses:
-#
-#    - the :ref:`localizer first level dataset
-#      <localizer_first_level>`
-#    - the :ref:`fsaverage template <fs_average_template>`
-#
 
 # %%
 # Prepare data and analysis parameters
 # ------------------------------------
-#
-
-# %%
-# Fetch the data.
 from nilearn.datasets import fetch_localizer_first_level
 
 data = fetch_localizer_first_level()

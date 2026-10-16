@@ -4,22 +4,17 @@ Predicted time series and residuals
 
 Here we fit a First Level :term:`GLM` with the `minimize_memory`-argument
 set to `False`.
-By doing so, the `FirstLevelModel`-object stores the residuals, which we can
-then inspect.
-Also, the predicted time series can be extracted, which is useful to assess the
-quality of the model fit.
+By doing so, the `FirstLevelModel`-object stores the residuals,
+which we can then inspect.
+Also, the predicted time series can be extracted,
+which is useful to assess the quality of the model fit.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`SPM auditory dataset <spm_auditory_dataset>`.
 
 """
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`SPM auditory dataset <spm_auditory_dataset>`.
-#
-
-# %%
-# Import modules
-# --------------
 import pandas as pd
 
 from nilearn import image, masking

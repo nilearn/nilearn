@@ -17,15 +17,13 @@ More specifically:
    then contrast estimation).
 4. The Default Mode Network is displayed.
 
+
+.. admonition:: dataset
+
+    This example uses the :ref:`ADHD dataset <adhd_dataset>`.
+
 """
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`ADHD dataset <adhd_dataset>`.
-#
-
-# %%
 import numpy as np
 
 from nilearn import plotting
@@ -40,9 +38,6 @@ from nilearn.maskers import NiftiSpheresMasker
 # Prepare data and analysis parameters
 # ------------------------------------
 # Prepare the data.
-#
-# For more information
-# see the :ref:`dataset description <adhd_dataset>`.
 #
 adhd_dataset = fetch_adhd(n_subjects=1)
 

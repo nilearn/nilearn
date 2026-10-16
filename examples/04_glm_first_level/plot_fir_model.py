@@ -11,18 +11,12 @@ Here, we demonstrate the use of a :term:`FIR` model with 3 lags,
 computing 4 contrasts
 from a single subject dataset from the "Neurospin Localizer".
 
-.. seealso::
+.. admonition:: dataset
 
-    For more information about the dataset
-    see its :ref:`description <localizer_first_level>`.
+    This example uses the :ref:`localizer first level dataset
+    <localizer_first_level>`.
+
 """
-
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`localizer first level dataset
-#    <localizer_first_level>`.
-#
 
 # %%
 # At first, we grab the localizer data.
