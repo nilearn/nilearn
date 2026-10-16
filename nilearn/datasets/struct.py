@@ -93,7 +93,7 @@ def fetch_icbm152_2009(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, interest keys are:
+        Dictionary-like object, contains:
 
         - "t1": str,
           Path to T1-weighted anatomical image
@@ -689,14 +689,14 @@ def fetch_oasis_vbm(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'gray_matter_maps': string list
           Paths to nifti gray matter density probability maps
         - 'white_matter_maps' string list
           Paths to nifti white matter density probability maps
         - 'ext_vars': pandas.DataFrame
-          Data from the .csv file with information about selected subjects
+          Data from the CSV file with information about selected subjects
         - 'data_usage_agreement': string
           Path to the .txt file containing the data usage agreement.
 
@@ -1210,7 +1210,7 @@ def load_fsaverage(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
          - ``'description'``: description of the dataset
          - ``'pial'``: Polymesh for pial surface for left and right hemispheres
          - ``'white_matter'``: Polymesh for white matter surface

@@ -22,13 +22,17 @@ task-based functional connectivity analysis.
 # and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 #
 # For more information
-# see the :ref:`dataset description <language_localizer_dataset>`.
+# see the :ref:`dataset description <language_localizer_demo>`.
 #
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.plotting import plot_design_matrix, plot_stat_map, show
 
 data = fetch_language_localizer_demo_dataset()
+
+# %%
+# The dataset is organized in BIDS-like fashion on disk at this location.
+print(data.data_dir)
 
 # %%
 # Find the first subject's functional run, confounds, and events file
