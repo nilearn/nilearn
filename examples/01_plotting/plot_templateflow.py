@@ -21,6 +21,15 @@ for the Harvard-Oxford volumetric atlas.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`Harvard-Oxford atlas <harvard_oxford_atlas>`
+#    - the :ref:`fsaverage template <fs_average_template>`
+#
+
+# %%
 # Fetch DK Surface template
 # -------------------------
 # TemplateFlow allows for the retrieval of image files, annotations, and

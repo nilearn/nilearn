@@ -7,14 +7,19 @@ analysis (one-sample test) and visualizing the results.
 
 More specifically:
 
-1. A sequence of subject :term:`fMRI` button press contrasts is downloaded.
+1. A list of subject-level :term:`fMRI` contrasts is downloaded.
 2. A mask of the useful brain volume is computed.
 3. A one-sample t-test is applied to the brain maps.
 
-We focus on a given contrast of the localizer dataset: the motor response to
-left versus right button press. Both at the individual and group level, this is
-expected to elicit activity in the motor cortex (positive in the right
-hemisphere, negative in the left hemisphere).
+.. admonition:: dataset
+
+    This example uses the the motor response
+    to left versus right button press task
+    from the :ref:`Brainomics Localizer dataset <brainomics_maps>`.
+
+    Both at the individual and group level, this is
+    expected to elicit activity in the motor cortex
+    (positive in the rightv hemisphere, negative in the left hemisphere).
 
 """
 
@@ -23,8 +28,7 @@ from nilearn import plotting
 # %%
 # Fetch dataset
 # -------------
-# We download a list of left vs right button press :term:`contrasts<contrast>`
-# from a localizer dataset. Note that we fetch individual t-maps that represent
+# Note that we fetch individual t-maps that represent
 # the :term:`BOLD` activity estimate divided by the uncertainty about
 # this estimate.
 from nilearn.datasets import fetch_localizer_contrasts

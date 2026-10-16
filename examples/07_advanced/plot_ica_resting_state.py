@@ -16,6 +16,12 @@ in this example.
 For decomposition methods that are specifically
 tailored to :term:`fMRI` data, please refer to
 :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`.
+
+.. admonition:: dataset
+
+   This example uses the :ref:`development fMRI dataset
+   <development_dataset>`.
+
 """
 
 # %%

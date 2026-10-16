@@ -1,22 +1,17 @@
 """
-Voxel-Based Morphometry on Oasis dataset
-========================================
+Voxel-Based Morphometry: Regression
+===================================
 
 This example uses Voxel-Based Morphometry (:term:`VBM`)
 to study the relationship between aging and gray matter density.
 
-The data comes from the Open Access Series of Imaging Studies
-(`OASIS <https://sites.wustl.edu/oasisbrains/>`_) project.
-If you use it, you need to agree with the data usage agreement available
-on the website.
+.. admonition:: dataset
 
-It has been processed through a standard :term:`VBM` pipeline (using SPM8 and
-NewSegment) to create :term:`VBM` maps, which we study here.
+    This example uses the :ref:`OASIS VBM dataset <oasis_maps>`.
 
-.. seealso::
-
-    For more information
-    see the :ref:`dataset description <oasis_maps>`.
+    It has been processed through a standard :term:`VBM` pipeline
+    (using SPM8 and NewSegment)
+    to create :term:`VBM` maps, which we study here.
 
 Predictive modeling analysis
 ----------------------------

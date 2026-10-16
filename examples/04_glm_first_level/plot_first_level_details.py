@@ -16,10 +16,13 @@ should first run the
 tutorial to get a bit more familiar with the base concepts,
 and only then run this tutorial example.
 
-.. seealso::
+.. admonition:: dataset
 
-    For more information about the dataset
-    see its :ref:`description <localizer_first_level>`.
+    This example uses:
+
+    - the :ref:`ICBM 152 template <icbm_152_template>`
+    - the :ref:`localizer first level dataset <localizer_first_level>`
+
 """
 
 # %%

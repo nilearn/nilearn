@@ -13,6 +13,15 @@ This figure was originally developed in :footcite:t:`Power2017`.
 """
 
 # %%
+# .. admonition:: dataset
+#
+#    This example uses:
+#
+#    - the :ref:`ADHD dataset <adhd_dataset>`
+#    - the :ref:`ICBM 152 template <icbm_152_template>`
+#
+
+# %%
 # Fetching data from ADHD dataset
 # -------------------------------
 #

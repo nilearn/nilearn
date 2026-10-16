@@ -1,6 +1,6 @@
 """
-Visualizing a probabilistic atlas: the default mode in the MSDL atlas
-=====================================================================
+Visualizing a probabilistic atlas
+=================================
 
 Visualizing a :term:`probabilistic atlas` requires visualizing the different
 maps that compose it.
@@ -21,6 +21,12 @@ to plot the maps in one step that
 with less control over the plot (see below)
 
 """
+
+# %%
+# .. admonition:: dataset
+#
+#    This example uses the :ref:`MSDL atlas <msdl_atlas>`.
+#
 
 # %%
 # Fetching :term:`Probabilistic atlas` - MSDL atlas

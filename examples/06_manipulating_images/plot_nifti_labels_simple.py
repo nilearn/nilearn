@@ -8,6 +8,13 @@ More precisely, this example shows how to use the
 :class:`~nilearn.maskers.NiftiLabelsMasker` object to perform this
 operation in just a few lines of code.
 
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Harvard-Oxford atlas <harvard_oxford_atlas>`
+    - the :ref:`development fMRI dataset <development_dataset>`
+
 """
 
 # %%

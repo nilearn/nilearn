@@ -5,18 +5,20 @@ Extracting signals of a probabilistic atlas of functional regions
 This example extracts the signal on regions defined via a probabilistic
 atlas, to construct a functional connectome.
 
-We use the `MSDL atlas
-<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
-of functional regions in movie-watching.
-
 The key to extract signals is to use the
 :class:`~nilearn.maskers.NiftiMapsMasker` that can transform nifti
 objects to time series using a probabilistic atlas.
 
-As the MSDL atlas comes with (x, y, z) :term:`MNI` coordinates for the
-different regions, we can visualize the matrix as a graph of
-interaction in a brain. To avoid having too dense a graph, we represent
-only the 20% edges with the highest values.
+.. admonition:: dataset
+
+    This example uses the :ref:`MSDL atlas <msdl_atlas>` to extract data
+    from the :ref:`development fMRI dataset <development_dataset>`.
+
+    As the MSDL atlas comes with (x, y, z) :term:`MNI` coordinates
+    for the different regions,
+    we can visualize the matrix as a graph of interaction in a brain.
+    To avoid having too dense a graph,
+    we represent only the 20% edges with the highest values.
 
 """
 

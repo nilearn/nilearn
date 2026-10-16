@@ -10,15 +10,15 @@ The header information contains metadata about the image, such as the
 dimensions, the voxel sizes, the affine matrix, repetition time (:term:`TR`),
 etc. Some of this information might be important for downstream analyses
 depending on the software used.
+
+.. admonition:: dataset
+
+   This example uses the :ref:`ADHD dataset <adhd_dataset>`.
+
 """
 
 # %%
-# Let's fetch two subjects from
-# an example :term:`fMRI` dataset,
-# :func:`~nilearn.datasets.fetch_adhd`.
-#
-# For more information on the structure of this dataset,
-# see the :ref:`dataset description <adhd_dataset>`.
+# Let's fetch two subjects from the dataset.
 #
 from nilearn.datasets import fetch_adhd
 

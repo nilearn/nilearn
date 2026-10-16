@@ -7,21 +7,20 @@ to extract spatially constrained brain regions from whole brain maps decomposed
 using :term:`Dictionary learning` and use them to build
 a :term:`functional connectome`.
 
-
-
-We used movie-watching functional scans of 20 subjects from
-:func:`~nilearn.datasets.fetch_development_fmri` and
-:class:`~nilearn.decomposition.DictLearning` for set of brain atlas maps.
-
 This example can also be inspired to apply the same steps
-to even regions extraction
-using :term:`ICA` maps.
+to even regions extraction using :term:`ICA` maps.
 In that case, the idea would be to replace
 :term:`Dictionary learning` to canonical :term:`ICA` decomposition
 using :class:`~nilearn.decomposition.CanICA`
 
 Please see the related documentation
 of :class:`~nilearn.regions.RegionExtractor` for more details.
+
+.. admonition:: dataset
+
+    This example uses the movie-watching functional scans of 20 subjects from
+    the :ref:`development fMRI dataset <development_dataset>` and
+    :class:`~nilearn.decomposition.DictLearning` for set of brain atlas maps.
 
 """
 

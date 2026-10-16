@@ -26,10 +26,6 @@ model with a random design matrix **X**:
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 from time import time
 
 import matplotlib.pyplot as plt
@@ -252,10 +248,3 @@ show()
 # slow.
 
 # from sklearn.feature_selection import RFE
-
-
-# %%
-# References
-# ----------
-#
-# .. footbibliography::
