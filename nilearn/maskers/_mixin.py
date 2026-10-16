@@ -20,9 +20,10 @@ from nilearn._utils.bids import (
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg import repr_niimgs
 from nilearn._utils.numpy_conversions import csv_to_array
+from nilearn._utils.param_validation import check_n_confounds_match_n_images
 from nilearn.image import high_variance_confounds
 from nilearn.image.image import get_indices_from_image, iter_check_niimg
-from nilearn.nilearn_typing import NiimgLike
+from nilearn.nilearn_typing import NiimgLike, NJobs, Signals, SingleConfound
 from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
 
@@ -31,10 +32,17 @@ from nilearn.surface.surface import SurfaceImage
 class _MultiMixin:
     """Mixin class to add common MultiMasker functionalities."""
 
+    n_jobs: NJobs
+
     @fill_doc
     def fit_transform(
-        self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
-    ):
+        self,
+        imgs,
+        y: None = None,
+        confounds: SingleConfound | list[SingleConfound | None] | None = None,
+        sample_mask=None,
+        **fit_params,
+    ) -> Signals | list[Signals]:
         """
         Fit to data, then transform it.
 
@@ -76,7 +84,10 @@ class _MultiMixin:
 
     @fill_doc
     def transform_imgs(
-        self, imgs_list, confounds=None, n_jobs=1, sample_mask=None
+        self,
+        imgs_list,
+        confounds: list[SingleConfound | None] | None = None,
+        sample_mask=None,
     ):
         """Extract signals from a list of 4D niimgs.
 
@@ -86,8 +97,6 @@ class _MultiMixin:
             Images to process.
 
         %(confounds_multi)s
-
-        %(n_jobs)s
 
         %(sample_mask_multi)s
 
@@ -118,7 +127,7 @@ class _MultiMixin:
         # defined in each child class
         func = self._cache(self.transform_single_imgs)
 
-        region_signals = Parallel(n_jobs=n_jobs)(
+        region_signals = Parallel(n_jobs=self.n_jobs)(
             delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sms)
             for imgs, cfs, sms in zip(
                 niimg_iter, confounds, sample_mask, strict=False
@@ -127,7 +136,12 @@ class _MultiMixin:
         return region_signals
 
     @fill_doc
-    def transform(self, imgs, confounds=None, sample_mask=None):
+    def transform(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound | None] | None = None,
+        sample_mask=None,
+    ) -> Signals | list[Signals]:
         """Apply mask, spatial and temporal preprocessing.
 
         Parameters
@@ -172,21 +186,14 @@ class _MultiMixin:
             assert all(isinstance(x, SurfaceImage) for x in imgs)
 
         return self.transform_imgs(
-            imgs,
-            confounds=confounds,
-            sample_mask=sample_mask,
-            n_jobs=self.n_jobs,
+            imgs, confounds=confounds, sample_mask=sample_mask
         )
 
     def _prepare_confounds(self, imgs_list, confounds):
         """Check and prepare confounds."""
         if confounds is None:
             confounds = list(itertools.repeat(None, len(imgs_list)))
-        elif len(confounds) != len(imgs_list):
-            raise ValueError(
-                f"number of confounds ({len(confounds)}) unequal to "
-                f"number of images ({len(imgs_list)})."
-            )
+        check_n_confounds_match_n_images(confounds, imgs_list)
 
         if self.high_variance_confounds:
             for i, img in enumerate(imgs_list):

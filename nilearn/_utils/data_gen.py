@@ -512,8 +512,8 @@ def generate_fake_fmri_data_and_design(
     """
     if affine is None:
         affine = np.eye(4)
-    fmri_data = []
-    design_matrices = []
+    fmri_data: list[Nifti1Image] = []
+    design_matrices: list[pd.DataFrame] = []
 
     rng = np.random.default_rng(rand_gen)
 
