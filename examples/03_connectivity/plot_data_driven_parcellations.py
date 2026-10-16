@@ -24,15 +24,12 @@ and subsequently for classification tasks or to analyze data at a local level.
 
     The big picture discussion corresponding to this example can be found
     in the documentation section :ref:`parcellating_brain`.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`development fMRI dataset
+    <development_dataset>`.
 """
-
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`development fMRI dataset
-#    <development_dataset>`.
-#
-
 # %%
 # Download a brain development fMRI dataset
 # -----------------------------------------

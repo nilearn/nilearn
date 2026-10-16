@@ -5,29 +5,24 @@ Computing a connectome with sparse inverse covariance
 This example constructs a functional connectome using the sparse inverse
 covariance.
 
-We use the `MSDL atlas
-<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
-of functional regions in movie watching, and the
-:class:`~nilearn.maskers.NiftiMapsMasker` to extract time series.
-
 Note that the inverse covariance (or precision) contains values that can
 be linked to *negated* partial correlations, so we negated it for
 display.
 
-As the MSDL atlas comes with (x, y, z) :term:`MNI` coordinates for
-the different regions, we can visualize the matrix as a graph of
-interaction in a brain. To avoid having too dense a graph, we
-represent only the edges above 80% of the values.
-"""
+.. admonition:: dataset
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses:
-#
-#    - the :ref:`MSDL atlas <msdl_atlas>`
-#    - the :ref:`development fMRI dataset <development_dataset>`
-#
+    This example uses the :ref:`MSDL atlas <msdl_atlas>`
+    to extract time series
+    from the :ref:`development fMRI dataset <development_dataset>`
+    with the :class:`~nilearn.maskers.NiftiMapsMasker`.
+
+    As the MSDL atlas comes with (x, y, z) :term:`MNI` coordinates
+    for the different regions,
+    we can visualize the matrix as a graph of interaction in a brain.
+    To avoid having too dense a graph,
+    we represent only the 20% edges with the highest values.
+
+"""
 
 # %%
 # Retrieve the atlas and the data

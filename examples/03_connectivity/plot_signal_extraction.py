@@ -21,16 +21,14 @@ is :footcite:t:`Varoquaux2013`.
 This is just a code example, see the :ref:`corresponding section in the
 documentation <parcellation_time_series>` for more.
 
-"""
+.. admonition:: dataset
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses:
-#
-#    - the :ref:`Harvard-Oxford atlas <harvard_oxford_atlas>`
-#    - the :ref:`development fMRI dataset <development_dataset>`
-#
+    This example uses:
+
+    - the :ref:`Harvard-Oxford atlas <harvard_oxford_atlas>`
+    - the :ref:`development fMRI dataset <development_dataset>`
+
+"""
 
 # %%
 # Retrieve the atlas and the data

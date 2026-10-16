@@ -16,8 +16,7 @@ to extract time series from nifti
 objects representing multiple subjects
 using different :term:`parcellation` atlases.
 
-The time series of all subjects of the brain development dataset are
-concatenated and given directly to
+The time series of all subjects are concatenated and given directly to
 :class:`~nilearn.connectome.ConnectivityMeasure` for computing parcel-wise
 correlation matrices for each atlas across all subjects.
 
@@ -27,17 +26,16 @@ The example also covers a special case of plotting directed connectome, such
 as results from Granger causality. To demonstrate the utility, we created an
 asymmetric connectome, which would be similar to results from `Granger
 causality <https://en.wikipedia.org/wiki/Granger_causality>`_.
-"""
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses:
-#
-#    - the :ref:`DiFuMo atlas <difumo_atlas>`
-#    - the :ref:`Yeo 2011 atlas <yeo_2011_atlas>`
-#    - the :ref:`development fMRI dataset <development_dataset>`
-#
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`DiFuMo atlas <difumo_atlas>`
+    - the :ref:`Yeo 2011 atlas <yeo_2011_atlas>`
+    - the :ref:`development fMRI dataset <development_dataset>`
+
+"""
 
 # control overall verbosity of the script
 verbose = 0

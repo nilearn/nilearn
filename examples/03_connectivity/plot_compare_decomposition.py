@@ -21,14 +21,13 @@ thresholding algorithm controlling for specificity and sensitivity with
 an explicit model of the signal.
 
 The reference paper is :footcite:t:`Varoquaux2010c`.
-"""
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`development fMRI dataset
-#    <development_dataset>`.
-#
+.. admonition:: dataset
+
+    This example uses the :ref:`development fMRI dataset
+    <development_dataset>`.
+
+"""
 
 # %%
 # Load brain development :term:`fMRI` dataset

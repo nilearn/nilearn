@@ -5,7 +5,6 @@ Voxel-Based Morphometry: group level analysis
 This example uses voxel-based morphometry (:term:`VBM`) to study the
 relationship between aging, sex, and gray matter density.
 
-
 .. admonition:: dataset
 
     This example uses:
