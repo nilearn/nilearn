@@ -20,7 +20,7 @@ from nilearn.plotting import (
 )
 from nilearn.plotting.image.utils import MNI152TEMPLATE
 
-ALL_PLOTTING_FUNCS = {
+ALL_PLOTTING_FUNCS = (
     plot_img,
     plot_anat,
     plot_stat_map,
@@ -29,13 +29,15 @@ ALL_PLOTTING_FUNCS = {
     plot_glass_brain,
     plot_carpet,
     plot_prob_atlas,
-}
+)
 
 
-PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
+PLOTTING_FUNCS_4D = (plot_prob_atlas, plot_carpet)
 
 
-PLOTTING_FUNCS_3D = ALL_PLOTTING_FUNCS.difference(PLOTTING_FUNCS_4D)
+PLOTTING_FUNCS_3D = tuple(
+    func for func in ALL_PLOTTING_FUNCS if func not in PLOTTING_FUNCS_4D
+)
 
 
 def _add_nans_to_img(img, affine_mni=None) -> Nifti1Image:
@@ -58,16 +60,17 @@ def test_mni152template_is_reordered():
     assert np.allclose(reordered_mni.shape, MNI152TEMPLATE.shape)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "plot_func",
-    {
+    (
         plot_img,
         plot_anat,
         plot_stat_map,
         plot_roi,
         plot_glass_brain,
         plot_prob_atlas,
-    },
+    ),
 )
 def test_plot_functions_invalid_threshold(plot_func, img_3d_mni, tmp_path):
     """Test plot functions for negative threshold value."""
@@ -80,9 +83,11 @@ def test_plot_functions_invalid_threshold(plot_func, img_3d_mni, tmp_path):
     plt.close()
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
-    "plot_func", PLOTTING_FUNCS_3D.difference({plot_glass_brain})
+    "plot_func",
+    [func for func in PLOTTING_FUNCS_3D if func is not plot_glass_brain],
 )
 @pytest.mark.parametrize("cut_coords", [None, 5, (5, 4, 3)])
 def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_rand_eye):
@@ -151,6 +156,7 @@ def test_plot_threshold_for_uint8(affine_eye, plot_func):
     plt.close()
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize(
@@ -176,6 +182,7 @@ def test_invalid_cut_coords_with_display_mode(
         )
 
 
+@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_with_nans(plot_func, img_3d_mni):

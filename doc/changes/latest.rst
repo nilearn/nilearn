@@ -31,6 +31,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-warning:`Test` Use deterministic parameter order in plotting tests so parallel workers collect the same cases (issue `#6662 <https://github.com/nilearn/nilearn/issues/6662>`_; by `Jeffrey Cooney <https://github.com/jdotc1>`_).
+
 - :bdg-dark:`Code` Fix :meth:`~nilearn.glm.Contrast.z_score` returning stale z-scores when called with a different ``baseline`` than a previous call on the same object (:gh:`6642` by `Ishaan Gupta`_).
 
 - :bdg-dark:`Code` Use mesh faces, rather than adjacent vertex indices, when computing clusters for surface cluster-level inference (:gh:`6608` by `Donncha O'Toole`_).
