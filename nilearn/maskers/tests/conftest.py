@@ -1,11 +1,25 @@
 """Fixtures specific for maskers."""
 
+from collections.abc import Callable
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
 from nilearn.conftest import _make_mesh
+from nilearn.maskers import NiftiMasker
 from nilearn.surface import SurfaceImage
+
+
+@pytest.fixture
+def make_fitted_nifti_masker() -> Callable[[Nifti1Image], NiftiMasker]:
+    """Return a factory for new maskers fitted with an explicit mask."""
+
+    def _make_masker(mask_img: Nifti1Image) -> NiftiMasker:
+        """Fit a fresh masker with the provided mask."""
+        return NiftiMasker(mask_img=mask_img).fit()
+
+    return _make_masker
 
 
 @pytest.fixture

@@ -74,6 +74,8 @@ Enhancements
 Changes
 -------
 
+- :bdg-warning:`Test` Reuse a fixture factory for fresh fitted maskers in mask application tests (issue `#6148 <https://github.com/nilearn/nilearn/issues/6148>`_; by `Jeffrey Cooney <https://github.com/jdotc1>`_).
+
 
 - :bdg-danger:`Deprecation` The ``return_label_maps`` parameter of :func:`~reporting.get_clusters_table` is deprecated and will be removed in version 0.17.0, when cluster label maps will always be returned together with the table (:gh:`6376` by `Mohammad Sadeghi Hardengi`_).
 

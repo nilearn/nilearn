@@ -112,7 +112,8 @@ def test_nan():
     assert not mask[:, :, -1].any()
 
 
-def test_matrix_orientation():
+@pytest.mark.ai_generated
+def test_matrix_orientation(make_fitted_nifti_masker):
     """Test if processing is performed along the correct axis."""
     # the "step" kind generate heavyside-like signals for each voxel.
     # all signals being identical, standardizing along the wrong axis
@@ -129,14 +130,14 @@ def test_matrix_orientation():
     assert not np.any(std < 0.1)
 
     # Test inverse transform
-    masker = NiftiMasker(mask_img=mask)
-    masker.fit()
+    masker = make_fitted_nifti_masker(mask)
     timeseries = masker.transform(fmri)
     recovered = masker.inverse_transform(timeseries)
     np.testing.assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
 
-def test_mask_4d(shape_3d_default, affine_eye):
+@pytest.mark.ai_generated
+def test_mask_4d(shape_3d_default, affine_eye, make_fitted_nifti_masker):
     """Test performance with 4D data."""
     # Dummy mask
     mask = np.zeros(shape_3d_default, dtype="int32")
@@ -159,8 +160,7 @@ def test_mask_4d(shape_3d_default, affine_eye):
 
     # check whether transform is indeed selecting niimgs subset
     sample_mask = np.array([0, 2])
-    masker = NiftiMasker(mask_img=mask_img)
-    masker.fit()
+    masker = make_fitted_nifti_masker(mask_img)
     data_trans = masker.transform(data_imgs, sample_mask=sample_mask)
     data_trans_img = index_img(data_img_4d, sample_mask)
     data_trans_direct = get_data(data_trans_img)[mask_bool, :]
@@ -168,8 +168,7 @@ def test_mask_4d(shape_3d_default, affine_eye):
 
     assert_array_equal(data_trans, data_trans_direct)
 
-    masker = NiftiMasker(mask_img=mask_img)
-    masker.fit()
+    masker = make_fitted_nifti_masker(mask_img)
     data_trans2 = masker.transform(data_img_4d, sample_mask=sample_mask)
 
     assert_array_equal(data_trans2, data_trans_direct)
@@ -178,8 +177,7 @@ def test_mask_4d(shape_3d_default, affine_eye):
     data_trans_img_diff = index_img(data_img_4d, diff_sample_mask)
     data_trans_direct_diff = get_data(data_trans_img_diff)[mask_bool, :]
     data_trans_direct_diff = np.swapaxes(data_trans_direct_diff, 0, 1)
-    masker = NiftiMasker(mask_img=mask_img)
-    masker.fit()
+    masker = make_fitted_nifti_masker(mask_img)
     data_trans3 = masker.transform(data_img_4d, sample_mask=diff_sample_mask)
 
     assert_array_equal(data_trans3, data_trans_direct_diff)
