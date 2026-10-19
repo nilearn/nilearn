@@ -199,7 +199,7 @@ Statistical maps/derivatives descriptions
 
     description/Megatrawls.rst
     description/mixed_gambles.rst
-    description/oasis1.rst
+    description/oasis_vbm.rst
 
 General functions
 -----------------

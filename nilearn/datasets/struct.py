@@ -76,7 +76,7 @@ def fetch_icbm152_2009(
     """Download and load the ICBM152 template (dated 2009).
 
     For more information
-    see the :ref:`dataset description <icbm_152_template>`.
+    see the :ref:`dataset description <icbm152_2009>`.
 
     %(templateflow)s
 
@@ -95,26 +95,7 @@ def fetch_icbm152_2009(
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - "t1": str,
-          Path to T1-weighted anatomical image
-        - "t2": str,
-          Path to T2-weighted anatomical image
-        - "t2_relax": str,
-          Path to anatomical image obtained with the T2 relaxometry
-        - "pd": str,
-          Path to the proton density weighted anatomical image
-        - "gm": str,
-          Path to gray matter segmented image
-        - "wm": str,
-          Path to white matter segmented image
-        - "csf": str,
-          Path to cerebrospinal fluid segmented image
-        - "eye_mask": str,
-          Path to eye mask useful to mask out part of MRI images
-        - "face_mask": str,
-          Path to face mask useful to mask out part of MRI images
-        - "mask": str,
-          Path to whole brain mask useful to mask out skull areas
+        %(icbm152_2009_content)s
 
     See Also
     --------
@@ -203,7 +184,7 @@ def load_mni152_template(resolution: Resolution = None) -> Nifti1Image:
     and re-samples it using a different resolution, if specified.
 
     For more information
-    see the :ref:`dataset description <icbm_152_template>`.
+    see the :ref:`dataset description <icbm152_2009>`.
 
     %(templateflow)s
 
@@ -262,7 +243,7 @@ def load_mni152_gm_template(resolution: Resolution = None) -> Nifti1Image:
     if specified.
 
     For more information
-    see the :ref:`dataset description <icbm_152_template>`.
+    see the :ref:`dataset description <icbm152_2009>`.
 
     %(templateflow)s
 
@@ -319,7 +300,7 @@ def load_mni152_wm_template(resolution: Resolution = None) -> Nifti1Image:
     resolution, if specified.
 
     For more information
-    see the :ref:`dataset description <icbm_152_template>`.
+    see the :ref:`dataset description <icbm152_2009>`.
 
     %(templateflow)s
 
@@ -376,7 +357,7 @@ def load_mni152_brain_mask(
     in order to obtain the corresponding whole-brain mask.
 
     For more information
-    see the :ref:`dataset description <icbm_152_template>`.
+    see the :ref:`dataset description <icbm152_2009>`.
 
     %(templateflow)s
 
@@ -423,7 +404,7 @@ def load_mni152_gm_mask(
     order to obtain the corresponding grey-matter mask.
 
     For more information
-    see the :ref:`dataset description <icbm_152_template>`.
+    see the :ref:`dataset description <icbm152_2009>`.
 
     %(templateflow)s
 
@@ -479,7 +460,7 @@ def load_mni152_wm_mask(
     order to obtain the corresponding white-matter mask.
 
     For more information
-    see the :ref:`dataset description <icbm_152_template>`.
+    see the :ref:`dataset description <icbm152_2009>`.
 
     %(templateflow)s
 
@@ -536,7 +517,7 @@ def fetch_icbm152_brain_gm_mask(
     """Download ICBM152 template first, then loads the 'gm' mask.
 
     For more information
-    see the :ref:`dataset description <icbm_152_template>`.
+    see the :ref:`dataset description <icbm152_2009>`.
 
      %(templateflow)s
 
@@ -665,7 +646,7 @@ def fetch_oasis_vbm(
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
     For more information
-    see the :ref:`dataset description <oasis_maps>`.
+    see the :ref:`dataset description <oasis_vbm>`.
 
     ..  admonition:: Data Usage Agreement
         :class: attention
@@ -681,9 +662,13 @@ def fetch_oasis_vbm(
     dartel_version : :obj:`bool`, default=True
         Whether or not to use data normalized with DARTEL instead of standard
         SPM8 normalization.
+
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -691,14 +676,7 @@ def fetch_oasis_vbm(
     data : Bunch
         Dictionary-like object, contains:
 
-        - 'gray_matter_maps': string list
-          Paths to nifti gray matter density probability maps
-        - 'white_matter_maps' string list
-          Paths to nifti white matter density probability maps
-        - 'ext_vars': pandas.DataFrame
-          Data from the CSV file with information about selected subjects
-        - 'data_usage_agreement': string
-          Path to the .txt file containing the data usage agreement.
+        %(oasis_vbm_content)s
 
     Notes
     -----
@@ -837,7 +815,7 @@ def fetch_oasis_vbm(
     file_names = (
         file_names_gm + file_names_wm + file_names_extvars + file_names_dua
     )
-    dataset_name = "oasis1"
+    dataset_name = "oasis_vbm"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )

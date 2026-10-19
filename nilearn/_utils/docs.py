@@ -1997,6 +1997,7 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
         license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
     ),
+    "icbm152_2009": Bunch(),
     "juelich_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
         license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
@@ -2007,6 +2008,9 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     ),
     "msdl_atlas": Bunch(
         license="usage is unrestricted for non-commercial research purposes."
+    ),
+    "oasis_vbm": Bunch(
+        license="Provided under an open access data use agreement (DUA)."
     ),
     "pauli_2017_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),

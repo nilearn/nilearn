@@ -32,16 +32,7 @@ See :func:`nilearn.datasets.load_mni152_wm_mask`: to load MNI152 white matter ma
 
 Content
 -------
-:'csf': probabilistic map for cerebrospinal fluid
-:'gm': probabilistic map for gray matter
-:'wm': probabilistic map for white matter
-:'pd': proton density-weighted anatomical templates (non-linear average)
-:'t1': T1-weighted anatomical template (non-linear average)
-:'t2': T2-weighted anatomical template (non-linear average)
-:'t2_relax': T2-weighted/relaxed anatomical template
-:'eye_mask': average mask for eyes
-:'face_mask': average mask for face
-:'mask': average mask for brain
+.. nilearn_dataset_content:: icbm152_2009
 
 See Also
 --------
@@ -73,4 +64,4 @@ References
 
 License
 -------
-unknown
+.. nilearn_dataset_license:: icbm152_2009
