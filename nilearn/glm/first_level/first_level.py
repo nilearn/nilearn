@@ -27,6 +27,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
+    check_n_confounds_match_n_images,
     check_parameter_in_allowed,
     check_params,
     check_run_sample_masks,
@@ -57,7 +58,13 @@ from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import intersect_masks
-from nilearn.nilearn_typing import HrfModel, NiimgLike, Tr
+from nilearn.nilearn_typing import (
+    HrfModel,
+    NiimgLike,
+    SingleConfound,
+    TableLike,
+    Tr,
+)
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 
@@ -873,13 +880,22 @@ class FirstLevelModel(BaseGLM):
             and self.results_ is not None
         )
 
+    @fill_doc
     def fit(
         self,
         run_imgs,
-        events=None,
-        confounds=None,
+        events: pd.DataFrame
+        | pd.Series
+        | str
+        | Path
+        | list[pd.DataFrame | pd.Series | str | Path]
+        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_masks=None,
-        design_matrices=None,
+        design_matrices: TableLike
+        | list[TableLike]
+        | list[pd.DataFrame]
+        | None = None,
         bins=100,
     ) -> Self:
         """Fit the :term:`GLM`.
@@ -942,15 +958,9 @@ class FirstLevelModel(BaseGLM):
 
                 This parameter is ignored if design_matrices are passed.
 
-        confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
-                    :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
-                    :class:`numpy.ndarray` or :obj:`str`, default=None
-            Each column in a DataFrame corresponds to a confound variable
-            to be included in the regression model of the respective run_img.
-            The number of rows must match the number of volumes in the
-            respective run_img.
+        %(confounds)s
+
             Ignored in case designs is not None.
-            If string, then a path to a CSV file is expected.
 
             .. warning::
 
@@ -2477,7 +2487,8 @@ def _get_confounds(
         filters=filters,
         verbose=verbose,
     )
-    _check_confounds_list(confounds=confounds_files, imgs=imgs)
+    if confounds_files:
+        check_n_confounds_match_n_images(confounds_files, imgs)
 
     if not confounds_files or kwargs_load_confounds is None:
         return None

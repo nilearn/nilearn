@@ -48,7 +48,7 @@ from nilearn.glm.first_level.hemodynamic_models import (
     compute_regressor,
     orthogonalize,
 )
-from nilearn.nilearn_typing import HrfModel
+from nilearn.nilearn_typing import HrfModel, TableLike
 from nilearn.signal import create_cosine_drift
 
 ######################################################################
@@ -235,7 +235,7 @@ def _convolve_regressors(
 @fill_doc
 def make_first_level_design_matrix(
     frame_times,
-    events=None,
+    events: TableLike | None = None,
     hrf_model: HrfModel = "glover",
     drift_model="cosine",
     high_pass=0.01,
@@ -495,7 +495,7 @@ def check_design_matrix(
 
 
 def make_second_level_design_matrix(
-    subjects_label, confounds=None
+    subjects_label, confounds: pd.DataFrame | None = None
 ) -> pd.DataFrame:
     """Set up a second level design.
 

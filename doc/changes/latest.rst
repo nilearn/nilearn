@@ -56,6 +56,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-primary:`Doc` Add privacy-friendly page view analytics with `GoatCounter <https://www.goatcounter.com/>`_ to the documentation website (:gh:`6393` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Add an example comparing the effect of ``standardize="zscore_sample"``, ``standardize="psc"`` and ``standardize=None`` on decoding performance (:gh:`6597` by `Reyyi Shreyas`_).
@@ -68,6 +70,7 @@ Enhancements
 
 - :bdg-dark:`Code` Name columns of signals extracted as dataframes by :meth:`~maskers.NiftiSpheresMasker.transform` (:gh:`6599` by `Rémi Gau`_).
 
+- :bdg-info:`Plotting` add a ``plot_predicted_signal_and_residuals`` method to :class:`~glm.first_level.FirstLevelModel` and :class:`~glm.second_level.SecondLevelModel` to easily visualize predicted VS observed time series as well as residuals time series and distribution at given coordinates or for some regions (:gh:`5761` by `Fernanda Ponce`_).
 
 Changes
 -------
@@ -86,6 +89,8 @@ Changes
 - :bdg-danger:`Deprecation` The parameter name ``filename`` of the :meth:`~nilearn.plotting.displays.BaseSlicer.savefig` will be permanently replaced by ``output_file`` in version 0.17.0 (:gh:`6471` by `Aniket Singh Yadav`_).
 
 - :bdg-danger:`Deprecation` The parameter name ``output_dict`` of the :func:`~nilearn.mass_univariate.permuted_ols` has been removed and the function will only output its results as :obj:`dict` (:gh:`6550` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` The parameter ``n_jobs`` of the ``transform_imgs`` method of the all multi maskers has been removed, since it conflicted with the maskers ``n_jobs`` attribute  (:gh:`6638` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter name ``subjects`` of the :func:`~nilearn.datasets.fetch_haxby` is deprecated will be completely removed in version 0.17.0. Use ``n_subjects`` instead (:gh:`6462` by `Mohammad Sadeghi Hardengi`_).
 

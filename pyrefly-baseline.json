@@ -41,6 +41,11 @@
       "concise_description": "Argument `Iterable[Unknown] | list[Unknown]` is not assignable to parameter `obj` with type `Sized` in function `len`"
     },
     {
+      "concise_description": "Argument `DataFrame | Path | list[DataFrame | Path | ndarray | str | None] | ndarray | str` is not assignable to parameter `iter2` with type `Iterable[Hashable]` in function `zip.__new__`",
+      "name": "bad-argument-type",
+      "path": "nilearn/decomposition/_base.py"
+    },
+    {
       "path": "nilearn/decomposition/tests/conftest.py",
       "name": "missing-attribute",
       "concise_description": "Object of class `NoneType` has no attribute `parts`"
@@ -106,6 +111,31 @@
       "concise_description": "Class member `PhonyNiimage._dataobj` overrides parent class `SpatialImage` in an inconsistent manner"
     },
     {
+      "concise_description": "Object of class `_MultiMixin` has no attribute `fit`",
+      "name": "missing-attribute",
+      "path": "nilearn/maskers/_mixin.py"
+    },
+    {
+      "concise_description": "Object of class `_MultiMixin` has no attribute `_cache`",
+      "name": "missing-attribute",
+      "path": "nilearn/maskers/_mixin.py"
+    },
+    {
+      "concise_description": "Object of class `_MultiMixin` has no attribute `transform_single_imgs`",
+      "name": "missing-attribute",
+      "path": "nilearn/maskers/_mixin.py"
+    },
+    {
+      "concise_description": "Argument `list[DataFrame | Path | ndarray | str | None] | None` is not assignable to parameter `iter2` with type `Iterable[DataFrame | Path | ndarray | str | None]` in function `zip.__new__`",
+      "name": "bad-argument-type",
+      "path": "nilearn/maskers/_mixin.py"
+    },
+    {
+      "concise_description": "Object of class `object` has no attribute `transform`",
+      "name": "missing-attribute",
+      "path": "nilearn/maskers/_mixin.py"
+    },
+    {
       "path": "nilearn/maskers/base_masker.py",
       "name": "bad-override",
       "concise_description": "Class member `BaseMasker._get_summary_html` overrides parent class `_BaseMasker` in an inconsistent manner"
@@ -114,6 +144,11 @@
       "path": "nilearn/maskers/base_masker.py",
       "name": "bad-override",
       "concise_description": "Class member `_BaseSurfaceMasker._get_summary_html` overrides parent class `_BaseMasker` in an inconsistent manner"
+    },
+    {
+      "concise_description": "Argument `list[DataFrame | Path | ndarray | str | None] | None` is not assignable to parameter `iter2` with type `Iterable[DataFrame | Path | ndarray | str | None]` in function `zip.__new__`",
+      "name": "bad-argument-type",
+      "path": "nilearn/maskers/multi_nifti_masker.py"
     },
     {
       "path": "nilearn/masking.py",

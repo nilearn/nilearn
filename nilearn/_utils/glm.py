@@ -1,5 +1,6 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
+from typing import overload
 
 import numpy as np
 import pandas as pd
@@ -7,7 +8,32 @@ import pandas as pd
 from nilearn._utils.helpers import stringify_path
 
 
-def check_and_load_tables(tables_to_check, var_name):
+@overload
+def check_and_load_tables(
+    tables_to_check: pd.DataFrame
+    | str
+    | Path
+    | Sequence[str | Path | pd.DataFrame],
+    var_name: str,
+) -> list[pd.DataFrame]: ...
+
+
+@overload
+def check_and_load_tables(
+    tables_to_check: np.ndarray
+    | Sequence[str | Path | pd.DataFrame | np.ndarray],
+    var_name: str,
+) -> list[pd.DataFrame | np.ndarray]: ...
+
+
+def check_and_load_tables(
+    tables_to_check: pd.DataFrame
+    | str
+    | Path
+    | np.ndarray
+    | Sequence[str | Path | pd.DataFrame | np.ndarray],
+    var_name: str,
+) -> list[pd.DataFrame] | list[pd.DataFrame | np.ndarray]:
     """Load tables.
 
        Tables will be 'loaded'
@@ -18,7 +44,7 @@ def check_and_load_tables(tables_to_check, var_name):
 
     tables_to_check : :obj:`str` or pathlib.Path to a TSV or CSV \
               or pandas.DataFrame or numpy.ndarray or, \
-              a list of str or pathlib.Path to a TSV or CSV \
+              a list or tuple of str or pathlib.Path to a TSV or CSV \
               or pandas.DataFrame or numpy.ndarray
               In the case of CSV file,
               the first column is considered to be index column.
@@ -41,11 +67,16 @@ def check_and_load_tables(tables_to_check, var_name):
     cannot be loaded to a pandas.DataFrame.
 
     """
-    if not isinstance(tables_to_check, list):
-        tables_to_check = [tables_to_check]
+    to_check: Sequence[str | Path | pd.DataFrame | np.ndarray]
+    if isinstance(tables_to_check, Sequence) and not isinstance(
+        tables_to_check, str
+    ):
+        to_check = tables_to_check
+    else:
+        to_check = [tables_to_check]
 
-    tables = []
-    for table_idx, table in enumerate(tables_to_check):
+    tables: list[pd.DataFrame | np.ndarray] = []
+    for table_idx, table in enumerate(to_check):
         table = stringify_path(table)
 
         if not isinstance(table, (str, pd.DataFrame, np.ndarray)):
@@ -64,7 +95,7 @@ def check_and_load_tables(tables_to_check, var_name):
     return tables
 
 
-def _read_events_table(table_path):
+def _read_events_table(table_path: str | Path) -> pd.DataFrame:
     """Load the contents of the event file specified by `table_path`\
        to a pandas.DataFrame.
 
