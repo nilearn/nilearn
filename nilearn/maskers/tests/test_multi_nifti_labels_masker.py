@@ -140,7 +140,7 @@ def test_errors_resampling(img_labels, resampling_target):
     ],
 )
 def test_reduction_strategies(affine_eye, test_values, strategy, fn):
-    """Tests strategies of MultiNiftiLabelsMasker.
+    """Test strategies of MultiNiftiLabelsMasker.
 
     - whether the usage of different reduction strategies work
     - whether the default option is backwards compatible (calls "mean")

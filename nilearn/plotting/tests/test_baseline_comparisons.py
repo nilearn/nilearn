@@ -240,7 +240,7 @@ def test_add_contours(levels, colors):
     ],
 )
 def test_add_contours_filled(mni152_template_res_2, kwargs):
-    """Tests for add_contours with filled = true."""
+    """Test for add_contours with filled = true."""
     display = OrthoSlicer(cut_coords=(0, 0, 0))
     display.add_contours(mni152_template_res_2, filled=True, **kwargs)
     return display
@@ -261,7 +261,7 @@ def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("anat_img", [False, MNI152TEMPLATE])
 def test_plot_anat_mni(anat_img):
-    """Tests for plot_anat with MNI template."""
+    """Test for plot_anat with MNI template."""
     return plot_anat(anat_img=anat_img)
 
 

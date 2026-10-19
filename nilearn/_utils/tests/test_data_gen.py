@@ -1,4 +1,4 @@
-"""Tests for the data generation utilities."""
+"""Test for the data generation utilities."""
 
 import json
 
@@ -104,7 +104,6 @@ def _bids_path_template(
     File path is relative to the BIDS root folder.
 
     File path contains a session level folder.
-
     """
     task = f"task-{task}_*"
     run = "run-*_*" if n_runs is not None else "*"

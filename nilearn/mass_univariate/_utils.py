@@ -334,7 +334,6 @@ def normalize_matrix_on_axis(m, axis=0):
     >>> normalize_matrix_on_axis(X, axis=1)
     array([[0., 1.],
            [1., 0.]])
-
     """
     if m.ndim > 2:
         raise ValueError(
@@ -386,7 +385,6 @@ def orthonormalize_matrix(m, tol=1.0e-12):
     >>> orthonormalize_matrix(X)
     array([[ 0., -1.],
            [-1.,  0.]])
-
     """
     U, s, _ = linalg.svd(m, full_matrices=False)
     n_eig = np.count_nonzero(s > tol)
@@ -422,7 +420,6 @@ def t_score_with_covars_and_normalized_design(
     score : numpy.ndarray, shape=(n_target_vars, n_tested_vars)
         t-scores associated with the tests of each explanatory variate against
         each target variate (in the presence of covars).
-
     """
     if covars_orthonormalized is None:
         lost_dof = 0

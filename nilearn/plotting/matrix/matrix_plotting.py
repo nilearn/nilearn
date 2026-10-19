@@ -122,7 +122,6 @@ def _sanitize_figure_and_axes(figure, axes) -> tuple[Figure, Axes]:
 
     axes : :class:`matplotlib.axes.Axes`
         The axes to plot on.
-
     """
     if axes is not None and figure is not None:
         raise ValueError(
@@ -167,7 +166,6 @@ def _sanitize_inputs_plot_matrix(
 
     axes : :class:`matplotlib.axes.Axes`
         The axes to plot on.
-
     """
     sanitize_tri(tri)
     labels = sanitize_labels(mat_shape, labels)
@@ -236,7 +234,6 @@ def plot_matrix(
         - 'diag': Plot the lower part with the diagonal
         - 'full': Plot the full matrix
 
-
     auto_fit : :obj:`bool`, default=True
         If auto_fit is True, the axes are dimensioned to give room
         for the labels. This assumes that the labels are resting
@@ -277,7 +274,6 @@ def plot_matrix(
         >>> fig = plot_matrix(matrix, vmax=vmax, vmin=-vmax)
         >>>
         >>> show()
-
     """
     check_params(locals())
     labels, reorder_method, fig, axes = _sanitize_inputs_plot_matrix(
@@ -355,8 +351,6 @@ def plot_contrast_matrix(
     -------
     axes : :class:`matplotlib.axes.Axes`
         Figure object.
-
-
     """
     check_params(locals())
 
@@ -452,8 +446,6 @@ def plot_design_matrix(
         >>> ax = plot_design_matrix(design_matrix)
         >>>
         >>> show()
-
-
     """
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
@@ -552,7 +544,6 @@ def plot_event(
         >>> fig = plot_event(model_event)
         >>>
         >>> show()
-
     """
     model_event = check_and_load_tables(model_event, "model_event")
 

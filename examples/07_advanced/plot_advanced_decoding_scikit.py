@@ -18,7 +18,6 @@ As in many other examples, we decode the visual category of
 stimuli in the :footcite:t:`Haxby2001` dataset,
 focusing on distinguishing two categories:
 "face" and "cat" images.
-
 """
 
 # %%

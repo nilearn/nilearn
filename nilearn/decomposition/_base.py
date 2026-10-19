@@ -100,7 +100,7 @@ def _fast_svd(X, n_components, random_state=None):
     X : array, shape (n_samples, n_features)
         The data to decompose
 
-    n_components : integer
+    n_components : :obj:`int`
         The order of the dimensionality of the truncated SVD
 
     %(random_state)s
@@ -116,7 +116,6 @@ def _fast_svd(X, n_components, random_state=None):
 
     V : array, shape (n_components, n_features)
         The last matrix of the truncated svd
-
     """
     random_state = check_random_state(random_state)
     # Small problem, just call full PCA
@@ -191,13 +190,13 @@ def _mask_and_reduce(
         - if set to ``'auto'``, estimator will set the number of components per
           reduced session to be ``n_components``.
 
-    n_components : integer or None, default=None
+    n_components : :obj:`int` or None, default=None
         Number of components per subject to be extracted by dimension reduction
 
     %(random_state)s
         default=0
 
-    n_jobs : integer, default=1
+    n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
@@ -205,7 +204,6 @@ def _mask_and_reduce(
     -------
     data : ndarray or memorymap
         Concatenation of reduced data.
-
     """
     if not hasattr(imgs, "__iter__"):
         imgs = [imgs]
@@ -314,7 +312,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
     Parameters
     ----------
-    n_components : int, default=20
+    n_components : :obj:`int`, default=20
         Number of components to extract,
         for each 4D-Niimage or each 2D surface image
 
@@ -384,11 +382,11 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         If a string is given, it is the path to the caching directory.
         If ``None`` is passed will default to ``Memory(location=None)``.
 
-    memory_level : integer, default=0
+    memory_level : :obj:`int`, default=0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    n_jobs : integer, default=1
+    n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
@@ -517,7 +515,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         self : object
             Returns the instance itself. Contains attributes listed
             at the object level.
-
         """
         del y
         # Base fit for decomposition estimators : compute the embedded masker
@@ -673,7 +670,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             For each subject, each sample, loadings for each decomposition
             components
             shape: number of subjects * (number of scans, number of regions)
-
         """
         check_is_fitted(self)
 
@@ -706,7 +702,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             :class:`~nilearn.surface.SurfaceImage`
 
         For each loading, reconstructed Nifti1Image or SurfaceImage.
-
         """
         check_is_fitted(self)
 
@@ -778,7 +773,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             Holds the score for each subjects. Score is two dimensional
             if per_component is True. First dimension
             is squeezed if the number of subjects is one
-
         """
         del y
         check_is_fitted(self)
@@ -827,7 +821,6 @@ def _explained_variance(X, components, per_component=True):
     score : ndarray
         Holds the score for each subjects. score is two dimensional if
         per_component = True.
-
     """
     full_var = np.var(X)
     n_components = components.shape[0]

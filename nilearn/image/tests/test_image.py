@@ -337,6 +337,7 @@ def test_smooth_array_fwhm_is_odd_no_copy(affine):
 
 
 def test_smooth_array_nan_do_not_propagate():
+    """Ensure that nan values do not spread when smoothing."""
     data = _new_data_for_smooth_array()
     data[10, 10, 10] = np.nan
     fwhm = 9
@@ -1109,7 +1110,7 @@ def test_new_img_like_accepts_paths(affine_eye, tmp_path, rng):
 
 
 def test_new_img_like_non_iterable_header(rng):
-    """Tests that when an niimg's header is not iterable \
+    """Test that when an niimg's header is not iterable \
        and it is set to be copied, an error is not raised.
     """
     fake_fmri_data = rng.uniform(size=_shape_4d_default())
@@ -1439,7 +1440,7 @@ def test_threshold_surf_img_1d_negative_values(
 def test_threshold_img_with_mask(
     stat_img_test_data, affine_eye, threshold, two_sided, expected
 ):
-    """Tests `nilearn.image.threshold_img` for float and str values using
+    """Test `nilearn.image.threshold_img` for float and str values using
     mask.
     """
     temp_mask = np.ones((stat_img_test_data.shape), dtype=np.int8)

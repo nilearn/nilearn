@@ -129,7 +129,6 @@ def alpha_cmap(color, name="", alpha_min=0.5, alpha_max=1.0):
 
     alpha_max : :obj:`float`, default=1.0
         Maximum value for alpha.
-
     """
     red, green, blue = _colors.colorConverter.to_rgb(color)
     if name == "" and hasattr(color, "startswith"):

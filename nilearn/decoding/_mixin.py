@@ -84,7 +84,6 @@ class _RegressorMixin:
             Must have exactly as many elements as the input images.
 
         %(groups)s
-
         """
         check_params(self.__dict__)
         self._classes_ = ["beta"]

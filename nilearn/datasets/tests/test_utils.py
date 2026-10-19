@@ -187,7 +187,7 @@ def test_get_dataset_dir_symlink(tmp_path):
 
 
 def test_md5_sum_file(tmp_path):
-    """Tests nilearn.dataset._utils._md5_sum_file."""
+    """Test nilearn.dataset._utils._md5_sum_file."""
     # Create dummy temporary file
     f = tmp_path / "test"
     f.write_bytes(b"abcfeg")
@@ -196,7 +196,7 @@ def test_md5_sum_file(tmp_path):
 
 
 def test_read_md5_sum_file(tmp_path):
-    """Tests nilearn.dataset._utils.read_md5_sum_file."""
+    """Test nilearn.dataset._utils.read_md5_sum_file."""
     # Create dummy temporary file
     f = tmp_path / "test"
     f.write_bytes(
@@ -229,7 +229,7 @@ def dir2(tmp_path) -> Path:
 
 
 def test_tree(dir1, dir2, tmp_path):
-    """Tests nilearn.dataset._utils.tree."""
+    """Test nilearn.dataset._utils.tree."""
     dir11 = dir1 / "dir11"
     dir12 = dir1 / "dir12"
 
@@ -262,7 +262,7 @@ def test_tree(dir1, dir2, tmp_path):
 
 
 def test_tree_dictionary(dir1, dir2, tmp_path):
-    """Tests nilearn.dataset._utils.tree with dictionary return value."""
+    """Test nilearn.dataset._utils.tree with dictionary return value."""
     dir11 = dir1 / "dir11"
     dir12 = dir1 / "dir12"
 
@@ -292,7 +292,7 @@ def test_tree_dictionary(dir1, dir2, tmp_path):
 
 
 def test_movetree(dir1, dir2):
-    """Tests nilearn.dataset._utils.movetree."""
+    """Test nilearn.dataset._utils.movetree."""
     dir111 = dir1 / "dir11"
     dir112 = dir1 / "dir12"
     dir212 = dir2 / "dir12"
@@ -388,7 +388,7 @@ def test_filter_columns():
     "ext, mode", [("tar", "w"), ("tar.gz", "w:gz"), ("tgz", "w:gz")]
 )
 def test_uncompress_tar(tmp_path, ext, mode):
-    """Tests nilearn.dataset._utils.uncompress_file for tar files.
+    """Test nilearn.dataset._utils.uncompress_file for tar files.
 
     For each kind of compression, we create:
     - a compressed object (ztemp)
@@ -409,7 +409,7 @@ def test_uncompress_tar(tmp_path, ext, mode):
 
 
 def test_uncompress_zip(tmp_path):
-    """Tests nilearn.dataset._utils.uncompress_file for zip files.
+    """Test nilearn.dataset._utils.uncompress_file for zip files.
 
     For each kind of compression, we create:
     - a compressed object (ztemp)
@@ -429,7 +429,7 @@ def test_uncompress_zip(tmp_path):
 
 @pytest.mark.parametrize("ext", [".gz", ""])
 def test_uncompress_gzip(tmp_path, ext):
-    """Tests nilearn.dataset._utils.uncompress_file for gzip files.
+    """Test nilearn.dataset._utils.uncompress_file for gzip files.
 
     For each kind of compression, we create:
     - a compressed object (ztemp)

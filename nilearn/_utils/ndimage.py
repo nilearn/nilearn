@@ -34,7 +34,6 @@ def largest_connected_component(volume: np.ndarray) -> np.ndarray:
     This function changes the existing byte-ordering information to new byte
     order, if the given volume has non-native data type. This operation
     is done inplace to avoid big-endian issues with scipy ndimage module.
-
     """
     if hasattr(volume, "get_fdata") or isinstance(volume, (str, Path)):
         raise ValueError(
@@ -127,7 +126,6 @@ def peak_local_max(
     This code is mostly adapted from scikit image 0.11.3 release.
     Location of file in scikit image: peak_local_max function in
     skimage.feature.peak
-
     """
     out = np.zeros_like(image, dtype=bool)
 

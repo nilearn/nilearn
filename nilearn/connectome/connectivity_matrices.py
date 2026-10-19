@@ -27,7 +27,6 @@ def _check_square(matrix: np.ndarray) -> None:
     ----------
     matrix : numpy.ndarray
         Input array.
-
     """
     if matrix.ndim != 2 or (matrix.shape[0] != matrix.shape[-1]):
         raise ValueError(
@@ -43,7 +42,6 @@ def _check_spd(matrix: np.ndarray) -> None:
     ----------
     matrix : numpy.ndarray
         Input array.
-
     """
     if not is_spd(matrix, decimal=7):
         raise ValueError("Expected a symmetric positive definite matrix.")
@@ -71,7 +69,6 @@ def _form_symmetric(
     output : numpy.ndarray, shape (n_features, n_features)
         The symmetric matrix obtained after transforming the eigenvalues, while
         keeping the same eigenvectors.
-
     """
     return np.dot(eigenvectors * function(eigenvalues), eigenvectors.T)
 
@@ -99,7 +96,6 @@ def _map_eigenvalues(function, symmetric):
     -----
     If input matrix is not real symmetric, no error is reported but result will
     be wrong.
-
     """
     eigenvalues, eigenvectors = linalg.eigh(symmetric)
     return _form_symmetric(function, eigenvalues, eigenvectors)
@@ -151,7 +147,6 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     -------
     gmean : numpy.ndarray, shape (n_features, n_features)
         Geometric mean of the matrices.
-
     """
     # Shape and symmetry positive definiteness checks
     n_features = matrices[0].shape[0]
@@ -262,7 +257,6 @@ def sym_matrix_to_vec(symmetric, discard_diagonal: bool = False) -> np.ndarray:
     >>> vec_no_diag = sym_matrix_to_vec(sym_matrix, discard_diagonal=True)
     >>> vec_no_diag
     array([2., 3., 5.])
-
     """
     if discard_diagonal:
         # No scaling, we directly return the values
@@ -323,7 +317,6 @@ def vec_to_sym_matrix(vec, diagonal=None) -> np.ndarray:
     array([[1.41421356, 2.        , 4.        ],
            [2.        , 4.24264069, 5.        ],
            [4.        , 5.        , 8.48528137]])
-
     """
     n = vec.shape[-1]
     # Compute the number of the symmetric matrix columns
@@ -392,7 +385,6 @@ def cov_to_corr(covariance: np.ndarray) -> np.ndarray:
     >>> cov_to_corr(cov)
     array([[1.        , 0.33333333],
            [0.33333333, 1.        ]])
-
     """
     diagonal = np.atleast_2d(1.0 / np.sqrt(np.diag(covariance)))
     correlation = covariance * diagonal * diagonal.T
@@ -423,7 +415,6 @@ def prec_to_partial(precision: np.ndarray) -> np.ndarray:
     >>> prec_to_partial(precision)
     array([[1. , 0.5],
            [0.5, 1. ]])
-
     """
     partial_correlation = -cov_to_corr(precision)
     np.fill_diagonal(partial_correlation, 1.0)
@@ -491,7 +482,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
     References
     ----------
     .. footbibliography::
-
     """
 
     def __init__(
@@ -573,7 +563,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         -------
         self : ConnectivityMatrix instance
             The object itself. Useful for chaining operations.
-
         """
         del y
         self._fit_transform(X, do_fit=True)
@@ -732,7 +721,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             is set to True.
             The transformed individual connectivities, as matrices or vectors.
             Vectors are cleaned when vectorize=True and confounds are provided.
-
         """
         del y
         return self._fit_transform(
@@ -764,7 +752,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             is set to True.
             The transformed individual connectivities, as matrices or vectors.
             Vectors are cleaned when vectorize=True and confounds are provided.
-
         """
         check_is_fitted(self)
         return self._fit_transform(X, do_transform=True, confounds=confounds)
@@ -795,7 +782,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             'partial correlation', the correlation/partial correlation
             matrices are returned.
             If kind is 'tangent', the covariance matrices are reconstructed.
-
         """
         check_is_fitted(self)
 

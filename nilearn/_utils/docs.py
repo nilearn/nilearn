@@ -1921,7 +1921,6 @@ def _indentcount_lines(lines):
     1
     >>> _indentcount_lines(["    "])
     0
-
     """
     indentno = sys.maxsize
     for line in lines:
@@ -1945,7 +1944,6 @@ def fill_doc(f: Callable) -> Callable:
     -------
     f : callable
         The function, potentially with an updated `__doc__`.
-
     """
     docstring = f.__doc__
     if not docstring:

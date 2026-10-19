@@ -94,7 +94,6 @@ def all_functions(
                           default=None
         List of modules to consider for the listing.
 
-
     Returns
     -------
     all_functions : :obj:`list` of Tuples (:obj:`str`, callable)

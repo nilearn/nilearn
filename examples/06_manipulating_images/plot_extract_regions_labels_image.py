@@ -15,7 +15,6 @@ but each one points to a single region.
 
 We use the Yeo atlas as an example for labeling regions,
 :func:`~nilearn.datasets.fetch_atlas_yeo_2011`
-
 """
 
 # %%

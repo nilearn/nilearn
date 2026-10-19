@@ -17,7 +17,6 @@ statistical maps.
     `Gaël Varoquaux <https://github.com/GaelVaroquaux>`_
     and available at
     `neurovault_analysis <https://github.com/NeuroVault/neurovault_analysis>`_.
-
 """
 
 # %%

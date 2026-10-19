@@ -14,7 +14,6 @@ In this example, the NiftiMasker is used to automatically compute a mask.
 In addition, we show here how to tweak the different parameters of the
 underlying routine that extract masks from EPI
 :func:`~nilearn.masking.compute_epi_mask`.
-
 """
 
 # %%

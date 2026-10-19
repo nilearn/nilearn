@@ -61,7 +61,6 @@ def _connectivity_surface(mask_img):
     -------
     connectivity : a sparse matrix
         Connectivity or adjacency matrix for the mask.
-
     """
     # total True vertices in the mask
     n_vertices = (
@@ -126,7 +125,6 @@ def _estimator_fit(data, estimator, method=None):
     -------
     labels_ : numpy.ndarray
         labels_ estimated from estimator.
-
     """
     estimator = clone(estimator)
     if method in ["rena", "hierarchical_kmeans"]:
@@ -189,7 +187,6 @@ def _labels_masker_extraction(img, masker, confound):
     -------
     signals : numpy array
         Signals extracted on given img.
-
     """
     masker = clone(masker)
     signals = masker.fit_transform(img, confounds=confound)
@@ -376,7 +373,6 @@ class Parcellations(_MultiPCA):
       ReNA clustering for method='rena'. Spatial connectivity matrix
       (voxel-to-voxel) is built-in object which means no need of explicitly
       giving the matrix.
-
     """
 
     VALID_METHODS: ClassVar[tuple[str, ...]] = (
@@ -460,7 +456,6 @@ class Parcellations(_MultiPCA):
             Voxel-to-voxel connectivity matrix computed from a mask.
             Note that, this attribute is returned only for selected methods
             such as 'ward', 'complete', 'average'.
-
         """
         valid_methods = self.VALID_METHODS
         if self.method is None:
@@ -604,7 +599,6 @@ class Parcellations(_MultiPCA):
             Signals extracted for each label for each image.
             Example, for single image shape will be
             (number of scans, number of labels)
-
         """
         check_is_fitted(self)
         imgs, confounds, single_subject = _check_parameters_transform(
@@ -685,7 +679,6 @@ class Parcellations(_MultiPCA):
             Signals extracted for each label for each image.
             Example, for single image shape will be
             (number of scans, number of labels)
-
         """
         del y
         return self.fit(imgs, confounds=confounds).transform(imgs, confounds)
@@ -706,7 +699,6 @@ class Parcellations(_MultiPCA):
         -------
         %(imgs)s
             Brain image(s).
-
         """
         from nilearn.regions.signal_extraction import signals_to_img_labels
 

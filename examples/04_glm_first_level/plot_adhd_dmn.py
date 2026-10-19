@@ -16,7 +16,6 @@ More specifically:
 3. A :term:`GLM` is applied to the dataset (effect/covariance,
    then contrast estimation).
 4. The Default Mode Network is displayed.
-
 """
 
 # %%

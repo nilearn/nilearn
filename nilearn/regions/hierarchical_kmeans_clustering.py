@@ -225,7 +225,6 @@ class HierarchicalKMeans(
 
     sizes_ : ndarray, shape = [n_features]
         It contains the size of each cluster.
-
     """
 
     def __init__(

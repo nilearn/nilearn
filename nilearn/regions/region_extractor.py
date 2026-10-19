@@ -58,7 +58,6 @@ def _threshold_maps_ratio(maps_img, threshold):
     -------
     threshold_maps_img : Nifti1Image
         Gives us thresholded image.
-
     """
     maps = check_niimg(maps_img)
     n_maps = maps.shape[-1]
@@ -117,7 +116,6 @@ def _remove_small_regions(input_data, affine, min_size):
         Data returned will have regions removed specified by min_size
         Otherwise, if criterion is not met then same input data will be
         returned.
-
     """
     # with return_counts argument is introduced from numpy 1.9.0.
     # _, region_sizes = np.unique(input_data, return_counts=True)
@@ -459,7 +457,6 @@ class RegionExtractor(NiftiMapsMasker):
     --------
     nilearn.regions.connected_label_regions : A function can be readily
         used for extraction of regions on labels based atlas images.
-
     """
 
     def __init__(
@@ -665,7 +662,6 @@ def connected_label_regions(
 
     nilearn.regions.connected_regions : A function used for region extraction
         on continuous type atlas images.
-
     """
     labels_img = check_niimg_3d(labels_img)
     labels_data = safe_get_data(labels_img, ensure_finite=True)

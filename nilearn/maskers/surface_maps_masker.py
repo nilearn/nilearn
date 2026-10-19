@@ -128,7 +128,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     --------
         nilearn.maskers.SurfaceMasker
         nilearn.maskers.SurfaceLabelsMasker
-
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {

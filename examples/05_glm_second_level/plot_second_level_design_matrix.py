@@ -10,7 +10,6 @@ This is used in a second-level analysis to assess the impact of these
 characteristics on brain signals.
 
 This example requires matplotlib.
-
 """
 
 from nilearn._utils.helpers import check_matplotlib
