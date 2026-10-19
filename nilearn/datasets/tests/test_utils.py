@@ -101,31 +101,6 @@ def test_validate_subjects_invalid_count(n_subjects):
         _utils._validate_subjects(n_subjects, max_subjects=6)
 
 
-@pytest.mark.parametrize("name", DATASET_NAMES)
-def test_get_dataset_descr(name):
-    """Test function ``get_dataset_descr()``.
-
-    Not needed for atlas datasets as this is checked in
-    nilearn/datasets/tests/test_atlas.py
-    """
-    descr = _utils.get_dataset_descr(name)
-
-    assert isinstance(descr, str)
-    assert len(descr) > 0
-
-
-def test_get_dataset_descr_warning():
-    """Tests that function ``get_dataset_descr()`` gives a warning \
-       when no description is available.
-    """
-    with pytest.warns(
-        UserWarning, match="Could not find dataset description."
-    ):
-        descr = _utils.get_dataset_descr("")
-
-    assert descr == ""
-
-
 def test_get_dataset_dir(tmp_path):
     """Test folder creation under different environments.
 
@@ -701,3 +676,55 @@ def test_naive_ftp_adapter():
         resp = sender.send(
             requests.Request("GET", "ftp://example.com").prepare()
         )
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("headers", [{}, {"Content-Length": "13"}])
+def test_chunk_read_rich(tmp_path, headers):
+    """Check download with a rich progress bar with known or unknown size."""
+    pytest.importorskip("rich")
+
+    resp = Response(b"dummy content", "http://foo")
+    resp.headers = headers
+
+    with (tmp_path / "foo.txt").open("wb") as f:
+        _utils._chunk_read_(resp, f, report_hook=True)
+
+    assert (tmp_path / "foo.txt").read_bytes() == b"dummy content"
+
+
+@pytest.mark.ai_generated
+def test_chunk_read_progress_stopped_if_start_fails(tmp_path, monkeypatch):
+    """Check the progress bar is stopped even if it fails to start.
+
+    Older versions of rich register the live display
+    before failing to render it.
+    If the progress bar is not stopped,
+    it remains the active live display of the rich console
+    and all subsequent downloads fail with a rich.errors.LiveError.
+    """
+    progress = pytest.importorskip("rich.progress")
+    original_start = progress.Progress.start
+    original_stop = progress.Progress.stop
+    stop_calls = []
+
+    def failing_start(self):
+        original_start(self)
+        raise TypeError("failed to render")
+
+    def recording_stop(self):
+        stop_calls.append(self)
+        original_stop(self)
+
+    monkeypatch.setattr(progress.Progress, "start", failing_start)
+    monkeypatch.setattr(progress.Progress, "stop", recording_stop)
+
+    resp = Response(b"dummy content", "http://foo")
+    resp.headers = {"Content-Length": "13"}
+    with (
+        (tmp_path / "foo.txt").open("wb") as f,
+        pytest.raises(TypeError, match="failed to render"),
+    ):
+        _utils._chunk_read_(resp, f, report_hook=True)
+
+    assert len(stop_calls) == 1

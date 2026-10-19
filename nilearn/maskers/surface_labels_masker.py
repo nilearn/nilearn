@@ -22,6 +22,21 @@ from nilearn._utils.param_validation import (
 from nilearn.image import mean_img
 from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
+from nilearn.nilearn_typing import (
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    Memory,
+    MemoryLevel,
+    Signals,
+    SingleConfound,
+    Standardize,
+    StandardizeConfounds,
+    TableLike,
+    Tr,
+    Verbose,
+)
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -176,23 +191,23 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self,
         labels_img=None,
         labels=None,
-        lut=None,
+        lut: TableLike | None = None,
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
-        standardize=None,
-        standardize_confounds=True,
-        detrend=False,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        detrend: Detrend = False,
         high_variance_confounds=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
-        memory=None,
-        memory_level=1,
-        verbose=0,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
+        memory: Memory = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
         strategy="mean",
-        reports=True,
+        reports: bool = True,
         cmap=DEFAULT_SEQUENTIAL_CMAP,
         clean_args=None,
     ):
@@ -221,7 +236,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self._reset_report()
 
     @fill_doc
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y: None = None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -372,7 +387,12 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         return hasattr(self, "lut_") and hasattr(self, "mask_img_")
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from surface object.
 
         Parameters
@@ -453,7 +473,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, signals) -> SurfaceImage:
+    def inverse_transform(self, signals: Signals) -> SurfaceImage:
         """Transform extracted signal back to surface image.
 
         Parameters

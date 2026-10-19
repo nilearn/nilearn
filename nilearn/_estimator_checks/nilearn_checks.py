@@ -3653,7 +3653,7 @@ def check_multimasker_with_confounds(estimator) -> None:
 
     # Mismatch n imgs and n confounds
     with pytest.raises(
-        ValueError, match=r"number of confounds .* unequal to number of images"
+        ValueError, match=r"Number of confounds .* must match number of images"
     ):
         estimator.fit_transform(input_imgs, confounds=[array])
 

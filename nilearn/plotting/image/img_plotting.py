@@ -17,7 +17,7 @@ import pandas as pd
 import scipy
 from matplotlib import get_backend
 from matplotlib.axes import Axes
-from matplotlib.colors import LinearSegmentedColormap, Normalize
+from matplotlib.colors import Colormap, LinearSegmentedColormap, Normalize
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpecFromSubplotSpec
 from matplotlib.ticker import MaxNLocator
@@ -801,7 +801,7 @@ def plot_roi(
     black_bg: BlackBg = "auto",
     threshold=0.5,
     alpha=0.7,
-    cmap="gist_ncar",
+    cmap: Colormap | str | pd.DataFrame = "gist_ncar",
     dim: float | Literal["auto"] = "auto",
     colorbar: ColorBar = True,
     cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,

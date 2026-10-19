@@ -112,7 +112,9 @@ def transfer_deprecated_param_vals(replacement_params, kwargs):
     return kwargs
 
 
-def remove_parameters(removed_params, reason, end_version="future"):
+def remove_parameters(
+    removed_params: list[str], reason: str, end_version: str = "future"
+):
     """Use this decorator to deprecate \
     but not renamed parameters in the decorated functions and methods.
 
@@ -125,7 +127,7 @@ def remove_parameters(removed_params, reason, end_version="future"):
     reason : :obj:`str`
         Detailed reason of deprecated parameter and alternative solutions.
 
-    end_version : :obj:`str` {'future' | 'next' | <version>}, default='future'
+    end_version : :obj:`str`, default='future'
         Version when using the deprecated parameters will raise an error.
         For informational purpose in the warning text.
 

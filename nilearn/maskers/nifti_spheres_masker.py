@@ -36,6 +36,7 @@ from nilearn.maskers.base_masker import (
     sanitize_displayed_maps,
 )
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
+from nilearn.nilearn_typing import Signals, SingleConfound
 
 
 def apply_mask_and_get_affinity(
@@ -398,6 +399,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             tmp.extend((np.asarray(spheres_to_be_displayed) + 1).tolist())
             self._report_content["displayed_maps"] = tmp
 
+            spheres_names = self.get_feature_names_out()
+            self._report_content["name_maps"] = [""] + [
+                f"Sphere {i + 1}<br>{spheres_names[i]}"
+                for i in spheres_to_be_displayed
+            ]
+
             img = self._reporting_data["images"]
             if img is None:
                 msg = (
@@ -569,7 +576,13 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return self
 
     @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+    def fit_transform(
+        self,
+        imgs,
+        y: None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ) -> Signals:
         """Prepare and perform signal extraction.
 
         Parameters
@@ -600,7 +613,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return hasattr(self, "seeds_") and hasattr(self, "n_elements_")
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -684,7 +702,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return [str(tuple(x)) + radius_suffix for x in seeds.tolist()]
 
     @fill_doc
-    def inverse_transform(self, region_signals) -> Nifti1Image:
+    def inverse_transform(self, region_signals: Signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from spheres signals.
 
         Any mask given at initialization is taken into account. Throws an error

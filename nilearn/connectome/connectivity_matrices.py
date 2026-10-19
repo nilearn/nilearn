@@ -2,9 +2,10 @@
 
 import warnings
 from math import floor, sqrt
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 import numpy as np
+import pandas as pd
 from scipy import linalg
 from sklearn.base import TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
@@ -507,7 +508,9 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         self.discard_diagonal = discard_diagonal
         self.verbose = verbose
 
-    def _check_input(self, X, confounds=None, reset=True):
+    def _check_input(
+        self, X, confounds: pd.DataFrame | np.ndarray | None = None, reset=True
+    ):
         """Run several checks on input and confounds.
 
         - all inputs must be 2D arrays of same dimensions
@@ -553,7 +556,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                 raise ValueError(error_message)
 
     @fill_doc
-    def fit(self, X, y=None) -> Self:
+    def fit(self, X, y: None = None) -> Self:
         """Fit the covariance estimator to the given time series for each \
         subject.
 
@@ -577,7 +580,11 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         return self
 
     def _fit_transform(
-        self, X, do_transform=False, do_fit=False, confounds=None
+        self,
+        X,
+        do_transform=False,
+        do_fit=False,
+        confounds: pd.DataFrame | np.ndarray | None = None,
     ):
         """Avoid duplication of computation."""
         if not hasattr(X, "__iter__"):
@@ -669,6 +676,8 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         # Compute the vector we return on transform
         if do_transform:
             if self.kind == "tangent":
+                if TYPE_CHECKING:
+                    assert self.whitening_ is not None
                 connectivities = [
                     _map_eigenvalues(
                         np.log, self.whitening_.dot(cov).dot(self.whitening_)
@@ -690,7 +699,12 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         return connectivities
 
     @fill_doc
-    def fit_transform(self, X, y=None, confounds=None):
+    def fit_transform(
+        self,
+        X,
+        y: None = None,
+        confounds: pd.DataFrame | np.ndarray | None = None,
+    ):
         """Fit the covariance estimator to the given time series \
         for each subject. \
         Then apply transform to covariance matrices for the chosen kind.
@@ -725,7 +739,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             X, do_fit=True, do_transform=True, confounds=confounds
         )
 
-    def transform(self, X, confounds=None):
+    def transform(self, X, confounds: pd.DataFrame | np.ndarray | None = None):
         """Apply transform to covariances matrices to get the connectivity \
         matrices for the chosen kind.
 

@@ -15,7 +15,7 @@ from scipy.sparse import coo_array, csgraph, dia_array
 from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.utils.validation import check_is_fitted, validate_data
 
-from nilearn._base import NilearnBaseEstimator
+from nilearn._base import PACKAGE_DIRECTORY, NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.docs import fill_doc
@@ -685,15 +685,11 @@ class ReNA(
 
         Only works in during sklearn checks during tests.
         """
-        import nilearn as nil
-
-        pkg_dir = Path(nil.__file__).parent
-
         frame = inspect.currentframe()
         while frame:
             filename = inspect.getfile(frame)
             is_test_file = Path(filename).name.startswith("test_")
-            in_nilearn_code = filename.startswith(str(pkg_dir))
+            in_nilearn_code = filename.startswith(str(PACKAGE_DIRECTORY))
             if is_test_file:
                 break
             frame = frame.f_back
@@ -705,7 +701,7 @@ class ReNA(
             )
 
     @fill_doc
-    def fit(self, X, y=None) -> Self:
+    def fit(self, X, y: None = None) -> Self:
         """Compute clustering of the data.
 
         Parameters
@@ -793,11 +789,7 @@ class ReNA(
         return hasattr(self, "labels_")
 
     @fill_doc
-    def transform(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-    ):
+    def transform(self, X, y: None = None):
         """Apply clustering, reduce the dimensionality of the data.
 
         Parameters
@@ -813,6 +805,7 @@ class ReNA(
             Data reduced with agglomerated signal for each cluster.
 
         """
+        del y
         check_is_fitted(self)
 
         X = validate_data(self, X, reset=False)

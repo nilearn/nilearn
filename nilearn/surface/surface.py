@@ -363,7 +363,7 @@ class PolyData:
                         "Object dtype is not supported for surface data. "
                         f"Part '{hemi}' will be cast to np.float32.",
                         UserWarning,
-                        stacklevel=2,
+                        stacklevel=find_stack_level(),
                     )
                     param = param.astype(np.float32)
                 parts[hemi] = param
@@ -522,7 +522,7 @@ class PolyData:
                     "Object dtype is not supported for surface data. "
                     "Data will be cast to np.float32 instead.",
                     UserWarning,
-                    stacklevel=2,
+                    stacklevel=find_stack_level(),
                 )
                 dtype = np.float32
             for h, v in self.parts.items():

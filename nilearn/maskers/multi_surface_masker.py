@@ -14,6 +14,7 @@ from nilearn._utils.param_validation import check_params
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.base_masker import mask_logger
 from nilearn.maskers.surface_masker import SurfaceMasker
+from nilearn.nilearn_typing import SingleConfound
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 
@@ -132,7 +133,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         self.n_jobs = n_jobs
 
     @fill_doc
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y: None = None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -166,7 +167,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
     def transform_single_imgs(
         self,
         imgs,
-        confounds=None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ):
         """Extract signals from fitted surface object.
