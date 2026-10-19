@@ -1,4 +1,4 @@
-.. _icbm_152_template:
+.. _icbm152_2009:
 
 ICBM 152 template
 =================
