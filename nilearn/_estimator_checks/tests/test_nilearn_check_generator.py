@@ -15,7 +15,6 @@ from nilearn._estimator_checks.nilearn_check_generator import (
     IMG_INPUT_REGRESSOR_CHECKS,
     IMG_INPUT_REQUIRES_Y,
     MULTI_MASKER_CHECKS,
-    MULTINIFTIMASKER_CHECKS,
     NON_MULTI_MASKER_CHECKS,
     SURFACE_INPUT_MASKER_CHECKS,
     VOLUME_INPUT_MASKER_CHECKS,
@@ -181,8 +180,7 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             COMMON_CHECKS
             + IMG_INPUT_COMMON_CHECKS
             + VOLUME_INPUT_MASKER_CHECKS
-            + MULTI_MASKER_CHECKS
-            + MULTINIFTIMASKER_CHECKS,
+            + MULTI_MASKER_CHECKS,
         )
     ]
     # Surface maskers

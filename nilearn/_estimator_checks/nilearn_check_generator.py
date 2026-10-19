@@ -82,7 +82,6 @@ from nilearn._estimator_checks.nilearn_checks import (
 )
 from nilearn._estimator_checks.utils import accepts_image, clone, requires_y
 from nilearn.decomposition._base import _BaseDecomposition
-from nilearn.maskers import NiftiMasker
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.utils.tags import (
     accepts_surface,
@@ -189,8 +188,6 @@ VOLUME_INPUT_MASKER_CHECKS = [
     check_masker_shelving,
 ]
 
-MULTINIFTIMASKER_CHECKS = [check_multi_nifti_masker_shelving]
-
 # Checks that apply to all maskers which accept surface image as input
 SURFACE_INPUT_MASKER_CHECKS = [
     *COMMON_MASKER_CHECKS,
@@ -205,6 +202,7 @@ MULTI_MASKER_CHECKS = [
     check_multimasker_transformer_high_variance_confounds,
     check_multimasker_transformer_sample_mask,
     check_multimasker_with_confounds,
+    check_multi_nifti_masker_shelving,
 ]
 
 # Checks specific to non-multi maskers
@@ -259,12 +257,6 @@ CHECK_SELECTOR = [
     (
         lambda e: is_masker(e) and not isinstance(e, _MultiMixin),
         NON_MULTI_MASKER_CHECKS,
-    ),
-    # MultiNiftiMasker
-    # TODO enforce for other maskers
-    (
-        lambda e: isinstance(e, NiftiMasker) and isinstance(e, _MultiMixin),
-        MULTINIFTIMASKER_CHECKS,
     ),
     # ----------GLM----------
     # checks for glm estimators

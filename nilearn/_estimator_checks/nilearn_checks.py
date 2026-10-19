@@ -3568,6 +3568,10 @@ def check_nifti_masker_fit_with_3d_mask(estimator) -> None:
 # ------------------ MULTI MASKER CHECKS ------------------
 
 
+# TODO enforce for other maskers
+@skip_if_not(
+    lambda e: isinstance(e, NiftiMasker) and isinstance(e, _MultiMixin)
+)
 def check_multi_nifti_masker_shelving(estimator) -> None:
     """Check behavior when shelving masker."""
     if is_windows_platform():
