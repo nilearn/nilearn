@@ -171,7 +171,9 @@ Pull requests can only be opened if:
 
 - there is no PR already associated with that issue that already tackles the problem,
 
-- the issue has been assigned to you by a member of the dev team.
+- the issue has been assigned to you by a member of the dev team:
+  you can request the issue to be assigned to you by notifying the dev team
+  by adding `@nilearn/triaging` in one of your comments.
 
 The top comment of the PR must use the PR template: `.github/pull_request_template.md`
 and mention that an agent / LLM was used to generate the PR.
