@@ -41,7 +41,7 @@ from nilearn.utils.tags import (
 )
 
 
-def accepts_image(estimator):
+def accepts_image(estimator) -> bool:
     """Check if estimator accepts volume of surface image."""
     return accepts_volume(estimator) or accepts_surface(estimator)
 
@@ -54,7 +54,7 @@ def clone(estimator):
     return estimator
 
 
-def requires_y(estimator):
+def requires_y(estimator) -> bool:
     """Check if estimator expects target as input."""
     tags = estimator.__sklearn_tags__()
     return getattr(tags.target_tags, "required", True)
