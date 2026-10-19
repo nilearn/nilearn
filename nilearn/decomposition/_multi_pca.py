@@ -20,7 +20,7 @@ class _MultiPCA(_BaseDecomposition):
 
     Parameters
     ----------
-    n_components : int, default=20
+    n_components : :obj:`int`, default=20
         Number of components to extract.
 
     do_cca : :obj:`bool`, default=True
@@ -86,17 +86,17 @@ class _MultiPCA(_BaseDecomposition):
 
         ..versionadded:: 0.14.0
 
-    memory : instance of joblib.Memory or string, default=None
+    memory : instance of joblib.Memory or :obj:`str`, default=None
         Used to cache the masking process.
         By default, no caching is done.
         If a string is given, it is the path to the caching directory.
         If ``None`` is passed will default to ``Memory(location=None)``.
 
-    memory_level : integer, default=0
+    memory_level : :obj:`int`, default=0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    n_jobs : integer, default=1
+    n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 

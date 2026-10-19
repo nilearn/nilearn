@@ -2115,7 +2115,7 @@ def _get_processed_imgs(
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
-    verbose : :obj:`integer`
+    verbose : :obj:`int`
         Indicate the level of verbosity.
 
     Returns
@@ -2242,7 +2242,7 @@ def _get_events_files(
     imgs : :obj:`list` of :obj:`str`
         List of full path to the preprocessed images
 
-    verbose : :obj:`integer`
+    verbose : :obj:`int`
         Indicate the level of verbosity.
 
     Returns
@@ -2343,7 +2343,7 @@ def _get_masks_files(
     imgs : :obj:`list` of :obj:`str`
         List of full path to the preprocessed images
 
-    verbose : :obj:`integer`
+    verbose : :obj:`int`
         Indicate the level of verbosity.
 
     Returns
@@ -2440,7 +2440,7 @@ def _get_confounds(
     imgs : :obj:`list` of :obj:`str`
         List of full path to the preprocessed images
 
-    verbose : :obj:`integer`
+    verbose : :obj:`int`
         Indicate the level of verbosity.
 
     Returns

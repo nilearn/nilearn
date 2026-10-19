@@ -100,7 +100,7 @@ def _fast_svd(X, n_components, random_state=None):
     X : array, shape (n_samples, n_features)
         The data to decompose
 
-    n_components : integer
+    n_components : :obj:`int`
         The order of the dimensionality of the truncated SVD
 
     %(random_state)s
@@ -190,13 +190,13 @@ def _mask_and_reduce(
         - if set to ``'auto'``, estimator will set the number of components per
           reduced session to be ``n_components``.
 
-    n_components : integer or None, default=None
+    n_components : :obj:`int` or None, default=None
         Number of components per subject to be extracted by dimension reduction
 
     %(random_state)s
         default=0
 
-    n_jobs : integer, default=1
+    n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
@@ -312,7 +312,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
     Parameters
     ----------
-    n_components : int, default=20
+    n_components : :obj:`int`, default=20
         Number of components to extract,
         for each 4D-Niimage or each 2D surface image
 
@@ -382,11 +382,11 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         If a string is given, it is the path to the caching directory.
         If ``None`` is passed will default to ``Memory(location=None)``.
 
-    memory_level : integer, default=0
+    memory_level : :obj:`int`, default=0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    n_jobs : integer, default=1
+    n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 

@@ -38,7 +38,7 @@ def generate_atlas_look_up_table(
         Atlas fetching function name as a string.
         Defaults to "unknown" in case None is passed.
 
-    name : iterable of bytes or string, or int or None, default=None
+    name : iterable of bytes or :obj:`str`, or int or None, default=None
         If an integer is passed,
         this corresponds to the number of ROIs in the atlas.
         If an iterable is passed, then it contains the ROI names.
@@ -54,7 +54,7 @@ def generate_atlas_look_up_table(
         If True, an error will be thrown
         if ``name`` and ``index``have different length.
 
-    background_label : int or float or None, default=None
+    background_label : :obj:`int` or float or None, default=None
         If not None and no 'name' was passed,
         this label is used to describe the background value in the image.
     """

@@ -106,14 +106,14 @@ def cache(
     func : function
         The function which output is to be cached.
 
-    memory : instance of joblib.Memory, string or pathlib.Path
+    memory : instance of joblib.Memory, :obj:`str` or pathlib.Path
         Used to cache the function call.
 
-    func_memory_level : int or None, default=None
+    func_memory_level : :obj:`int` or None, default=None
         The memory_level from which caching must be enabled for the wrapped
         function.
 
-    memory_level : int or None, default=None
+    memory_level : :obj:`int` or None, default=None
         The memory_level used to determine if function call must
         be cached or not (if user_memory_level is equal of greater than
         func_memory_level the function is cached).

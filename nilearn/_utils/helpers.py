@@ -17,7 +17,7 @@ def rename_parameters(
 
     Parameters
     ----------
-    replacement_params : Dict[string, string]
+    replacement_params : :obj:`dict`
         Dict where the key-value pairs represent the old parameters
         and their corresponding new parameters.
         Example: {old_param1: new_param1, old_param2: new_param2,...}
@@ -117,7 +117,7 @@ def remove_parameters(
 
     Parameters
     ----------
-    removed_params : :obj:`list`[string]
+    removed_params : :obj:`list` of :obj:`str`
         List of old parameters to be removed.
         Example: [old_param1, old_param2, ...]
 

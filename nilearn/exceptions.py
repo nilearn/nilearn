@@ -48,10 +48,10 @@ class DimensionError(TypeError):
 
     Parameters
     ----------
-    file_dimension : integer
+    file_dimension : :obj:`int`
         Indicates the dimensionality of the bottom-level nifti file.
 
-    required_dimension : integer
+    required_dimension : :obj:`int`
         The dimension the nifti file should have.
     """
 

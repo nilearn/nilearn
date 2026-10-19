@@ -301,7 +301,7 @@ def get_dataset_dir(
 
     %(data_dir)s
 
-    default_paths : :obj:`list` of string or None, default=None
+    default_paths : :obj:`list` of :obj:`str` or None, default=None
         Default system paths in which the dataset may already have been
         installed by a third party software. They will be checked first.
 
@@ -514,7 +514,8 @@ def _filter_column(array, col: str, criteria):
     col : :obj:`str`
         Name of the column.
 
-    criteria : integer (or float), pair of integers, string or list of these
+    criteria : :obj:`int` (or float), pair of integers,
+               :obj:`str` or list of these
         if integer, select elements in column matching integer
         if a tuple, select elements between the limits given by the tuple
         if a string, select elements that match the string
@@ -869,7 +870,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     ----------
     %(data_dir)s
 
-    files : :obj:`list` of (string, string, dict)
+    files : :obj:`list` of (:obj:`str`, :obj:`str`, dict)
         List of files and their corresponding url with dictionary that contains
         options regarding the files. Eg. (file_path, url, opt). If a file_path
         is not found in data_dir, as in data_dir/file_path the download will

@@ -24,13 +24,13 @@ def _make_graph_edges_3d(n_x: int, n_y: int, n_z: int) -> np.ndarray:
 
     Parameters
     ----------
-    n_x : integer
+    n_x : :obj:`int`
         The size of the grid in the x direction.
 
-    n_y : integer
+    n_y : :obj:`int`
         The size of the grid in the y direction.
 
-    n_z : integer
+    n_z : :obj:`int`
         The size of the grid in the z direction.
 
     Returns
