@@ -1324,7 +1324,6 @@ class FirstLevelModel(BaseGLM):
         If mask_img is not a masker,
         we compute an implicit mask based on all the runs.
 
-
         Parameters
         ----------
         run_imgs : Niimg-like object, \

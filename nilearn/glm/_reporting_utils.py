@@ -255,7 +255,6 @@ class GLMReportMixin(ReportMixin):
             .. note::
                 ``cut_coords`` will not be used when ``plot_type='glass'``.
 
-
         display_mode :  :obj:`str`, default=None
             Default is 'z' if plot_type is 'slice';
             'ortho' if plot_type is 'glass'.
@@ -452,7 +451,6 @@ def mask_to_plot(model, bg_img):
         See :ref:`extracting_data`.
         The background image that the mask will be plotted on top of.
         To turn off background image, just pass "bg_img=None".
-
 
     Returns
     -------

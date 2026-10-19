@@ -298,7 +298,6 @@ def get_clusters_table(
         we recommend using
         the `atlasreader package <https://github.com/miykael/atlasreader>`_.
 
-
     Parameters
     ----------
     stat_img : Niimg-like object or :class:`~nilearn.surface.SurfaceImage`

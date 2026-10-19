@@ -145,7 +145,6 @@ def _get_labels_data(
     dim : :obj:`int`, default=None
         Integer slices mask for a specific dimension.
 
-
     Returns
     -------
     labels : :obj:`list` or :obj:`tuple`

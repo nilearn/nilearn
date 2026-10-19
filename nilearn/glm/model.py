@@ -352,7 +352,6 @@ class LikelihoodModelResults:
             The `alpha` level for the confidence interval.
             ie., `alpha` = .05 returns a 95% confidence interval.
 
-
         cols : :obj:`tuple`, default=None
             `cols` specifies which confidence intervals to return.
 

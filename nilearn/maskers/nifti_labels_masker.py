@@ -119,7 +119,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     %(masker_lut)s
 
-
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
 
@@ -203,7 +202,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
     %(nifti_mask_img_)s
 
     memory_ : joblib memory cache
-
 
     See Also
     --------

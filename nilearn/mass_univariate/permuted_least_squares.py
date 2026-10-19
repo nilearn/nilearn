@@ -519,7 +519,6 @@ def permuted_ols(
     ----------
     .. footbibliography::
 
-
     Examples
     --------
 

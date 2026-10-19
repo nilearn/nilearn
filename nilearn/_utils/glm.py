@@ -98,7 +98,6 @@ def _read_events_table(table_path: str | Path) -> pd.DataFrame:
     """Load the contents of the event file specified by `table_path`\
        to a pandas.DataFrame.
 
-
     Parameters
     ----------
     table_path : :obj:`str`, :obj:`pathlib.Path`

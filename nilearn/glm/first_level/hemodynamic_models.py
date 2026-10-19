@@ -777,7 +777,6 @@ def compute_regressor(
     reg_names : :obj:`list` of strings
         Corresponding regressor names.
 
-
     Examples
     --------
 

@@ -968,7 +968,6 @@ def plot_surf_roi(
 
                 kaleido.get_chrome_sync()
 
-
     %(cmap_lut)s
         default='gist_ncar'.
 

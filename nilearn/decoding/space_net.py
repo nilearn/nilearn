@@ -1324,9 +1324,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
 
         .. nilearn_versionadded:: 0.12.1
 
-
     %(spacenet_fit_attributes)s
-
 
     See Also
     --------

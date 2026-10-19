@@ -322,7 +322,6 @@ def plot_bland_altman(
     from :footcite:t:`Bowring2019`
     and its associated `code base <https://github.com/AlexBowring/Software_Comparison/blob/master/figures/lib/bland_altman.py>`_.
 
-
     References
     ----------
 

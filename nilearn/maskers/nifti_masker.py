@@ -296,7 +296,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         .. nilearn_versionadded:: 0.12.0
 
-
     Attributes
     ----------
     affine_ : 4x4 :obj:`numpy.ndarray`

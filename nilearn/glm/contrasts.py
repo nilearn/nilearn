@@ -155,7 +155,6 @@ class Contrast:
         baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
-
         Returns
         -------
         p_values : 1-d array, shape=(n_voxels,)
@@ -214,7 +213,6 @@ class Contrast:
         ----------
         baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
-
 
         Returns
         -------

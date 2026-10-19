@@ -140,7 +140,6 @@ def _mean_of_squares(signals, n_batches=20):
             and computation time. The higher the value, the lower the
             memory consumption.
 
-
     Returns
     -------
     var : :class:`numpy.ndarray`
@@ -184,7 +183,6 @@ def row_sum_of_squares(signals, n_batches=20):
             Tweaking this value can lead to variation of memory usage
             and computation time. The higher the value, the lower the
             memory consumption.
-
 
     Returns
     -------
@@ -695,7 +693,6 @@ def clean(
         Keyword arguments to be passed to functions called within ``clean``.
         Kwargs prefixed with ``'butterworth__'`` will be passed to
         :func:`~nilearn.signal.butterworth`.
-
 
     Returns
     -------

@@ -319,7 +319,6 @@ def check_set_output(estimator_orig) -> None:
       and give the same results
     - check that estimators that work with surface can deal with 1D image
 
-
     Regression test for https://github.com/nilearn/nilearn/issues/5969
     """
     if not hasattr(estimator_orig, "transform") or isinstance(

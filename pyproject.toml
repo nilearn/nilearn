@@ -299,7 +299,6 @@ type = "protected"
 [tool.numpydoc_validation]
 checks = [
     "all",
-    "GL03",
     "GL05",
     "GL06",
     "GL07",

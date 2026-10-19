@@ -234,7 +234,6 @@ def plot_matrix(
         - 'diag': Plot the lower part with the diagonal
         - 'full': Plot the full matrix
 
-
     auto_fit : :obj:`bool`, default=True
         If auto_fit is True, the axes are dimensioned to give room
         for the labels. This assumes that the labels are resting

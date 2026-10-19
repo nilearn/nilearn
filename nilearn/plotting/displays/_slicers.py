@@ -1266,7 +1266,6 @@ class OrthoSlicer(_MultiDSlicer):
          # display is an instance of the OrthoSlicer class
          display = plot_img(img, display_mode="ortho")
 
-
     Parameters
     ----------
     cut_coords : 3-sequence of :obj:`float` or :obj:`int` or None

@@ -196,10 +196,8 @@ class BaseAxes:
         size : :obj:`float`, default=5.0
             Horizontal length of the scale bar, given in `units`.
 
-
         units : :obj:`str`, default='cm'
             Physical units of the scale bar (`'cm'` or `'mm'`).
-
 
         fontproperties : :class:`~matplotlib.font_manager.FontProperties`, \
                 :obj:`dict` or None, default=None
@@ -223,10 +221,8 @@ class BaseAxes:
         sep : :obj:`int` or :obj:`float`, default=5
             Separation between the label and the scale bar, in points.
 
-
         size_vertical : :obj:`int` or :obj:`float`, default=0
             Vertical length of the size bar, given in `units`.
-
 
         label_top : :obj:`bool`, default=False
             If ``True``, the label will be over the scale bar.
@@ -538,7 +534,6 @@ class GlassBrainAxes(BaseAxes):
         directed : :obj:`bool`, default=False
             Add arrows instead of lines if set to ``True``.
             Use this when plotting directed graphs for example.
-
 
         kwargs : :obj:`dict`
             Additional arguments to pass to :class:`~matplotlib.lines.Line2D`.

@@ -1049,7 +1049,6 @@ def fetch_localizer_button_task(
     """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
-
     Parameters
     ----------
     %(data_dir)s
@@ -1114,7 +1113,6 @@ def fetch_abide_pcp(
     that can be passed as parameter. Note that this is the preprocessed
     version of ABIDE provided by the preprocess connectome projects (PCP).
     See :footcite:t:`Nielsen2013`.
-
 
     Parameters
     ----------
@@ -2182,7 +2180,6 @@ def fetch_development_fmri(
 
     .. nilearn_versionadded:: 0.5.2
 
-
     Parameters
     ----------
     %(n_subjects)s
@@ -2922,7 +2919,6 @@ def fetch_spm_auditory(
     References
     ----------
     .. footbibliography::
-
 
     Notes
     -----
