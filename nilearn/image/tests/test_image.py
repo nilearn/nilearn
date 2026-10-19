@@ -2420,6 +2420,10 @@ def img_in_home_folder(
     is deleted after the test,
     even if the test fails.
     https://docs.pytest.org/en/stable/how-to/fixtures.html#teardown-cleanup-aka-fixture-finalization
+
+    Yields
+    ------
+    nibabel.Nifti1Image
     """
     created_file = Path("~/test.nii")
     img_3d_mni.to_filename(created_file.expanduser())
@@ -2509,7 +2513,12 @@ def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
 
 @pytest.fixture
 def set_expand_path_wildcards() -> Generator[None, None, None]:
-    """Toggles EXPAND_PATH_WILDCARDS before and after a test."""
+    """Toggles EXPAND_PATH_WILDCARDS before and after a test.
+
+    Yields
+    ------
+    None
+    """
     # Test when global variable is set to False => no globbing allowed
     ni.EXPAND_PATH_WILDCARDS = False
     yield
