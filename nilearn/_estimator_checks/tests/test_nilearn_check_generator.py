@@ -139,7 +139,7 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
     + [(e, COMMON_CHECKS) for e in CONNECTOME if e != GroupSparseCovariance]
     # GroupSparseCovariance
     + [(GroupSparseCovariance, COMMON_CHECKS)]
-    # Nifti maskers (non multi) except NiftiMasker
+    # Nifti maskers (non multi)
     + [
         (
             e,
@@ -149,19 +149,8 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             + NON_MULTI_MASKER_CHECKS,
         )
         for e in VOLUME_MASKERS
-        if e != NiftiMasker
     ]
-    # NiftiMasker
-    + [
-        (
-            NiftiMasker,
-            COMMON_CHECKS
-            + IMG_INPUT_COMMON_CHECKS
-            + VOLUME_INPUT_MASKER_CHECKS
-            + NON_MULTI_MASKER_CHECKS,
-        )
-    ]
-    # Multi Nifti maskers except MultiNiftiMasker
+    # Multi Nifti maskers
     + [
         (
             e,
@@ -171,17 +160,6 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             + MULTI_MASKER_CHECKS,
         )
         for e in VOLUME_MULTI_MASKERS
-        if e != MultiNiftiMasker
-    ]
-    # MultiNiftiMasker
-    + [
-        (
-            MultiNiftiMasker,
-            COMMON_CHECKS
-            + IMG_INPUT_COMMON_CHECKS
-            + VOLUME_INPUT_MASKER_CHECKS
-            + MULTI_MASKER_CHECKS,
-        )
     ]
     # Surface maskers
     + [
