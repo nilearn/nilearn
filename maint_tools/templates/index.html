@@ -1,4 +1,4 @@
-<!-- Print the warnings sorted by type first and then by filename -->
+<!-- Print the warnings sorted by type first, then by message and then by filename -->
 {% extends "html1/index.html" %}
 
 <!-- URL of the extended template -->
@@ -55,16 +55,23 @@
                         </div>
                     </summary>
                     <ul>
-                        {% for warning in warnings|sort(attribute="filename") %}
-                            {% if warning.category == type %}
-                                <li>
-                                    <div>
-                                        <span class="filename">{{ warning.filename }}:{{ warning.lineno }}</span>
-                                        <br />
-                                        {{ warning.message }}
-                                    </div>
-                                </li>
-                            {% endif %}
+                        {% set type_warnings = warnings|selectattr("category", "equalto", type)|list %}
+
+                        <!-- warning.message is a Warning instance: sort on its string representation -->
+                        {% set messages = type_warnings|map(attribute="message")|map("string")|unique|sort %}
+
+                        {% for message in messages %}
+                            {% for warning in type_warnings|sort(attribute="filename") %}
+                                {% if warning.message|string == message %}
+                                    <li>
+                                        <div>
+                                            <span class="filename">{{ warning.filename }}:{{ warning.lineno }}</span>
+                                            <br />
+                                            {{ warning.message }}
+                                        </div>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
                         {% endfor %}
                     </ul>
                 </details>
