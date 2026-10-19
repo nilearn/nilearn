@@ -29,7 +29,6 @@ def rename_parameters(
     lib_name : :obj:`str`, default='Nilearn'
         Name of the library to which the decoratee belongs.
         For informational purpose in the warning text.
-
     """
 
     def _replace_params(func):
@@ -67,7 +66,6 @@ def _warn_deprecated_params(
 
     kwargs : Dict[str, any]
         Dictionary of all the keyword args passed on the decorated function.
-
     """
     used_deprecated_params = set(kwargs).intersection(replacement_params)
     for deprecated_param_ in used_deprecated_params:
@@ -104,7 +102,6 @@ def transfer_deprecated_param_vals(replacement_params, kwargs):
         Dictionary of all the keyword args to be passed on
         to the decorated function, with old parameter names
         replaced by new parameters, with their values intact.
-
     """
     for old_param, new_param in replacement_params.items():
         if old_param in kwargs:
@@ -130,7 +127,6 @@ def remove_parameters(
     end_version : :obj:`str`, default='future'
         Version when using the deprecated parameters will raise an error.
         For informational purpose in the warning text.
-
     """
 
     def _remove_params(func):
@@ -167,7 +163,6 @@ def stringify_path(path):
     Returns
     -------
     str
-
     """
     return path.__fspath__() if isinstance(path, os.PathLike) else path
 

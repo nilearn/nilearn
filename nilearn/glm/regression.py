@@ -12,7 +12,6 @@ General reference for regression models:
 
 'Introduction to Linear Regression Analysis', Douglas C. Montgomery,
     Elizabeth A. Peck, G. Geoffrey Vining. Wiley, 2006.
-
 """
 
 __docformat__ = "restructuredtext en"
@@ -62,7 +61,6 @@ class OLSModel:
 
     df_model : scalar
         Degrees of freedom of the model.  The rank of the design.
-
     """
 
     def __init__(self, design):
@@ -139,7 +137,6 @@ class OLSModel:
         References
         ----------
         .. footbibliography::
-
         """
         # This is overwriting an abstract method of LikelihoodModel
         X = self.whitened_design
@@ -167,7 +164,6 @@ class OLSModel:
             used in estimating the coefficients. For OLSModel, it is
             does nothing. For WLSmodel, ARmodel, it pre-applies
             a square root of the covariance matrix to X.
-
         """
         return X
 
@@ -185,7 +181,6 @@ class OLSModel:
         Returns
         -------
         fit : RegressionResults
-
         """
         # Other estimates of the covariance matrix for a heteroscedastic
         # regression model can be implemented in WLSmodel. (Weighted least
@@ -223,7 +218,6 @@ class ARModel(OLSModel):
         If int, gives order of model, and initializes rho to zeros.  If
         ndarray, gives initial estimate of rho. Be careful as ``ARModel(X,
         1) != ARModel(X, 1.0)``.
-
     """
 
     def __init__(self, design, rho):
@@ -251,7 +245,6 @@ class ARModel(OLSModel):
         -------
         whitened_X : ndarray
             X whitened with order self.order AR.
-
         """
         X = np.asarray(X, np.float64)
         whitened_X = X.copy()
@@ -266,7 +259,6 @@ class RegressionResults(LikelihoodModelResults):
     """Summarize the fit of a linear regression model.
 
     It handles the output of contrasts, estimates of covariance, etc.
-
     """
 
     def __init__(
@@ -284,7 +276,6 @@ class RegressionResults(LikelihoodModelResults):
 
         The only difference is that the whitened Y and residual values
         are stored for a regression model.
-
         """
         LikelihoodModelResults.__init__(
             self, theta, Y, model, cov, dispersion, nuisance
@@ -319,7 +310,6 @@ class RegressionResults(LikelihoodModelResults):
         References
         ----------
         .. footbibliography::
-
         """
         return self.residuals * positive_reciprocal(np.sqrt(self.dispersion))
 
@@ -358,7 +348,6 @@ class SimpleRegressionResults(LikelihoodModelResults):
     for :term:`contrast` computation.
 
     Its intended to save memory when details of the model are unnecessary.
-
     """
 
     def __init__(self, results):
@@ -407,7 +396,6 @@ class SimpleRegressionResults(LikelihoodModelResults):
         References
         ----------
         .. footbibliography::
-
         """
         return self.residuals(Y, X) * positive_reciprocal(
             np.sqrt(self.dispersion)

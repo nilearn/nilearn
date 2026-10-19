@@ -215,7 +215,6 @@ def _transform_cut_coords(cut_coords, direction, affine):
     -------
     cut_coords : 1D array of length n_cuts
        The original cut_coords transformed image space.
-
     """
     # make kwargs
     axis = "xyz".index(direction)
@@ -267,7 +266,6 @@ def find_cut_slices(
     If a non-diagonal img is given. This function automatically reorders
     img to get it back to diagonal. This is to avoid finding same cuts in
     the slices.
-
     """
     # misc
     check_parameter_in_allowed(direction, ("x", "y", "z"), "direction")
@@ -432,7 +430,6 @@ def find_parcellation_cut_coords(
     --------
     nilearn.plotting.find_probabilistic_atlas_cut_coords : For coordinates
         extraction on probabilistic atlases (4D) (Eg. MSDL atlas)
-
     """
     # check label_hemisphere input
     check_parameter_in_allowed(
@@ -517,7 +514,6 @@ def find_probabilistic_atlas_cut_coords(maps_img: NiimgLike) -> np.ndarray:
     nilearn.plotting.find_parcellation_cut_coords : For coordinates
         extraction on parcellations denoted with labels (3D)
         (Eg. Harvard Oxford atlas)
-
     """
     maps_img = check_niimg_4d(maps_img)
     maps_imgs = iter_img(maps_img)

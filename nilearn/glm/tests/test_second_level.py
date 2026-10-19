@@ -70,7 +70,6 @@ def test_second_level_input_as_3d_images(
 
     Should act as a regression test for:
     https://github.com/nilearn/nilearn/issues/3636
-
     """
     images = []
     for _ in range(n_subjects):

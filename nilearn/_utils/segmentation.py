@@ -43,7 +43,6 @@ def _make_graph_edges_3d(n_x: int, n_y: int, n_z: int) -> np.ndarray:
                 (n_x - 1) * n_y * nz
 
         Graph edges with each column describing a node-id pair.
-
     """
     vertices = np.arange(n_x * n_y * n_z).reshape((n_x, n_y, n_z))
     edges_deep = np.vstack(
@@ -253,7 +252,6 @@ def random_walker(
     ----------
     .. [1] Random walks for image segmentation, Leo Grady, IEEE Trans Pattern
        Anal Mach Intell. 2006 Nov;28(11):1768-83.
-
     """
     out_labels = np.copy(labels)
     if (labels != 0).all():

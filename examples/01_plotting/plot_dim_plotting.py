@@ -10,7 +10,6 @@ decrease it (dim the background).
 
 This *dim* argument may also be useful for the plot_roi function used to
 display ROIs on top of a background image.
-
 """
 
 # %%

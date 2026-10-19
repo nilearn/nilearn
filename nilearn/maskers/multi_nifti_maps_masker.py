@@ -120,7 +120,6 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
     nilearn.maskers.NiftiMasker
     nilearn.maskers.NiftiLabelsMasker
     nilearn.maskers.NiftiMapsMasker
-
     """
 
     # memory and memory_level are used by CacheMixin.

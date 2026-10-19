@@ -391,8 +391,6 @@ def butterworth(
         >>> leg = plt.legend(["Initial signals", "Filtered signals"])
         >>> plt.grid(True)
         >>> plt.show()
-
-
     """
     check_params(locals())
     if low_pass is None and high_pass is None:
@@ -968,7 +966,6 @@ def create_cosine_drift(high_pass, frame_times):
     References
     ----------
     http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
-
     """
     n_frames = len(frame_times)
     n_times = np.arange(n_frames)

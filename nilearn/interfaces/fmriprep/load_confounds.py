@@ -391,7 +391,6 @@ def load_confounds(
     References
     ----------
     .. footbibliography::
-
     """
     _check_strategy(strategy)
     if "motion" in strategy:

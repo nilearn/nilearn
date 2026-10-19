@@ -100,7 +100,6 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     -------
     param_grid : dict of str to sequence, or sequence of such. Sensible default
     dict has size 1 for linear models.
-
     """
     if param_grid is None:
         param_grid = _default_param_grid(estimator, X, y)
@@ -535,7 +534,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
     nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
-
     """
 
     # dummy_output_ starts as a dict of accumulated fold outputs
@@ -613,7 +611,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
             Must have exactly as many samples as the input images.
 
         %(groups)s
-
         """
         check_params(self.__dict__)
 
@@ -852,7 +849,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         -------
         score : :obj:`float`
             Prediction score.
-
         """
         check_is_fitted(self)
         X = self._prep_input_post_fit(X)
@@ -1785,7 +1781,6 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
     nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
-
     """
 
     def __init__(

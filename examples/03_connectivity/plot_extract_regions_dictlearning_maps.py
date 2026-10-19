@@ -22,7 +22,6 @@ using :class:`~nilearn.decomposition.CanICA`
 
 Please see the related documentation
 of :class:`~nilearn.regions.RegionExtractor` for more details.
-
 """
 
 # %%

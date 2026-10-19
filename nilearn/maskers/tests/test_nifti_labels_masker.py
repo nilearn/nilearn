@@ -129,7 +129,6 @@ def test_mask_img_masks_all_labels_error(
         we cannot know for sure if the mask will include any label
       - When data is passed at fit time
         we can raise an error
-
     """
     mask = np.zeros(shape_3d_default)
     mask[-1][-1][-1] = 1

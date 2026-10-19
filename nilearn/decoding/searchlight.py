@@ -166,7 +166,6 @@ class GroupIterator:
     n_features : :obj:`int`
         Total number of features
     %(n_jobs)s
-
     """
 
     def __init__(self, n_features, n_jobs=1):

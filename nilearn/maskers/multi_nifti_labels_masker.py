@@ -127,7 +127,6 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
     --------
     nilearn.maskers.NiftiMasker
     nilearn.maskers.NiftiLabelsMasker
-
     """
 
     def __init__(

@@ -59,7 +59,6 @@ def compute_alpha_max(emp_covs, n_samples):
     References
     ----------
     .. footbibliography::
-
     """
     A = np.copy(emp_covs)
     n_samples = np.asarray(n_samples).copy()
@@ -86,7 +85,6 @@ def _update_submatrix(full, sub, sub_inv, p, h, v) -> None:
     and column.
 
     This computation is based on the Sherman-Woodbury-Morrison identity.
-
     """
     n = p - 1
     v[: n + 1] = full[: n + 1, n]
@@ -122,7 +120,6 @@ def _assert_submatrix(full: np.ndarray, sub: np.ndarray, n: int) -> None:
     by removing the p-th col and row in "full".
 
     Used only for debugging.
-
     """
     true_sub = np.empty_like(sub)
     true_sub[:n, :n] = full[:n, :n]
@@ -211,7 +208,6 @@ def group_sparse_covariance(
     References
     ----------
     .. footbibliography::
-
     """
     check_params(locals())
 
@@ -248,7 +244,6 @@ def _group_sparse_covariance(
     """Implement an internal version of group_sparse_covariance.
 
     See its docstring for details.
-
     """
     if tol == -1:
         tol = None
@@ -589,7 +584,6 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
     References
     ----------
     .. footbibliography::
-
     """
 
     def __init__(
@@ -628,7 +622,6 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
         -------
         self : GroupSparseCovariance instance
             the object itself. Useful for chaining operations.
-
         """
         del y
         check_params(self.__dict__)
@@ -709,7 +702,6 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
 
     n_samples : numpy.ndarray, shape: (subject number,)
         number of samples for each subject. dtype is np.float64.
-
     """
     if not hasattr(subjects, "__iter__"):
         raise ValueError(
@@ -788,7 +780,6 @@ def group_sparse_scores(
     duality_gap : :obj:`float`
         duality gap upper bound. The returned bound is tight: it vanishes for
         the optimal precision matrices
-
     """
     n_features, _, n_subjects = emp_covs.shape
 
@@ -919,7 +910,6 @@ def group_sparse_covariance_path(
     scores : :obj:`list` of float
         for each estimated precision, score obtained on the test set. Output
         only if test_subjs is not None.
-
     """
     check_params(locals())
 
@@ -968,7 +958,6 @@ class EarlyStopProbe:
     Stop optimizing as soon as the score on the test set starts decreasing.
     An instance of this class is supposed to be passed in the probe_function
     argument of group_sparse_covariance().
-
     """
 
     def __init__(self, test_subjs, verbose=0):
@@ -1081,7 +1070,6 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
     iteratively refined grid: first the cross-validated scores on a grid are
     computed, then a new refined grid is centered around the maximum, and so
     on.
-
     """
 
     def __init__(
@@ -1129,7 +1117,6 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         -------
         self : GroupSparseCovarianceCV
             the object instance itself.
-
         """
         del y
         check_params(self.__dict__)

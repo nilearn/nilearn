@@ -125,7 +125,6 @@ class Contrast:
         -------
         stat : 1-d array, shape=(n_voxels,)
             statistical values, one per voxel.
-
         """
         self.baseline = baseline
 
@@ -161,7 +160,6 @@ class Contrast:
         -------
         p_values : 1-d array, shape=(n_voxels,)
             p-values, one per voxel
-
         """
         if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
@@ -192,7 +190,6 @@ class Contrast:
         -------
         one_minus_pvalues : 1-d array, shape=(n_voxels,)
             one_minus_pvalues, one per voxel
-
         """
         if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
@@ -223,7 +220,6 @@ class Contrast:
         -------
         z_score : 1-d array, shape=(n_voxels,)
             statistical values, one per voxel
-
         """
         self.p_value_ = self.p_value(baseline)
         self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
@@ -307,7 +303,6 @@ def expression_to_contrast_vector(expression, design_columns) -> np.ndarray:
     array([1., 0.])
     >>> expression_to_contrast_vector("task - rest", ["task", "rest"])
     array([ 1., -1.])
-
     """
     if expression in design_columns:
         contrast_vector = np.zeros(len(design_columns))
@@ -367,7 +362,6 @@ def compute_contrast(
     con : Contrast instance,
         Yields the statistics of the :term:`contrast`
         (:term:`effects<Parameter Estimate>`, variance, p-values).
-
     """
     con_val = np.asarray(con_val)
     dim = 1
@@ -426,7 +420,6 @@ def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
     """Compute the summary contrast assuming fixed effects.
 
     Adds the same contrast applied to all labels and results lists.
-
     """
     contrast = None
     n_contrasts = 0
@@ -519,7 +512,6 @@ def compute_fixed_effects(
 
     fixed_fx_z_score_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         The fixed effects corresponding z-transform
-
     """
     n_runs = len(contrast_imgs)
     if n_runs != len(variance_imgs):

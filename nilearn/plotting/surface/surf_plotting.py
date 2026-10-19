@@ -805,7 +805,6 @@ def plot_img_on_surf(
         >>> fig = plot_img_on_surf(motor_activation_image)
         >>>
         >>> show()
-
     """
     check_params(locals())
     check_threshold_not_negative(threshold)

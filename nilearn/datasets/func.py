@@ -335,7 +335,6 @@ def fetch_adhd(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -506,7 +505,6 @@ def fetch_miyawaki2008(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -773,7 +771,6 @@ def fetch_localizer_contrasts(
     See Also
     --------
     nilearn.datasets.fetch_localizer_button_task
-
     """
     check_params(locals())
 
@@ -1015,7 +1012,6 @@ def fetch_localizer_calculation_task(
     --------
     nilearn.datasets.fetch_localizer_button_task
     nilearn.datasets.fetch_localizer_contrasts
-
     """
     check_params(locals())
 
@@ -1080,8 +1076,6 @@ def fetch_localizer_button_task(
     See Also
     --------
     nilearn.datasets.fetch_localizer_contrasts
-
-
     """
     check_params(locals())
 
@@ -1264,7 +1258,6 @@ def fetch_abide_pcp(
     References
     ----------
     .. footbibliography::
-
     """
     check_params(locals())
 
@@ -1629,7 +1622,6 @@ def fetch_megatrawls_netmats(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -1849,7 +1841,6 @@ def fetch_surf_nki_enhanced(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -1991,7 +1982,6 @@ def load_nki(
     -------
     list of SurfaceImage objects
         One image per subject.
-
     """
     check_params(locals())
     check_parameter_in_allowed(mesh_type, ALLOWED_MESH_TYPES, "mesh_type")
@@ -2053,7 +2043,6 @@ def _fetch_development_fmri_participants(
     participants : pandas.DataFrame
         Contains data of each subject age, age group, child or adult,
         gender, handedness.
-
     """
     check_params(locals())
 
@@ -2111,7 +2100,6 @@ def _fetch_development_fmri_functional(
 
     regressors : :obj:`list` of str (tsv files)
         Paths to regressors related to each subject.
-
     """
     check_params(locals())
 
@@ -2258,7 +2246,6 @@ def fetch_development_fmri(
     References
     ----------
     .. footbibliography::
-
     """
     check_params(locals())
 
@@ -2526,7 +2513,6 @@ def fetch_ds000030_urls(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -2598,7 +2584,6 @@ def select_from_index(
     -------
     urls : :obj:`list` of :obj:`str`
         Sorted list of filtered dataset directories.
-
     """
     check_params(locals())
 
@@ -2741,7 +2726,6 @@ def fetch_openneuro_dataset(
     --------
     :func:`fetch_ds000030_urls`
     :func:`patch_openneuro_dataset`
-
     """
     check_params(locals())
 
@@ -3202,7 +3186,6 @@ def fetch_fiac_first_level(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 

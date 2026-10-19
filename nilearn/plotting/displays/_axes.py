@@ -131,7 +131,6 @@ class BaseAxes:
 
         bg_color : matplotlib color: :obj:`str` or (r, g, b) value
             The background color for both text areas.
-
         """
         if self.direction in "xlr":
             return
@@ -242,7 +241,6 @@ class BaseAxes:
         **kwargs :
             Keyworded arguments to pass to
             :class:`~matplotlib.offsetbox.AnchoredOffsetbox`.
-
         """
         axis = self.ax
         fontproperties = fontproperties or FontProperties()
@@ -306,7 +304,6 @@ class CutAxes(BaseAxes):
 
         affine : 4x4 :class:`~numpy.ndarray`
             The affine of the volume.
-
         """
         coords = [0, 0, 0]
         check_parameter_in_allowed(
@@ -341,8 +338,6 @@ class CutAxes(BaseAxes):
         decimals : :obj:`bool` or :obj:`str`, default=False
             Formatting string for the coordinates.
             If set to ``False``, integer formatting will be used.
-
-
         """
         if decimals:
             text = f"%s=%.{decimals}f"
@@ -388,7 +383,6 @@ class GlassBrainAxes(BaseAxes):
         If set to ``True`` the absolute value of the data will be considered.
 
     %(radiological)s
-
     """
 
     def __init__(
@@ -411,7 +405,6 @@ class GlassBrainAxes(BaseAxes):
 
         affine : 4x4 :class:`numpy.ndarray`
             The affine of the volume.
-
         """
         max_axis = (
             0 if self.direction in "xlr" else ".yz".index(self.direction)
@@ -549,7 +542,6 @@ class GlassBrainAxes(BaseAxes):
 
         kwargs : :obj:`dict`
             Additional arguments to pass to :class:`~matplotlib.lines.Line2D`.
-
         """
         # colormap for colorbar
         self.cmap = cmap

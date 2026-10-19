@@ -281,7 +281,6 @@ class GLMReportMixin(ReportMixin):
         -------
         report : :class:`~nilearn.reporting.HTMLReport`
             HTML report for the :term:`GLM`.
-
         """
         check_params(locals())
         self._reset_report_warnings()
@@ -459,7 +458,6 @@ def mask_to_plot(model, bg_img):
     -------
     mask_plot : :obj:`str`
         PNG Image for the mask plot.
-
     """
     if not is_matplotlib_installed() or not model.__sklearn_is_fitted__():
         return None
@@ -574,7 +572,6 @@ def make_stat_maps_contrast_clusters(
     results : dict
         Each key contains
         contrast name, contrast plot, statistical map, cluster table.
-
     """
     if not model.__sklearn_is_fitted__():
         return None
@@ -793,7 +790,6 @@ def _stat_map_to_png(
 
     fig : matplotlib figure
         only used for testing
-
     """
     if not is_matplotlib_installed():
         return None, None
@@ -907,7 +903,6 @@ def _add_params_to_plot(table_details, stat_map_plot):
     -------
     stat_map_plot : matplotlib.Axes
         Axes object of the stat map plot, with the added suptitle.
-
     """
     from matplotlib import pyplot as plt
 

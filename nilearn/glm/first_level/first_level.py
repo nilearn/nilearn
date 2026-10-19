@@ -1,6 +1,5 @@
 """Contains the GLM and contrast classes that are meant to be the main \
 objects of fMRI data analyses.
-
 """
 
 import csv
@@ -101,7 +100,6 @@ def mean_scaling(Y, axis=0) -> tuple[np.ndarray, np.ndarray]:
     array([1.5, 3. , 4.5])
     >>> bool(np.allclose(Y_scaled.mean(axis=0), 0))
     True
-
     """
     mean = Y.mean(axis=axis)
     if (mean == 0).any():
@@ -201,7 +199,6 @@ def run_glm(
     results : :obj:`dict`,
         Keys correspond to the different labels values
         values are RegressionResults instances corresponding to the voxels.
-
     """
     check_params(locals())
 
@@ -290,7 +287,6 @@ def _check_trial_type(events: list[str | Path]) -> None:
     ----------
     events : :obj:`list` of :obj:`str` or :obj:`pathlib.Path``.
               A list of paths of events.tsv files.
-
     """
     file_names = []
 
@@ -988,7 +984,6 @@ class FirstLevelModel(BaseGLM):
             If an autoregressive model with order greater than one is specified
             then adaptive quantification is performed and the coefficients
             will be clustered via K-means with `bins` number of clusters.
-
         """
         check_params(self.__dict__)
         #  check attributes passed at construction
@@ -1127,7 +1122,6 @@ class FirstLevelModel(BaseGLM):
             If ``output_type == 'all'``,
             then the output is a dictionary of images,
             keyed by the type of image.
-
         """
         check_is_fitted(self)
 
@@ -1236,7 +1230,6 @@ class FirstLevelModel(BaseGLM):
         See Also
         --------
         nilearn.glm.first_level.FirstLevelModel.compute_contrast
-
         """
         del first_level_contrast
         return {
@@ -1278,7 +1271,6 @@ class FirstLevelModel(BaseGLM):
         -------
         output : :obj:`list`
             A list of Nifti1Image(s) or SurfaceImage(s).
-
         """
         # check if valid attribute is being accessed.
         check_is_fitted(self)
@@ -1443,7 +1435,6 @@ def _check_events_file_uses_tab_separators(events_files):
     ------
     ValueError:
         If value separators are not Tabs (or commas)
-
     """
     valid_separators = [",", "\t"]
     if not isinstance(events_files, (list, tuple)):
@@ -1774,7 +1765,6 @@ def first_level_from_bids(
             confounds_fd_threshold=0.2,
             confounds_std_dvars_threshold=0,
         )
-
     """
     check_params(locals())
     if memory is None:
@@ -2091,7 +2081,6 @@ def _report_found_files(files, text, sub_label, filters, verbose) -> None:
         Only one filter per field allowed.
 
     %(verbose)s
-
     """
     unordered_list_string = "\n\t- ".join(files)
     logger.log(
@@ -2411,7 +2400,6 @@ def _check_masks_list(masks_files: list[str], imgs: list[str]) -> None:
 
     imgs : :obj:`list` of :obj:`str`
         List of full path to the preprocessed images
-
     """
     if len(masks_files) != len(imgs):
         warn(
@@ -2459,7 +2447,6 @@ def _get_confounds(
     Returns
     -------
     confounds : :obj:`list` of :class:`pandas.DataFrame` or None
-
     """
     # pop the 'desc' filter
     # it would otherwise trigger some meaningless warnings
@@ -2521,7 +2508,6 @@ def _check_confounds_list(confounds, imgs) -> None:
 
     imgs : :obj:`list` of :obj:`str`
         List of full path to the preprocessed images
-
     """
     if confounds and len(confounds) != len(imgs):
         raise ValueError(
@@ -2575,7 +2561,6 @@ def _check_args_first_level_from_bids(
 
     derivatives_folder : :obj:`str`
         Full path of the BIDS dataset derivative folder.
-
     """
     check_is_of_allowed_type(dataset_path, (str, Path), "dataset_path")
     dataset_path = Path(dataset_path)
@@ -2686,7 +2671,6 @@ def _make_bids_files_filter(
     Filter to be used by :func:`get_bids_files`: \
         :obj:`list` of :obj:`tuple` (str, str)
         filters
-
     """
     filters = [("task", task_label)]
 
@@ -2729,7 +2713,6 @@ def _check_bids_image_list(imgs, sub_label, filters):
     filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters of the form (field, label) used to select the files.
         See :func:`get_bids_files`.
-
     """
     if not imgs:
         raise ValueError(
@@ -2820,7 +2803,6 @@ def _check_bids_events_list(
         See :func:`get_bids_files`.
 
     %(verbose)s
-
     """
     if not events:
         raise ValueError(

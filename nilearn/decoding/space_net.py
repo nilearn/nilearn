@@ -170,7 +170,6 @@ def _space_net_alpha_grid(
 
     logistic : :obj:`bool`, default=False
         Indicates where the underlying loss function is logistic.
-
     """
     if logistic:
         # Computes the theoretical upper bound for the overall
@@ -284,7 +283,6 @@ class _EarlyStoppingCallback:
         output, but tends to have 'flat' regions. The other
         is the Pearson correlation, that we can use to disambiguate
         between regions with equivalent Spearman correlation.
-
         """
         if self.is_classif:
             w = w[:-1]
@@ -412,7 +410,6 @@ def path_scores(
     %(screening_percentile)s
 
     %(verbose0)s
-
     """
     if l1_ratios is None:
         raise ValueError("l1_ratios must be specified!")
@@ -658,7 +655,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         .. nilearn_versionadded:: 0.12.0
 
     %(spacenet_fit_attributes)s
-
     """
 
     SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
@@ -1111,7 +1107,6 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
     See Also
     --------
     nilearn.decoding.SpaceNetRegressor: Graph-Net and TV-L1 priors/penalties
-
     """
 
     SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
@@ -1336,7 +1331,6 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
     See Also
     --------
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
-
     """
 
     def __init__(

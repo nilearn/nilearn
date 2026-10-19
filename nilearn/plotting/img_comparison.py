@@ -98,7 +98,6 @@ def plot_img_comparison(
     -------
     corrs : :obj:`list` of :obj:`float`
         Pearson correlation between the images.
-
     """
     check_params(locals())
     # Cast to list
@@ -328,7 +327,6 @@ def plot_bland_altman(
     ----------
 
     .. footbibliography::
-
     """
     check_params(locals())
     data_ref, data_src = _extract_data_2_images(
@@ -444,7 +442,6 @@ def _extract_data_2_images(ref_img, src_img, masker=None):
         Its type must be compatible with that of the ``ref_img``.
         If None is passed,
         an appropriate masker will be fitted on the reference image.
-
     """
     if isinstance(ref_img, NiimgLike) and isinstance(src_img, NiimgLike):
         image_type = "volume"

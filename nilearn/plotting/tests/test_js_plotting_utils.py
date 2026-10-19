@@ -50,7 +50,6 @@ def check_html_surface_plots(
     - ``view_connectome``
     - ``view_surf``
     -  ``view_markers``
-
     """
     tmpfile = tmp_path / "test.html"
 

@@ -305,7 +305,6 @@ def save_glm_to_bids(
     - Contrast p- and z-values
       (``contrast-[name]_stat-[p|z]_statmap.nii.gz``)
     - Contrast weights figure (``contrast-[name]_design.svg``)
-
     """
     # grab the default from generate_report()
     # fail early if invalid parameters to pass to generate_report()

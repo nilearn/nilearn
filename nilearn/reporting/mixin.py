@@ -301,7 +301,6 @@ class ReportMixin:
         -------
         embed : :obj:`str`
             Binary image string.
-
         """
         if display is None:  # no image to display
             return None

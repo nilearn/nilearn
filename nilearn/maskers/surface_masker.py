@@ -87,7 +87,6 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     n_elements_ : :obj:`int` or None
         number of vertices included in mask
-
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
@@ -303,7 +302,6 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         Returns
         -------
         %(signals_transform_surface)s
-
         """
         check_is_fitted(self)
 

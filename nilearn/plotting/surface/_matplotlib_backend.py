@@ -163,7 +163,6 @@ def _compute_surf_map_faces(
         This method is called exclusively when using matplotlib,
         since it only supports plotting face-colour maps and not
         vertex-colour maps.
-
     """
     surf_map_data = check_surf_map(surf_map, n_vertices)
 

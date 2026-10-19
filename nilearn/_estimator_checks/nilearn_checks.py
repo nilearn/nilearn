@@ -4105,7 +4105,6 @@ def check_masker_generate_report(estimator_orig) -> None:
     - check that the masker has a non empty _report_content after
       initialization
     - check that the masker has report data after fit
-
     """
     estimator = clone(estimator_orig)
 

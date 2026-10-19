@@ -192,7 +192,6 @@ def check_look_up_table(
     UserWarning
         If regions in the image do not exist in the atlas lookup table
         and `strict=False`.
-
     """
     assert isinstance(lut, pd.DataFrame)
     assert "name" in lut.columns

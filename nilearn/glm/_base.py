@@ -172,7 +172,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         Returns
         -------
         list[Nifti1Image] or list[SurfaceImage]
-
         """
         return self._get_element_wise_model_attribute(
             "residuals", result_as_time_series=True
@@ -184,7 +183,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         as the input image.
 
         .. nilearn_deprecated:: 0.14.0
-
         """
         # TODO (nilearn>=0.16.0) remove the method
         warnings.warn(
@@ -208,7 +206,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         Returns
         -------
         list[Nifti1Image] or list[SurfaceImage]
-
         """
         return self._get_element_wise_model_attribute(
             "predicted", result_as_time_series=True
@@ -220,7 +217,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         as the input image.
 
         .. nilearn_deprecated:: 0.14.0
-
         """
         # TODO (nilearn>=0.16.0) remove the method
         warnings.warn(
@@ -244,7 +240,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         Returns
         -------
         list[Nifti1Image] or list[SurfaceImage]
-
         """
         return self._get_element_wise_model_attribute(
             "r_square", result_as_time_series=False
@@ -256,7 +251,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         as the input image.
 
         .. nilearn_deprecated:: 0.14.0
-
         """
         # TODO (nilearn>=0.16.0) remove the method
         warnings.warn(
@@ -840,7 +834,6 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         This method requires that the model was fitted with
         ``minimize_memory=False``, since the voxelwise predicted signal
         and residuals are only stored in that mode.
-
         """
         dfs, region_names = self._get_predicted_signal_and_residuals(
             coords=coords, mask=mask, radius=radius

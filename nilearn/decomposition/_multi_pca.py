@@ -105,7 +105,6 @@ class _MultiPCA(_BaseDecomposition):
     %(base_decomposition_fit_attributes)s
 
     %(multi_pca_fit_attributes)s
-
     """
 
     def __init__(

@@ -48,7 +48,6 @@ class HTMLReport(HTMLDocument):
         .. note::
             This can be used to provide additional values
             with custom templates.
-
     """
 
     def __init__(self, head_tpl, body, head_values=None):

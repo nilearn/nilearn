@@ -142,7 +142,6 @@ def _chunk_report_(
         If not resuming, set to zero.
 
     %(verbose)s
-
     """
     if not total_size:
         logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.", verbose)
@@ -209,7 +208,6 @@ def _chunk_read_(
     -------
     data : :obj:`str`
         The downloaded file.
-
     """
     try:
         if total_size is None:
@@ -324,7 +322,6 @@ def get_dataset_dir(
     3. the global environment variable NILEARN_SHARED_DATA
     4. the user environment variable NILEARN_DATA
     5. nilearn_data in the user home folder
-
     """
     paths = []
     # Search possible data-specific system paths
@@ -455,7 +452,6 @@ def uncompress_file(file_, delete_archive=True, verbose=1) -> None:
     Notes
     -----
     This handles zip, tar, gzip and bzip files only.
-
     """
     logger.log(f"Extracting data from {file_}...", verbose=verbose)
 
@@ -522,7 +518,6 @@ def _filter_column(array, col: str, criteria):
         if integer, select elements in column matching integer
         if a tuple, select elements between the limits given by the tuple
         if a string, select elements that match the string
-
     """
     # Raise an error if the column does not exist. This is the only way to
     # test it across all possible types (pandas, recarray...)
@@ -578,7 +573,6 @@ def filter_columns(array, filters, combination="and"):
     combination : :obj:`str` {'and', 'or'}, default='and'
         String describing the combination operator. Possible values are "and"
         and "or".
-
     """
     check_parameter_in_allowed(combination, ["and", "or"], "combination")
     if combination == "and":
@@ -666,7 +660,6 @@ def fetch_single_file(
     -----
     If, for any reason, the download procedure fails, all downloaded files are
     removed.
-
     """
     if session is None:
         with requests.Session() as sess:
@@ -898,7 +891,6 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     -------
     files : :obj:`list` of string
         Absolute paths of downloaded files on disk.
-
     """
     check_params(locals())
 
@@ -1031,7 +1023,6 @@ def tree(path, pattern=None, dictionary=False):
 
     dictionary : :obj:`bool`, default=False
         If True, the function will return a dict instead of a list.
-
     """
     path = Path(path)
     files = []

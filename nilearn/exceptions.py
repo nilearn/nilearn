@@ -53,7 +53,6 @@ class DimensionError(TypeError):
 
     required_dimension : integer
         The dimension the nifti file should have.
-
     """
 
     def __init__(self, file_dimension, required_dimension):
@@ -69,7 +68,6 @@ class DimensionError(TypeError):
         Called when the error is caught and re-raised to count the
         number of recursive calls, ie the number of dimensions added by
         imbrication in lists.
-
         """
         self.stack_counter += 1
 

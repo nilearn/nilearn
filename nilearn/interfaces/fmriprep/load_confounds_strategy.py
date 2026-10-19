@@ -240,7 +240,6 @@ def load_confounds_strategy(
     References
     ----------
     .. footbibliography::
-
     """
     check_parameter_in_allowed(
         denoise_strategy, preset_strategies.keys(), "denoise_strategy"

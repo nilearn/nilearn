@@ -65,7 +65,6 @@ def check_and_load_tables(
     ValueError
     If a specified path in `tables_to_check`
     cannot be loaded to a pandas.DataFrame.
-
     """
     to_check: Sequence[str | Path | pd.DataFrame | np.ndarray]
     if isinstance(tables_to_check, Sequence) and not isinstance(
@@ -151,7 +150,6 @@ def coerce_to_dict(input_arg):
     Returns
     -------
     input_args: Dict[str, np.array or str] or None
-
     """
     if input_arg is None:
         return None
