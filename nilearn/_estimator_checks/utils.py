@@ -47,7 +47,7 @@ def accepts_image(estimator) -> bool:
 
 
 def clone(estimator):
-    """Clone estimator, set random_state to and return."""
+    """Clone estimator, set random_state and return."""
     estimator = sklearn_clone(estimator)
     # sets random_state to 0 if parameter exists for the estimator
     set_random_state(estimator)
