@@ -420,10 +420,6 @@ def check_doc_link(estimator) -> None:
     """Check that _get_doc_link provides the correct link to the doc.
 
     All estimators but the GLM ones follow the same pattern.
-
-    Parameters
-    ----------
-    estimator_orig : a Nilearn estimator instance
     """
     estimator_name = estimator.__class__.__name__
 
