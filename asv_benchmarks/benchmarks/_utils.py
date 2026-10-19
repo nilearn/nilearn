@@ -105,7 +105,6 @@ def generate_regions_ts(n_features: int, n_regions: int):
     regions : :obj:`numpy.ndarray`
         Regions, represented as signals.
         shape (n_features, n_regions)
-
     """
     rng = _rng()
     window = "boxcar"
@@ -141,7 +140,6 @@ def img_labels(
     """Generate fixture for default label image.
 
     adapted from nilearn._utils.data_gen.generate_labeled_regions
-
     """
     n_voxels = shape[0] * shape[1] * shape[2]
 

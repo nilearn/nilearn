@@ -87,7 +87,6 @@ def is_volume_image(imgs) -> bool:
     -------
     bool
         True if volume object or iterable of volume objects, False otherwise
-
     """
     if not (
         isinstance(imgs, (NiimgLike, SpatialImage))
@@ -227,7 +226,6 @@ def get_data(img: NiimgLike | SpatialImage) -> np.ndarray:
            [[12, 13, 14, 15],
             [16, 17, 18, 19],
             [20, 21, 22, 23]]])
-
     """
     img = check_niimg(img)
     return _get_data(img)
@@ -281,7 +279,6 @@ def high_variance_confounds(
     See Also
     --------
     nilearn.signal.high_variance_confounds
-
     """
     from nilearn import masking
 
@@ -334,7 +331,6 @@ def _fast_smooth_array(arr):
     Rather than calling this function directly, users are encouraged
     to call the high-level function :func:`smooth_img` with
     `fwhm='fast'`.
-
     """
     neighbor_weight = 0.2
     # 6 neighbors in 3D if not on an edge
@@ -396,7 +392,6 @@ def smooth_array(
     Notes
     -----
     This function is most efficient with arr in C order.
-
     """
     # Here, we have to investigate use cases of fwhm. Particularly, if fwhm=0.
     # See issue #1537
@@ -493,7 +488,6 @@ def smooth_img(
     array([[[0.20943692, 0.37378672, 0.20943692],
         [0.37378672, 0.66710546, 0.37378672],
         [0.20943692, 0.37378672, 0.20943692]]])
-
     """
     is_surface = False
     single_img = True
@@ -555,7 +549,6 @@ def _smooth_surface_img(
     -------
     smoothed_imgs : SurfaceImage
         SurfaceImage with smoothed data at each vertex.
-
     """
     # First, calculate the center and surround weights for the
     # center-surround knob.
@@ -681,7 +674,6 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
         List of tuples representing the number of voxels removed
         (before, after) the cropped volumes, i.e.:
         *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
-
     """
     img = check_niimg(img)
     data = _get_data(img)
@@ -787,7 +779,6 @@ def crop_img(
     (5, 6, 5)
     >>> offset
     (slice(0, 5, None), slice(0, 6, None), slice(2, 7, None))
-
     """
     check_params(locals())
 
@@ -992,7 +983,6 @@ def mean_img(
             [0.5, 0.5]],
            [[0.5, 0.5],
             [0.5, 0.5]]])
-
     """
     check_params(locals())
     if _is_surface_img_or_iterable(imgs):
@@ -1085,7 +1075,6 @@ def swap_img_hemispheres(img) -> Nifti1Image:
         ... )
         >>>
         >>> show()
-
     """
     from nilearn.image import reorder_img
 
@@ -1157,7 +1146,6 @@ def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
     >>> first_three_images = index_img(five_mni_images, slice(0, 3))
     >>> first_three_images.shape
     (197, 233, 189, 3)
-
     """
     if isinstance(imgs, SurfaceImage):
         imgs.data._check_ndims(2, var_name="imgs")
@@ -1286,7 +1274,6 @@ def iter_img(imgs) -> Iterator[Nifti1Image | SurfaceImage]:
     >>> # Let's check its content.
     >>> [f"{x.__class__.__name__} with shape= {x.shape}" for x in all_images]
     ['Nifti1Image with shape= (3, 3, 3)', 'Nifti1Image with shape= (3, 3, 3)']
-
     """
     if isinstance(imgs, SurfaceImage):
         output = (
@@ -1407,8 +1394,6 @@ def new_img_like(
     <class 'nibabel.nifti1.Nifti1Image'>
     >>> np.allclose(img1.affine, img2.affine)
     True
-
-
     """
     check_params(locals())
 
@@ -1962,8 +1947,6 @@ def math_img(
     ...                                   img1=anatomical_image,
     ...                                   img2=log_img,
     ...                                   copy_header_from="img1")
-
-
     """
     img_missing_from_formula = [
         x for x in imgs if x not in formula and x != copy_header_from
@@ -2152,7 +2135,6 @@ def binarize_img(
     >>> # Now we binarize it, generating a pseudo brainmask
     >>> from nilearn.image import binarize_img
     >>> img = binarize_img(anatomical_image)
-
     """
     check_params(locals())
 
@@ -2343,7 +2325,6 @@ def clean_img(
         >>> fig = plt.plot(t, cleaned_data[1, 1, 1], color="green")
         >>> leg = plt.legend(["raw", "cleaned"])
         >>> plt.show()
-
     """
     check_params(locals())
     # Avoid circular import
@@ -2471,7 +2452,6 @@ def load_img(
         It is guaranteed that
         the returned object has an affine attributes and that
         nilearn.image.get_data returns its data.
-
     """
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 
@@ -2574,7 +2554,6 @@ def concat_imgs(
     >>> concatenated_img = concat_imgs([img1, img2])
     >>> concatenated_img.shape
     (2, 2, 1, 2)
-
     """
     check_params(locals())
 
@@ -2867,7 +2846,6 @@ def check_same_fov(*args, **kwargs) -> bool:
 
         raise_error : :obj:`bool`, optional
             If True, an error will be raised in case of error.
-
     """
     raise_error = kwargs.pop("raise_error", False)
     for i, arg in enumerate(args):
@@ -2956,7 +2934,6 @@ def iter_check_niimg(
     See Also
     --------
         check_niimg, check_niimg_3d, check_niimg_4d
-
     """
     check_params(locals())
 
@@ -3185,7 +3162,6 @@ def check_niimg(
     nilearn.exceptions.DimensionError: Input data has incompatible
     dimensionality: Expected dimension is 4D and you provided a 3D image.
     See https://nilearn.github.io/stable/manipulating_images/input_output.html.
-
     """
     if not is_volume_image(niimg):
         raise TypeError(
@@ -3308,7 +3284,6 @@ def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
     nilearn.exceptions.DimensionError: Input data has incompatible
     dimensionality: Expected dimension is 3D and you provided a 4D image.
     See https://nilearn.github.io/stable/manipulating_images/input_output.html.
-
     """
     return check_niimg(niimg, ensure_ndim=3, dtype=dtype)
 
@@ -3395,7 +3370,6 @@ def check_niimg_4d(
     nilearn.exceptions.DimensionError: Input data has incompatible
     dimensionality: Expected dimension is 4D and you provided a 3D image.
     See https://nilearn.github.io/stable/manipulating_images/input_output.html.
-
     """
     ensure_ndim: Literal[4] = 4
     return check_niimg(

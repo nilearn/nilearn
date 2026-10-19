@@ -94,7 +94,6 @@ def filter_and_extract(
     Notes
     -----
     For all other parameters refer to NiftiMasker documentation
-
     """
     if memory is None:
         memory = Memory(location=None)
@@ -440,7 +439,6 @@ class BaseMasker(_BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         raise NotImplementedError()
 
@@ -479,7 +477,6 @@ class BaseMasker(_BaseMasker):
         -------
         params : dict
             The dict of parameters.
-
         """
         _ignore = {"memory", "memory_level", "verbose", "copy", "n_jobs"}
         if ignore is not None:
@@ -607,7 +604,6 @@ class BaseMasker(_BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         with warnings.catch_warnings():
             # ignore warning in case the masker
@@ -636,7 +632,6 @@ class BaseMasker(_BaseMasker):
         Returns
         -------
         %(img_inv_transform_nifti)s
-
         """
         check_is_fitted(self)
 

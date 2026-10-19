@@ -1,4 +1,4 @@
-"""Tests for the permuted_ols function."""
+"""Test for the permuted_ols function."""
 
 import warnings
 

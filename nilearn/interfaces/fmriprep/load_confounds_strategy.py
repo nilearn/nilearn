@@ -232,7 +232,6 @@ def load_confounds_strategy(
             and consequently the suffixes of files produced by `fmripost-aroma`
             may differ from the ones produced by `fMRIPrep < 24.0.0`.
 
-
     See Also
     --------
     :func:`nilearn.interfaces.fmriprep.load_confounds`
@@ -240,7 +239,6 @@ def load_confounds_strategy(
     References
     ----------
     .. footbibliography::
-
     """
     check_parameter_in_allowed(
         denoise_strategy, preset_strategies.keys(), "denoise_strategy"

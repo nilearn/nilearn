@@ -88,7 +88,6 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
 
     n_elements_ : :obj:`int` or None
         number of vertices included in mask
-
     """
 
     def __init__(
@@ -186,7 +185,6 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         Returns
         -------
         %(signals_transform_surface)s
-
         """
         check_is_fitted(self)
 

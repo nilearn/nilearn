@@ -22,7 +22,6 @@ vertical versus horizontal checkerboards. At the individual level,
 these stimuli are sometimes used to map the borders of primary visual areas.
 At the group level, such a mapping is not possible. Yet, we may
 observe some significant effects in these areas.
-
 """
 
 # %%

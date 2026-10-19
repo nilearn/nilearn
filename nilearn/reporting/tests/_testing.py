@@ -34,11 +34,11 @@ def generate_and_check_report(
         Title to include in report.
         If None is passed the estimator name should be in report instead.
 
-    view: bool, default=False
+    view : bool, default=False
         if True the report is open in browser
         only used for debugging locally
 
-    pth: Path or None, default=None
+    pth : Path or None, default=None
         Where to save the report
 
     extend_includes : Iterable[str] | None, default=None

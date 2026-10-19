@@ -190,7 +190,6 @@ def fetch_atlas_difumo(
         Dictionary-like object, contains:
 
         %(difumo_atlas_content)s
-
     """
     check_params(locals())
     atlas_type = "probabilistic"
@@ -505,7 +504,6 @@ def fetch_atlas_harvard_oxford(
     See Also
     --------
     nilearn.datasets.fetch_atlas_juelich
-
     """
     check_params(locals())
 
@@ -673,7 +671,6 @@ def fetch_atlas_juelich(
     See Also
     --------
     nilearn.datasets.fetch_atlas_harvard_oxford
-
     """
     check_params(locals())
 
@@ -982,7 +979,6 @@ def fetch_coords_power_2011() -> Bunch[str, pd.DataFrame | str]:
         Dictionary-like object, contains:
 
         %(power_2011_atlas_content)s
-
     """
     csv = PACKAGE_DIRECTORY / "data" / "power_2011.csv"
     rois = pd.read_csv(csv)
@@ -1305,7 +1301,6 @@ def fetch_atlas_aal(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -1472,7 +1467,6 @@ def fetch_atlas_basc_multiscale_2015(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -1549,7 +1543,6 @@ def fetch_coords_dosenbach_2010(
         Dictionary-like object, contains:
 
         %(seitzman_2018_atlas_content)s
-
     """
     csv = PACKAGE_DIRECTORY / "data" / "dosenbach_2010.csv"
     out_csv = pd.read_csv(csv)
@@ -1597,7 +1590,6 @@ def fetch_coords_seitzman_2018(
         Dictionary-like object, contains:
 
         %(seitzman_2018_atlas_content)s
-
     """
     roi_file = (
         PACKAGE_DIRECTORY
@@ -1673,7 +1665,6 @@ def fetch_atlas_allen_2011(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -1790,7 +1781,6 @@ def fetch_atlas_surf_destrieux(
                 "right": destrieux.map_right,
             },
         )
-
     """
     check_params(locals())
 

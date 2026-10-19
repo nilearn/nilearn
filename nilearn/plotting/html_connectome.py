@@ -330,7 +330,6 @@ def view_connectome(
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
-
     """
     check_params(locals())
     node_coords = np.asarray(node_coords)
@@ -421,7 +420,6 @@ def view_markers(
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
-
     """
     check_params(locals())
 

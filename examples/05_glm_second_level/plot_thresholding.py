@@ -8,7 +8,6 @@ in fMRI) and threshold the resulting statistical map.
 This example is based on the so-called localizer dataset.
 It shows activation related to a mental computation task, as opposed to
 narrative sentence reading/listening.
-
 """
 
 # %%

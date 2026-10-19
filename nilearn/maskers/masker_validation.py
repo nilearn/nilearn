@@ -49,7 +49,6 @@ def get_params(
     -------
     params : dict
         The dict of parameters.
-
     """
     _ignore = {"memory", "memory_level", "verbose", "copy", "n_jobs"}
     if ignore is not None:
@@ -105,7 +104,6 @@ def check_embedded_masker(
     -------
     masker : MultiNiftiMasker, NiftiMasker, SurfaceMasker, MultiSurfaceMasker
         New masker
-
     """
     masker: type[
         NiftiMasker | SurfaceMasker | MultiNiftiMasker | MultiSurfaceMasker

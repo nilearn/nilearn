@@ -65,7 +65,6 @@ def check_and_load_tables(
     ValueError
     If a specified path in `tables_to_check`
     cannot be loaded to a pandas.DataFrame.
-
     """
     to_check: Sequence[str | Path | pd.DataFrame | np.ndarray]
     if isinstance(tables_to_check, Sequence) and not isinstance(
@@ -98,7 +97,6 @@ def check_and_load_tables(
 def _read_events_table(table_path: str | Path) -> pd.DataFrame:
     """Load the contents of the event file specified by `table_path`\
        to a pandas.DataFrame.
-
 
     Parameters
     ----------
@@ -151,7 +149,6 @@ def coerce_to_dict(input_arg):
     Returns
     -------
     input_args: Dict[str, np.array or str] or None
-
     """
     if input_arg is None:
         return None

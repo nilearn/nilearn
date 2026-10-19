@@ -319,7 +319,6 @@ def check_set_output(estimator_orig) -> None:
       and give the same results
     - check that estimators that work with surface can deal with 1D image
 
-
     Regression test for https://github.com/nilearn/nilearn/issues/5969
     """
     if not hasattr(estimator_orig, "transform") or isinstance(
@@ -4105,7 +4104,6 @@ def check_masker_generate_report(estimator_orig) -> None:
     - check that the masker has a non empty _report_content after
       initialization
     - check that the masker has report data after fit
-
     """
     estimator = clone(estimator_orig)
 

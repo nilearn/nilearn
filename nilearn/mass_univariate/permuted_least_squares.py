@@ -166,7 +166,6 @@ def _permuted_ols_on_chunk(
     References
     ----------
     .. footbibliography::
-
     """
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
@@ -520,7 +519,6 @@ def permuted_ols(
     ----------
     .. footbibliography::
 
-
     Examples
     --------
 
@@ -559,7 +557,6 @@ def permuted_ols(
         >>> _ = ax.set(xlabel="t-statistic",
         ...            title="Distribution max t-statistic under $H_0$")
         >>> plt.show()
-
     """
     check_params(locals())
     _check_inputs_permuted_ols(n_jobs, target_vars)

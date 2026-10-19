@@ -165,7 +165,6 @@ def is_binary_niimg(
     -------
     is_binary : :obj:`bool`
         True if binary, False otherwise.
-
     """
     niimg = load_niimg(niimg)
     data = niimg.dataobj

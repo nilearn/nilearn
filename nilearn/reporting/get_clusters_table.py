@@ -52,7 +52,6 @@ def _local_max(data, affine, min_distance):
 
     vals : `numpy.ndarray`
         (n_foci,) array of values from data at ijk.
-
     """
     ijk, vals = _identify_subpeaks(data)
     xyz, ijk, vals = _sort_subpeaks(ijk, vals, affine)
@@ -299,7 +298,6 @@ def get_clusters_table(
         we recommend using
         the `atlasreader package <https://github.com/miykael/atlasreader>`_.
 
-
     Parameters
     ----------
     stat_img : Niimg-like object or :class:`~nilearn.surface.SurfaceImage`
@@ -398,7 +396,6 @@ def get_clusters_table(
     2         1b  42.0  -1.0  13.0   5.470704
     3          2  39.0 -22.0  58.0   7.941345              36936
     4         2a   6.0 -10.0  52.0   7.941345
-
     """
     check_params(locals())
 
@@ -476,7 +473,6 @@ def _get_clusters_table_surface(
     Notes
     -----
     For other parameters, see `get_clusters_table`.
-
     """
     data = {}
     all_clusters = []
@@ -761,7 +757,6 @@ def clustering_params_to_dataframe(
     -------
     table_details : Pandas.DataFrame
         Dataframe with clustering parameters.
-
     """
     check_params(locals())
     table_details = OrderedDict()

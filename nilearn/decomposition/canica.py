@@ -122,7 +122,6 @@ class CanICA(_MultiPCA):
     References
     ----------
     .. footbibliography::
-
     """
 
     def __init__(
@@ -252,7 +251,6 @@ class CanICA(_MultiPCA):
         ----------
         data : ndarray or memmap
             Unmasked data to process
-
         """
         if (
             isinstance(self.threshold, float)

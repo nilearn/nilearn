@@ -103,7 +103,6 @@ class _MultiMixin:
         Returns
         -------
         %(signals_transform_imgs_multi_nifti)s
-
         """
         # We handle the resampling of maps and mask separately because the
         # affine of the maps and mask images should not impact the extraction
@@ -157,7 +156,6 @@ class _MultiMixin:
         Returns
         -------
         %(signals_transform_multi_nifti)s
-
         """
         check_is_fitted(self)
 

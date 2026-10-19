@@ -136,7 +136,6 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         (for example across timepoints) is finite value different from 0.
 
     memory_ : joblib memory cache
-
     """
 
     def __init__(

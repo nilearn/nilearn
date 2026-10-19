@@ -66,7 +66,6 @@ def to_matrix_vector(transform):
     See Also
     --------
     from_matrix_vector
-
     """
     ndimin = transform.shape[0] - 1
     ndimout = transform.shape[1] - 1
@@ -97,7 +96,6 @@ def from_matrix_vector(matrix, vector):
     See Also
     --------
     nilearn.resampling.to_matrix_vector
-
     """
     nin, nout = matrix.shape
     t = np.zeros((nin + 1, nout + 1), matrix.dtype)
@@ -177,7 +175,6 @@ def coord_transform(
     >>> # Find the MNI coordinates of the voxel (50, 50, 50)
     >>> image.coord_transform(50, 50, 50, niimg.affine)
     (-48.0, -84.0, -22.0)
-
     """
     squeeze = not hasattr(x, "__iter__")
     return_number = isinstance(x, numbers.Number)
@@ -224,7 +221,6 @@ def get_bounds(shape, affine) -> list[tuple[np.float64, np.float64]]:
     coord : :obj:`list` of tuples
         coord[i] is a 2-tuple giving minimal and maximal coordinates along
         i-th axis.
-
     """
     adim, bdim, cdim = shape
     adim -= 1
@@ -269,7 +265,6 @@ def get_mask_bounds(img):
 
     The affine should be diagonal or diagonal-permuted, use
     reorder_img to ensure that it is the case.
-
     """
     img = check_niimg_3d(img)
     mask = as_ndarray(_get_data(img), dtype=bool, copy=False)

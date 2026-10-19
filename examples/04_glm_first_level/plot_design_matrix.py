@@ -7,7 +7,6 @@ Three examples of design matrices specification and computation for first-level
 :term:`FIR` design).
 
 This examples requires matplotlib.
-
 """
 
 # %%

@@ -95,7 +95,6 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
 
     n_elements_ : :obj:`int` or None
         number of vertices included in mask
-
     """
 
     def __init__(
