@@ -586,20 +586,20 @@ def check_region_names_after_fit(
 
     Parameters
     ----------
-        masker: NiftiLabelsMasker
+        masker : NiftiLabelsMasker
 
-        signals: np.ndarray
+        signals : np.ndarray
             output of fit_transform from the masker
 
-        region_names: list[str]
+        region_names : list[str]
             list of regions names expected after fit
 
-        background: str | None
+        background : str | None
             if not None and present in region_names
             it will be removed from region_names
             to before checking the fitted content of the masker
 
-        resampling: bool
+        resampling : bool
             if some resampling was done
             some checks are skipped as some regions may have been dropped
 
