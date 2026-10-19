@@ -37,6 +37,6 @@
    },
    "mask": {
       "type": "str",
-      "desc": "Full path  to whole brain mask useful to mask out skull areas"
+      "desc": "Full path to whole brain mask useful to mask out skull areas"
    }
 }
