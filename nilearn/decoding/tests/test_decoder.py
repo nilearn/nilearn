@@ -48,6 +48,7 @@ from sklearn.svm import SVR, LinearSVC
 from sklearn.utils._testing import ignore_warnings
 
 from nilearn._utils.versions import (
+    SKLEARN_GT_1_9,
     SKLEARN_GTE_1_7,
     compare_version,
 )
@@ -84,6 +85,8 @@ _CUSTOM_PARAM_GRID_WARNING = (
 )
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
+
+param_cs = "alphas" if SKLEARN_GT_1_9 else "Cs"
 
 
 def _make_binary_classification_test_data(
@@ -209,13 +212,13 @@ def test_check_param_grid_regression(regressor, param, rng):
             LogisticRegressionCV(
                 l1_ratios=(1,), **kwarg_logistic_regression_cv
             ),
-            ["Cs"],
+            [param_cs],
         ),
         (
             LogisticRegressionCV(
                 l1_ratios=(0,), **kwarg_logistic_regression_cv
             ),
-            ["Cs"],
+            [param_cs],
         ),
         (RidgeClassifierCV(), ["alphas"]),
     ],
@@ -474,7 +477,7 @@ def test_parallel_fit(rand_x_y):
             LogisticRegressionCV(
                 l1_ratios=(0,), **kwarg_logistic_regression_cv
             ),
-            "Cs",
+            param_cs,
             "best_C",
             True,
         ),
@@ -1369,14 +1372,19 @@ def _set_best_hyperparameters(
         sklearn_classifier = clone(sklearn_classifier).set_params(
             C=nilearn_decoder.cv_params_[klass]["C"][count]
         )
-    elif classifier_penalty in ["logistic_l1", "logistic_l2"]:
+    elif not SKLEARN_GT_1_9 and classifier_penalty in [
+        "logistic_l1",
+        "logistic_l2",
+    ]:
         # this sets the list of Cs as coded within nilearn and
         # LogisticRegressionCV will select the best one using
         # cross-validation
         sklearn_classifier = clone(sklearn_classifier).set_params(
             Cs=nilearn_decoder.cv_params_[klass]["Cs"][count],
         )
-    elif classifier_penalty == "ridge_classifier":
+    elif classifier_penalty == "ridge_classifier" or (
+        SKLEARN_GT_1_9 and classifier_penalty in ["logistic_l1", "logistic_l2"]
+    ):
         # same as logistic regression
         sklearn_classifier = clone(sklearn_classifier).set_params(
             alphas=nilearn_decoder.cv_params_[klass]["alphas"][count]

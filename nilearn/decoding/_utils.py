@@ -24,7 +24,7 @@ from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
-from nilearn._utils.versions import SKLEARN_GTE_1_8
+from nilearn._utils.versions import SKLEARN_GT_1_9, SKLEARN_GTE_1_8
 from nilearn.exceptions import MaskWarning
 from nilearn.image import get_data
 from nilearn.surface.surface import SurfaceImage
@@ -40,8 +40,8 @@ if SKLEARN_GTE_1_8:
     # TODO (sklearn 1.8) remove if
     # TODO (sklearn 1.10) remove 'use_legacy_attributes'
     kwarg_logistic_regression_cv = {
-        "use_legacy_attributes": False,
         "scoring": "neg_log_loss",
+        "use_legacy_attributes": False,
     }
 
 
@@ -78,7 +78,7 @@ SUPPORTED_ESTIMATORS: dict[
             "estimator": LogisticRegressionCV,
             "params": {
                 "l1_ratios": (1,),
-                "solver": "liblinear",
+                "solver": "newton-cd" if SKLEARN_GT_1_9 else "liblinear",
                 **kwarg_logistic_regression_cv,
             },
             "extra_params": {},
@@ -87,7 +87,7 @@ SUPPORTED_ESTIMATORS: dict[
             "estimator": LogisticRegressionCV,
             "params": {
                 "l1_ratios": (0,),
-                "solver": "liblinear",
+                "solver": "newton-cd" if SKLEARN_GT_1_9 else "liblinear",
                 **kwarg_logistic_regression_cv,
             },
             "extra_params": {},
@@ -96,7 +96,7 @@ SUPPORTED_ESTIMATORS: dict[
             "estimator": LogisticRegressionCV,
             "params": {
                 "l1_ratios": (0,),
-                "solver": "liblinear",
+                "solver": "newton-cd" if SKLEARN_GT_1_9 else "liblinear",
                 **kwarg_logistic_regression_cv,
             },
             "extra_params": {},

@@ -1,5 +1,6 @@
 # ruff: noqa: ARG001
 
+import warnings
 from functools import partial
 
 import numpy as np
@@ -7,12 +8,13 @@ import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy import linalg
 from sklearn.datasets import load_iris
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
 
-from nilearn._utils.versions import SKLEARN_GTE_1_8
+from nilearn._utils.versions import SKLEARN_GT_1_9, SKLEARN_GTE_1_8
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     SpaceNetClassifier,
@@ -351,9 +353,18 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         screening_percentile=100.0,
     ).fit(X_, y)
 
+    if SKLEARN_GT_1_9:
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=ConvergenceWarning)
+            sklogreg = LogisticRegression(
+                l1_ratio=1,
+                fit_intercept=True,
+                solver="newton-cd",
+                tol=tol,
+                alpha=1 / C,
+            ).fit(X, y)
     # TODO (sklearn >= 1.8)
-    # drop the else block
-    if SKLEARN_GTE_1_8:
+    elif SKLEARN_GTE_1_8:
         sklogreg = LogisticRegression(
             l1_ratio=1, fit_intercept=True, solver="liblinear", tol=tol, C=C
         ).fit(X, y)
