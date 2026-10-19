@@ -299,16 +299,12 @@ type = "protected"
 [tool.numpydoc_validation]
 checks = [
     "all",
-    "GL05",
     "GL06",
     "GL07",
     "GL08",
-    "GL09",
-    "GL10",
     "SS01",
     "SS02",
     "SS03",
-    "SS04",
     "SS05",
     "ES01",
     "PR01",

@@ -1,4 +1,4 @@
-"""Tests common to multiple image plotting functions."""
+"""Test common to multiple image plotting functions."""
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -163,7 +163,7 @@ def test_invalid_cut_coords_with_display_mode(
     cut_coords,
     img_3d_mni,
 ):
-    """Tests for invalid combinations of cut_coords and display_mode."""
+    """Test for invalid combinations of cut_coords and display_mode."""
     if plot_func is plot_glass_brain:
         return
     with pytest.raises(

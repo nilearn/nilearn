@@ -265,7 +265,7 @@ def test_with_nans_and_infs_in_data(
     ],
 )
 def test_reduction_strategies(affine_eye, strategy, function):
-    """Tests NiftiLabelsMasker strategies.
+    """Test NiftiLabelsMasker strategies.
 
     1. whether the usage of different reduction strategies work.
     2. whether unrecognized strategies raise a ValueError
@@ -295,7 +295,7 @@ def test_reduction_strategies(affine_eye, strategy, function):
 
 
 def test_reduction_strategies_error(affine_eye):
-    """Tests NiftiLabelsMasker invalid strategy."""
+    """Test NiftiLabelsMasker invalid strategy."""
     labels_data = np.array([[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1]]], dtype=np.int8)
 
     labels = Nifti1Image(labels_data, affine_eye)

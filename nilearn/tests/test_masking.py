@@ -150,7 +150,7 @@ def _confounds_regression(
 def test_confounds_standardization(
     standardize_signal, standardize_confounds, expected
 ):
-    """Tests for confounds standardization.
+    """Test for confounds standardization.
 
     Explicit standardization of confounds
 
@@ -178,7 +178,7 @@ def test_confounds_standardization(
     ],
 )
 def test_confounds_not_standardized(standardize_signal):
-    """Tests for confounds standardization.
+    """Test for confounds standardization.
 
     Confounds are not standardized
     In this case, the regression should fail...

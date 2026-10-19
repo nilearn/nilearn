@@ -1,4 +1,4 @@
-"""Tests for the data generation utilities."""
+"""Test for the data generation utilities."""
 
 import json
 

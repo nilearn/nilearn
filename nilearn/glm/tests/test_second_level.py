@@ -801,7 +801,7 @@ def test_second_level_glm_computation(n_subjects):
     "attribute", ["residuals_", "predicted_", "r_square_"]
 )
 def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
-    """Tests that an error is raised when trying to access \
+    """Test that an error is raised when trying to access \
        voxelwise attributes before fitting the model, \
        before computing a contrast.
     """
@@ -825,7 +825,7 @@ def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
 def test_second_level_voxelwise_attribute_errors_minimize_memory(
     attribute, n_subjects
 ):
-    """Tests that an error is raised when trying to access \
+    """Test that an error is raised when trying to access \
        voxelwise attributes before fitting the model, \
        when not setting ``minimize_memory`` to ``True``.
     """
@@ -858,7 +858,7 @@ def test_second_level_voxelwise_attribute(attribute, n_subjects):
 
 
 def test_second_level_residuals(n_subjects):
-    """Tests residuals computation for SecondLevelModel."""
+    """Test residuals computation for SecondLevelModel."""
     mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
     Y = fmri_data * n_subjects

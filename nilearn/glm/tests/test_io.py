@@ -1,4 +1,4 @@
-"""Tests saving glm to bids."""
+"""Test saving glm to bids."""
 
 import json
 import re
