@@ -140,7 +140,6 @@ def _mean_of_squares(signals, n_batches=20):
             and computation time. The higher the value, the lower the
             memory consumption.
 
-
     Returns
     -------
     var : :class:`numpy.ndarray`
@@ -184,7 +183,6 @@ def row_sum_of_squares(signals, n_batches=20):
             Tweaking this value can lead to variation of memory usage
             and computation time. The higher the value, the lower the
             memory consumption.
-
 
     Returns
     -------
@@ -391,8 +389,6 @@ def butterworth(
         >>> leg = plt.legend(["Initial signals", "Filtered signals"])
         >>> plt.grid(True)
         >>> plt.show()
-
-
     """
     check_params(locals())
     if low_pass is None and high_pass is None:
@@ -698,7 +694,6 @@ def clean(
         Kwargs prefixed with ``'butterworth__'`` will be passed to
         :func:`~nilearn.signal.butterworth`.
 
-
     Returns
     -------
     cleaned_signals : :class:`numpy.ndarray`
@@ -968,7 +963,6 @@ def create_cosine_drift(high_pass, frame_times):
     References
     ----------
     http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
-
     """
     n_frames = len(frame_times)
     n_times = np.arange(n_frames)

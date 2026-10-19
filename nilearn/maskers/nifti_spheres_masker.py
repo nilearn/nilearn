@@ -79,7 +79,6 @@ def apply_mask_and_get_affinity(
     A : scipy.sparse.lil_matrix
         Contains the boolean indices for each sphere.
         shape: (number of seeds, number of voxels)
-
     """
     seeds = list(seeds)
 
@@ -190,7 +189,6 @@ def _iter_signals_from_spheres(
     mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
-
     """
     X, A = apply_mask_and_get_affinity(
         seeds, niimg, radius, allow_overlap, mask_img=mask_img
@@ -313,7 +311,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     See Also
     --------
     nilearn.maskers.NiftiMasker
-
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
@@ -602,7 +599,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         del y
         return self.fit(imgs).transform(
@@ -636,7 +632,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -715,7 +710,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(img_inv_transform_nifti)s
-
         """
         check_is_fitted(self)
 

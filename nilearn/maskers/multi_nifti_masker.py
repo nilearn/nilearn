@@ -177,7 +177,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
     nilearn.masking.compute_epi_mask: mask computation
     nilearn.masking.apply_mask: mask application on image
     nilearn.signal.clean: confounds removal and general filtering of signals
-
     """
 
     def __init__(
@@ -384,7 +383,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         Returns
         -------
         %(signals_transform_imgs_multi_nifti)s
-
         """
         check_is_fitted(self)
 

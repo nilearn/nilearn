@@ -291,7 +291,6 @@ def graph_net_squared_loss(
 
     objective : array of floats
         Objective function (fval) computed on every iteration.
-
     """
     _, n_features = X.shape
 
@@ -374,7 +373,6 @@ def graph_net_logistic(
 
     objective : array of floats
         Cost function (fval) computed on every iteration.
-
     """
     _, n_features = X.shape
 
@@ -551,7 +549,6 @@ def tvl1_solver(
 
     solver_info : :obj:`float`
         Solver information, for warm start.
-
     """
     check_params(locals())
 

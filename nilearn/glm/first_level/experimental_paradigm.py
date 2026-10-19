@@ -80,7 +80,6 @@ def check_events(events: pd.DataFrame) -> pd.DataFrame:
                 - ``'trial_type'``
                 - ``'onset'``
                 - ``'duration'``
-
     """
     check_is_of_allowed_type(events, (pd.DataFrame,), "events")
 

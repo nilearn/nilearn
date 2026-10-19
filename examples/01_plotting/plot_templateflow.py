@@ -1,5 +1,4 @@
 """
-
 Using brain templates from TemplateFlow
 =======================================
 
@@ -17,7 +16,6 @@ for the Harvard-Oxford volumetric atlas.
     - :ref:`harvard_oxford_atlas`
 
     - The `Desikan-Killiany atlas <https://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation>`_
-
 """
 
 # %%

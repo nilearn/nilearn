@@ -8,7 +8,6 @@ By doing so, the `FirstLevelModel`-object stores the residuals, which we can
 then inspect.
 Also, the predicted time series can be extracted, which is useful to assess the
 quality of the model fit.
-
 """
 
 # %%

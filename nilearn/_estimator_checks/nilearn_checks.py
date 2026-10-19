@@ -195,7 +195,6 @@ def check_set_output(estimator) -> None:
     - can transform to polars or pandas dataframe
     - can inverse_transform from numpy array, or pandas / polars dataframes
       and give the same results
-
     Regression test for https://github.com/nilearn/nilearn/issues/5969
     """
     if isinstance(estimator, (_BaseDecomposition, ConnectivityMeasure)):
@@ -3876,7 +3875,6 @@ def check_masker_generate_report(estimator) -> None:
     - check that the masker has a non empty _report_content after
       initialization
     - check that the masker has report data after fit
-
     """
     generate_and_check_masker_report(estimator)
 

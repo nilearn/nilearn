@@ -173,7 +173,6 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         (for example across timepoints) is finite value different from 0.
 
     memory_ : joblib memory cache
-
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {

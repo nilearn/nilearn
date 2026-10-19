@@ -119,7 +119,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     %(masker_lut)s
 
-
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
 
@@ -204,11 +203,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     memory_ : joblib memory cache
 
-
     See Also
     --------
     nilearn.maskers.NiftiMasker
-
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
@@ -641,7 +638,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         del y
         return self.fit(imgs).transform(
@@ -686,7 +682,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -897,7 +892,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         Returns
         -------
         %(img_inv_transform_nifti)s
-
         """
         from nilearn.regions import signal_extraction
 

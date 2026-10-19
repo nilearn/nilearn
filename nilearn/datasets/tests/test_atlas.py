@@ -359,7 +359,7 @@ def _destrieux_data():
 def test_fetch_atlas_destrieux_2009(
     tmp_path, request_mocker, lateralized, capsys
 ):
-    """Tests for function `fetch_atlas_destrieux_2009`.
+    """Test for function `fetch_atlas_destrieux_2009`.
 
     The atlas is fetched with different values for `lateralized`.
     """

@@ -62,7 +62,6 @@ def assert_memory_less_than(
 
     callable_obj : callable
         The function to be called to check memory consumption.
-
     """
     mem_used = memory_used(callable_obj, *args, **kwargs)
 
@@ -89,7 +88,6 @@ def serialize_niimg(img, gzipped=True):
     """Serialize a Nifti1Image to nifti.
 
     Serialize to .nii.gz if gzipped, else to .nii Returns a `bytes` object.
-
     """
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
@@ -134,7 +132,6 @@ def write_imgs_to_path(
         Filename(s) where input images have been written. If a single image
         has been given as input, a single string is returned. Otherwise, a
         list of string is returned.
-
     """
     if file_path is None:
         file_path = Path.cwd()
@@ -187,7 +184,6 @@ def skip_if_running_tests(msg="") -> None:
     ----------
     msg : :obj:`str`, default=""
         The message issued when a test is skipped.
-
     """
     if are_tests_running():
         import pytest

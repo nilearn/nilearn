@@ -129,7 +129,6 @@ def test_mask_img_masks_all_labels_error(
         we cannot know for sure if the mask will include any label
       - When data is passed at fit time
         we can raise an error
-
     """
     mask = np.zeros(shape_3d_default)
     mask[-1][-1][-1] = 1
@@ -266,7 +265,7 @@ def test_with_nans_and_infs_in_data(
     ],
 )
 def test_reduction_strategies(affine_eye, strategy, function):
-    """Tests NiftiLabelsMasker strategies.
+    """Test NiftiLabelsMasker strategies.
 
     1. whether the usage of different reduction strategies work.
     2. whether unrecognized strategies raise a ValueError
@@ -296,7 +295,7 @@ def test_reduction_strategies(affine_eye, strategy, function):
 
 
 def test_reduction_strategies_error(affine_eye):
-    """Tests NiftiLabelsMasker invalid strategy."""
+    """Test NiftiLabelsMasker invalid strategy."""
     labels_data = np.array([[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1]]], dtype=np.int8)
 
     labels = Nifti1Image(labels_data, affine_eye)
@@ -587,20 +586,20 @@ def check_region_names_after_fit(
 
     Parameters
     ----------
-        masker: NiftiLabelsMasker
+        masker : NiftiLabelsMasker
 
-        signals: np.ndarray
+        signals : np.ndarray
             output of fit_transform from the masker
 
-        region_names: list[str]
+        region_names : list[str]
             list of regions names expected after fit
 
-        background: str | None
+        background : str | None
             if not None and present in region_names
             it will be removed from region_names
             to before checking the fitted content of the masker
 
-        resampling: bool
+        resampling : bool
             if some resampling was done
             some checks are skipped as some regions may have been dropped
 

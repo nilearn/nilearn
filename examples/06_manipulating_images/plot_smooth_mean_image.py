@@ -9,7 +9,6 @@ As we vary the smoothing :term:`FWHM`,
 note how we decrease the amount of noise, but also lose spatial details.
 In general, the best amount of smoothing for a given analysis
 depends on the spatial extent of the effects that are expected.
-
 """
 
 # %%

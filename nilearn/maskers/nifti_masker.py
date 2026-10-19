@@ -150,7 +150,6 @@ def filter_and_mask(
     Notes
     -----
     For all other parameters refer to NiftiMasker documentation.
-
     """
     if memory is None:
         memory = Memory(location=None)
@@ -297,7 +296,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         .. nilearn_versionadded:: 0.12.0
 
-
     Attributes
     ----------
     affine_ : 4x4 :obj:`numpy.ndarray`
@@ -322,7 +320,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     nilearn.image.high_variance_confounds
     nilearn.masking.apply_mask
     nilearn.signal.clean
-
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
@@ -656,7 +653,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         check_is_fitted(self)
 

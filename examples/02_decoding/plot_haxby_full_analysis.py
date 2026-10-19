@@ -13,7 +13,6 @@ three different masks:
 - and the face selective areas (mask_face).
 
 The masks were defined via a standard GLM-based analysis.
-
 """
 
 # We ignore some warnings that would otherwise
