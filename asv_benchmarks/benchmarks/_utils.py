@@ -49,8 +49,7 @@ def generate_fake_fmri(
     Returns
     -------
     Niimg-like object
-        Fake fmri signal.
-        shape: shape + (length,)
+        Fake fmri signal with shape: shape + (length,).
 
     Niimg-like object
         Mask giving non-zero voxels.
@@ -103,8 +102,8 @@ def generate_regions_ts(n_features: int, n_regions: int):
     Returns
     -------
     regions : :obj:`numpy.ndarray`
-        Regions, represented as signals.
-        shape (n_features, n_regions)
+        Regions, represented as signals
+        with shape (n_features, n_regions).
     """
     rng = _rng()
     window = "boxcar"

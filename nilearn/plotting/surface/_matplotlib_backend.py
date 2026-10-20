@@ -86,7 +86,7 @@ def _normalize_bg_data(data):
     Returns
     -------
     data : :obj:`numpy.ndarray`
-        An array containing normalized surface data
+        An array containing normalized surface data.
     """
     vmin, vmax = np.nanmin(data), np.nanmax(data)
     if vmin < 0 or vmax > 1:

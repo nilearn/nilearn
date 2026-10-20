@@ -251,7 +251,7 @@ def plot_surf(
         :class:`~matplotlib.figure.Figure` is returned.
         If ``engine='plotly'``, then a
         :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
-        is returned
+        is returned.
 
     See Also
     --------

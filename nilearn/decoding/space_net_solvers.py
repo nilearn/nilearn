@@ -364,8 +364,8 @@ def graph_net_logistic(
     Returns
     -------
     w : ndarray of shape (n_features,)
-       The solution vector (Where `n_features` is the size of the support
-       of the mask.)
+       The solution vector
+       (where ``n_features`` is the size of the support of the mask).
 
     solver_info : dict
         Solver information for warm starting. See fista.py.mfista(...)
@@ -541,8 +541,8 @@ def tvl1_solver(
     Returns
     -------
     w : ndarray, shape (n_features,)
-       The solution vector (Where `w_size` is the size of the support of the
-       mask.)
+       The solution vector (where `w_size` is the size of the support of the
+       mask).
 
     objective : array of floats
         Objective function (fval) computed on every iteration.

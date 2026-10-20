@@ -103,7 +103,7 @@ def check_embedded_masker(
     Returns
     -------
     masker : MultiNiftiMasker, NiftiMasker, SurfaceMasker, MultiSurfaceMasker
-        New masker
+        New masker.
     """
     masker: type[
         NiftiMasker | SurfaceMasker | MultiNiftiMasker | MultiSurfaceMasker

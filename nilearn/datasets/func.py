@@ -998,7 +998,7 @@ def fetch_localizer_calculation_task(
     -------
     data : Bunch
         Dictionary-like object, contains:
-        'cmaps': string list, giving paths to nifti contrast maps
+        'cmaps': string list, giving paths to nifti contrast maps.
 
     See Also
     --------
@@ -1182,69 +1182,69 @@ def fetch_abide_pcp(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-    - 'description': :obj:`str`, description of the dataset.
+        - 'description': :obj:`str`, description of the dataset.
 
-    - 'phenotypic': :obj:`pandas.DataFrame`
-      phenotypic information for each subject.
+        - 'phenotypic': :obj:`pandas.DataFrame`
+          Phenotypic information for each subject.
 
-    - Specific Derivative Keys:
-      Additional keys,'func_preproc' being the default, are
-      introduced based on the provided 'derivatives'
-      parameter during fetching. Any combination of the
-      parameters below may occur.
+        - Specific Derivative Keys:
+          Additional keys,'func_preproc' being the default, are
+          introduced based on the provided 'derivatives'
+          parameter during fetching. Any combination of the
+          parameters below may occur.
 
-        - 'func_preproc' (default): :obj:`numpy.ndarray`,
-          paths to preprocessed functional MRI data in NIfTI format.
-          This key is present by default when fetching the dataset.
-        - 'alff': :obj:`numpy.ndarray`,
-          amplitude values of low-frequency fluctuations
-          in functional MRI data.
-        - 'degree_binarize': :obj:`numpy.ndarray`,
-          data specific to binarized node degree in brain networks.
-        - 'degree_weighted': :obj:`numpy.ndarray`,
-          data specific to weighted node degree,
-          considering connectivity strength in brain networks.
-        - 'dual_regression': :obj:`numpy.ndarray`,
-          results from dual regression analysis,
-          often involving the identification of resting-state networks.
-        - 'eigenvector_binarize': :obj:`numpy.ndarray`,
-          data specific to binarized eigenvector
-          centrality, a measure of node influence in brain networks.
-        - 'eigenvector_weighted': :obj:`numpy.ndarray`,
-          data specific to weighted eigenvector
-          centrality, reflecting node influence with consideration
-          of connectivity strength.
-        - 'falff': :obj:`numpy.ndarray`,
-          data specific to fractional amplitude values of
-          low-frequency fluctuations.
-        - 'func_mask': :obj:`numpy.ndarray`,
-          functional mask data, often used to define regions of interest.
-        - 'func_mean': :obj:`numpy.ndarray`,
-          mean functional MRI data,
-          representing average activity across the brain.
-        - 'lfcd': :obj:`numpy.ndarray`,
-          data specific to local functional connectivity density
-          in brain networks.
-        - 'reho': :obj:`numpy.ndarray`,
-          data specific to regional homogeneity in functional MRI data.
-        - 'rois_aal': :obj:`numpy.ndarray`,
-          data specific to anatomical regions
-          defined by the Automatic Anatomical Labeling atlas.
-        - 'rois_cc200': :obj:`numpy.ndarray`
-          data specific to regions defined by the Craddock 200 atlas.
-        - 'rois_cc400': :obj:`numpy.ndarray`,
-          data specific to regions defined by the Craddock 400 atlas.
-        - 'rois_dosenbach160': :obj:`numpy.ndarray`,
-          data specific to regions defined by the Dosenbach 160 atlas.
-        - 'rois_ez': :obj:`numpy.ndarray`,
-          data specific to regions defined by the EZ atlas.
-        - 'rois_ho': :obj:`numpy.ndarray`,
-          data specific to regions defined by the Harvard-Oxford atlas.
-        - 'rois_tt': :obj:`numpy.ndarray`,
-          data specific to regions defined by the Talairach atlas.
-        - 'vmhc': :obj:`numpy.ndarray`,
-          data specific to voxel-mirrored homotopic connectivity in
-          functional MRI data.
+            - 'func_preproc' (default): :obj:`numpy.ndarray`,
+              paths to preprocessed functional MRI data in NIfTI format.
+              This key is present by default when fetching the dataset.
+            - 'alff': :obj:`numpy.ndarray`,
+              amplitude values of low-frequency fluctuations
+              in functional MRI data.
+            - 'degree_binarize': :obj:`numpy.ndarray`,
+              data specific to binarized node degree in brain networks.
+            - 'degree_weighted': :obj:`numpy.ndarray`,
+              data specific to weighted node degree,
+              considering connectivity strength in brain networks.
+            - 'dual_regression': :obj:`numpy.ndarray`,
+              results from dual regression analysis,
+              often involving the identification of resting-state networks.
+            - 'eigenvector_binarize': :obj:`numpy.ndarray`,
+              data specific to binarized eigenvector
+              centrality, a measure of node influence in brain networks.
+            - 'eigenvector_weighted': :obj:`numpy.ndarray`,
+              data specific to weighted eigenvector
+              centrality, reflecting node influence with consideration
+              of connectivity strength.
+            - 'falff': :obj:`numpy.ndarray`,
+              data specific to fractional amplitude values of
+              low-frequency fluctuations.
+            - 'func_mask': :obj:`numpy.ndarray`,
+              functional mask data, often used to define regions of interest.
+            - 'func_mean': :obj:`numpy.ndarray`,
+              mean functional MRI data,
+              representing average activity across the brain.
+            - 'lfcd': :obj:`numpy.ndarray`,
+              data specific to local functional connectivity density
+              in brain networks.
+            - 'reho': :obj:`numpy.ndarray`,
+              data specific to regional homogeneity in functional MRI data.
+            - 'rois_aal': :obj:`numpy.ndarray`,
+              data specific to anatomical regions
+              defined by the Automatic Anatomical Labeling atlas.
+            - 'rois_cc200': :obj:`numpy.ndarray`
+              data specific to regions defined by the Craddock 200 atlas.
+            - 'rois_cc400': :obj:`numpy.ndarray`,
+              data specific to regions defined by the Craddock 400 atlas.
+            - 'rois_dosenbach160': :obj:`numpy.ndarray`,
+              data specific to regions defined by the Dosenbach 160 atlas.
+            - 'rois_ez': :obj:`numpy.ndarray`,
+              data specific to regions defined by the EZ atlas.
+            - 'rois_ho': :obj:`numpy.ndarray`,
+              data specific to regions defined by the Harvard-Oxford atlas.
+            - 'rois_tt': :obj:`numpy.ndarray`,
+              data specific to regions defined by the Talairach atlas.
+            - 'vmhc': :obj:`numpy.ndarray`,
+              data specific to voxel-mirrored homotopic connectivity in
+              functional MRI data.
 
     Notes
     -----
@@ -2388,7 +2388,7 @@ def _reduce_confounds(regressors, keep_confounds):
 
 
 @fill_doc
-def fetch_language_localizer_demo_dataset(
+def fetch_language_localizer_demo_dataset(  # numpydoc ignore=RT05
     data_dir: DataDir = None, verbose: Verbose = 1
 ) -> Bunch[str, Any]:
     """Download language localizer demo dataset.
@@ -2809,7 +2809,7 @@ def fetch_openneuro_dataset(
 
 
 @fill_doc
-def fetch_localizer_first_level(
+def fetch_localizer_first_level(  # numpydoc ignore=RT05
     data_dir: DataDir = None, verbose: Verbose = 1
 ) -> Bunch[str, Any]:
     """Download a first-level localizer :term:`fMRI` dataset.
@@ -3106,7 +3106,7 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     reason="parameter is unused",
     end_version="0.17.0",
 )
-def fetch_spm_multimodal_fmri(
+def fetch_spm_multimodal_fmri(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     data_name: str = "spm_multimodal_fmri",
     verbose: Verbose = 1,

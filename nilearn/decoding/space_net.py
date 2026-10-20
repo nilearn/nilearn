@@ -314,11 +314,11 @@ def _center_data(X, y):
     Returns
     -------
     X : ndarray of shape (n_samples, n_features)
-        Centered version of X
+        Centered version of X.
     y : ndarray of shape (n_samples,) or (n_samples, n_targets)
-        Centered version of y
+        Centered version of y.
     y_offset : :obj:`float` or ndarray of shape (n_features,)
-        Mean of y
+        Mean of y.
     """
     X = check_array(
         X,

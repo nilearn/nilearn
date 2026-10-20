@@ -409,7 +409,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         -------
         displays : :obj:`list` of :class:`~matplotlib.figure.Figure`
             A list of all displays to be rendered.
-            Returns None when masker is not fitted
+            Returns None when masker is not fitted.
         """
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled

@@ -86,7 +86,7 @@ def is_volume_image(imgs) -> bool:
     Returns
     -------
     bool
-        True if volume object or iterable of volume objects, False otherwise
+        True if volume object or iterable of volume objects, False otherwise.
     """
     if not (
         isinstance(imgs, (NiimgLike, SpatialImage))
@@ -114,7 +114,7 @@ def is_empty_volume(img) -> bool:
     Returns
     -------
     bool
-        True if the image is empty; False otherwise
+        True if the image is empty; False otherwise.
     """
     return 0 in img.dataobj.shape
 
@@ -673,7 +673,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
     offset : :obj:`list`, optional
         List of tuples representing the number of voxels removed
         (before, after) the cropped volumes, i.e.:
-        *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
+        *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*.
     """
     img = check_niimg(img)
     data = _get_data(img)
@@ -2766,7 +2766,7 @@ def copy_img(img) -> Nifti1Image:
     Returns
     -------
     img_copy : :obj:`~nibabel.nifti1.Nifti1Image`
-        copy of input (data, affine and header)
+        Copy of input (data, affine and header).
 
     Examples
     --------

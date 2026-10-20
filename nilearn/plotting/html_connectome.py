@@ -38,7 +38,7 @@ def _encode_coordinates(coords, prefix):
     Returns
     -------
     coordinates : :obj:`dict`
-        Dictionary containing base64 values for each axis
+        Dictionary containing base64 values for each axis.
     """
     coords = np.asarray(coords, dtype="<f4")
     marker_x, marker_y, marker_z = coords.T
@@ -97,7 +97,7 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
     Returns
     -------
     markers_colors : :obj:`list`
-        List of `number_of_nodes` colors as hexadecimal values
+        List of `number_of_nodes` colors as hexadecimal values.
     """
     if isinstance(marker_color, str) and marker_color == "auto":
         colors = mpl_cm.viridis(np.linspace(0, 1, number_of_nodes))
@@ -139,7 +139,7 @@ def _prepare_lines_metadata(
     Returns
     -------
     coordinates : :obj:`dict`
-        Dictionary containing base64 values for each axis
+        Dictionary containing base64 values for each axis.
     """
     adjacency_matrix = np.nan_to_num(adjacency_matrix, copy=True)
     colors = colorscale(

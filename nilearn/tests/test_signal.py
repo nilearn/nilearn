@@ -59,15 +59,15 @@ def generate_signals(
     Returns
     -------
     signals : numpy.ndarray, shape (length, n_features)
-        unperturbed signals.
+        Unperturbed signals.
 
     noises : numpy.ndarray, shape (length, n_features)
-        confound-based noises. Each column is a signal obtained by linear
+        Confound-based noises. Each column is a signal obtained by linear
         combination of all confounds signals (below). The coefficients in
         the linear combination are also random.
 
     confounds : numpy.ndarray, shape (length, n_confounds)
-        random signals used as confounds.
+        Random signals used as confounds.
     """
     rng = _rng()
 
@@ -109,7 +109,7 @@ def generate_trends(n_features=17, length=41):
     Returns
     -------
     trends : numpy.ndarray, shape (length, n_features)
-        output signals, one per column.
+        Output signals, one per column.
     """
     rng = _rng()
     trends = scipy.signal.detrend(np.linspace(0, 1.0, length), type="constant")

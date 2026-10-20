@@ -109,13 +109,13 @@ def _fast_svd(X, n_components, random_state=None):
     Returns
     -------
     U : array, shape (n_samples, n_components)
-        The first matrix of the truncated svd
+        The first matrix of the truncated svd.
 
     S : array, shape (n_components)
-        The second matrix of the truncated svd
+        The second matrix of the truncated svd.
 
     V : array, shape (n_components, n_features)
-        The last matrix of the truncated svd
+        The last matrix of the truncated svd.
     """
     random_state = check_random_state(random_state)
     # Small problem, just call full PCA
@@ -669,7 +669,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         loadings : :obj:`list` of 2D ndarray,
             For each subject, each sample, loadings for each decomposition
             components
-            shape: number of subjects * (number of scans, number of regions)
+            shape: number of subjects * (number of scans, number of regions).
         """
         check_is_fitted(self)
 
@@ -772,7 +772,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         score : :obj:`float`
             Holds the score for each subjects. Score is two dimensional
             if per_component is True. First dimension
-            is squeezed if the number of subjects is one
+            is squeezed if the number of subjects is one.
         """
         del y
         check_is_fitted(self)
