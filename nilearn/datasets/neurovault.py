@@ -2856,15 +2856,15 @@ def fetch_neurovault_auditory_computation_task(
             - 'description', a short description
               of the :term:`Neurovault` dataset.
 
-    Notes
-    -----
-    The 'auditory_calculation_vs_baseline' contrast is used:
-    https://neurovault.org/images/32980/
-
     See Also
     --------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
+
+    Notes
+    -----
+    The 'auditory_calculation_vs_baseline' contrast is used:
+    https://neurovault.org/images/32980/
     """
     check_params(locals())
 

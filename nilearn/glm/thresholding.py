@@ -457,16 +457,16 @@ def threshold_stats_img(
     threshold : :obj:`float` or :class:`numpy.floating`
         The voxel-level threshold used actually.
 
-    Notes
-    -----
-    If the input image is not z-scaled (i.e. some z-transformed statistic)
-    the computed threshold is not rigorous and likely meaningless
-
     See Also
     --------
     nilearn.image.threshold_img :
         Apply an explicit voxel-level (and optionally cluster-level) threshold
         without correction.
+
+    Notes
+    -----
+    If the input image is not z-scaled (i.e. some z-transformed statistic)
+    the computed threshold is not rigorous and likely meaningless
 
     Examples
     --------

@@ -254,18 +254,18 @@ def find_cut_slices(
     cut_coords : 1D array of length n_cuts
         The computed cut_coords.
 
+    Warnings
+    --------
+    If a non-diagonal img is given. This function automatically reorders
+    img to get it back to diagonal. This is to avoid finding same cuts in
+    the slices.
+
     Notes
     -----
     This code works by iteratively locating peak activations that are
     separated by a distance of at least 'spacing'. If n_cuts is very
     large and all the activated regions are covered, cuts with a spacing
     less than 'spacing' will be returned.
-
-    Warnings
-    --------
-    If a non-diagonal img is given. This function automatically reorders
-    img to get it back to diagonal. This is to avoid finding same cuts in
-    the slices.
     """
     # misc
     check_parameter_in_allowed(direction, ("x", "y", "z"), "direction")

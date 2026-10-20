@@ -34,11 +34,6 @@ class OLSModel:
         This is your design matrix.  Data are assumed to be column ordered
         with observations in rows.
 
-    Methods
-    -------
-    model.__init___(design)
-    model.logL(b=self.beta, Y)
-
     Attributes
     ----------
     design : ndarray
@@ -61,6 +56,11 @@ class OLSModel:
 
     df_model : scalar
         Degrees of freedom of the model.  The rank of the design.
+
+    Methods
+    -------
+    model.__init___(design)
+    model.logL(b=self.beta, Y)
     """
 
     def __init__(self, design):

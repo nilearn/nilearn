@@ -33,10 +33,6 @@ def _compute_weights(X, mask_img):
 
     i.e. weights = (weight_deep, weights_right, weight_down).
 
-    Notes
-    -----
-    Here we assume a square lattice (no diagonal connections).
-
     Parameters
     ----------
     X : ndarray, shape = [n_samples, n_features]
@@ -50,6 +46,10 @@ def _compute_weights(X, mask_img):
     weights : ndarray
         Weights corresponding to all edges in the mask.
         shape: (n_edges,).
+
+    Notes
+    -----
+    Here we assume a square lattice (no diagonal connections).
     """
     n_samples, _ = X.shape
 

@@ -128,10 +128,6 @@ def fetch_haxby(
         - 't_r': :obj:`float`
             Repetition time of the functional data.
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
     %(fetcher_note)s
@@ -147,6 +143,10 @@ def fetch_haxby(
 
     Run 8 in subject 5 does not contain any task labels.
     The anatomical image for subject 6 is unavailable.
+
+    References
+    ----------
+    .. footbibliography::
     """
     check_params(locals())
 
@@ -498,13 +498,13 @@ def fetch_miyawaki2008(
             Path to nifti file containing a background image usable as a
             background image for miyawaki images.
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
     %(fetcher_note)s
+
+    References
+    ----------
+    .. footbibliography::
     """
     check_params(locals())
 
@@ -760,6 +760,10 @@ def fetch_localizer_contrasts(
         - 'anats': :obj:`list` of :obj:`str`
             Path to nifti files corresponding to the subjects structural images
 
+    See Also
+    --------
+    nilearn.datasets.fetch_localizer_button_task
+
     Notes
     -----
     %(fetcher_note)s
@@ -767,10 +771,6 @@ def fetch_localizer_contrasts(
     References
     ----------
     .. footbibliography::
-
-    See Also
-    --------
-    nilearn.datasets.fetch_localizer_button_task
     """
     check_params(locals())
 
@@ -1000,6 +1000,11 @@ def fetch_localizer_calculation_task(
         Dictionary-like object, contains:
         'cmaps': string list, giving paths to nifti contrast maps
 
+    See Also
+    --------
+    nilearn.datasets.fetch_localizer_button_task
+    nilearn.datasets.fetch_localizer_contrasts
+
     Notes
     -----
     %(fetcher_note)s
@@ -1007,11 +1012,6 @@ def fetch_localizer_calculation_task(
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
     The 'calculation (auditory and visual cue)' contrast is used.
-
-    See Also
-    --------
-    nilearn.datasets.fetch_localizer_button_task
-    nilearn.datasets.fetch_localizer_contrasts
     """
     check_params(locals())
 
@@ -1064,6 +1064,10 @@ def fetch_localizer_button_task(
         - 'tmap': string, giving paths to nifti :term:`contrast` maps
         - 'anat': string, giving paths to normalized anatomical image
 
+    See Also
+    --------
+    nilearn.datasets.fetch_localizer_contrasts
+
     Notes
     -----
     %(fetcher_note)s
@@ -1071,10 +1075,6 @@ def fetch_localizer_button_task(
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
     The 'left vs right button press' contrast is used.
-
-    See Also
-    --------
-    nilearn.datasets.fetch_localizer_contrasts
     """
     check_params(locals())
 
@@ -2706,6 +2706,11 @@ def fetch_openneuro_dataset(
     downloaded_files : :obj:`list` of :obj:`str`
         Absolute paths of downloaded files on disk.
 
+    See Also
+    --------
+    :func:`fetch_ds000030_urls`
+    :func:`patch_openneuro_dataset`
+
     Notes
     -----
     %(fetcher_note)s
@@ -2718,11 +2723,6 @@ def fetch_openneuro_dataset(
     This copy includes filenames that are not compliant with the current
     version of :term:`BIDS`, so this function also calls
     :func:`patch_openneuro_dataset` to generate BIDS-compliant symlinks.
-
-    See Also
-    --------
-    :func:`fetch_ds000030_urls`
-    :func:`patch_openneuro_dataset`
     """
     check_params(locals())
 
@@ -2916,13 +2916,13 @@ def fetch_spm_auditory(
         - 't_r' : :obj:`float`.
             Repetition time in seconds of the functional images.
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
     %(fetcher_note)s
+
+    References
+    ----------
+    .. footbibliography::
     """
     check_params(locals())
 
@@ -3266,15 +3266,15 @@ def load_sample_motor_activation_image() -> str:
     str
         Path to the sample functional image.
 
-    Notes
-    -----
-    The 'left vs right button press' contrast is used:
-    https://neurovault.org/images/10426/
-
     See Also
     --------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
     nilearn.datasets.fetch_neurovault_auditory_computation_task
+
+    Notes
+    -----
+    The 'left vs right button press' contrast is used:
+    https://neurovault.org/images/10426/
     """
     return str(Path(__file__).parent / "data" / "image_10426.nii.gz")
