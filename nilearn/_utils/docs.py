@@ -174,7 +174,8 @@ logistic = "Logistic regression"
 rc = "Ridge classifier"
 dc = "Dummy classifier with stratified strategy"
 
-
+# TODO (sklearn >= 1.10)
+# update the sections below for logistic and logistic_l1
 docdict["classifier_options"] = f"""
 
     - ``"svc"``: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.

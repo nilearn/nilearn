@@ -353,6 +353,8 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         screening_percentile=100.0,
     ).fit(X_, y)
 
+    # TODO (sklearn >= 1.10)
+    # simplify
     if SKLEARN_GT_1_9:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=ConvergenceWarning)
@@ -364,6 +366,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
                 alpha=1 / C,
             ).fit(X, y)
     # TODO (sklearn >= 1.8)
+    # remove else block
     elif SKLEARN_GTE_1_8:
         sklogreg = LogisticRegression(
             l1_ratio=1, fit_intercept=True, solver="liblinear", tol=tol, C=C

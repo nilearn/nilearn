@@ -40,8 +40,8 @@ if SKLEARN_GTE_1_8:
     # TODO (sklearn 1.8) remove if
     # TODO (sklearn 1.10) remove 'use_legacy_attributes'
     kwarg_logistic_regression_cv = {
-        "scoring": "neg_log_loss",
         "use_legacy_attributes": False,
+        "scoring": "neg_log_loss",
     }
 
 
@@ -78,6 +78,8 @@ SUPPORTED_ESTIMATORS: dict[
             "estimator": LogisticRegressionCV,
             "params": {
                 "l1_ratios": (1,),
+                # TODO (sklearn >= 1.10)
+                # simplify
                 "solver": "newton-cd" if SKLEARN_GT_1_9 else "liblinear",
                 **kwarg_logistic_regression_cv,
             },

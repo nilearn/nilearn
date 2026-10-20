@@ -186,6 +186,8 @@ def _default_param_grid(estimator, X, y):
         # so for L2 penalty, param_grid["Cs"] is either 1e-3, ..., 1e4, and
         # for L1 penalty the values are obtained in a more data-driven way
         tmp = np.geomspace(2e-3, 2e4, 8) * min_c
+        # TODO (sklearn >= 1.10)
+        # simplify
         if SKLEARN_GT_1_9:
             param_grid["alphas"] = [1 / tmp]
         else:

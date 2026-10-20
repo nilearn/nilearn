@@ -86,7 +86,9 @@ _CUSTOM_PARAM_GRID_WARNING = (
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
 
-param_cs = "alphas" if SKLEARN_GT_1_9 else "Cs"
+# TODO (sklearn >= 1.10)
+# simplify
+PARAM_CS = "alphas" if SKLEARN_GT_1_9 else "Cs"
 
 
 def _make_binary_classification_test_data(
@@ -212,13 +214,13 @@ def test_check_param_grid_regression(regressor, param, rng):
             LogisticRegressionCV(
                 l1_ratios=(1,), **kwarg_logistic_regression_cv
             ),
-            [param_cs],
+            [PARAM_CS],
         ),
         (
             LogisticRegressionCV(
                 l1_ratios=(0,), **kwarg_logistic_regression_cv
             ),
-            [param_cs],
+            [PARAM_CS],
         ),
         (RidgeClassifierCV(), ["alphas"]),
     ],
@@ -477,7 +479,7 @@ def test_parallel_fit(rand_x_y):
             LogisticRegressionCV(
                 l1_ratios=(0,), **kwarg_logistic_regression_cv
             ),
-            param_cs,
+            PARAM_CS,
             "best_C",
             True,
         ),
@@ -1372,6 +1374,9 @@ def _set_best_hyperparameters(
         sklearn_classifier = clone(sklearn_classifier).set_params(
             C=nilearn_decoder.cv_params_[klass]["C"][count]
         )
+    # TODO (sklearn >= 1.10)
+    # merge all conditions that apply to "logistic_l1", "logistic_l2",
+    # or "ridge_classifier"
     elif not SKLEARN_GT_1_9 and classifier_penalty in [
         "logistic_l1",
         "logistic_l2",
