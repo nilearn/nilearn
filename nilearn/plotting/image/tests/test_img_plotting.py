@@ -60,7 +60,6 @@ def test_mni152template_is_reordered():
     assert np.allclose(reordered_mni.shape, MNI152TEMPLATE.shape)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "plot_func",
     (
@@ -83,7 +82,6 @@ def test_plot_functions_invalid_threshold(plot_func, img_3d_mni, tmp_path):
     plt.close()
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "plot_func",
@@ -156,7 +154,6 @@ def test_plot_threshold_for_uint8(affine_eye, plot_func):
     plt.close()
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize(
@@ -182,7 +179,6 @@ def test_invalid_cut_coords_with_display_mode(
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_with_nans(plot_func, img_3d_mni):
