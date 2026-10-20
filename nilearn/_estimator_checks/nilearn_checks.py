@@ -935,9 +935,7 @@ def check_img_estimator_dict_unchanged(estimator) -> None:
         if not hasattr(estimator, method):
             continue
 
-        if method == "transform" and isinstance(estimator, _BaseDecomposition):
-            getattr(estimator, method)([input_img])
-        elif method == "score":
+        if method == "score":
             getattr(estimator, method)(input_img, y)
         elif method == "generate_report":
             # TODO
