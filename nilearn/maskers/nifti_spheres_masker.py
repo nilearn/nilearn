@@ -36,6 +36,7 @@ from nilearn.maskers.base_masker import (
     sanitize_displayed_maps,
 )
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
+from nilearn.nilearn_typing import Signals, SingleConfound
 
 
 def apply_mask_and_get_affinity(
@@ -78,7 +79,6 @@ def apply_mask_and_get_affinity(
     A : scipy.sparse.lil_matrix
         Contains the boolean indices for each sphere.
         shape: (number of seeds, number of voxels)
-
     """
     seeds = list(seeds)
 
@@ -189,7 +189,6 @@ def _iter_signals_from_spheres(
     mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
-
     """
     X, A = apply_mask_and_get_affinity(
         seeds, niimg, radius, allow_overlap, mask_img=mask_img
@@ -312,7 +311,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     See Also
     --------
     nilearn.maskers.NiftiMasker
-
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
@@ -575,7 +573,13 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return self
 
     @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+    def fit_transform(
+        self,
+        imgs,
+        y: None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ) -> Signals:
         """Prepare and perform signal extraction.
 
         Parameters
@@ -595,7 +599,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         del y
         return self.fit(imgs).transform(
@@ -606,7 +609,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return hasattr(self, "seeds_") and hasattr(self, "n_elements_")
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -624,7 +632,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -690,7 +697,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return [str(tuple(x)) + radius_suffix for x in seeds.tolist()]
 
     @fill_doc
-    def inverse_transform(self, region_signals) -> Nifti1Image:
+    def inverse_transform(self, region_signals: Signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from spheres signals.
 
         Any mask given at initialization is taken into account. Throws an error
@@ -703,7 +710,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(img_inv_transform_nifti)s
-
         """
         check_is_fitted(self)
 

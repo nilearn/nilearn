@@ -14,7 +14,6 @@ operation in just a few lines of code.
 
     - the :ref:`Harvard-Oxford atlas <harvard_oxford_atlas>`
     - the :ref:`development fMRI dataset <development_dataset>`
-
 """
 
 # %%

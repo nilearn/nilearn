@@ -20,7 +20,6 @@ More specifically:
     Both at the individual and group level, this is
     expected to elicit activity in the motor cortex
     (positive in the rightv hemisphere, negative in the left hemisphere).
-
 """
 
 from nilearn import plotting

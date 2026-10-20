@@ -13,7 +13,6 @@ here, and not the classification object.
 .. admonition:: dataset
 
     This example uses the :ref:`OASIS VBM dataset <oasis_maps>`.
-
 """
 
 # %%

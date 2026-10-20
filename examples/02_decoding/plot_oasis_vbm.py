@@ -30,7 +30,6 @@ to limit the memory usage.
     Indeed, things like the smoothing applied to the data
     and the number of features selected by the :term:`ANOVA` step
     can impact significantly the prediction score.
-
 """
 
 # Use a single variable to control the verbosity of the script.

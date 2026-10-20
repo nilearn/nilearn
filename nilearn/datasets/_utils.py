@@ -142,7 +142,6 @@ def _chunk_report_(
         If not resuming, set to zero.
 
     %(verbose)s
-
     """
     if not total_size:
         logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.", verbose)
@@ -209,7 +208,6 @@ def _chunk_read_(
     -------
     data : :obj:`str`
         The downloaded file.
-
     """
     try:
         if total_size is None:
@@ -303,7 +301,7 @@ def get_dataset_dir(
 
     %(data_dir)s
 
-    default_paths : :obj:`list` of string or None, default=None
+    default_paths : :obj:`list` of :obj:`str` or None, default=None
         Default system paths in which the dataset may already have been
         installed by a third party software. They will be checked first.
 
@@ -324,7 +322,6 @@ def get_dataset_dir(
     3. the global environment variable NILEARN_SHARED_DATA
     4. the user environment variable NILEARN_DATA
     5. nilearn_data in the user home folder
-
     """
     paths = []
     # Search possible data-specific system paths
@@ -455,7 +452,6 @@ def uncompress_file(file_, delete_archive=True, verbose=1) -> None:
     Notes
     -----
     This handles zip, tar, gzip and bzip files only.
-
     """
     logger.log(f"Extracting data from {file_}...", verbose=verbose)
 
@@ -518,11 +514,11 @@ def _filter_column(array, col: str, criteria):
     col : :obj:`str`
         Name of the column.
 
-    criteria : integer (or float), pair of integers, string or list of these
+    criteria : :obj:`int` (or float), pair of integers,
+               :obj:`str` or list of these
         if integer, select elements in column matching integer
         if a tuple, select elements between the limits given by the tuple
         if a string, select elements that match the string
-
     """
     # Raise an error if the column does not exist. This is the only way to
     # test it across all possible types (pandas, recarray...)
@@ -578,7 +574,6 @@ def filter_columns(array, filters, combination="and"):
     combination : :obj:`str` {'and', 'or'}, default='and'
         String describing the combination operator. Possible values are "and"
         and "or".
-
     """
     check_parameter_in_allowed(combination, ["and", "or"], "combination")
     if combination == "and":
@@ -666,7 +661,6 @@ def fetch_single_file(
     -----
     If, for any reason, the download procedure fails, all downloaded files are
     removed.
-
     """
     if session is None:
         with requests.Session() as sess:
@@ -876,7 +870,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     ----------
     %(data_dir)s
 
-    files : :obj:`list` of (string, string, dict)
+    files : :obj:`list` of (:obj:`str`, :obj:`str`, dict)
         List of files and their corresponding url with dictionary that contains
         options regarding the files. Eg. (file_path, url, opt). If a file_path
         is not found in data_dir, as in data_dir/file_path the download will
@@ -898,7 +892,6 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     -------
     files : :obj:`list` of string
         Absolute paths of downloaded files on disk.
-
     """
     check_params(locals())
 
@@ -1031,7 +1024,6 @@ def tree(path, pattern=None, dictionary=False):
 
     dictionary : :obj:`bool`, default=False
         If True, the function will return a dict instead of a list.
-
     """
     path = Path(path)
     files = []

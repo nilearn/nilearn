@@ -9,7 +9,6 @@ using a feature selection, followed by an SVM.
 .. admonition:: dataset
 
     This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-
 """
 
 import warnings

@@ -220,7 +220,6 @@ def save_glm_to_bids(
 
             - ``contrast-winminusneutral_stat-t_statmap.nii.gz``
 
-
             but this dictionary:
 
             .. code-block:: python
@@ -261,7 +260,6 @@ def save_glm_to_bids(
         the name of the output will be inferred from the input filenames
         by trying to parse them as BIDS files.
         This behavior can prevented by passing ``""`` as ``prefix``.
-
 
     kwargs : extra keywords arguments to pass to ``model.generate_report``
         Can be any of the following: ``title``, ``bg_img``, ``threshold``,
@@ -305,7 +303,6 @@ def save_glm_to_bids(
     - Contrast p- and z-values
       (``contrast-[name]_stat-[p|z]_statmap.nii.gz``)
     - Contrast weights figure (``contrast-[name]_design.svg``)
-
     """
     # grab the default from generate_report()
     # fail early if invalid parameters to pass to generate_report()

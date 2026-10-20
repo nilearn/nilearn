@@ -17,7 +17,6 @@ but each one points to a single region.
 
     We use the :ref:`Yeo 2011 atlas <yeo_2011_atlas>`
     as an example for labeling regions.
-
 """
 # %%
 # The original Yeo atlas

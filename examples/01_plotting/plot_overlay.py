@@ -19,7 +19,6 @@ The tools that we need to leverage are:
 Alternatively, :func:`~nilearn.plotting.plot_prob_atlas` allows
 to plot the maps in one step that
 with less control over the plot (see below)
-
 """
 
 # %%

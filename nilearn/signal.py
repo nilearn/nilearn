@@ -6,6 +6,7 @@ features
 """
 
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
@@ -31,6 +32,7 @@ from nilearn.nilearn_typing import (
     HighPass,
     LowPass,
     NonNullScalar,
+    SingleConfound,
     Standardize,
     StandardizeConfounds,
     Tr,
@@ -138,7 +140,6 @@ def _mean_of_squares(signals, n_batches=20):
             and computation time. The higher the value, the lower the
             memory consumption.
 
-
     Returns
     -------
     var : :class:`numpy.ndarray`
@@ -182,7 +183,6 @@ def row_sum_of_squares(signals, n_batches=20):
             Tweaking this value can lead to variation of memory usage
             and computation time. The higher the value, the lower the
             memory consumption.
-
 
     Returns
     -------
@@ -389,8 +389,6 @@ def butterworth(
         >>> leg = plt.legend(["Initial signals", "Filtered signals"])
         >>> plt.grid(True)
         >>> plt.show()
-
-
     """
     check_params(locals())
     if low_pass is None and high_pass is None:
@@ -566,7 +564,7 @@ def clean(
     detrend: bool = True,
     standardize="zscore_sample",
     sample_mask=None,
-    confounds=None,
+    confounds: SingleConfound | Sequence[SingleConfound] | None = None,
     standardize_confounds: StandardizeConfounds = True,
     filter: Literal["butterworth", "cosine", False] = "butterworth",
     low_pass: LowPass = None,
@@ -629,8 +627,9 @@ def clean(
         cleaned independently. Must be a 1D array of n_samples elements.
 
     confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
-                :class:`pandas.DataFrame` \
-                or :obj:`list` of confounds timeseries, default=None
+                :class:`pandas.DataFrame`, None, \
+                or :obj:`list` or :obj:`tuple` of confounds timeseries, \
+                default=None
         Shape must be (instant number, confound number), or just
         (instant number,).
         The number of time instants in ``signals`` and ``confounds`` must be
@@ -694,7 +693,6 @@ def clean(
         Keyword arguments to be passed to functions called within ``clean``.
         Kwargs prefixed with ``'butterworth__'`` will be passed to
         :func:`~nilearn.signal.butterworth`.
-
 
     Returns
     -------
@@ -965,7 +963,6 @@ def create_cosine_drift(high_pass, frame_times):
     References
     ----------
     http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
-
     """
     n_frames = len(frame_times)
     n_times = np.arange(n_frames)
@@ -1088,7 +1085,7 @@ def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     return signals, runs, confounds, sample_mask
 
 
-def sanitize_confounds(n_time, confounds):
+def sanitize_confounds(n_time, confounds) -> np.ndarray | None:
     """Check confounds are the correct type.
 
     When passing multiple runs, ensure the
@@ -1163,7 +1160,9 @@ def _sanitize_runs(n_time, runs):
     return n_runs, runs
 
 
-def _sanitize_confound_dtype(n_signal: int, confound) -> np.ndarray:
+def _sanitize_confound_dtype(
+    n_signal: int, confound: SingleConfound
+) -> np.ndarray:
     """Check confound is the correct datatype."""
     if isinstance(confound, pd.DataFrame):
         confound = confound.to_numpy()
@@ -1173,13 +1172,7 @@ def _sanitize_confound_dtype(n_signal: int, confound) -> np.ndarray:
         if np.isnan(confound.flat[0]):
             # There may be a header
             confound = csv_to_array(filename, skip_header=1)
-        if confound.shape[0] != n_signal:
-            raise ValueError(
-                "Confound signal has an incorrect length. \n"
-                f"Signal length: {n_signal}; "
-                f"confound length: {confound.shape[0]}"
-            )
-    elif isinstance(confound, np.ndarray):
+    if isinstance(confound, np.ndarray):
         if confound.ndim == 1:
             confound = np.atleast_2d(confound).T
         elif confound.ndim != 2:
@@ -1249,7 +1242,7 @@ def _check_filter_parameters(
     return "butterworth", t_r, low_pass, high_pass
 
 
-def _sanitize_signals(signals, ensure_finite):
+def _sanitize_signals(signals, ensure_finite) -> np.ndarray:
     """Ensure signals are in the correct state."""
     check_parameter_in_allowed(ensure_finite, [True, False], "ensure_finite")
     signals = signals.copy()

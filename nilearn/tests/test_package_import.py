@@ -10,7 +10,7 @@ from nilearn._utils.helpers import is_matplotlib_installed
     reason="This test should run only if matplotlib is not installed.",
 )
 def test_import_plotting_should_raise_warning_if_matplotlib_not_installed():
-    """Tests if importing nilearn.plotting displays correct warning and raises
+    """Test if importing nilearn.plotting displays correct warning and raises
     error when matplotlib is not installed.
     """
     with (

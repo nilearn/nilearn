@@ -17,11 +17,9 @@ More specifically:
    then contrast estimation).
 4. The Default Mode Network is displayed.
 
-
 .. admonition:: dataset
 
     This example uses the :ref:`ADHD dataset <adhd_dataset>`.
-
 """
 
 import numpy as np

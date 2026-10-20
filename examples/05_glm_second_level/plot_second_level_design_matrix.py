@@ -8,7 +8,6 @@ design matrix typically holds the characteristics of each individual.
 
 This is used in a second-level analysis to assess the impact of these
 characteristics on brain signals.
-
 """
 
 # %%

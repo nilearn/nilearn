@@ -58,7 +58,6 @@ is shown in the rest of this example.
     more accurate interpretations,
     can facilitate quality control
     and improve reproducibility checks.
-
 """
 
 # %%

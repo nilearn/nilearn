@@ -93,6 +93,14 @@ If you want to contribute code:
   to get started, :nilearn-gh:`known bugs <labels/Bug>`,
   or :nilearn-gh:`proposed enhancements <labels/Enhancement>`.
 
+  If you want to help with a known issue,
+  make sure it has not been assigned to someone else
+  or that no open PR is associated with that issue.
+
+  If you want an issue to be assigned to you,
+  notify the Nilearn dev-team by adding ``@nilearn/triaging``
+  to one comment in the issue.
+
 Please see the :ref:`contributing_code` section for more detailed information, including
 instructions for  `Setting up your environment`_ and a description of the `Contribution Guidelines`_.
 

@@ -9,7 +9,6 @@ in fMRI) and threshold the resulting statistical map.
 
     This example uses contrasts related to a mental computation task,
     from the :ref:`Brainomics Localizer dataset <brainomics_maps>`.
-
 """
 
 # %%

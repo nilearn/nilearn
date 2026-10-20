@@ -236,7 +236,7 @@ def test_logistic_derivative_lipschitz_constant(rng):
 @pytest.mark.parametrize("estimator", [SpaceNetRegressor])
 @pytest.mark.parametrize("l1_ratio", np.linspace(0.1, 1, 3))
 def test_max_alpha_squared_loss(estimator, l1_ratio):
-    """Tests that models with L1 regularization over the theoretical bound \
+    """Test that models with L1 regularization over the theoretical bound \
     are full of zeros, for logistic regression.
     """
     X, y, _, _, mask_, X_ = _make_data()

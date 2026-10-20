@@ -1,6 +1,5 @@
 """Contains the GLM and contrast classes that are meant to be the main \
 objects of fMRI data analyses.
-
 """
 
 import csv
@@ -27,6 +26,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
+    check_n_confounds_match_n_images,
     check_parameter_in_allowed,
     check_params,
     check_run_sample_masks,
@@ -57,7 +57,13 @@ from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import intersect_masks
-from nilearn.nilearn_typing import HrfModel, NiimgLike, Tr
+from nilearn.nilearn_typing import (
+    HrfModel,
+    NiimgLike,
+    SingleConfound,
+    TableLike,
+    Tr,
+)
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 
@@ -94,7 +100,6 @@ def mean_scaling(Y, axis=0) -> tuple[np.ndarray, np.ndarray]:
     array([1.5, 3. , 4.5])
     >>> bool(np.allclose(Y_scaled.mean(axis=0), 0))
     True
-
     """
     mean = Y.mean(axis=axis)
     if (mean == 0).any():
@@ -194,7 +199,6 @@ def run_glm(
     results : :obj:`dict`,
         Keys correspond to the different labels values
         values are RegressionResults instances corresponding to the voxels.
-
     """
     check_params(locals())
 
@@ -283,7 +287,6 @@ def _check_trial_type(events: list[str | Path]) -> None:
     ----------
     events : :obj:`list` of :obj:`str` or :obj:`pathlib.Path``.
               A list of paths of events.tsv files.
-
     """
     file_names = []
 
@@ -873,13 +876,22 @@ class FirstLevelModel(BaseGLM):
             and self.results_ is not None
         )
 
+    @fill_doc
     def fit(
         self,
         run_imgs,
-        events=None,
-        confounds=None,
+        events: pd.DataFrame
+        | pd.Series
+        | str
+        | Path
+        | list[pd.DataFrame | pd.Series | str | Path]
+        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_masks=None,
-        design_matrices=None,
+        design_matrices: TableLike
+        | list[TableLike]
+        | list[pd.DataFrame]
+        | None = None,
         bins=100,
     ) -> Self:
         """Fit the :term:`GLM`.
@@ -942,15 +954,9 @@ class FirstLevelModel(BaseGLM):
 
                 This parameter is ignored if design_matrices are passed.
 
-        confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
-                    :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
-                    :class:`numpy.ndarray` or :obj:`str`, default=None
-            Each column in a DataFrame corresponds to a confound variable
-            to be included in the regression model of the respective run_img.
-            The number of rows must match the number of volumes in the
-            respective run_img.
+        %(confounds)s
+
             Ignored in case designs is not None.
-            If string, then a path to a CSV file is expected.
 
             .. warning::
 
@@ -978,7 +984,6 @@ class FirstLevelModel(BaseGLM):
             If an autoregressive model with order greater than one is specified
             then adaptive quantification is performed and the coefficients
             will be clustered via K-means with `bins` number of clusters.
-
         """
         check_params(self.__dict__)
         #  check attributes passed at construction
@@ -1117,7 +1122,6 @@ class FirstLevelModel(BaseGLM):
             If ``output_type == 'all'``,
             then the output is a dictionary of images,
             keyed by the type of image.
-
         """
         check_is_fitted(self)
 
@@ -1226,7 +1230,6 @@ class FirstLevelModel(BaseGLM):
         See Also
         --------
         nilearn.glm.first_level.FirstLevelModel.compute_contrast
-
         """
         del first_level_contrast
         return {
@@ -1268,7 +1271,6 @@ class FirstLevelModel(BaseGLM):
         -------
         output : :obj:`list`
             A list of Nifti1Image(s) or SurfaceImage(s).
-
         """
         # check if valid attribute is being accessed.
         check_is_fitted(self)
@@ -1321,7 +1323,6 @@ class FirstLevelModel(BaseGLM):
         If mask_img is a masker we just check it has been fitted.
         If mask_img is not a masker,
         we compute an implicit mask based on all the runs.
-
 
         Parameters
         ----------
@@ -1433,7 +1434,6 @@ def _check_events_file_uses_tab_separators(events_files):
     ------
     ValueError:
         If value separators are not Tabs (or commas)
-
     """
     valid_separators = [",", "\t"]
     if not isinstance(events_files, (list, tuple)):
@@ -1764,7 +1764,6 @@ def first_level_from_bids(
             confounds_fd_threshold=0.2,
             confounds_std_dvars_threshold=0,
         )
-
     """
     check_params(locals())
     if memory is None:
@@ -2081,7 +2080,6 @@ def _report_found_files(files, text, sub_label, filters, verbose) -> None:
         Only one filter per field allowed.
 
     %(verbose)s
-
     """
     unordered_list_string = "\n\t- ".join(files)
     logger.log(
@@ -2117,7 +2115,7 @@ def _get_processed_imgs(
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
-    verbose : :obj:`integer`
+    verbose : :obj:`int`
         Indicate the level of verbosity.
 
     Returns
@@ -2244,7 +2242,7 @@ def _get_events_files(
     imgs : :obj:`list` of :obj:`str`
         List of full path to the preprocessed images
 
-    verbose : :obj:`integer`
+    verbose : :obj:`int`
         Indicate the level of verbosity.
 
     Returns
@@ -2345,7 +2343,7 @@ def _get_masks_files(
     imgs : :obj:`list` of :obj:`str`
         List of full path to the preprocessed images
 
-    verbose : :obj:`integer`
+    verbose : :obj:`int`
         Indicate the level of verbosity.
 
     Returns
@@ -2401,7 +2399,6 @@ def _check_masks_list(masks_files: list[str], imgs: list[str]) -> None:
 
     imgs : :obj:`list` of :obj:`str`
         List of full path to the preprocessed images
-
     """
     if len(masks_files) != len(imgs):
         warn(
@@ -2443,13 +2440,12 @@ def _get_confounds(
     imgs : :obj:`list` of :obj:`str`
         List of full path to the preprocessed images
 
-    verbose : :obj:`integer`
+    verbose : :obj:`int`
         Indicate the level of verbosity.
 
     Returns
     -------
     confounds : :obj:`list` of :class:`pandas.DataFrame` or None
-
     """
     # pop the 'desc' filter
     # it would otherwise trigger some meaningless warnings
@@ -2477,7 +2473,8 @@ def _get_confounds(
         filters=filters,
         verbose=verbose,
     )
-    _check_confounds_list(confounds=confounds_files, imgs=imgs)
+    if confounds_files:
+        check_n_confounds_match_n_images(confounds_files, imgs)
 
     if not confounds_files or kwargs_load_confounds is None:
         return None
@@ -2510,7 +2507,6 @@ def _check_confounds_list(confounds, imgs) -> None:
 
     imgs : :obj:`list` of :obj:`str`
         List of full path to the preprocessed images
-
     """
     if confounds and len(confounds) != len(imgs):
         raise ValueError(
@@ -2564,7 +2560,6 @@ def _check_args_first_level_from_bids(
 
     derivatives_folder : :obj:`str`
         Full path of the BIDS dataset derivative folder.
-
     """
     check_is_of_allowed_type(dataset_path, (str, Path), "dataset_path")
     dataset_path = Path(dataset_path)
@@ -2675,7 +2670,6 @@ def _make_bids_files_filter(
     Filter to be used by :func:`get_bids_files`: \
         :obj:`list` of :obj:`tuple` (str, str)
         filters
-
     """
     filters = [("task", task_label)]
 
@@ -2718,7 +2712,6 @@ def _check_bids_image_list(imgs, sub_label, filters):
     filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters of the form (field, label) used to select the files.
         See :func:`get_bids_files`.
-
     """
     if not imgs:
         raise ValueError(
@@ -2809,7 +2802,6 @@ def _check_bids_events_list(
         See :func:`get_bids_files`.
 
     %(verbose)s
-
     """
     if not events:
         raise ValueError(

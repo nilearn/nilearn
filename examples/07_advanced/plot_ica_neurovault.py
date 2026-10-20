@@ -24,7 +24,6 @@ statistical maps.
 
    - data from :ref:`Neurovault <neurovault_dataset>`
    - the :ref:`ICBM 152 template <icbm_152_template>`
-
 """
 # %%
 # Get image and associated term data

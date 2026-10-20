@@ -31,6 +31,7 @@ from nilearn.masking import (
     compute_multi_epi_mask,
     load_mask_img,
 )
+from nilearn.nilearn_typing import SingleConfound
 
 
 def _get_mask_strategy(strategy: str):
@@ -176,7 +177,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
     nilearn.masking.compute_epi_mask: mask computation
     nilearn.masking.apply_mask: mask application on image
     nilearn.signal.clean: confounds removal and general filtering of signals
-
     """
 
     def __init__(
@@ -357,7 +357,11 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
 
     @fill_doc
     def transform_imgs(
-        self, imgs_list, confounds=None, sample_mask=None, copy=True, n_jobs=1
+        self,
+        imgs_list,
+        confounds: list[SingleConfound | None] | None = None,
+        sample_mask=None,
+        copy: bool = True,
     ):
         """Prepare multi subject data in parallel.
 
@@ -376,12 +380,9 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             If True, guarantees that output array has no memory in common with
             input array.
 
-        %(n_jobs)s
-
         Returns
         -------
         %(signals_transform_imgs_multi_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -416,7 +417,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             ],
             shelve=self._shelving,
         )
-        data = Parallel(n_jobs=n_jobs)(
+        data = Parallel(n_jobs=self.n_jobs)(
             delayed(func)(
                 imgs,
                 self.mask_img_,

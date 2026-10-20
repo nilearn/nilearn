@@ -28,7 +28,6 @@ receptive fields for a set of voxels to see which pixel location a
 .. admonition:: dataset
 
     This example uses the :ref:`Miyawaki 2008 dataset <miyawaki_dataset>`.
-
 """
 
 # %%

@@ -28,7 +28,6 @@ considering subject intercepts
     the borders of primary visual areas.
     At the group level, such a mapping is not possible.
     Yet, we may observe some significant effects in these areas.
-
 """
 
 import pandas as pd
@@ -108,15 +107,18 @@ show()
 
 # %%
 # We specify the analysis models and fit them.
+# We instantiate the models with ``minimize_memory=False``
+# because this is required to use ``plot_predicted_signal_and_residuals``
+# to visualize the residuals time series.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model_unpaired = SecondLevelModel(n_jobs=2, verbose=1).fit(
-    second_level_input, design_matrix=unpaired_design_matrix
-)
+second_level_model_unpaired = SecondLevelModel(
+    n_jobs=2, verbose=1, minimize_memory=False
+).fit(second_level_input, design_matrix=unpaired_design_matrix)
 
-second_level_model_paired = SecondLevelModel(n_jobs=2, verbose=1).fit(
-    second_level_input, design_matrix=paired_design_matrix
-)
+second_level_model_paired = SecondLevelModel(
+    n_jobs=2, verbose=1, minimize_memory=False
+).fit(second_level_input, design_matrix=paired_design_matrix)
 
 # %%
 # Estimating the :term:`contrast` is simple. To do so, we provide the column
@@ -186,3 +188,41 @@ show()
 # %%
 # Unsurprisingly, we see activity in the primary visual cortex, both positive
 # and negative.
+
+# %%
+# Plot predicted and time series of the most significant clusters
+# ---------------------------------------------------------------
+# The model mispecification with an unpaired design can also be seen
+# in the distribution of the residuals.
+# Here we will plot it for both models
+# in the around the the coordinates of the main peak
+# in the most significant cluster.
+from nilearn.reporting import get_clusters_table
+
+table, _ = get_clusters_table(
+    stat_maps_paired["z_score"],
+    stat_threshold=threshold,
+    return_label_maps=True,
+)
+main_peak_main_cluster = table["Cluster ID"] == 1
+coords = table.loc[main_peak_main_cluster, ["X", "Y", "Z"]].to_numpy()
+
+# %%
+# The unpaired model shows that there is systematic error
+# between predicted and observed values.
+time_series_dfs, figs = (
+    second_level_model_unpaired.plot_predicted_signal_and_residuals(
+        coords=coords
+    )
+)
+show()
+
+
+# %%
+# Such error is not observed for the paired model.
+time_series_dfs, figs = (
+    second_level_model_paired.plot_predicted_signal_and_residuals(
+        coords=coords
+    )
+)
+show()

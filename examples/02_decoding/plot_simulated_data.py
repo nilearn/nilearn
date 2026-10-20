@@ -23,7 +23,6 @@ model with a random design matrix **X**:
   and smooth them as in Gaussian fields.
 
 * **e** is random normal noise.
-
 """
 
 from time import time

@@ -17,7 +17,6 @@ The masks were defined via a standard GLM-based analysis.
 .. admonition:: dataset
 
     This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-
 """
 
 # We ignore some warnings that would otherwise

@@ -21,7 +21,6 @@ of :class:`~nilearn.regions.RegionExtractor` for more details.
     This example uses the movie-watching functional scans of 20 subjects from
     the :ref:`development fMRI dataset <development_dataset>` and
     :class:`~nilearn.decomposition.DictLearning` for set of brain atlas maps.
-
 """
 
 # %%

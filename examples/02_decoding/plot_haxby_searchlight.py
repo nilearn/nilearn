@@ -11,7 +11,6 @@ the :term:`fMRI` (see the generated figures).
 .. admonition:: dataset
 
     This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-
 """
 
 # %%

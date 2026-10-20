@@ -7,7 +7,7 @@ from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 
 
 def test_surface_figure():
-    """Tests SurfaceFigure class."""
+    """Test SurfaceFigure class."""
     s = SurfaceFigure()
     assert s.output_file is None
     assert s.figure is None

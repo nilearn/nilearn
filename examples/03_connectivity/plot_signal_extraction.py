@@ -27,7 +27,6 @@ documentation <parcellation_time_series>` for more.
 
     - the :ref:`Harvard-Oxford atlas <harvard_oxford_atlas>`
     - the :ref:`development fMRI dataset <development_dataset>`
-
 """
 
 # %%
