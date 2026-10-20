@@ -154,7 +154,8 @@ class Sender:
     url_mapping is used.
 
     Specifying keys
-    ---------------
+    ...............
+
     Keys of url_mapping can be:
 
     - a `str`: it is used as a glob pattern, matched against the url with
@@ -205,7 +206,7 @@ class Sender:
     empty content is returned.
 
     Specifying values
-    -----------------
+    .................
 
     Once a key matches, the corresponding value is used to build a response.
     The value can be:
@@ -236,7 +237,8 @@ class Sender:
     details in their docstrings.
 
     Inspecting history
-    ------------------
+    ..................
+
     Senders record all sent requests in `sent_requests`, the visited urls in
     `visited_urls`, and the number of sent requests in `url_count`
     """
