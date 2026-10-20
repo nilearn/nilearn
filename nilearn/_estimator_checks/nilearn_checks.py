@@ -23,6 +23,9 @@ to yield the checks for each estimator.
 
 Most of those checks have pytest dependencies
 and importing them will fail if pytest is not installed.
+
+Checks for a specific group of estimators might have exceptional cases. These
+are specified through skip_if, skip_if_not and xfail_if_not_gil decorators.
 """
 
 import contextlib
