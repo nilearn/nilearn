@@ -508,6 +508,10 @@ def high_variance_confounds(
     v : :class:`numpy.ndarray`
         Highest variance confounds. Shape: (samples, n_confounds)
 
+    See Also
+    --------
+    nilearn.image.high_variance_confounds
+
     Notes
     -----
     This method is related to what has been published in the literature
@@ -524,10 +528,6 @@ def high_variance_confounds(
     References
     ----------
     .. footbibliography::
-
-    See Also
-    --------
-    nilearn.image.high_variance_confounds
     """
     check_params(locals())
     if detrend:
@@ -700,6 +700,10 @@ def clean(
         Input signals, cleaned. Same shape as `signals` unless `sample_mask`
         is applied.
 
+    See Also
+    --------
+    nilearn.image.clean_img
+
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
@@ -711,10 +715,6 @@ def clean(
     References
     ----------
     .. footbibliography::
-
-    See Also
-    --------
-    nilearn.image.clean_img
 
     Examples
     --------

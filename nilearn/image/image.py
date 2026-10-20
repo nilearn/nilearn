@@ -263,6 +263,10 @@ def high_variance_confounds(
     :class:`numpy.ndarray`
         Highest variance confounds. Shape: *(number_of_scans, n_confounds)*.
 
+    See Also
+    --------
+    nilearn.signal.high_variance_confounds
+
     Notes
     -----
     This method is related to what has been published in the literature
@@ -275,10 +279,6 @@ def high_variance_confounds(
     - Computes an SVD of the extracted signals.
     - Returns a given number (n_confounds) of signals from the SVD with
       highest singular values.
-
-    See Also
-    --------
-    nilearn.signal.high_variance_confounds
     """
     from nilearn import masking
 
@@ -2277,6 +2277,10 @@ def clean_img(
     Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Input images, cleaned. Same shape as `imgs`.
 
+    See Also
+    --------
+        nilearn.signal.clean
+
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
@@ -2288,10 +2292,6 @@ def clean_img(
     References
     ----------
     .. footbibliography::
-
-    See Also
-    --------
-        nilearn.signal.clean
 
     Examples
     --------
@@ -3111,6 +3111,10 @@ def check_niimg(
         and that its data can be retrieved
         with :func:`nilearn.image.get_data`.
 
+    See Also
+    --------
+        check_niimg_3d, check_niimg_4d
+
     Notes
     -----
     In nilearn, special care has been taken to make image manipulation easy.
@@ -3120,10 +3124,6 @@ def check_niimg(
     and loads them if necessary.
 
     Its application is idempotent.
-
-    See Also
-    --------
-        check_niimg_3d, check_niimg_4d
 
     Examples
     --------

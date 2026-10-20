@@ -300,7 +300,6 @@ type = "protected"
 checks = [
     "all",
     "GL06",
-    "GL07",
     "GL08",
     "SS01",
     "SS02",
@@ -320,7 +319,6 @@ checks = [
     "RT03",
     "RT04",
     "RT05",
-    "YD01",
     "SA01",
     "SA02",
     "SA03",

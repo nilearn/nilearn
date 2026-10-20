@@ -156,16 +156,16 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         .. nilearn_versionadded:: 0.9.2
 
+    See Also
+    --------
+    nilearn.maskers.NiftiMasker
+    nilearn.maskers.NiftiLabelsMasker
+
     Notes
     -----
     If resampling_target is set to "maps", every 3D image processed by
     transform() will be resampled to the shape of maps_img. It may lead to a
     very large memory consumption if the voxel number in maps_img is large.
-
-    See Also
-    --------
-    nilearn.maskers.NiftiMasker
-    nilearn.maskers.NiftiLabelsMasker
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {

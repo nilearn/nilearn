@@ -375,6 +375,10 @@ def load_confounds(
         - Non-steady-state volumes (if present)
         - Motion outliers detected by scrubbing
 
+    See Also
+    --------
+    :func:`nilearn.interfaces.fmriprep.load_confounds_strategy`
+
     Notes
     -----
     The noise components implemented in this class are adapted from
@@ -383,10 +387,6 @@ def load_confounds(
     Other aspects of the preprocessing listed
     in :footcite:t:`Ciric2017` are controlled
     through :term:`fMRIPrep`, e.g. distortion correction.
-
-    See Also
-    --------
-    :func:`nilearn.interfaces.fmriprep.load_confounds_strategy`
 
     References
     ----------

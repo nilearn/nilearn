@@ -117,6 +117,13 @@ repos:
     rev: v1.11.0
     hooks:
     -   id: numpydoc-validation
+        exclude: ^examples/
+    # gallery examples use reST titles that numpydoc parses as sections,
+    # so section order (GL07) is not checked for them
+    -   id: numpydoc-validation
+        name: numpydoc-validation (examples)
+        files: ^examples/
+        args: [--ignore, GL07]
 
 -   repo: https://github.com/adamchainz/blacken-docs
     rev: 1.20.0    # replace with latest tag on GitHub

@@ -449,14 +449,14 @@ class RegionExtractor(NiftiMapsMasker):
         List of separated regions with each region lying on an
         original volume concatenated into a 4D image.
 
-    References
-    ----------
-    .. footbibliography::
-
     See Also
     --------
     nilearn.regions.connected_label_regions : A function can be readily
         used for extraction of regions on labels based atlas images.
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(
@@ -636,12 +636,6 @@ def connected_label_regions(
         of regions relabelling. The total number of names should match with the
         number of labels assigned in the image.
 
-    Notes
-    -----
-    The order of the names given in labels should be appropriately matched with
-    the unique labels (integers) assigned to each region given in labels_img
-    (also excluding 'Background' label).
-
     Returns
     -------
     new_labels_img : :class:`nibabel.nifti1.Nifti1Image`
@@ -662,6 +656,12 @@ def connected_label_regions(
 
     nilearn.regions.connected_regions : A function used for region extraction
         on continuous type atlas images.
+
+    Notes
+    -----
+    The order of the names given in labels should be appropriately matched with
+    the unique labels (integers) assigned to each region given in labels_img
+    (also excluding 'Background' label).
     """
     labels_img = check_niimg_3d(labels_img)
     labels_data = safe_get_data(labels_img, ensure_finite=True)

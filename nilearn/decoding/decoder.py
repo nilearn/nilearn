@@ -1574,15 +1574,15 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(base_decoder_fit_attributes)s
 
-    References
-    ----------
-    .. footbibliography::
-
     See Also
     --------
     nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
     nilearn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(
@@ -1769,15 +1769,15 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     n_classes_ : int
         number of classes
 
-    References
-    ----------
-    .. footbibliography::
-
     See Also
     --------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
     nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(

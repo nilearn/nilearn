@@ -164,10 +164,6 @@ def fetch_atlas_difumo(
 
     .. nilearn_versionadded:: 0.7.1
 
-    Notes
-    -----
-    %(fetcher_note)s
-
     Parameters
     ----------
     dimension : :obj:`int`, default=64
@@ -190,6 +186,10 @@ def fetch_atlas_difumo(
         Dictionary-like object, contains:
 
         %(difumo_atlas_content)s
+
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
     atlas_type = "probabilistic"
@@ -371,13 +371,13 @@ def fetch_atlas_destrieux_2009(
 
         %(destrieux_2009_atlas_content)s
 
-    Notes
-    -----
-    %(fetcher_note)s
-
     See Also
     --------
     nilearn.datasets.fetch_atlas_surf_destrieux
+
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -497,13 +497,13 @@ def fetch_atlas_harvard_oxford(
             can be strictly smaller
             than the number of region names in ``labels``.
 
-    Notes
-    -----
-    %(fetcher_note)s
-
     See Also
     --------
     nilearn.datasets.fetch_atlas_juelich
+
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -664,13 +664,13 @@ def fetch_atlas_juelich(
             can be strictly smaller
             than the number of region names in ``labels``.
 
-    Notes
-    -----
-    %(fetcher_note)s
-
     See Also
     --------
     nilearn.datasets.fetch_atlas_harvard_oxford
+
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
