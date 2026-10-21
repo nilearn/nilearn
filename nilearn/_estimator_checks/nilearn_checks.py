@@ -1088,19 +1088,14 @@ def check_img_estimator_pipeline_consistency(estimator) -> None:
         else:
             pipeline.fit(X)
 
-    funcs = ["score", "transform"]
+    for method in ["score", "transform"]:
+        if not hasattr(estimator, method):
+            continue
 
-    for func_name in funcs:
-        func = getattr(estimator, func_name, None)
-        if func is not None:
-            func_pipeline = getattr(pipeline, func_name)
-            if func_name == "transform":
-                result = func(X)
-                result_pipe = func_pipeline(X)
-            else:
-                result = func(X, y)
-                result_pipe = func_pipeline(X, y)
-            assert_allclose_dense_sparse(result, result_pipe)
+        result = _run_method(estimator, method, X, y)
+        result_pipe = _run_method(pipeline, method, X, y)
+
+        assert_allclose_dense_sparse(result, result_pipe)
 
 
 def check_img_estimator_dtype_bool(estimator_orig) -> None:
