@@ -175,6 +175,8 @@
 
 .. _Jean-Rémi King: https://github.com/kingjr
 
+.. _Jeffrey Cooney: https://github.com/jdotc1
+
 .. _Jelle Roelof Dalenberg: https://github.com/jrdalenberg
 
 .. _Jeremy Lefort-Besnard: https://jlefortbesnard.github.io/
