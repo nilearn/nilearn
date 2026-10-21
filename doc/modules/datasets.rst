@@ -41,6 +41,7 @@ Templates descriptions
 
     description/icbm152_2009.rst
     description/fsaverage.rst
+    description/fsaverage_polymesh.rst
 
 Atlases
 -------
