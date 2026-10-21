@@ -168,15 +168,24 @@ def _not_fitted_error_message(estimator) -> str:
 
 def _run_method(estimator, method, X, y):
     if method == "score":
-        getattr(estimator, method)(X, y)
+        return getattr(estimator, method)(X, y)
     elif method == "generate_report":
         # TODO
         # fix for free threaded python
         if not is_gil_enabled():
             pytest.xfail("May fail without the GIL")
-        getattr(estimator, method)()
+        return getattr(estimator, method)()
     else:
-        getattr(estimator, method)(y)
+        return getattr(estimator, method)(X)
+
+
+def _check_equal_imglike(input1, input2):
+    if isinstance(input2, np.ndarray):
+        assert_allclose_dense_sparse(input1, input2)
+    elif isinstance(input2, SurfaceImage):
+        assert_surface_image_equal(cast(SurfaceImage, input1), input2)
+    elif isinstance(input2, Nifti1Image):
+        check_imgs_equal(input1, input2)
 
 
 # ------------------ GENERIC CHECKS ------------------
@@ -1012,62 +1021,35 @@ def check_img_estimator_pickle(estimator) -> None:
         mask_img = new_img_like(X, np.ones(X.shape[:3]))
         estimator.mask_img = mask_img
 
-    fitted_estimator = fit_estimator(estimator)
+    fit_estimator(estimator, X, y)
 
-    pickled_estimator = pickle.dumps(fitted_estimator)
+    pickled_estimator = pickle.dumps(estimator)
     unpickled_estimator = pickle.loads(pickled_estimator)
 
-    result = {}
-
-    check_methods = ["transform"]
-
-    input_data: list[Any | tuple[Any, Any]] = []
-
-    input_data = [X] if isinstance(estimator, SearchLight) else [[X]]
-
-    for method in ["predict", "decision_function"]:
-        check_methods.append(method)
-        input_data.append(X)
-
-    check_methods.append("score")
-    input_data.append((X, y))
+    methods = {
+        "transform": X if isinstance(estimator, SearchLight) else [X],
+        "score": X,
+        "predict": X,
+        "decision_function": X,
+    }
 
     # TODO - As NiftiMapsMasker changes estimator at transform, inverse
     # transform might not work
     if hasattr(estimator, "inverse_transform") and (
         hasattr(estimator, "maps_masker")
     ):
-        check_methods.append("inverse_transform")
-        signal = _rng().random((1, fitted_estimator.n_elements_))
+        signal = _rng().random((1, estimator.n_elements_))
         if isinstance(estimator, _BaseDecomposition):
             signal = [signal]
-        input_data.append(signal)
+        methods["inverse_transform"] = signal
 
-    for method, input in zip(check_methods, input_data, strict=False):
-        if hasattr(estimator, method):
-            result["input"] = input
-            if method == "score":
-                result[method] = getattr(estimator, method)(*input)
-            else:
-                result[method] = getattr(estimator, method)(input)
-
-    for method, input in zip(check_methods, input_data, strict=False):
-        if method not in result:
+    for method, X in methods.items():
+        if not hasattr(estimator, method):
             continue
 
-        if method == "score":
-            unpickled_result = getattr(unpickled_estimator, method)(*input)
-        else:
-            unpickled_result = getattr(unpickled_estimator, method)(input)
-
-        if isinstance(unpickled_result, np.ndarray):
-            assert_allclose_dense_sparse(result[method], unpickled_result)
-        elif isinstance(unpickled_result, SurfaceImage):
-            assert_surface_image_equal(
-                cast(SurfaceImage, result[method]), unpickled_result
-            )
-        elif isinstance(unpickled_result, Nifti1Image):
-            check_imgs_equal(result[method], unpickled_result)
+        result = _run_method(estimator, method, X, y)
+        unpickled_result = _run_method(unpickled_estimator, method, X, y)
+        _check_equal_imglike(result, unpickled_result)
 
 
 @xfail_if_not_gil(classes=[SearchLight])
