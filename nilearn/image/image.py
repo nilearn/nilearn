@@ -1314,6 +1314,7 @@ def _downcast_from_int64_if_possible(data):
     )
     return data
 
+
 def _copy_header(header_to_copy, data):
     header = header_to_copy.copy()
     try:
@@ -1334,6 +1335,7 @@ def _copy_header(header_to_copy, data):
         if "cal_min" in header:
             header["cal_min"] = np.min(data) if data.size > 0 else 0.0
     return header
+
 
 @overload
 def new_img_like(
@@ -1841,7 +1843,7 @@ def _are_all_surface_images(
     return all(isinstance(x, SurfaceImage) for x in imgs.values())
 
 
-def _math_surface_images(formula: str, **imgs: SurfaceImage) -> SurfaceImage:
+def _math_surface_images(formula: str, imgs: SurfaceImage) -> SurfaceImage:
     first_img = next(iter(imgs.values()))
     for image in imgs.values():
         assert_polymesh_equal(first_img.mesh, image.mesh)
