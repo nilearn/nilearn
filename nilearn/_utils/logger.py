@@ -105,6 +105,7 @@ def log(
             object_self = current_self
             break
 
+    func_name = ""
     if object_frame is None:  # no object found: use stack_level
         if stack_level >= len(stack):
             func_name = "<top_level>"

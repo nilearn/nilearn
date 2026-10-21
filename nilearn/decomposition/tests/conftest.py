@@ -2,6 +2,7 @@
 
 import warnings
 from collections.abc import Generator
+from typing import Literal
 
 import numpy as np
 import pytest
@@ -437,11 +438,14 @@ def canica_img(
     )
 
 
-def check_decomposition_estimator(estimator, data_type) -> None:
+def check_decomposition_estimator(
+    estimator, data_type: Literal["nifti", "surface"]
+) -> None:
     """Run several standard checks on decomposition estimators."""
     assert estimator.mask_img_ == estimator.masker_.mask_img_
     assert estimator.components_.shape[0] == estimator.n_components
 
+    check_shape = ()
     if data_type == "nifti":
         assert isinstance(estimator.mask_img_, Nifti1Image)
         assert isinstance(estimator.components_img_, Nifti1Image)

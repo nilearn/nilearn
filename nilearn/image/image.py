@@ -1692,6 +1692,7 @@ def threshold_img(
             f"Got {img.__class__.__name__}."
         )
 
+    affine = np.empty(1)
     if isinstance(img, NiimgLike):
         img = check_niimg(img)
         img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)

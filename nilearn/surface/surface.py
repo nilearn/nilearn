@@ -287,8 +287,7 @@ class PolyMesh:
                 )
             return None
 
-        if "hemi-L" in filename.stem:
-            mesh = self.parts["left"]
+        mesh = self.parts["left"]
         if "hemi-R" in filename.stem:
             mesh = self.parts["right"]
 
@@ -499,8 +498,7 @@ class PolyData:
                 )
             return None
 
-        if "hemi-L" in filename.stem:
-            data = self.parts["left"]
+        data = self.parts["left"]
         if "hemi-R" in filename.stem:
             data = self.parts["right"]
 
@@ -1572,6 +1570,8 @@ def load_surf_data(surf_data) -> np.ndarray:
         file_list = resolve_globbing(surf_data)
         # resolve_globbing handles empty lists
 
+        data = np.empty(1)
+        data_part = np.empty(1)
         for i, surf_data in enumerate(file_list):
             surf_data = str(surf_data)
 
