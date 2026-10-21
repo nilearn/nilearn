@@ -1314,6 +1314,26 @@ def _downcast_from_int64_if_possible(data):
     )
     return data
 
+def _copy_header(header_to_copy, data):
+    header = header_to_copy.copy()
+    try:
+        "something" in header  # noqa: B015
+    except TypeError:
+        return None
+    else:
+        if "scl_slope" in header:
+            header["scl_slope"] = 0.0
+        if "scl_inter" in header:
+            header["scl_inter"] = 0.0
+        # 'glmax' is removed for Nifti2Image. Modify only if 'glmax' is
+        # available in header. See issue #1611
+        if "glmax" in header:
+            header["glmax"] = 0.0
+        if "cal_max" in header:
+            header["cal_max"] = np.max(data) if data.size > 0 else 0.0
+        if "cal_min" in header:
+            header["cal_min"] = np.min(data) if data.size > 0 else 0.0
+    return header
 
 @overload
 def new_img_like(
@@ -1432,24 +1452,7 @@ def new_img_like(
     data = _downcast_from_int64_if_possible(data)
     header = None
     if copy_header and ref_niimg.header is not None:
-        header = ref_niimg.header.copy()
-        try:
-            "something" in header  # noqa: B015
-        except TypeError:
-            pass
-        else:
-            if "scl_slope" in header:
-                header["scl_slope"] = 0.0
-            if "scl_inter" in header:
-                header["scl_inter"] = 0.0
-            # 'glmax' is removed for Nifti2Image. Modify only if 'glmax' is
-            # available in header. See issue #1611
-            if "glmax" in header:
-                header["glmax"] = 0.0
-            if "cal_max" in header:
-                header["cal_max"] = np.max(data) if data.size > 0 else 0.0
-            if "cal_min" in header:
-                header["cal_min"] = np.min(data) if data.size > 0 else 0.0
+        header = _copy_header(header_to_copy=ref_niimg.header, data=data)
     klass = ref_niimg.__class__
     if klass is Nifti1Pair:
         # Nifti1Pair is an internal class, without a to_filename,
@@ -1838,6 +1841,34 @@ def _are_all_surface_images(
     return all(isinstance(x, SurfaceImage) for x in imgs.values())
 
 
+def _math_surface_images(formula: str, **imgs: SurfaceImage) -> SurfaceImage:
+    first_img = next(iter(imgs.values()))
+    for image in imgs.values():
+        assert_polymesh_equal(first_img.mesh, image.mesh)
+
+    # Computing input data as a dictionary of numpy arrays.
+    data_dict = {k: {} for k in first_img.data.parts}
+    for key, surf_img in imgs.items():
+        for k, v in surf_img.data.parts.items():
+            data_dict[k][key] = v
+
+    # Add a reference to numpy in the kwargs of eval
+    # so that numpy functions can be called from there.
+    result = {}
+    try:
+        for k in data_dict:
+            data_dict[k]["np"] = np
+            result[k] = eval(formula, data_dict[k])
+    except Exception as exc:
+        exc.args = (
+            f"Input formula couldn't be processed, you provided '{formula}',",
+            *exc.args,
+        )
+        raise
+
+    return new_img_like(first_img, result)
+
+
 @overload
 def math_img(
     formula: str,
@@ -1970,32 +2001,7 @@ def math_img(
                 stacklevel=find_stack_level(),
             )
 
-        first_img = next(iter(imgs.values()))
-        for image in imgs.values():
-            assert_polymesh_equal(first_img.mesh, image.mesh)
-
-        # Computing input data as a dictionary of numpy arrays.
-        data_dict = {k: {} for k in first_img.data.parts}
-        for key, surf_img in imgs.items():
-            for k, v in surf_img.data.parts.items():
-                data_dict[k][key] = v
-
-        # Add a reference to numpy in the kwargs of eval
-        # so that numpy functions can be called from there.
-        result = {}
-        try:
-            for k in data_dict:
-                data_dict[k]["np"] = np
-                result[k] = eval(formula, data_dict[k])
-        except Exception as exc:
-            exc.args = (
-                "Input formula couldn't be processed, "
-                f"you provided '{formula}',",
-                *exc.args,
-            )
-            raise
-
-        return new_img_like(first_img, result)
+        return _math_surface_images(formula=formula, imgs=imgs)
 
     try:
         niimgs: dict[str, Nifti1Image] = {
