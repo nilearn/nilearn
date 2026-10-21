@@ -56,7 +56,7 @@ def test_save_plot_stat_map(matplotlib_pyplot, params, img_3d_mni, tmp_path):
 def test_plot_stat_map_cut_coords_and_display_mode(
     matplotlib_pyplot, display_mode, cut_coords, img_3d_mni
 ):
-    """Smoke-tests for plot_stat_map.
+    """Run smoke tests for plot_stat_map.
 
     Tests different combinations of parameters `cut_coords`
     and `display_mode`.

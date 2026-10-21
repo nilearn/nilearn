@@ -13,7 +13,7 @@ __all__ = ["_cmap_d"]
 
 
 def mix_colormaps(fg, bg):
-    """Mixes foreground and background arrays of RGBA colors.
+    """Mix foreground and background arrays of RGBA colors.
 
     Parameters
     ----------

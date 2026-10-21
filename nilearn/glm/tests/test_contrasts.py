@@ -170,7 +170,7 @@ def test_contrast_mul(set_up_glm, rng):
 
 
 def test_contrast_z_score_baseline_after_other_baseline():
-    """z_score(baseline) must not depend on previously used baselines."""
+    """Check z_score(baseline) does not depend on previous baselines."""
     effect = np.array([[2.0, 4.0]])
     variance = np.array([1.0, 1.0])
 
