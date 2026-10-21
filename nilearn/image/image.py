@@ -1843,7 +1843,9 @@ def _are_all_surface_images(
     return all(isinstance(x, SurfaceImage) for x in imgs.values())
 
 
-def _math_surface_images(formula: str, imgs: SurfaceImage) -> SurfaceImage:
+def _math_surface_images(
+    formula: str, imgs: dict[str, SurfaceImage]
+) -> SurfaceImage:
     first_img = next(iter(imgs.values()))
     for image in imgs.values():
         assert_polymesh_equal(first_img.mesh, image.mesh)
@@ -1859,8 +1861,7 @@ def _math_surface_images(formula: str, imgs: SurfaceImage) -> SurfaceImage:
     result = {}
     try:
         for k in data_dict:
-            data_dict[k]["np"] = np
-            result[k] = eval(formula, data_dict[k])
+            result[k] = eval(formula, {**data_dict[k], "np": np})
     except Exception as exc:
         exc.args = (
             f"Input formula couldn't be processed, you provided '{formula}',",
