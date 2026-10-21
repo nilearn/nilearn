@@ -1316,6 +1316,7 @@ def _downcast_from_int64_if_possible(data):
 
 
 def _copy_header(header_to_copy, data):
+    """Return a copy of a header."""
     header = header_to_copy.copy()
     try:
         "something" in header  # noqa: B015
@@ -1846,6 +1847,7 @@ def _are_all_surface_images(
 def _math_surface_images(
     formula: str, imgs: dict[str, SurfaceImage]
 ) -> SurfaceImage:
+    """Apply a math formula onto surface images, returns SurfaceImage."""
     first_img = next(iter(imgs.values()))
     for image in imgs.values():
         assert_polymesh_equal(first_img.mesh, image.mesh)
