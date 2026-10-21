@@ -568,11 +568,12 @@ class MaskerReportMixin(ReportMixin):
 
         Returns
         -------
-        displays : :obj:`list` of :class:`~matplotlib.figure.Figure`, None or
-                   bytes
+        displays : :obj:`list` of :class:`~matplotlib.figure.Figure`, \
+                   None or bytes
             A list of all displays to be rendered, either as figures encoded as
-        bytes or Matplotlib figures.
-        When masker is not fitted, return a list with a single None element.
+            bytes or Matplotlib figures.
+            When masker is not fitted,
+            return a list with a single None element.
         """
         raise NotImplementedError()
 

@@ -124,7 +124,7 @@ def _estimator_fit(data, estimator, method=None):
     Returns
     -------
     labels_ : numpy.ndarray
-        labels_ estimated from estimator.
+        Labels estimated from estimator.
     """
     estimator = clone(estimator)
     if method in ["rena", "hierarchical_kmeans"]:
@@ -598,7 +598,7 @@ class Parcellations(_MultiPCA):
         region_signals : :obj:`list` of or 2D :class:`numpy.ndarray`
             Signals extracted for each label for each image.
             Example, for single image shape will be
-            (number of scans, number of labels)
+            (number of scans, number of labels).
         """
         check_is_fitted(self)
         imgs, confounds, single_subject = _check_parameters_transform(
@@ -678,7 +678,7 @@ class Parcellations(_MultiPCA):
         region_signals : :obj:`list` of or 2D :class:`numpy.ndarray`
             Signals extracted for each label for each image.
             Example, for single image shape will be
-            (number of scans, number of labels)
+            (number of scans, number of labels).
         """
         del y
         return self.fit(imgs, confounds=confounds).transform(imgs, confounds)

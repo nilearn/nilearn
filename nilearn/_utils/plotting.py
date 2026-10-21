@@ -33,9 +33,10 @@ def generate_design_matrices_figures(
     Returns
     -------
     design_matrices_dict : Bunch
+        Bunch with the following attributes for each run ``i_run``:
 
-        design_matrices_dict[i_run].design_matrix
-        design_matrices_dict[i_run].correlation_matrix
+        - ``design_matrices_dict[i_run].design_matrix``
+        - ``design_matrices_dict[i_run].correlation_matrix``
     """
     if design_matrices_dict is None:
         design_matrices_dict = Bunch()
@@ -123,8 +124,7 @@ def generate_contrast_matrices_figures(
     Returns
     -------
     contrasts_dict : sklearn Bunch
-
-        contrasts_dict[contrast_name]
+        Bunch accessed with ``contrasts_dict[contrast_name]``.
     """
     if contrasts_dict is None:
         contrasts_dict = Bunch()

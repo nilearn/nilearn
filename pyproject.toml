@@ -297,6 +297,7 @@ protected_modules = ["nilearn._assets"]
 type = "protected"
 
 [tool.numpydoc_validation]
+# https://numpydoc.readthedocs.io/en/latest/validation.html#built-in-validation-checks
 checks = [
     "all",
     "GL06",
@@ -317,8 +318,6 @@ checks = [
     "RT01",
     "RT02",
     "RT03",
-    "RT04",
-    "RT05",
     "SA01",
     "SA02",
     "SA03",

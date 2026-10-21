@@ -73,12 +73,12 @@ def apply_mask_and_get_affinity(
     Returns
     -------
     X : numpy.ndarray
-        Signal for each brain voxel in the (masked) niimgs.
-        shape: (number of scans, number of voxels)
+        Signal for each brain voxel in the (masked) niimgs
+        with shape: (number of scans, number of voxels).
 
     A : scipy.sparse.lil_matrix
-        Contains the boolean indices for each sphere.
-        shape: (number of seeds, number of voxels)
+        Contains the boolean indices for each sphere
+        with shape: (number of seeds, number of voxels).
     """
     seeds = list(seeds)
 

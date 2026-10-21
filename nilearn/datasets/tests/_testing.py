@@ -81,7 +81,8 @@ def dict_to_archive(data, archive_format="gztar"):
 
     Returns
     -------
-    bytes : the contents of the resulting archive file, to be used for example
+    bytes
+        The contents of the resulting archive file, to be used for example
         as the contents of a mock response object (see Sender).
 
     Examples

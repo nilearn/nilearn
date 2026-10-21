@@ -126,7 +126,7 @@ def _make_edges_and_weights(X, mask_img):
     Returns
     -------
     edges : ndarray
-        Array containing [edges_deep, edges_right, edges_down]
+        Array containing [edges_deep, edges_right, edges_down].
 
     weights : ndarray
         Weights corresponding to all edges in the mask.
@@ -261,7 +261,7 @@ def _make_edges_and_weights_surface(X, mask_img):
     Returns
     -------
     edges : dict[str, np.array]
-        Array containing edges of mesh
+        Array containing edges of mesh.
 
     weights : dict[str, np.array]
         Weights corresponding to all edges in the mask.
@@ -550,7 +550,7 @@ def recursive_neighbor_agglomeration(
         Number of clusters.
 
     labels : :class:`numpy.ndarray`
-        Cluster assignation. shape = [n_features]
+        Cluster assignation. shape = [n_features].
 
     References
     ----------

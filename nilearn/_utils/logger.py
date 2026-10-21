@@ -140,7 +140,8 @@ def compose_err_msg(msg: str, **kwargs) -> str:
     Returns
     -------
     updated_msg : :obj:`str`
-        msg, with "key: value" appended. Only string values are appended.
+        Input ``msg``, with "key: value" appended.
+        Only string values are appended.
 
     Examples
     --------

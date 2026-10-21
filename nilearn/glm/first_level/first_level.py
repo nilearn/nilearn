@@ -2248,7 +2248,7 @@ def _get_events_files(
     Returns
     -------
     events : :obj:`list` of :obj:`str`
-        List of full path to the events files
+        List of full path to the events files.
     """
     # pop the derivatives filter
     # it would otherwise trigger some meaningless warnings
@@ -2349,7 +2349,7 @@ def _get_masks_files(
     Returns
     -------
     events : :obj:`list` of :obj:`str`
-        List of full path to the masks files
+        List of full path to the masks files.
     """
     if space_label in (None, "", "fsaverage5"):
         # TODO for surface data?
@@ -2667,9 +2667,8 @@ def _make_bids_files_filter(
 
     Returns
     -------
-    Filter to be used by :func:`get_bids_files`: \
-        :obj:`list` of :obj:`tuple` (str, str)
-        filters
+    :obj:`list` of :obj:`tuple` (str, str)
+        Filters to be used by :func:`get_bids_files`.
     """
     filters = [("task", task_label)]
 

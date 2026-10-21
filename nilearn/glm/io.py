@@ -132,7 +132,7 @@ def save_glm_to_bids(
 
 
 @fill_doc
-def save_glm_to_bids(
+def save_glm_to_bids(  # numpydoc ignore=RT05
     model,
     contrasts,
     first_level_contrast=None,

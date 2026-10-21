@@ -446,8 +446,8 @@ def generate_regions_ts(n_features, n_regions) -> np.ndarray:
     Returns
     -------
     regions : :obj:`numpy.ndarray`
-        Regions, represented as signals.
-        shape (n_features, n_regions)
+        Regions, represented as signals
+        with shape (n_features, n_regions).
     """
     rand_gen = _rng()
     window = "boxcar"

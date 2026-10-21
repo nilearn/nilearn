@@ -124,7 +124,7 @@ class Contrast:
         Returns
         -------
         stat : 1-d array, shape=(n_voxels,)
-            statistical values, one per voxel.
+            Statistical values, one per voxel.
         """
         self.baseline = baseline
 
@@ -158,7 +158,7 @@ class Contrast:
         Returns
         -------
         p_values : 1-d array, shape=(n_voxels,)
-            p-values, one per voxel
+            P-values, one per voxel.
         """
         if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
@@ -188,7 +188,7 @@ class Contrast:
         Returns
         -------
         one_minus_pvalues : 1-d array, shape=(n_voxels,)
-            one_minus_pvalues, one per voxel
+            One minus p-values, one per voxel.
         """
         if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
@@ -217,7 +217,7 @@ class Contrast:
         Returns
         -------
         z_score : 1-d array, shape=(n_voxels,)
-            statistical values, one per voxel
+            Statistical values, one per voxel.
         """
         self.p_value_ = self.p_value(baseline)
         self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
@@ -509,7 +509,7 @@ def compute_fixed_effects(
         The fixed effects stat computed within the mask.
 
     fixed_fx_z_score_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
-        The fixed effects corresponding z-transform
+        The fixed effects corresponding z-transform.
     """
     n_runs = len(contrast_imgs)
     if n_runs != len(variance_imgs):

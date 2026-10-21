@@ -219,7 +219,7 @@ def _wrap_param_grid(param_grid, param_name):
     Returns
     -------
     dict of str to sequence, or sequence of such
-        The updated parameter grid
+        The updated parameter grid.
     """
     if param_grid is None:
         return param_grid
@@ -273,7 +273,7 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
     Returns
     -------
     dict of str to sequence, or sequence of such
-        The updated parameter grid
+        The updated parameter grid.
     """
     # ensure param_grid is a list so that we can loop over it
     input_is_dict = isinstance(param_grid, dict)
@@ -977,9 +977,9 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         Returns
         -------
         coefs : dict
-            Coefficients for each classification/regression problem
+            Coefficients for each classification/regression problem.
         intercepts : dict
-            Intercept for each classification/regression problem
+            Intercept for each classification/regression problem.
         """
         coefs = {}
         intercepts = {}

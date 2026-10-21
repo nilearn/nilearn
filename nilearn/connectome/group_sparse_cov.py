@@ -49,11 +49,11 @@ def compute_alpha_max(emp_covs, n_samples):
     Returns
     -------
     alpha_max : :obj:`float`
-        minimal value for the regularization parameter that gives a
+        Minimal value for the regularization parameter that gives a
         fully sparse matrix.
 
     alpha_min : :obj:`float`
-        minimal value for the regularization parameter that gives a fully
+        Minimal value for the regularization parameter that gives a fully
         dense matrix.
 
     References
@@ -200,10 +200,10 @@ def group_sparse_covariance(
     Returns
     -------
     emp_covs : numpy.ndarray, shape (n_features, n_features, n_subjects)
-        empirical covariances matrices
+        Empirical covariances matrices.
 
     precisions : numpy.ndarray, shape (n_features, n_features, n_subjects)
-        estimated precision matrices
+        Estimated precision matrices.
 
     References
     ----------
@@ -621,7 +621,7 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
         Returns
         -------
         self : GroupSparseCovariance instance
-            the object itself. Useful for chaining operations.
+            The object itself. Useful for chaining operations.
         """
         del y
         check_params(self.__dict__)
@@ -698,10 +698,10 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
     -------
     emp_covs : numpy.ndarray, \
         shape : (feature number, feature number, subject number)
-        empirical covariances.
+        Empirical covariances.
 
     n_samples : numpy.ndarray, shape: (subject number,)
-        number of samples for each subject. dtype is np.float64.
+        Number of samples for each subject. dtype is np.float64.
     """
     if not hasattr(subjects, "__iter__"):
         raise ValueError(
@@ -770,16 +770,18 @@ def group_sparse_scores(
     Returns
     -------
     log_lik : :obj:`float`
-        log-likelihood of precisions on the given covariances. This is the
-        opposite of the loss function, without the regularization term
+        Log-likelihood of precisions on the given covariances.
+        This is the opposite of the loss function,
+        without the regularization term.
 
     objective : :obj:`float`
-        value of objective function. This is the value minimized by
-        group_sparse_covariance()
+        Value of objective function.
+        This is the value minimized by ``group_sparse_covariance()``.
 
     duality_gap : :obj:`float`
-        duality gap upper bound. The returned bound is tight: it vanishes for
-        the optimal precision matrices
+        Duality gap upper bound.
+        The returned bound is tight:
+        it vanishes for the optimal precision matrices.
     """
     n_features, _, n_subjects = emp_covs.shape
 
@@ -904,12 +906,12 @@ def group_sparse_covariance_path(
     Returns
     -------
     precisions_list : :obj:`list` of numpy.ndarray
-        estimated precisions for each value of alpha provided. The length of
-        this list is the same as that of parameter "alphas".
+        Estimated precisions for each value of alpha provided.
+        The length of this list is the same as that of parameter "alphas".
 
     scores : :obj:`list` of float
-        for each estimated precision, score obtained on the test set. Output
-        only if test_subjs is not None.
+        For each estimated precision, score obtained on the test set.
+        Output only if test_subjs is not None.
     """
     check_params(locals())
 
@@ -1116,7 +1118,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         Returns
         -------
         self : GroupSparseCovarianceCV
-            the object instance itself.
+            The object instance itself.
         """
         del y
         check_params(self.__dict__)

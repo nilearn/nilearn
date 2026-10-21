@@ -154,7 +154,7 @@ def _get_labels_data(
     labels_data : numpy.ndarray
         Extracted data for each region within the mask.
         Data outside the mask are assigned to the background
-        label to restrict signal extraction
+        label to restrict signal extraction.
 
     See Also
     --------
@@ -253,7 +253,7 @@ def img_to_signals_labels(
         Signals extracted from each region. One output signal is the mean
         of all input signals in a given region. If some regions are entirely
         outside the mask, the corresponding signal is zero.
-        Shape is: (scan number, number of regions)
+        Shape is: (scan number, number of regions).
 
     labels : :obj:`list` or :obj:`tuple`
         Corresponding labels for each signal. signal[:, n] was extracted from
@@ -485,11 +485,11 @@ def img_to_signals_maps(
     -------
     region_signals : :class:`numpy.ndarray`
         Signals extracted from each region.
-        Shape is: (scans number, number of regions intersecting mask)
+        Shape is: (scans number, number of regions intersecting mask).
 
     maps : :obj:`list` of :obj:`int`
-        maps_img[..., labels[n]] is the region that has been used to extract
-        signal region_signals[:, n].
+        The region ``maps_img[..., labels[n]]`` has been used to extract
+        signal ``region_signals[:, n]``.
 
     See Also
     --------

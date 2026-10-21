@@ -89,7 +89,7 @@ def load_mask_img(
         Returns a :class:`numpy.ndarray` if Niimg-like object
         was passed as input
         or :obj:`~nilearn.surface.SurfaceImage`
-        if :obj:`~nilearn.surface.SurfaceImage` was passed as input
+        if :obj:`~nilearn.surface.SurfaceImage` was passed as input.
 
     mask_affine : None or (4,4) array-like
         Affine of the mask if Niimg-like object was passed as input,
@@ -974,7 +974,7 @@ def apply_mask(
     -------
     run_series : :class:`numpy.ndarray`
         2D array of series with shape
-        (image number, :term:`voxel` / vertex number)
+        (image number, :term:`voxel` / vertex number).
 
     Notes
     -----
@@ -1121,8 +1121,8 @@ def _unmask_4d(X, mask, order="C"):
     Returns
     -------
     data : :class:`numpy.ndarray`
-        Unmasked data.
-        Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
+        Unmasked data with
+        shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0]).
     """
     if mask.dtype != bool:
         raise TypeError("mask must be a boolean array")

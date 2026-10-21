@@ -33,7 +33,7 @@ from nilearn.mass_univariate._utils import (
 
 
 @fill_doc
-def _permuted_ols_on_chunk(
+def _permuted_ols_on_chunk(  # numpydoc ignore=RT05
     scores_original_data,
     tested_vars,
     target_vars,
@@ -299,7 +299,7 @@ def _permuted_ols_on_chunk(
 
 
 @fill_doc
-def permuted_ols(
+def permuted_ols(  # numpydoc ignore=RT05
     tested_vars,
     target_vars,
     confounding_vars=None,

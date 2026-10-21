@@ -504,8 +504,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Returns
         -------
-            check: :obj:`bool`
-                True if segments intersect, otherwise False
+        check : :obj:`bool`
+            True if segments intersect, otherwise False.
 
         Notes
         -----

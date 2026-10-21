@@ -1549,7 +1549,7 @@ def load_surf_data(surf_data) -> np.ndarray:
     Returns
     -------
     data : :obj:`numpy.ndarray`
-        An array containing surface data
+        An array containing surface data.
     """
     # avoid circular import
     from nilearn.image.image import get_data as get_vol_data
@@ -1858,7 +1858,7 @@ def load_surf_mesh(surf_mesh) -> InMemoryMesh:
     -------
     mesh : :obj:`~nilearn.surface.InMemoryMesh`
         With the attributes "coordinates" and "faces", each containing a
-        :obj:`numpy.ndarray`
+        :obj:`numpy.ndarray`.
     """
     # if input is a filename, try to load it
     surf_mesh = stringify_path(surf_mesh)

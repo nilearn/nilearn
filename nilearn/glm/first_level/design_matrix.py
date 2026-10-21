@@ -112,10 +112,10 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     Returns
     -------
     drift : array of shape(n_scans, n_drifts),
-        the drift matrix
+        The drift matrix.
 
     names : :obj:`list` of length(n_drifts),
-        the associated names
+        The associated names.
     """
     if isinstance(drift_model, str):
         drift_model = drift_model.lower()  # for robust comparisons
@@ -182,7 +182,7 @@ def _convolve_regressors(
         if 'spm + derivative + dispersion' or
             'glover + derivative + dispersion',
             a third name is used, i.e. '#name_dispersion'
-        if 'fir', the regressors are numbered according to '#name_#delay'
+        if 'fir', the regressors are numbered according to '#name_#delay'.
     """
     check_params(locals())
     if fir_delays is None:
@@ -321,8 +321,9 @@ def make_first_level_design_matrix(
 
     Returns
     -------
-    design_matrix : DataFrame instance,
-        holding the computed design matrix, the index being the frames_times
+    design_matrix : DataFrame instance
+        Holding the computed design matrix,
+        the index being the ``frames_times``
         and each column a regressor.
 
     Examples
@@ -457,7 +458,7 @@ def check_design_matrix(
         Numerical values for the design matrix.
 
     names : array of shape (n_events,), dtype='f'
-        Per-event onset time (in seconds)
+        Per-event onset time (in seconds).
 
     Examples
     --------

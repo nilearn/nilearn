@@ -506,7 +506,7 @@ def high_variance_confounds(
     Returns
     -------
     v : :class:`numpy.ndarray`
-        Highest variance confounds. Shape: (samples, n_confounds)
+        Highest variance confounds with shape: (samples, n_confounds).
 
     See Also
     --------
@@ -958,7 +958,7 @@ def create_cosine_drift(high_pass, frame_times):
     Returns
     -------
     cosine_drift : array of shape(n_scans, n_drifts)
-        Cosine drifts plus a constant regressor at cosine_drift[:, -1]
+        Cosine drifts plus a constant regressor at cosine_drift[:, -1].
 
     References
     ----------
