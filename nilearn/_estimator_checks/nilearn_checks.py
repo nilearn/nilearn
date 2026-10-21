@@ -1152,7 +1152,7 @@ def _generate_fit_data_with_dtype(estimator, input_dtype):
     return X, y
 
 
-def _dtype_case_generator(estimator_orig):
+def _dtype_case_generator(estimator_orig, with_memory=True):
     dtype_list: list[Any] = [
         np.float32,
         "float64",
@@ -1169,23 +1169,22 @@ def _dtype_case_generator(estimator_orig):
         np.dtype(np.int32),
         np.dtype("i4"),
     ]
+
     memory_list: list[Any] = [None]
-    if hasattr(estimator_orig, "memory"):
-        memory_list = [None, Path(mkdtemp())]
+    if hasattr(estimator_orig, "memory") and with_memory:
+        memory_list.append(None, Path(mkdtemp()))
 
     for input_dtype in input_np_dtypes:
         for dtype in dtype_list:
             for memory in memory_list:
                 estimator = clone(estimator_orig)
                 estimator.dtype = dtype
+                estimator.memory = memory
 
-                if hasattr(estimator, "memory"):
-                    estimator.memory = memory
-                    if memory is not None:
-                        estimator.memory_level = 1
+                if memory is not None:
+                    estimator.memory_level = 1
 
-                X, y = _generate_fit_data_with_dtype(estimator, input_dtype)
-                yield estimator, X, y, dtype, input_dtype, memory
+                yield estimator, input_dtype, dtype, memory
 
 
 @skip_if(
@@ -1277,15 +1276,15 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
 
     input_dtype np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    for estimator, X, y, _, _, _ in _dtype_case_generator(estimator_orig):
-        estimator = fit_estimator(estimator, X, y)
-        # for now we only check the output dtype for transform
-        if hasattr(estimator, "predict"):
-            estimator.predict(X)
-        if hasattr(estimator, "score"):
-            estimator.score(X, y)
-        if hasattr(estimator, "decision_function"):
-            estimator.decision_function(X)
+    for estimator, input_dtype, _, _ in _dtype_case_generator(estimator_orig):
+        X, y = _generate_fit_data_with_dtype(estimator, input_dtype)
+
+        fit_estimator(estimator, X, y)
+
+        for method in ["predict", "score", "decision_function"]:
+            if not hasattr(estimator, method):
+                continue
+            _run_method(estimator, method, X, y)
 
 
 @skip_if_not(
