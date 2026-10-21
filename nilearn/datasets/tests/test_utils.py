@@ -475,7 +475,6 @@ def test_uncompress_gzip(tmp_path, ext):
     assert (tmp_path / ftemp).exists()
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "target, expected",
     [("data/file.txt", True), ("data-other/file.txt", False)],
