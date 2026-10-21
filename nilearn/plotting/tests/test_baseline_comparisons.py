@@ -51,20 +51,20 @@ from nilearn.plotting.displays import OrthoSlicer
 from nilearn.plotting.image.utils import MNI152TEMPLATE
 from nilearn.surface import load_surf_data
 
-PLOTTING_FUNCS_3D = {
+PLOTTING_FUNCS_3D = (
     plot_img,
     plot_anat,
     plot_stat_map,
     plot_roi,
     plot_epi,
     plot_glass_brain,
-}
+)
 
-SURFACE_FUNCS = {
+SURFACE_FUNCS = (
     plot_surf,
     plot_surf_stat_map,
     plot_surf_roi,
-}
+)
 
 
 @pytest.mark.mpl_image_compare
@@ -803,7 +803,7 @@ def test_plot_with_transparency_range(fn, transparency_range):
     )
 
 
-IMG_COMPARISON_FUNCS = {plot_img_comparison, plot_bland_altman}
+IMG_COMPARISON_FUNCS = (plot_img_comparison, plot_bland_altman)
 
 
 @pytest.mark.mpl_image_compare

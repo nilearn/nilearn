@@ -364,8 +364,8 @@ def graph_net_logistic(
     Returns
     -------
     w : ndarray of shape (n_features,)
-       The solution vector (Where `n_features` is the size of the support
-       of the mask.)
+       The solution vector
+       (where ``n_features`` is the size of the support of the mask).
 
     solver_info : dict
         Solver information for warm starting. See fista.py.mfista(...)
@@ -484,7 +484,7 @@ def tvl1_solver(
     callback=None,
     verbose=0,
 ):
-    """Minimizes empirical risk for TV-L1 penalized models.
+    """Minimize empirical risk for TV-L1 penalized models.
 
     Can handle least squares (mean squared error --a.k.a mse) or logistic
     regression. The same solver works for both of these losses.
@@ -541,8 +541,8 @@ def tvl1_solver(
     Returns
     -------
     w : ndarray, shape (n_features,)
-       The solution vector (Where `w_size` is the size of the support of the
-       mask.)
+       The solution vector (where `w_size` is the size of the support of the
+       mask).
 
     objective : array of floats
         Objective function (fval) computed on every iteration.

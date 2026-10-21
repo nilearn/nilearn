@@ -305,7 +305,7 @@ class LikelihoodModelResults:
         Returns
         -------
         f_res : ``FContrastResults`` instance
-            with attributes F, df_den, df_num
+            With attributes F, df_den, df_num.
 
         Notes
         -----
@@ -363,7 +363,7 @@ class LikelihoodModelResults:
         -------
         cis : ndarray
             `cis` is shape ``(len(cols), 2)`` where each row contains [lower,
-            upper] for the given entry in `cols`
+            upper] for the given entry in `cols`.
 
         Notes
         -----

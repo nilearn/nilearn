@@ -145,7 +145,7 @@ def rgb_to_hex_lookup(
 
 
 @fill_doc
-def fetch_atlas_difumo(
+def fetch_atlas_difumo(  # numpydoc ignore=RT05
     dimension: Literal[64, 128, 256, 512, 1024] = 64,
     resolution_mm: Literal[2, 3] = 2,
     data_dir: DataDir = None,
@@ -163,10 +163,6 @@ def fetch_atlas_difumo(
     see the :ref:`dataset description <difumo_atlas>`.
 
     .. nilearn_versionadded:: 0.7.1
-
-    Notes
-    -----
-    %(fetcher_note)s
 
     Parameters
     ----------
@@ -190,6 +186,10 @@ def fetch_atlas_difumo(
         Dictionary-like object, contains:
 
         %(difumo_atlas_content)s
+
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
     atlas_type = "probabilistic"
@@ -250,7 +250,7 @@ def fetch_atlas_difumo(
 
 
 @fill_doc
-def fetch_atlas_craddock_2012(
+def fetch_atlas_craddock_2012(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -330,7 +330,7 @@ def fetch_atlas_craddock_2012(
 
 
 @fill_doc
-def fetch_atlas_destrieux_2009(
+def fetch_atlas_destrieux_2009(  # numpydoc ignore=RT05
     lateralized: bool = True,
     data_dir: DataDir = None,
     url: Url = None,
@@ -371,13 +371,13 @@ def fetch_atlas_destrieux_2009(
 
         %(destrieux_2009_atlas_content)s
 
-    Notes
-    -----
-    %(fetcher_note)s
-
     See Also
     --------
     nilearn.datasets.fetch_atlas_surf_destrieux
+
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -497,13 +497,13 @@ def fetch_atlas_harvard_oxford(
             can be strictly smaller
             than the number of region names in ``labels``.
 
-    Notes
-    -----
-    %(fetcher_note)s
-
     See Also
     --------
     nilearn.datasets.fetch_atlas_juelich
+
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -664,13 +664,13 @@ def fetch_atlas_juelich(
             can be strictly smaller
             than the number of region names in ``labels``.
 
-    Notes
-    -----
-    %(fetcher_note)s
-
     See Also
     --------
     nilearn.datasets.fetch_atlas_harvard_oxford
+
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -901,7 +901,7 @@ def _compute_symmetric_split(source, atlas_niimg, names):
 
 
 @fill_doc
-def fetch_atlas_msdl(
+def fetch_atlas_msdl(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -967,7 +967,9 @@ def fetch_atlas_msdl(
 
 
 @fill_doc
-def fetch_coords_power_2011() -> Bunch[str, pd.DataFrame | str]:
+def fetch_coords_power_2011() -> Bunch[
+    str, pd.DataFrame | str
+]:  # numpydoc ignore=RT05
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
     For more information
@@ -993,7 +995,7 @@ def fetch_coords_power_2011() -> Bunch[str, pd.DataFrame | str]:
 
 
 @fill_doc
-def fetch_atlas_smith_2009(
+def fetch_atlas_smith_2009(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -1095,7 +1097,7 @@ def fetch_atlas_smith_2009(
 
 
 @fill_doc
-def fetch_atlas_yeo_2011(
+def fetch_atlas_yeo_2011(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -1245,7 +1247,7 @@ def _update_lut_freesurder(lut):
 
 
 @fill_doc
-def fetch_atlas_aal(
+def fetch_atlas_aal(  # numpydoc ignore=RT05
     version: Literal["3v2", "SPM12", "SPM5", "SPM8"] = "3v2",
     data_dir: DataDir = None,
     url: Url = None,
@@ -1520,7 +1522,7 @@ def fetch_atlas_basc_multiscale_2015(
 
 
 @fill_doc
-def fetch_coords_dosenbach_2010(
+def fetch_coords_dosenbach_2010(  # numpydoc ignore=RT05
     ordered_regions: bool = True,
 ) -> Bunch[str, str | pd.DataFrame | list[str] | np.ndarray]:
     """Load the Dosenbach et al 160 ROIs.
@@ -1568,7 +1570,7 @@ def fetch_coords_dosenbach_2010(
 
 
 @fill_doc
-def fetch_coords_seitzman_2018(
+def fetch_coords_seitzman_2018(  # numpydoc ignore=RT05
     ordered_regions: bool = True,
 ) -> Bunch[str, str | pd.DataFrame | np.ndarray]:
     """Load the Seitzman et al. 300 ROIs.
@@ -1633,7 +1635,7 @@ def fetch_coords_seitzman_2018(
 
 
 @fill_doc
-def fetch_atlas_allen_2011(
+def fetch_atlas_allen_2011(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -1719,7 +1721,7 @@ def fetch_atlas_allen_2011(
 
 
 @fill_doc
-def fetch_atlas_surf_destrieux(
+def fetch_atlas_surf_destrieux(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -1907,7 +1909,7 @@ def _download_talairach(talairach_dir, verbose) -> None:
 
 
 @fill_doc
-def fetch_atlas_talairach(
+def fetch_atlas_talairach(  # numpydoc ignore=RT05
     level_name: Literal["hemisphere", "lobe", "gyrus", "tissue", "ba"],
     data_dir: DataDir = None,
     verbose: Verbose = 1,
@@ -1969,7 +1971,7 @@ def fetch_atlas_talairach(
 
 
 @fill_doc
-def fetch_atlas_pauli_2017(
+def fetch_atlas_pauli_2017(  # numpydoc ignore=RT05
     atlas_type: Literal["probabilistic", "deterministic"] = "probabilistic",
     data_dir: DataDir = None,
     verbose: Verbose = 1,
@@ -2039,7 +2041,7 @@ def fetch_atlas_pauli_2017(
 
 
 @fill_doc
-def fetch_atlas_schaefer_2018(
+def fetch_atlas_schaefer_2018(  # numpydoc ignore=RT05
     n_rois: Literal[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000] = 400,
     yeo_networks: Literal[7, 17] = 7,
     resolution_mm: Literal[1, 2] = 1,

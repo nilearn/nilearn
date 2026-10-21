@@ -83,7 +83,7 @@ def _warn_deprecated_params(
 
 
 def transfer_deprecated_param_vals(replacement_params, kwargs):
-    """Reassigns new parameters \
+    """Reassign new parameters \
     the values passed to their corresponding deprecated parameters \
     for the decorator replace_parameters().
 

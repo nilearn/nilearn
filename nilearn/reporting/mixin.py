@@ -135,7 +135,7 @@ class ReportMixin:
         Returns
         -------
         list of str
-            the list of warnings, empty list if there are no warnings
+            The list of warnings, empty list if there are no warnings.
         """
         return sorted(set(self._report_content["warning_messages"]))
 

@@ -224,8 +224,8 @@ class BaseSlicer:
         Returns
         -------
         list[bool]
-            a list of boolean values corresponding to each coordinate
-        indicating if it is within the bounds or not
+            A list of boolean values corresponding to each coordinate
+            indicating if it is within the bounds or not.
         """
         raise NotImplementedError()
 
@@ -697,8 +697,8 @@ class BaseSlicer:
     ):
         """Return transparency as None, float or an array.
 
-        Return
-        ------
+        Returns
+        -------
         transparency: None, float or np.ndarray
 
         transparency_affine: None or np.ndarray
@@ -1285,17 +1285,17 @@ class OrthoSlicer(_MultiDSlicer):
 
     %(displays_partial_attributes)s
 
-    Notes
-    -----
-    The extent of the different axes are adjusted to fit the data
-    best in the viewing area.
-
     See Also
     --------
     nilearn.plotting.displays.MosaicSlicer : Three cuts are performed \
     along multiple rows and columns.
     nilearn.plotting.displays.TiledSlicer : Three cuts are performed \
     and arranged in a 2x2 grid.
+
+    Notes
+    -----
+    The extent of the different axes are adjusted to fit the data
+    best in the viewing area.
     """
 
     _cut_displayed: ClassVar[str] = "xyz"
@@ -1484,17 +1484,17 @@ class TiledSlicer(_MultiDSlicer):
 
     %(displays_partial_attributes)s
 
-    Notes
-    -----
-    The extent of the different axes are adjusted to fit the data
-    best in the viewing area.
-
     See Also
     --------
     nilearn.plotting.displays.MosaicSlicer : Three cuts are performed \
     along multiple rows and columns.
     nilearn.plotting.displays.OrthoSlicer : Three cuts are performed \
        and arranged in a 2x2 grid.
+
+    Notes
+    -----
+    The extent of the different axes are adjusted to fit the data
+    best in the viewing area.
     """
 
     _cut_displayed: ClassVar[str] = "xyz"
@@ -1511,7 +1511,7 @@ class TiledSlicer(_MultiDSlicer):
         Returns
         -------
         [coord1, coord2, coord3, coord4] : :obj:`list` of :obj:`int`
-            x0, y0, x1, y1 coordinates used by matplotlib
+            The x0, y0, x1, y1 coordinates used by matplotlib
             to position axes in figure.
         """
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
@@ -1632,7 +1632,7 @@ class TiledSlicer(_MultiDSlicer):
         Returns
         -------
         coord1, coord2, coord3, coord4 : :obj:`dict`
-            x0, y0, x1, y1 coordinates per axes used by matplotlib
+            The x0, y0, x1, y1 coordinates per axes used by matplotlib
             to position axes in figure.
         """
         coord1 = {}
@@ -2426,7 +2426,7 @@ class MosaicSlicer(BaseSlicer):
         Returns
         -------
         cut_coords : :obj:`dict`  <:obj:`str`: 1D :class:`~numpy.ndarray`>
-            xyz world coordinates of cuts in a direction.
+            World coordinates (x, y, z) of cuts in a direction.
             Each key denotes the direction.
         """
         cut_coords = cls._sanitize_cut_coords(cut_coords)

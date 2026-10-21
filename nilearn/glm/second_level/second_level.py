@@ -1013,7 +1013,7 @@ def non_parametric_inference(
 
 
 @fill_doc
-def non_parametric_inference(
+def non_parametric_inference(  # numpydoc ignore=RT05
     second_level_input: list[FirstLevelModel]
     | pd.DataFrame
     | pd.Series

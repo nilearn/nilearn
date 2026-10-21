@@ -33,10 +33,6 @@ def _compute_weights(X, mask_img):
 
     i.e. weights = (weight_deep, weights_right, weight_down).
 
-    Notes
-    -----
-    Here we assume a square lattice (no diagonal connections).
-
     Parameters
     ----------
     X : ndarray, shape = [n_samples, n_features]
@@ -50,6 +46,10 @@ def _compute_weights(X, mask_img):
     weights : ndarray
         Weights corresponding to all edges in the mask.
         shape: (n_edges,).
+
+    Notes
+    -----
+    Here we assume a square lattice (no diagonal connections).
     """
     n_samples, _ = X.shape
 
@@ -126,7 +126,7 @@ def _make_edges_and_weights(X, mask_img):
     Returns
     -------
     edges : ndarray
-        Array containing [edges_deep, edges_right, edges_down]
+        Array containing [edges_deep, edges_right, edges_down].
 
     weights : ndarray
         Weights corresponding to all edges in the mask.
@@ -261,7 +261,7 @@ def _make_edges_and_weights_surface(X, mask_img):
     Returns
     -------
     edges : dict[str, np.array]
-        Array containing edges of mesh
+        Array containing edges of mesh.
 
     weights : dict[str, np.array]
         Weights corresponding to all edges in the mask.
@@ -550,7 +550,7 @@ def recursive_neighbor_agglomeration(
         Number of clusters.
 
     labels : :class:`numpy.ndarray`
-        Cluster assignation. shape = [n_features]
+        Cluster assignation. shape = [n_features].
 
     References
     ----------

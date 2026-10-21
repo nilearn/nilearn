@@ -412,9 +412,7 @@ def _is_within_directory(directory, target):
     abs_directory = Path(directory).resolve().absolute()
     abs_target = Path(target).resolve().absolute()
 
-    prefix = os.path.commonprefix([abs_directory, abs_target])
-
-    return prefix == str(abs_directory)
+    return abs_target.is_relative_to(abs_directory)
 
 
 def _safe_extract(tar, path=".", members=None, *, numeric_owner=False) -> None:

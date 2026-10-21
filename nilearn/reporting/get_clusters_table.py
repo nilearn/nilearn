@@ -260,7 +260,7 @@ def get_clusters_table(
 
 
 @fill_doc
-def get_clusters_table(
+def get_clusters_table(  # numpydoc ignore=RT05
     stat_img: NiimgLike | SurfaceImage,
     stat_threshold: NonNullScalar,
     cluster_threshold: ClusterThreshold = 0,

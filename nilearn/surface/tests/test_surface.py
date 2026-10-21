@@ -860,7 +860,7 @@ def test_choose_kind():
 
 
 def test_validate_mesh(rng):
-    """Ensures that invalid meshes cannot be instantiated."""
+    """Ensure that invalid meshes cannot be instantiated."""
     # valid mesh is fine
     coords = rng.random((20, 3))
     faces = rng.integers(coords.shape[0], size=(30, 3))

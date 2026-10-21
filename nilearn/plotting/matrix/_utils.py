@@ -43,7 +43,7 @@ def pad_contrast_matrix(contrast_def, design_matrix) -> np.ndarray:
     Returns
     -------
     axes : :class:`numpy.ndarray`
-        Padded contrast
+        Padded contrast.
     """
     design_column_names = design_matrix.columns.tolist()
     if isinstance(contrast_def, str):

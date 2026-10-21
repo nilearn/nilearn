@@ -448,6 +448,18 @@ def test_uncompress_gzip(tmp_path, ext):
     assert (tmp_path / ftemp).exists()
 
 
+@pytest.mark.parametrize(
+    "target, expected",
+    [("data/file.txt", True), ("data-other/file.txt", False)],
+)
+def test_is_within_directory_path_components(tmp_path, target, expected):
+    """Check containment by directory components, not character prefixes."""
+    assert (
+        _utils._is_within_directory(tmp_path / "data", tmp_path / target)
+        is expected
+    )
+
+
 def test_safe_extract(tmp_path):
     """Test vulnerability patch by mimicking path traversal."""
     ztemp = tmp_path / "test.tar"

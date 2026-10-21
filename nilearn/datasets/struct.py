@@ -195,8 +195,8 @@ def load_mni152_template(resolution: Resolution = None) -> Nifti1Image:
 
     Returns
     -------
-    mni152_template : Nifti1Image, image representing the re-sampled
-        whole-brain template
+    mni152_template : Nifti1Image
+        Image representing the re-sampled whole-brain template.
 
     See Also
     --------
@@ -253,8 +253,8 @@ def load_mni152_gm_template(resolution: Resolution = None) -> Nifti1Image:
 
     Returns
     -------
-    gm_mni152_template : Nifti1Image, image representing the resampled
-        grey-matter template
+    gm_mni152_template : Nifti1Image
+        Image representing the resampled grey-matter template.
 
     See Also
     --------
@@ -309,8 +309,8 @@ def load_mni152_wm_template(resolution: Resolution = None) -> Nifti1Image:
 
     Returns
     -------
-    wm_mni152_template : Nifti1Image, image representing the resampled
-        white-matter template
+    wm_mni152_template : Nifti1Image
+        Image representing the resampled white-matter template.
 
     See Also
     --------
@@ -537,8 +537,8 @@ def fetch_icbm152_brain_gm_mask(
 
     Returns
     -------
-    gm_mask_img : Nifti1Image, image corresponding to the brain gray matter
-        from ICBM152 template.
+    gm_mask_img : Nifti1Image
+        Image corresponding to the brain gray matter from ICBM152 template.
 
     See Also
     --------

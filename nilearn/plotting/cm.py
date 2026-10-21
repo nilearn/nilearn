@@ -13,7 +13,7 @@ __all__ = ["_cmap_d"]
 
 
 def mix_colormaps(fg, bg):
-    """Mixes foreground and background arrays of RGBA colors.
+    """Mix foreground and background arrays of RGBA colors.
 
     Parameters
     ----------
@@ -28,7 +28,7 @@ def mix_colormaps(fg, bg):
     -------
     mix : numpy.ndarray
         Array of shape (n, 4), mixed colors
-        represented as floats in [0, 1]
+        represented as floats in [0, 1].
     """
     # Adapted from https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values/727339#727339 # noqa: E501
     if fg.shape != bg.shape:
