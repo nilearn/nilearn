@@ -2012,7 +2012,8 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         license="usage is unrestricted for non-commercial research purposes.",
     ),
     "dosenbach_2010_atlas": Bunch(),
-    "fiac": Bunch(license="unknown"),
+    "fiac": Bunch(),
+    "fsaverage": Bunch(),
     "harvard_oxford_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
         license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",

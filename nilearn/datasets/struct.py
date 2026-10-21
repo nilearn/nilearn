@@ -11,7 +11,7 @@ from nibabel import Nifti1Image
 from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
-from nilearn._utils.docs import fill_doc
+from nilearn._utils.docs import Description, fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -67,7 +67,7 @@ AVAILABLE_MESHES: tuple[AvailableMeshes] = tuple(get_args(AvailableMeshes))
 
 
 @fill_doc
-def fetch_icbm152_2009(
+def fetch_icbm152_2009(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -627,7 +627,7 @@ def oasis_missing_subjects():
 
 
 @fill_doc
-def fetch_oasis_vbm(
+def fetch_oasis_vbm(  # numpydoc ignore=RT05
     n_subjects: NSubject = None,
     dartel_version: bool = True,
     data_dir: DataDir = None,
@@ -843,19 +843,17 @@ def fetch_oasis_vbm(
 
 
 @fill_doc
-def fetch_surf_fsaverage(
+def fetch_surf_fsaverage(  # numpydoc ignore=RT05
     mesh: AvailableMeshes = "fsaverage5",
     data_dir: DataDir = None,
 ) -> Bunch[str, Any]:
     """Download a Freesurfer fsaverage surface.
 
+    For more information
+    see the :ref:`dataset description <fsaverage>`.
+
     File names are subject to change and only attribute names
     are guaranteed to be stable across nilearn versions.
-    See :footcite:t:`Fischl1999`.
-
-    See :func:`~nilearn.datasets.load_fsaverage` and
-    :func:`~nilearn.datasets.load_fsaverage_data`
-    to access fsaverage data as :obj:`~nilearn.surface.SurfaceImage`.
 
     .. nilearn_versionchanged:: 0.14.0
 
@@ -876,32 +874,14 @@ def fetch_surf_fsaverage(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object,
-        where each value is a path to a Gifti file
-        and the keys are:
+        Dictionary-like object, contains:
 
-         - 'flat_left':    left hemisphere flat surface :term:`mesh`
-         - 'flat_right':   right hemisphere flat surface :term:`mesh`
-         - 'infl_left':    left hemisphere inflated pial surface :term:`mesh`
-         - 'infl_right':   right hemisphere inflated pial surface :term:`mesh`
-         - 'pial_left':    left hemisphere pial surface :term:`mesh`
-         - 'pial_right':   right hemisphere pial surface :term:`mesh`
-         - 'sphere_left':  left hemisphere sphere surface :term:`mesh`
-         - 'sphere_right': right hemisphere sphere surface :term:`mesh`
-         - 'white_left':   left hemisphere white surface :term:`mesh`
-         - 'white_right':  right hemisphere white surface :term:`mesh`
-         - 'area_left':    left hemisphere area data
-         - 'area_right':   right hemisphere area data
-         - 'curv_left':    left hemisphere curvature data
-         - 'curv_right':   right hemisphere curvature data
-         - 'sulc_left':    left hemisphere sulcal depth data
-         - 'sulc_right':   right hemisphere sulcal depth data
-         - 'thick_left':   left hemisphere cortical thickness data
-         - 'thick_right':  right hemisphere cortical thickness data
+        %(fsaverage_content)s
 
-    References
-    ----------
-    .. footbibliography::
+    See Also
+    --------
+    nilearn.datasets.load_fsaverage
+    nilearn.datasets.load_fsaverage_data
     """
     check_params(locals())
 
@@ -1096,7 +1076,7 @@ def _fetch_surf_fsaverage5() -> Bunch[str, str]:
         ]
         for hemi in ["left", "right"]
     }
-    data["description"] = get_dataset_descr("fsaverage5")
+    data["description"] = Description.from_registry("fsaverage")
 
     return Bunch(**data)
 
@@ -1151,7 +1131,7 @@ def _fetch_surf_fsaverage(
         attribute: dataset_dir / f"{attribute}.gii.gz"
         for attribute in dataset_attributes
     }
-    result["description"] = get_dataset_descr(dataset_name)
+    result["description"] = Description.from_registry("fsaverage")
 
     return Bunch(**result)
 
