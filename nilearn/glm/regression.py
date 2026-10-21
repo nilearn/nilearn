@@ -288,7 +288,7 @@ class RegressionResults(LikelihoodModelResults):
     # better performance than @property
     @auto_attr
     def residuals(self):
-        """Residuals from the fit."""
+        """Return residuals from the fit."""
         return self.Y - self.predicted
 
     @auto_attr
@@ -375,7 +375,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
         )
 
     def residuals(self, Y, X):
-        """Residuals from the fit."""
+        """Return residuals from the fit."""
         return Y - self.predicted(X)
 
     def normalized_residuals(self, Y, X):

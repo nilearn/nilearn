@@ -772,7 +772,7 @@ def _sample_locations_between_surfaces(
 def _ball_sample_locations(
     mesh, affine, ball_radius=3.0, n_points=20, depth=None
 ):
-    """Locations to draw samples from to project volume data onto a mesh.
+    """Compute locations to sample from to project volume data onto a mesh.
 
     For each mesh vertex, the locations of `n_points` points evenly spread in a
     ball around the vertex are returned.
@@ -841,7 +841,7 @@ def _ball_sample_locations(
 def _line_sample_locations(
     mesh, affine, segment_half_width=3.0, n_points=10, depth=None
 ):
-    """Locations to draw samples from to project volume data onto a mesh.
+    """Compute locations to sample from to project volume data onto a mesh.
 
     For each mesh vertex, the locations of `n_points` points evenly spread in a
     segment of the normal to the vertex are returned. The line segment has

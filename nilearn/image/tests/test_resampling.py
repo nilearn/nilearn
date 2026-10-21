@@ -114,7 +114,7 @@ def test_identity_resample_array_like(
 def test_resample_img_target_affine_array_like_with_target_shape(
     data, affine_eye, target_affine
 ):
-    """target_affine as list/tuple should work together with target_shape.
+    """Check target_affine as list/tuple works together with target_shape.
 
     Regression test: used to raise AttributeError because
     _check_resample_img_inputs called target_affine.shape before
@@ -399,10 +399,11 @@ def test_resampling_error_checks(tmp_path, force_resample, data, affine_eye):
 
 @pytest.mark.parametrize("force_resample", [False, True])
 @pytest.mark.parametrize("target_shape", [None, (3, 2, 5)])
+@pytest.mark.ai_generated
 def test_resampling_copy_has_no_shared_memory(
     target_shape, force_resample, data, affine_eye
 ):
-    """copy=true guarantees output array shares no memory with input array."""
+    """Check output array shares no memory with input array if copy=True."""
     img = Nifti1Image(data, affine_eye)
     target_affine = None if target_shape is None else affine_eye
 

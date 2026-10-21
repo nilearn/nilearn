@@ -394,7 +394,7 @@ def orthonormalize_matrix(m, tol=1.0e-12):
 def t_score_with_covars_and_normalized_design(
     tested_vars, target_vars, covars_orthonormalized=None
 ):
-    """t-score in the regression of tested variates against target variates.
+    """Compute t-scores of tested variates regressed against target variates.
 
     Covariates are taken into account (if not None).
     The normalized_design case corresponds to the following assumptions:
