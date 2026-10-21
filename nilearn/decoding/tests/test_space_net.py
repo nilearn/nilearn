@@ -1,6 +1,5 @@
 # ruff: noqa: ARG001
 
-import warnings
 from functools import partial
 
 import numpy as np
@@ -8,7 +7,6 @@ import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy import linalg
 from sklearn.datasets import load_iris
-from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
@@ -326,6 +324,13 @@ def test_graph_net_classifier_score():
     assert accuracy == accuracy_score(y, gnc.predict(X_))
 
 
+@pytest.mark.skipif(
+    SKLEARN_GT_1_9,
+    reason=(
+        "NewtonCDSolver does not have a fallback "
+        "for non-zero L1 penalties for LogisticRegression"
+    ),
+)
 def test_log_reg_vs_graph_net_two_classes_iris(
     C=0.01, tol=1e-10, zero_thr=1e-4
 ):
@@ -353,21 +358,9 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         screening_percentile=100.0,
     ).fit(X_, y)
 
-    # TODO (sklearn >= 1.10)
-    # simplify
-    if SKLEARN_GT_1_9:
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=ConvergenceWarning)
-            sklogreg = LogisticRegression(
-                l1_ratio=1,
-                fit_intercept=True,
-                solver="newton-cd",
-                tol=tol,
-                alpha=1 / C,
-            ).fit(X, y)
     # TODO (sklearn >= 1.8)
     # remove else block
-    elif SKLEARN_GTE_1_8:
+    if SKLEARN_GTE_1_8:
         sklogreg = LogisticRegression(
             l1_ratio=1, fit_intercept=True, solver="liblinear", tol=tol, C=C
         ).fit(X, y)

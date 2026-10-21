@@ -396,7 +396,7 @@ def _parallel_fit(
                 params["best_alpha"] = estimator.alpha_
             elif isinstance(estimator, LogisticRegressionCV):
                 if SKLEARN_GT_1_9:
-                    params["best_C"] = estimator.alpha_
+                    params["best_alpha"] = estimator.alpha_
                 elif isinstance(estimator.C_, float):
                     # TODO (sklearn >= 1.10)
                     # estimator.C_ is always a float

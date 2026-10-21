@@ -463,10 +463,13 @@ def test_parallel_fit(rand_x_y):
             assert a == b
 
 
+# TODO (sklearn >= 1.10)
+# fitted_param_name can be simplified as it will be "best_alpha"
+# for all parametrizations
 @pytest.mark.parametrize(
     "param_values",
     (
-        [0.001, 0.01, 0.1, 1, 10, 100, 1000],
+        [1, 10, 100, 1000],
         [[0.001, 0.01, 0.1, 1, 10, 100, 1000]],
     ),
 )
@@ -480,7 +483,7 @@ def test_parallel_fit(rand_x_y):
                 l1_ratios=(0,), **kwarg_logistic_regression_cv
             ),
             PARAM_CS,
-            "best_C",
+            "best_alpha" if SKLEARN_GT_1_9 else "best_C",
             True,
         ),
         (LassoCV(), "alphas", "best_alpha", False),
