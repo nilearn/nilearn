@@ -134,6 +134,7 @@ Some other past or present contributors are:
 * `Javier Rasero`_: School of Data Science, University of Virginia, Viginia, USA
 * `Jean Kossaifi`_: Imperial College London, London, UK
 * `Jean-Rémi King`_: Meta AI, CNRS, Paris
+* `Jeffrey Cooney`_
 * `Jelle Roelof Dalenberg`_: University Medical Center Groningen, Groningen, The Netherlands
 * `Jeremy Lefort-Besnard`_: Inria Rennes, France
 * `Jerome Dockes`_: Probabl
