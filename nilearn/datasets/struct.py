@@ -93,7 +93,7 @@ def fetch_icbm152_2009(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, interest keys are:
+        Dictionary-like object, contains:
 
         - "t1": str,
           Path to T1-weighted anatomical image
@@ -138,7 +138,6 @@ def fetch_icbm152_2009(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -228,7 +227,6 @@ def load_mni152_template(resolution: Resolution = None) -> Nifti1Image:
 
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
-
     """
     check_params(locals())
 
@@ -284,7 +282,6 @@ def load_mni152_gm_template(resolution: Resolution = None) -> Nifti1Image:
 
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
-
     """
     check_params(locals())
 
@@ -341,7 +338,6 @@ def load_mni152_wm_template(resolution: Resolution = None) -> Nifti1Image:
 
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template.
-
     """
     check_params(locals())
 
@@ -399,7 +395,6 @@ def load_mni152_brain_mask(
     --------
     nilearn.datasets.load_mni152_template : for details about version of the
         MNI152 T1 template and related.
-
     """
     check_params(locals())
 
@@ -450,7 +445,6 @@ def load_mni152_gm_mask(
     --------
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template and related.
-
     """
     check_params(locals())
 
@@ -506,7 +500,6 @@ def load_mni152_wm_mask(
     --------
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template and related.
-
     """
     check_params(locals())
 
@@ -585,7 +578,6 @@ def fetch_icbm152_brain_gm_mask(
 
     .. note::
         It is advised to check the mask image with your own data processing.
-
     """
     check_params(locals())
 
@@ -689,21 +681,20 @@ def fetch_oasis_vbm(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'gray_matter_maps': string list
           Paths to nifti gray matter density probability maps
         - 'white_matter_maps' string list
           Paths to nifti white matter density probability maps
         - 'ext_vars': pandas.DataFrame
-          Data from the .csv file with information about selected subjects
+          Data from the CSV file with information about selected subjects
         - 'data_usage_agreement': string
           Path to the .txt file containing the data usage agreement.
 
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -933,7 +924,6 @@ def fetch_surf_fsaverage(
     References
     ----------
     .. footbibliography::
-
     """
     check_params(locals())
 
@@ -1110,7 +1100,6 @@ def _fetch_surf_fsaverage5() -> Bunch[str, str]:
     Manually downloaded gzipped and shipped with this function.
 
     Shipping is done with Nilearn based on issue #1705.
-
     """
     data_dir = Path(FSAVERAGE5_PATH)
 
@@ -1210,7 +1199,7 @@ def load_fsaverage(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
          - ``'description'``: description of the dataset
          - ``'pial'``: Polymesh for pial surface for left and right hemispheres
          - ``'white_matter'``: Polymesh for white matter surface

@@ -131,10 +131,10 @@ destrieux = fetch_atlas_surf_destrieux()
 # Let's create a surface image
 # for this atlas.
 labels_img = SurfaceImage(
-    mesh=fsaverage["pial"],
+    mesh=fsaverage.pial,
     data={
-        "left": destrieux["map_left"],
-        "right": destrieux["map_right"],
+        "left": destrieux.map_left,
+        "right": destrieux.map_right,
     },
 )
 

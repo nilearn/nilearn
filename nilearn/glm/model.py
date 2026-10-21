@@ -17,7 +17,6 @@ class TContrastResults:
     The class does nothing.
     It is a container for the results from T :term:`contrasts<contrast>`,
     and returns the T-statistics when np.asarray is called.
-
     """
 
     def __init__(self, t, sd, effect, df_den=None):
@@ -106,7 +105,6 @@ class LikelihoodModelResults:
 
     For (some subset of models) `dispersion` will typically be the mean
     square error from the estimated model (sigma^2)
-
     """
 
     def __init__(
@@ -147,7 +145,6 @@ class LikelihoodModelResults:
         Return the (Wald) t-statistic for a given parameter estimate.
 
         Use Tcontrast for more complicated (Wald) t-statistics.
-
         """
         if column is None:
             column = range(self.theta.shape[0])
@@ -192,7 +189,6 @@ class LikelihoodModelResults:
 
         The covariance of interest is either specified as a (set of) column(s)
         or a matrix.
-
         """
         if self.cov is None:
             raise ValueError(
@@ -242,7 +238,6 @@ class LikelihoodModelResults:
         Returns
         -------
         res : ``TContrastResults`` object
-
         """
         matrix = np.asarray(matrix)
         # 1D vectors assumed to be row vector
@@ -315,7 +310,6 @@ class LikelihoodModelResults:
         Notes
         -----
         For F contrasts, we now specify an effect and covariance.
-
         """
         matrix = np.asarray(matrix)
         # 1D vectors assumed to be row vector
@@ -358,7 +352,6 @@ class LikelihoodModelResults:
             The `alpha` level for the confidence interval.
             ie., `alpha` = .05 returns a 95% confidence interval.
 
-
         cols : :obj:`tuple`, default=None
             `cols` specifies which confidence intervals to return.
 
@@ -385,7 +378,6 @@ class LikelihoodModelResults:
         >>> y = np.dot(x, beta) + stan((30))
         >>> model = OLSModel(x).fit(y)
         >>> confidence_intervals = model.conf_int(cols=(1, 2))
-
         """
         if cols is None:
             lower = self.theta - inv_t_cdf(

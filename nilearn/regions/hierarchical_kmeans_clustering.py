@@ -225,7 +225,6 @@ class HierarchicalKMeans(
 
     sizes_ : ndarray, shape = [n_features]
         It contains the size of each cluster.
-
     """
 
     def __init__(
@@ -259,7 +258,7 @@ class HierarchicalKMeans(
         return tags
 
     @fill_doc
-    def fit(self, X, y=None) -> Self:
+    def fit(self, X, y: None = None) -> Self:
         """Compute clustering of the data.
 
         Parameters
@@ -329,11 +328,7 @@ class HierarchicalKMeans(
         return hasattr(self, "labels_")
 
     @fill_doc
-    def transform(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-    ):
+    def transform(self, X, y: None = None):
         """Apply clustering, reduce the dimensionality of the data.
 
         Parameters
@@ -352,6 +347,7 @@ class HierarchicalKMeans(
         The type of the output is determined by ``set_output()``:
         see `the scikit-learn documentation <https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html>`_.
         """
+        del y
         check_is_fitted(self)
         X = validate_data(self, X=X, reset=False)
 

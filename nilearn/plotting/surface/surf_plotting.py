@@ -5,6 +5,7 @@ from typing import Literal
 
 import numpy as np
 import pandas as pd
+from matplotlib.colors import Colormap
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
@@ -804,7 +805,6 @@ def plot_img_on_surf(
         >>> fig = plot_img_on_surf(motor_activation_image)
         >>>
         >>> show()
-
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -881,7 +881,7 @@ def plot_surf_roi(
     hemi=DEFAULT_HEMI,
     view=None,
     engine: Literal["matplotlib", "plotly"] = DEFAULT_ENGINE,
-    cmap="gist_ncar",
+    cmap: Colormap | str | Path | pd.DataFrame = "gist_ncar",
     colorbar: ColorBar = True,
     avg_method=None,
     threshold=None,
@@ -967,7 +967,6 @@ def plot_surf_roi(
                 import kaleido
 
                 kaleido.get_chrome_sync()
-
 
     %(cmap_lut)s
         default='gist_ncar'.

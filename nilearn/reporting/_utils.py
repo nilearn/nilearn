@@ -23,7 +23,6 @@ def dataframe_to_html(df: pd.DataFrame, precision: int, **kwargs) -> str:
     -------
     html_table : :obj:`str`
         Code for HTML table.
-
     """
     with pd.option_context("display.precision", precision):
         html_table = df.to_html(**kwargs)

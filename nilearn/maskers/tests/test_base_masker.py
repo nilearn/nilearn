@@ -53,7 +53,7 @@ def test_mask_logger(img_3d_mni, img_3d_mni_as_file, surf_img_1d):
                 mask_logger("load_data", img=img, verbose=verbose)
             output[verbose] = buffer.getvalue()
 
-        # verbose 2 gives fullpath or affine matrix or expands list
+        # verbose 2 gives full path or affine matrix or expands list
         assert len(output[1]) < len(output[2])
         assert len(output[2]) == len(output[3])
 

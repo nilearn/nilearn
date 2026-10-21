@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearn.plotting.plot_img`."""
+"""Test for :func:`nilearn.plotting.plot_img`."""
 
 # ruff: noqa: ARG001
 
@@ -36,7 +36,7 @@ def _testdata_3d_for_plotting_for_resampling(img, binary) -> Nifti1Image:
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_display_methods(matplotlib_pyplot, img_3d_mni):
-    """Tests display methods."""
+    """Test display methods."""
     display = plot_img(img_3d_mni)
     display.add_overlay(img_3d_mni, threshold=0)
     display.add_edges(img_3d_mni, color="c")
@@ -47,7 +47,7 @@ def test_display_methods(matplotlib_pyplot, img_3d_mni):
 
 @pytest.mark.thread_unsafe
 def test_display_methods_invalid_threshold(matplotlib_pyplot, img_3d_mni):
-    """Tests display methods for negative threshold."""
+    """Test display methods for negative threshold."""
     with pytest.raises(
         ValueError, match="Threshold should be a non-negative number!"
     ):
@@ -91,7 +91,7 @@ def test_plot_empty_slice(matplotlib_pyplot, affine_mni):
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize("binary_img", [True, False])
 def test_plot_img_with_resampling(matplotlib_pyplot, binary_img, img_3d_mni):
-    """Tests for plot_img with resampling of the data image."""
+    """Test for plot_img with resampling of the data image."""
     img = _testdata_3d_for_plotting_for_resampling(img_3d_mni, binary_img)
     if binary_img:
         assert is_binary_niimg(img)

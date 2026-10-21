@@ -15,13 +15,11 @@ but each one points to a single region.
 
 We use the Yeo atlas as an example for labeling regions,
 :func:`~nilearn.datasets.fetch_atlas_yeo_2011`
-
 """
 
 # %%
 # The original Yeo atlas
 # -----------------------
-
 # First we fetch the Yeo atlas
 
 from nilearn.datasets import fetch_atlas_yeo_2011
@@ -29,8 +27,11 @@ from nilearn.plotting import plot_roi, show
 
 atlas_yeo_2011 = fetch_atlas_yeo_2011()
 
+# %%
+print(atlas_yeo_2011.description.content.maps)
 atlas_yeo = atlas_yeo_2011.maps
 
+# %%
 # Let's now plot it
 plot_roi(
     atlas_yeo,

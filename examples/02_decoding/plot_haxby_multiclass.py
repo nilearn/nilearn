@@ -8,7 +8,6 @@ We compare their overall cross-validated accuracy and their confusion matrix.
 
 See the scikit-learn documentation
 about `multiclass classification <https://scikit-learn.org/stable/modules/multiclass.html>`_.
-
 """
 
 import numpy as np

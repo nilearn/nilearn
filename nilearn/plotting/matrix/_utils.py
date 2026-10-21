@@ -21,7 +21,6 @@ def mask_matrix(mat, tri) -> np.ma.MaskedArray:
     -------
     :class:`numpy.ma.MaskedArray`
         The input matrix with the requested triangle masked out.
-
     """
     if tri == "lower":
         mask = np.tri(mat.shape[0], k=-1, dtype=bool) ^ True
@@ -45,7 +44,6 @@ def pad_contrast_matrix(contrast_def, design_matrix) -> np.ndarray:
     -------
     axes : :class:`numpy.ndarray`
         Padded contrast
-
     """
     design_column_names = design_matrix.columns.tolist()
     if isinstance(contrast_def, str):
@@ -85,7 +83,6 @@ def sanitize_labels(mat_shape, labels) -> list | None:
     -------
     :obj:`list` or None
         The labels as a list, or None if no non-empty label was passed.
-
     """
     # we need a list so an empty one will be cast to False
     if isinstance(labels, np.ndarray):
@@ -109,7 +106,6 @@ def sanitize_reorder(reorder) -> str | bool:
     :obj:`str` or :obj:`bool`
         The validated ``reorder`` value,
         with ``True`` replaced by the default ``"average"`` method.
-
     """
     if reorder not in VALID_REORDER_VALUES:
         param_to_print = []
@@ -145,7 +141,6 @@ def reorder_matrix(mat, labels, reorder) -> tuple[np.ndarray, list]:
 
     labels : :obj:`list`
         The labels reordered to match the matrix.
-
     """
     if not labels:
         raise ValueError("Labels are needed to show the reordering.")

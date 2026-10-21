@@ -782,7 +782,9 @@ def test_one_confound_missing(tmp_path_factory):
     )
     Path(confound_files[-1]).unlink()
 
-    with pytest.raises(ValueError, match="Same number of confound"):
+    with pytest.raises(
+        ValueError, match=r"Number of confounds .* must match number of images"
+    ):
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
@@ -886,7 +888,6 @@ def test_mismatch_run_index(tmp_path_factory):
     """Test error when run index is zero padded in raw but not in derivatives.
 
     Regression test for https://github.com/nilearn/nilearn/issues/3029
-
     """
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("renamed_runs"))
     files_to_rename = (bids_dataset / "derivatives").glob(
