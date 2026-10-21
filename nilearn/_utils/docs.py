@@ -2014,6 +2014,7 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     "dosenbach_2010_atlas": Bunch(),
     "fiac": Bunch(),
     "fsaverage": Bunch(),
+    "fsaverage_polymesh": Bunch(),
     "harvard_oxford_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
         license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
@@ -2063,6 +2064,8 @@ def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
     # to turn string into an actual type
     import nibabel  # noqa : F401
     import numpy as np  # noqa : F401
+
+    import nilearn  # noqa : F401
 
     json_file_path = PACKAGE_DIRECTORY / "datasets" / "description" / json_file
 

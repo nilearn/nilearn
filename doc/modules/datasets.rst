@@ -41,10 +41,6 @@ Templates descriptions
 
     description/icbm152_2009.rst
     description/fsaverage.rst
-    description/fsaverage3.rst
-    description/fsaverage4.rst
-    description/fsaverage5.rst
-    description/fsaverage6.rst
 
 Atlases
 -------

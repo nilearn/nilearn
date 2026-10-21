@@ -1158,16 +1158,8 @@ def load_fsaverage(
     -------
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
-         - ``'description'``: description of the dataset
-         - ``'pial'``: Polymesh for pial surface for left and right hemispheres
-         - ``'white_matter'``: Polymesh for white matter surface
-                               for left and right hemispheres
-         - ``'inflated'``: Polymesh for inglated surface
-                           for left and right hemispheres
-         - ``'sphere'``: Polymesh for spherical surface
-                         for left and right hemispheres
-         - ``'flat'``: Polymesh for flattened surface
-                       for left and right hemispheres
+
+        %(fsaverage_polymesh_content)s
     """
     check_params(locals())
 
@@ -1179,7 +1171,7 @@ def load_fsaverage(
         "sphere": "sphere",
         "flat": "flat",
     }
-    meshes = {"description": fsaverage.description}
+    meshes = {"description": Description.from_registry("fsaverage_polymesh")}
     for key, value in renaming.items():
         left = FileMesh(fsaverage[f"{key}_left"])
         right = FileMesh(fsaverage[f"{key}_right"])

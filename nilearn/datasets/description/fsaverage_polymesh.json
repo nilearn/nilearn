@@ -1,0 +1,22 @@
+{
+    "pial": {
+        "desc": "Polymesh for pial surface for left and right hemispheres",
+        "type": "nilearn.surface.Polymesh"
+    },
+    "white_matter": {
+        "desc": "Polymesh for white matter surface for left and right hemispheres",
+        "type": "nilearn.surface.Polymesh"
+    },
+    "inflated": {
+        "desc": "Polymesh for inflated surface for left and right hemispheres",
+        "type": "nilearn.surface.Polymesh"
+    },
+    "sphere": {
+        "desc": "Polymesh for sphere surface for left and right hemispheres",
+        "type": "nilearn.surface.Polymesh"
+    },
+    "flat": {
+        "desc": "Polymesh for flat surface for left and right hemispheres",
+        "type": "nilearn.surface.Polymesh"
+    }
+}
