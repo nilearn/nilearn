@@ -408,7 +408,7 @@ def compute_contrast(
             effect_[:, label_mask] = wcbeta
             var_[label_mask] = rss
 
-    dof_ = regression_result[label_].df_residuals
+    dof_ = regression_result[list(regression_result)[-1]].df_residuals
     return Contrast(
         effect=effect_,
         variance=var_,

@@ -34,7 +34,7 @@ import warnings
 from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory, mkdtemp
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 import pandas as pd
@@ -681,7 +681,9 @@ def check_nilearn_methods_sample_order_invariance(estimator) -> None:
         }
         new_X = new_img_like(X, data=data)
 
-    elif isinstance(X, Nifti1Image):
+    else:
+        if TYPE_CHECKING:
+            assert isinstance(X, Nifti1Image)
         data = _rng().random((*X.shape[:3], n_samples))
 
         new_X = new_img_like(X, data=data)
@@ -1522,7 +1524,9 @@ def check_img_estimator_clean_dtype(estimator_orig) -> None:
             input_img = Nifti1Image(
                 data.astype(input_dtype), _affine_eye(), dtype=input_dtype
             )
-        elif accepts_surface(estimator_orig):
+        else:
+            if TYPE_CHECKING:
+                assert accepts_surface(estimator_orig)
             input_img = _make_surface_img(n_samples)
             input_img.data._set_dtype(input_dtype)
 
