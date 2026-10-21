@@ -1,16 +1,22 @@
 """Transformer for computing ROI signals of multiple 4D images."""
 
+from typing import Any, Literal
+
 from nilearn._utils.docs import fill_doc
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.nifti_labels_masker import NiftiLabelsMasker
 from nilearn.nilearn_typing import (
+    ColormapLike,
     Detrend,
     DType,
     HighPass,
     LowPass,
-    Memory,
     MemoryLevel,
+    MemoryLike,
+    NiimgLike,
     NJobs,
+    ReductionStrategy,
+    SmoothingFwhm,
     Standardize,
     StandardizeConfounds,
     TableLike,
@@ -131,29 +137,29 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
 
     def __init__(
         self,
-        labels_img=None,
-        labels=None,
+        labels_img: NiimgLike | None = None,
+        labels: list[str] | None = None,
         lut: TableLike | None = None,
-        background_label=0,
-        mask_img=None,
-        smoothing_fwhm=None,
+        background_label: int | float = 0,
+        mask_img: NiimgLike | None = None,
+        smoothing_fwhm: SmoothingFwhm = None,
         standardize: Standardize = None,
         standardize_confounds: StandardizeConfounds = True,
-        high_variance_confounds=False,
+        high_variance_confounds: bool = False,
         detrend: Detrend = False,
         low_pass: LowPass = None,
         high_pass: HighPass = None,
         t_r: Tr = None,
         dtype: DType = None,
-        resampling_target="data",
-        memory: Memory = None,
+        resampling_target: Literal["data", "labels"] | None = "data",
+        memory: MemoryLike = None,
         memory_level: MemoryLevel = 1,
         verbose: Verbose = 0,
-        strategy="mean",
+        strategy: ReductionStrategy = "mean",
         reports: bool = True,
-        cmap="CMRmap_r",
+        cmap: ColormapLike = "CMRmap_r",
         n_jobs: NJobs = 1,
-        clean_args=None,
+        clean_args: dict[str, Any] | None = None,
     ):
         self.n_jobs = n_jobs
         super().__init__(

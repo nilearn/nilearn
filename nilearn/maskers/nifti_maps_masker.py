@@ -2,7 +2,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import numpy as np
 from nibabel import Nifti1Image
@@ -33,7 +33,23 @@ from nilearn.maskers.base_masker import (
     sanitize_displayed_maps,
 )
 from nilearn.masking import load_mask_img
-from nilearn.nilearn_typing import Signals, SingleConfound
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    Signals,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 
 
 class _ExtractionFunctor:
@@ -180,25 +196,25 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     def __init__(
         self,
-        maps_img=None,
-        mask_img=None,
-        allow_overlap=True,
-        smoothing_fwhm=None,
-        standardize=None,
-        standardize_confounds=True,
-        high_variance_confounds=False,
-        detrend=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
-        resampling_target="data",
-        memory=None,
-        memory_level=0,
-        verbose=0,
-        reports=True,
-        cmap="CMRmap_r",
-        clean_args=None,
+        maps_img: NiimgLike | None = None,
+        mask_img: NiimgLike | None = None,
+        allow_overlap: bool = True,
+        smoothing_fwhm: SmoothingFwhm = None,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        high_variance_confounds: bool = False,
+        detrend: Detrend = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
+        resampling_target: Literal["data", "mask", "maps"] | None = "data",
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 0,
+        verbose: Verbose = 0,
+        reports: bool = True,
+        cmap: ColormapLike = "CMRmap_r",
+        clean_args: dict[str, Any] | None = None,
     ):
         self.maps_img = maps_img
         self.mask_img = mask_img
