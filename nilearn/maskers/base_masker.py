@@ -342,7 +342,7 @@ class _BaseMasker(
     def _get_target_dtype(
         self, imgs: Nifti1Image | SurfaceImage | list[SurfaceImage]
     ):
-        """Adapts dtype to apply to transform() output."""
+        """Adapt dtype to apply to transform() output."""
         if isinstance(imgs, Nifti1Image):
             source_dtype = img_data_dtype(imgs)
         elif isinstance(imgs, SurfaceImage):

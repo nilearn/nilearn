@@ -436,7 +436,7 @@ class Parcellations(_MultiPCA):
         )
 
     def _raw_fit(self, data):
-        """Fits the parcellation method on this reduced data.
+        """Fit the parcellation method on this reduced data.
 
         Data are coming from a base decomposition estimator which computes
         the mask and reduces the dimensionality of images using

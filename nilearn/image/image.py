@@ -642,7 +642,7 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
 
 @fill_doc
 def _crop_img_to(img, slices, copy=True, copy_header=True):
-    """Crops an image to a smaller size.
+    """Crop an image to a smaller size.
 
     Crop `img` to size indicated by slices and adjust affine accordingly.
 
@@ -705,7 +705,7 @@ def crop_img(
     return_offset: bool = False,
     copy_header: bool = True,
 ) -> Nifti1Image | tuple[Nifti1Image, tuple[slice, ...]]:
-    """Crops an image as much as possible.
+    """Crop an image as much as possible.
 
     Will crop `img`, removing as many zero entries as possible without
     touching non-zero entries.
@@ -1099,7 +1099,7 @@ def index_img(imgs: NiimgLike, index) -> Nifti1Image: ...
 
 
 def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
-    """Indexes into a image in the last dimension.
+    """Index into an image in the last dimension.
 
     Common use cases include extracting an image out of `img` or
     creating a 4D (or 2D for surface) image

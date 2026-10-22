@@ -605,7 +605,7 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
 
     @fill_doc
     def fit(self, subjects, y: None = None) -> Self:
-        """Fits the group sparse precision model according \
+        """Fit the group sparse precision model according \
         to the given training data and parameters.
 
         Parameters
