@@ -26,6 +26,15 @@ from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
 
+def check_inverse_transform(masker, signal) -> None:
+    """Check signal extracted by a masker is
+    inverse transformable by that same masker.
+    """
+    img = masker.inverse_transform(signal)
+    assert_almost_equal(img.affine, masker.maps_img_.affine)
+    assert img.shape == ((*masker.maps_img_.shape[:3], signal.shape[0]))
+
+
 def test_data_atlas_different_shape(length, affine_eye, img_maps):
     """Test with data and atlas of different shape.
 
@@ -201,10 +210,10 @@ def test_errors_field_of_view(
     masker = NiftiMapsMasker(maps, resampling_target=None)
 
     with pytest.raises(ValueError, match=error_msg):
-        masker.fit_transform(fmri12_img)
+        masker.fit(fmri12_img)
 
     with pytest.raises(ValueError, match=error_msg):
-        masker.fit_transform(fmri21_img)
+        masker.fit(fmri21_img)
 
     masker = NiftiMapsMasker(maps, mask_img=mask12, resampling_target=None)
     with pytest.raises(ValueError, match=error_msg):
@@ -389,10 +398,7 @@ def test_resampling_to_mask(
     for t in signals:
         assert t.shape == (length, n_regions_left)
 
-        fmri11_img_r = masker.inverse_transform(t)
-
-        assert_almost_equal(fmri11_img_r.affine, masker.maps_img_.affine)
-        assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
+        check_inverse_transform(masker, t)
 
 
 @pytest.mark.parametrize("estimator", [NiftiMapsMasker, MultiNiftiMapsMasker])
@@ -445,10 +451,7 @@ def test_resampling_to_maps(
     for t in signals:
         assert t.shape == (length, n_regions_left)
 
-        fmri11_img_r = masker.inverse_transform(t)
-
-        assert_almost_equal(fmri11_img_r.affine, masker.maps_img_.affine)
-        assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
+        check_inverse_transform(masker, t)
 
 
 @pytest.mark.parametrize("estimator", [NiftiMapsMasker, MultiNiftiMapsMasker])
@@ -498,10 +501,7 @@ def test_clipped_mask(estimator, affine_eye, length, n_regions, img_fmri):
         # Some regions have been clipped. Resulting signal must be zero
         assert (t.var(axis=0) == 0).sum() < n_regions
 
-        fmri11_img_r = masker.inverse_transform(t)
-
-        assert_almost_equal(fmri11_img_r.affine, masker.maps_img_.affine)
-        assert fmri11_img_r.shape == ((*masker.maps_img_.shape[:3], length))
+        check_inverse_transform(masker, t)
 
 
 def non_overlapping_maps():
@@ -542,13 +542,6 @@ def test_overlap(maps_img_fn, allow_overlap, img_fmri):
             masker.fit_transform(img_fmri)
     else:
         masker.fit_transform(img_fmri)
-
-
-def check_inverse_transform(masker, signal) -> None:
-    """Check signal extracted by a masker is
-    inverse transformable by that same masker.
-    """
-    masker.inverse_transform(signal)
 
 
 @pytest.mark.parametrize("with_mask", [False, True])
