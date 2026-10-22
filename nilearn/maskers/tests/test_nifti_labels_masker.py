@@ -304,14 +304,17 @@ def test_reduction_strategies(label_masker, affine_eye, strategy, function):
     img = Nifti1Image(img_data, affine_eye)
     labels = Nifti1Image(labels_data, affine_eye)
 
-    # What NiftiLabelsMasker should return for each reduction strategy?
+    # What the masker should return for each reduction strategy?
     expected_result = function(test_values)
 
     masker = label_masker(labels, strategy=strategy)
-    # Here passing [img] within a list because it's a 3D object.
-    result = masker.fit_transform([img]).squeeze()
 
-    assert result == expected_result
+    # Here passing [img] within a list because it's a 3D object.
+    result = masker.fit_transform([img])
+
+    if isinstance(masker, MultiNiftiLabelsMasker):
+        result = result[0]
+    assert result.squeeze() == expected_result
 
     default_masker = label_masker(labels)
 
