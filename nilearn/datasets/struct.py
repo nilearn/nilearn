@@ -1137,7 +1137,7 @@ def _fetch_surf_fsaverage(
 
 
 @fill_doc
-def load_fsaverage(
+def load_fsaverage(  # numpydoc ignore=RT05
     mesh: AvailableMeshes = "fsaverage5",
     data_dir: DataDir = None,
 ) -> Bunch[str, PolyMesh]:

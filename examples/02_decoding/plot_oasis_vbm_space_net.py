@@ -12,7 +12,6 @@ here, and not the classification object.
 
     For more information
     see the :ref:`dataset description <oasis_vbm>`.
-
 """
 
 # %%
