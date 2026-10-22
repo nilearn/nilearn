@@ -510,32 +510,7 @@ def img_to_signals_maps(
     use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
     if use_mask:
         mask_img = check_niimg_3d(mask_img)
-        maps_before_mask = {int(map) for map in maps}
-        maps_data, maps_mask, maps = _trim_maps(
-            maps_data,
-            safe_get_data(mask_img, ensure_finite=True),
-        )
-        maps_mask = as_ndarray(maps_mask, dtype=bool)
-
-        maps_after_mask = {int(map) for map in maps}
-        maps_diff = maps_before_mask.difference(maps_after_mask)
-
-        # Raising a warning if any map is removed due to the mask
-        if maps_diff:
-            if len(maps_after_mask) == 0:
-                raise ValueError(
-                    "No map left after applying mask to the maps image."
-                )
-
-            warnings.warn(
-                "After applying mask to the maps image, "
-                "maps with the following indices were "
-                f"removed: {maps_diff}. "
-                f"Out of {len(maps_before_mask)} maps, the "
-                "masked map image only contains "
-                f"{len(maps_after_mask)} maps.",
-                stacklevel=find_stack_level(),
-            )
+        maps_data, maps_mask, maps = apply_mask_to_maps_img(mask_img, maps_img)
 
     data = safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :], data[maps_mask, :])[
@@ -543,6 +518,45 @@ def img_to_signals_maps(
     ].T
 
     return region_signals, list(maps)
+
+
+def apply_mask_to_maps_img(
+    mask_img: Nifti1Image, maps_img: Nifti1Image
+) -> tuple[np.ndarray, np.ndarray, list[int]]:
+    """Apply a mask image to maps image.
+
+    Checks that any map is left and warns if some were dropped by masking.
+    """
+    maps_data = safe_get_data(maps_img, ensure_finite=True)
+    maps = np.arange(maps_data.shape[-1], dtype=int)
+
+    maps_before_mask = {int(map) for map in maps}
+    maps_data, maps_mask, maps = _trim_maps(
+        maps_data,
+        safe_get_data(mask_img, ensure_finite=True),
+    )
+    maps_mask = as_ndarray(maps_mask, dtype=bool)
+
+    maps_after_mask = {int(map) for map in maps}
+    maps_diff = maps_before_mask.difference(maps_after_mask)
+
+    # Raising a warning if any map is removed due to the mask
+    if maps_diff:
+        if len(maps_after_mask) == 0:
+            raise ValueError(
+                "No map left after applying mask to the maps image."
+            )
+
+        warnings.warn(
+            "After applying mask to the maps image, "
+            "maps with the following indices were "
+            f"removed: {maps_diff}. "
+            f"Out of {len(maps_before_mask)} maps, the "
+            "masked map image only contains "
+            f"{len(maps_after_mask)} maps.",
+            stacklevel=find_stack_level(),
+        )
+    return maps_data, maps_mask, maps
 
 
 def signals_to_img_maps(

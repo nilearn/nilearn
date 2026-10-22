@@ -331,6 +331,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return embedded_images
 
     def _fit(self, imgs=None):
+        from nilearn.regions.signal_extraction import apply_mask_to_maps_img
+
         check_parameter_in_allowed(
             self.resampling_target,
             ("mask", "maps", "data", None),
@@ -362,6 +364,10 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             ensure_finite=True,
         )
 
+        maps_data = get_data(self.maps_img_)
+        if len(np.unique(maps_data)) == 1 and np.unique(maps_data[0]) == 0:
+            raise ValueError("maps_img contains no map.")
+
         if imgs is not None:
             imgs_ = check_niimg(imgs)
 
@@ -388,6 +394,10 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             ):
                 mask_logger("resample_regions", verbose=self.verbose)
 
+                maps_data = get_data(self.maps_img_)
+                maps = np.arange(maps_data.shape[-1], dtype=int)
+                maps_before = {int(map) for map in maps}
+
                 with warnings.catch_warnings():
                     # in case all voxel maps contains same value,
                     # it will be seen as a binary image
@@ -407,10 +417,29 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.affine,
                     )
+
                     maps_data = get_data(self.maps_img_)
-                    if np.all(maps_data == 0):
-                        raise ValueError(
-                            "No map left after resampling maps_img."
+                    maps = np.arange(maps_data.shape[-1], dtype=int)
+                    maps_after = {int(map) for map in maps}
+
+                    maps_diff = maps_before.difference(maps_after)
+
+                    # Raising a warning if any map is removed due to the mask
+                    if maps_diff:
+                        if len(maps_after) == 0:
+                            raise ValueError(
+                                "No map left after resampling mask "
+                                "to the maps image."
+                            )
+
+                        warnings.warn(
+                            "After resampling mask to the maps image, "
+                            "maps with the following indices were "
+                            f"removed: {maps_diff}. "
+                            f"Out of {len(maps_before)} maps, the "
+                            "masked map image only contains "
+                            f"{len(maps_after)} maps.",
+                            stacklevel=find_stack_level(),
                         )
 
             if self.mask_img_ is not None and not check_same_fov(
@@ -429,20 +458,33 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 # Just check that the mask is valid
                 load_mask_img(self.mask_img_)
 
-        maps_data = get_data(self.maps_img_)
-        if np.all(maps_data == 0):
-            raise ValueError("maps_img contains no map.")
+        # We have the case of resampling_target == "data"
+        # but no image was passed at fit time
+        # we still need to put the mask and the maps on the same grid
+        elif (
+            self.resampling_target == "data"
+            and imgs is None
+            and self.mask_img_ is not None
+            and not check_same_fov(self.maps_img_, self.mask_img_)
+        ):
+            mask_logger("resample_mask", verbose=self.verbose)
 
-        if self.mask_img_ is not None and ref_img is not None:
-            mask_data = get_data(self.mask_img_).astype(bool)
-            masked_maps_data = maps_data[mask_data, ...]
-            if np.all(masked_maps_data == 0):
-                raise ValueError(
-                    "No map left after applying mask to the maps image."
-                )
+            self.mask_img_ = resample_img(
+                self.mask_img_,
+                target_affine=self.maps_img_.affine,
+                target_shape=self.maps_img_.shape[:3],
+                interpolation="nearest",
+                copy=True,
+            )
 
-        # TODO throw warning if some maps were dropped at fit time
-        # due to masking or resampling
+            # Just check that the mask is valid
+            load_mask_img(self.mask_img_)
+
+            maps_data, _, _ = apply_mask_to_maps_img(
+                self.mask_img_, self.maps_img_
+            )
+
+            self.maps_img_ = new_img_like(self.maps_img_, maps_data)
 
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:

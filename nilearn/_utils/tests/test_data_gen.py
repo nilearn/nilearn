@@ -548,6 +548,8 @@ def test_generate_maps():
     assert np.all(maps[0, ...] == 0)
     assert np.all(maps[:, 0, ...] == 0)
     assert np.all(maps[:, :, 0, :] == 0)
+    # make sure not all values are the same
+    assert len(np.unique(maps)) > 1
 
 
 @pytest.mark.parametrize("shape", [(10, 11, 12), (6, 6, 7)])

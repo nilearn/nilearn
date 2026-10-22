@@ -12,6 +12,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
+from sklearn import clone
 
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
@@ -80,8 +81,9 @@ def test_empty_img_map_error(img_3d_zeros_eye):
         masker.fit()
 
 
+@pytest.mark.parametrize("resampling_target", ["mask", "maps"])
 def test_mask_img_masks_all_maps_error(
-    affine_eye, shape_3d_default, img_4d_rand_eye
+    affine_eye, shape_3d_default, img_4d_rand_eye, resampling_target
 ):
     """Raise error if mask_img excludes all voxels with map value.
 
@@ -103,24 +105,23 @@ def test_mask_img_masks_all_maps_error(
     maps[0][0][0][0] = 0.5
     maps_img = Nifti1Image(maps, affine_eye)
 
-    for resampling_target in ["mask", "maps"]:
-        masker = NiftiMapsMasker(
-            maps_img,
-            mask_img=mask_img,
-            resampling_target=resampling_target,
-        )
+    masker = NiftiMapsMasker(
+        maps_img,
+        mask_img=mask_img,
+        resampling_target=resampling_target,
+    )
 
-        with pytest.raises(
-            ValueError,
-            match="No map left after applying mask to the maps image",
-        ):
-            masker.fit()
+    with pytest.raises(
+        ValueError,
+        match="No map left after applying mask to the maps image",
+    ):
+        masker.fit()
 
-        with pytest.raises(
-            ValueError,
-            match="No map left after applying mask to the maps image",
-        ):
-            masker.fit(img_4d_rand_eye)
+    with pytest.raises(
+        ValueError,
+        match="No map left after applying mask to the maps image",
+    ):
+        masker.fit(img_4d_rand_eye)
 
     # by default we resample to data
     # in this case if no img is passed at fit time
@@ -495,3 +496,51 @@ def test_overlap(maps_img_fn, allow_overlap, img_fmri):
             masker.fit_transform(img_fmri)
     else:
         masker.fit_transform(img_fmri)
+
+
+def check_inverse_transform(masker, signal) -> None:
+    """Check signal extracted by a masker is
+    inverse transformable by that same masker.
+    """
+    masker.inverse_transform(signal)
+
+
+def test_masking_inverse_transform(n_regions, length, affine_eye):
+    """Check for regression for https://github.com/nilearn/nilearn/issues/6658."""
+    # Generate data
+    shape1 = (7, 8, 9, length)
+    fmri_img, _ = generate_random_img(shape1, affine=affine_eye * 2)
+
+    # Generate mask that will mask some maps
+    shape2 = (8, 9, 10, 1)
+    _, mask_img = generate_random_img(shape2, affine=affine_eye)
+
+    # Generate label image
+    shape3 = (16, 18, 20)
+    maps_img, _ = generate_maps(shape3, n_regions, affine=affine_eye * 3)
+
+    masker = NiftiMapsMasker(maps_img)
+
+    for mask in [None, mask_img]:
+        masker.mask_img = mask
+
+        masker = clone(masker)
+        signals = masker.fit_transform(fmri_img)
+        assert signals.shape[1] == masker.n_elements_
+        check_inverse_transform(masker, signals)
+
+        masker = clone(masker)
+        masker = masker.fit(fmri_img)
+        n_elements_post_fit = masker.n_elements_
+        signals = masker.transform(fmri_img)
+        assert masker.n_elements_ == n_elements_post_fit
+        assert signals.shape[1] == masker.n_elements_
+        check_inverse_transform(masker, signals)
+
+        masker = clone(masker)
+        masker = masker.fit()
+        n_elements_post_fit = masker.n_elements_
+        signals = masker.transform(fmri_img)
+        assert masker.n_elements_ == n_elements_post_fit
+        assert signals.shape[1] == masker.n_elements_
+        check_inverse_transform(masker, signals)
