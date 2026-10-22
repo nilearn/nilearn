@@ -1361,12 +1361,12 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
             # A warning only fires when dtype=None causes int64 to be
             # stored in the NIfTI header.
             or (
-                isinstance(
+                dtype is None
+                and input_dtype == np.int64
+                and isinstance(
                     estimator,
                     (NiftiMapsMasker, NiftiSpheresMasker, _BaseDecomposition),
                 )
-                and input_dtype == np.int64
-                and dtype is None
             )
         ):
             assert any(warning_present)
