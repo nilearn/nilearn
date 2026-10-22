@@ -312,6 +312,9 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         .. nilearn_versionadded:: 0.9.2
 
+    shape_ : :obj:`numpy.ndarray`
+        shape of the transformed image
+
     See Also
     --------
     nilearn.masking.compute_background_mask
@@ -597,6 +600,11 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         else:  # resample image to mask affine
             self.affine_ = self.mask_img_.affine
 
+        if self.target_shape is not None:  # resample image to target shape
+            self.shape_ = self.target_shape
+        else:  # resample image to mask shape
+            self.shape_ = self.mask_img_.shape
+
         # Load data in memory, while also checking that mask is binary/valid
         data, _ = load_mask_img(self.mask_img_, allow_empty=False)
 
@@ -614,6 +622,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 resampl_imgs = self._cache(resample_img)(
                     imgs,
                     target_affine=self.affine_,
+                    target_shape=self.shape_,
                     copy=False,
                     interpolation="nearest",
                 )

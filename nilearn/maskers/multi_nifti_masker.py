@@ -327,6 +327,11 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         else:
             self.affine_ = self.mask_img_.affine
 
+        if self.shape is not None:
+            self.shape_ = self.target_shape
+        else:
+            self.shape_ = self.mask_img_.shape
+
         # Load data in memory, while also checking that mask is binary/valid
         data, _ = load_mask_img(self.mask_img_, allow_empty=True)
 
@@ -345,6 +350,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                 resampl_imgs = self._cache(resample_img)(
                     imgs,
                     target_affine=self.affine_,
+                    target_shape=self.shape_,
                     copy=False,
                     interpolation="nearest",
                 )
