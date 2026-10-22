@@ -1,6 +1,6 @@
 """Extract data from multiple 2D surface objects."""
 
-from typing import Self
+from typing import Any, Self
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
@@ -8,20 +8,23 @@ from nilearn._utils.param_validation import check_params
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.surface_labels_masker import SurfaceLabelsMasker
 from nilearn.nilearn_typing import (
+    ColormapLike,
     Detrend,
     DType,
     HighPass,
     LowPass,
-    Memory,
     MemoryLevel,
+    MemoryLike,
     NJobs,
+    ReductionStrategy,
+    SmoothingFwhm,
     Standardize,
     StandardizeConfounds,
     TableLike,
     Tr,
     Verbose,
 )
-from nilearn.surface.surface import check_surf_img
+from nilearn.surface.surface import SurfaceImage, check_surf_img
 
 
 @fill_doc
@@ -140,12 +143,12 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
 
     def __init__(
         self,
-        labels_img=None,
-        labels=None,
+        labels_img: SurfaceImage | None = None,
+        labels: list[str] | None = None,
         lut: TableLike | None = None,
-        background_label=0,
-        mask_img=None,
-        smoothing_fwhm=None,
+        background_label: int | float = 0,
+        mask_img: SurfaceImage | None = None,
+        smoothing_fwhm: SmoothingFwhm = None,
         standardize: Standardize = None,
         standardize_confounds: StandardizeConfounds = True,
         detrend: Detrend = False,
@@ -154,14 +157,14 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         high_pass: HighPass = None,
         t_r: Tr = None,
         dtype: DType = None,
-        memory: Memory = None,
+        memory: MemoryLike = None,
         memory_level: MemoryLevel = 1,
         n_jobs: NJobs = 1,
         verbose: Verbose = 0,
-        strategy="mean",
+        strategy: ReductionStrategy = "mean",
         reports: bool = True,
-        cmap=DEFAULT_SEQUENTIAL_CMAP,
-        clean_args=None,
+        cmap: ColormapLike = DEFAULT_SEQUENTIAL_CMAP,
+        clean_args: dict[str, Any] | None = None,
     ):
         super().__init__(
             labels_img=labels_img,
