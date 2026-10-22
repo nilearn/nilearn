@@ -931,18 +931,7 @@ def check_img_estimator_dict_unchanged(estimator) -> None:
         if not hasattr(estimator, method):
             continue
 
-        if method == "transform" and isinstance(estimator, _BaseDecomposition):
-            getattr(estimator, method)([input_img])
-        elif method == "score":
-            getattr(estimator, method)(input_img, y)
-        elif method == "generate_report":
-            # TODO
-            # fix for free threaded python
-            if not is_gil_enabled():
-                pytest.xfail("May fail without the GIL")
-            getattr(estimator, method)()
-        else:
-            getattr(estimator, method)(input_img)
+        run_method(estimator, method, input_img, y)
 
         dict_after = estimator.__dict__
 
@@ -951,55 +940,46 @@ def check_img_estimator_dict_unchanged(estimator) -> None:
         if isinstance(estimator, (NiftiLabelsMasker)):
             with pytest.raises(AssertionError):
                 assert dict_after == dict_before
-        else:
-            # The following try / except is mostly
-            # to give more informative error messages when this check fails.
-            try:
-                assert dict_after == dict_before
-            except AssertionError as e:
-                unmatched_keys = set(dict_after.keys()) ^ set(
-                    dict_before.keys()
-                )
-                if len(unmatched_keys) > 0:
-                    raise ValueError(
-                        "Estimator changes '__dict__' keys "
-                        f"during '{method}'.\n"
-                        f"{unmatched_keys} \n"
-                    ) from e
+            continue
 
-                difference = {}
-                for x in dict_before:
-                    if type(dict_before[x]) is not type(dict_after[x]):
-                        difference[x] = {
-                            "before": dict_before[x],
-                            "after": dict_after[x],
-                        }
-                        continue
-                    if (
+        try:
+            assert dict_after == dict_before
+        except AssertionError as e:
+            unmatched_keys = set(dict_after.keys()) ^ set(dict_before.keys())
+            assert len(unmatched_keys) == 0, (
+                "Estimator changes '__dict__' keys "
+                f"during '{method}'.\n"
+                f"{unmatched_keys} \n"
+            )
+
+            difference = {
+                x: {
+                    "before": dict_before[x],
+                    "after": dict_after[x],
+                }
+                for x in dict_before
+                if (
+                    not isinstance(dict_before[x], type(dict_after[x]))
+                    or (
                         isinstance(dict_before[x], np.ndarray)
                         and not np.array_equal(dict_before[x], dict_after[x])
                         and not check_imgs_equal(dict_before[x], dict_after[x])
-                    ) or (
+                    )
+                    or (
                         not isinstance(
                             dict_before[x], (np.ndarray, Nifti1Image)
                         )
                         and dict_before[x] != dict_after[x]
-                    ):
-                        difference[x] = {
-                            "before": dict_before[x],
-                            "after": dict_after[x],
-                        }
-                        continue
-                if difference:
-                    raise ValueError(
-                        "Estimator changes the following '__dict__' keys \n"
-                        f"during '{method}'.\n"
-                        f"{difference}"
-                    ) from e
-                else:
-                    raise e
-            except Exception as e:
-                raise e
+                    )
+                )
+            }
+
+            assert difference == {}, (
+                "Estimator changes the following '__dict__' keys \n"
+                f"during '{method}'.\n"
+                f"{difference}"
+            )
+            raise e
 
 
 @xfail_if_not_gil(classes=[SearchLight])
