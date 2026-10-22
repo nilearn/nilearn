@@ -1,11 +1,22 @@
 """Test the multi_nifti_maps_masker module."""
 
+from contextlib import nullcontext
+
 import pytest
 from numpy.testing import assert_almost_equal
 
 from nilearn._utils.data_gen import generate_fake_fmri, generate_maps
 from nilearn.exceptions import DimensionError
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
+
+
+def _mask_warning(n_regions):
+    if n_regions == 1:
+        return nullcontext()
+    return pytest.warns(
+        UserWarning,
+        match=" Out of 3 maps, the masked map image only contains 2 maps",
+    )
 
 
 @pytest.mark.parametrize("n_regions", [1, 3])
@@ -30,22 +41,17 @@ def test_multi_nifti_maps_masker(
         img_maps, mask_img=mask11_img, resampling_target=None
     )
 
-    if n_regions == 3:
-        n_regions_left = 2
-        with pytest.warns(
-            UserWarning,
-            match=" Out of 3 maps, the masked map image only contains 2 maps",
-        ):
-            signals11 = masker.fit_transform(fmri11_img)
-    else:
-        n_regions_left = 1
+    n_regions_left = 2 if n_regions == 3 else 1
+
+    with _mask_warning(n_regions):
         signals11 = masker.fit_transform(fmri11_img)
 
     assert signals11.shape == (length, n_regions_left)
 
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
-    signals11_list = masker.fit_transform(signals_input)
+    with _mask_warning(n_regions):
+        signals11_list = masker.fit_transform(signals_input)
 
     # Call inverse transform
     for signals in signals11_list:

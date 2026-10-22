@@ -520,6 +520,11 @@ def img_to_signals_maps(
     return region_signals, list(maps)
 
 
+def _non_empty_maps(maps_data: np.ndarray) -> set[int]:
+    """Return the indices of the maps that contain at least one non-zero."""
+    return {int(i) for i in np.flatnonzero(np.any(maps_data, axis=(0, 1, 2)))}
+
+
 def apply_mask_to_maps_img(
     mask_img: Nifti1Image, maps_img: Nifti1Image
 ) -> tuple[np.ndarray, np.ndarray, list[int]]:
@@ -528,9 +533,8 @@ def apply_mask_to_maps_img(
     Checks that any map is left and warns if some were dropped by masking.
     """
     maps_data = safe_get_data(maps_img, ensure_finite=True)
-    maps = np.arange(maps_data.shape[-1], dtype=int)
 
-    maps_before_mask = {int(map) for map in maps}
+    maps_before_mask = _non_empty_maps(maps_data)
     maps_data, maps_mask, maps = _trim_maps(
         maps_data,
         safe_get_data(mask_img, ensure_finite=True),
