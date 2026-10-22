@@ -1283,7 +1283,20 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
     for estimator, input_dtype, _, _ in _dtype_case_generator(estimator_orig):
         X, y = _generate_fit_data_with_dtype(estimator, input_dtype)
 
-        fit_estimator(estimator, X, y)
+        if isinstance(estimator, NiftiSpheresMasker):
+            # NiftiSpheresMasker needs mask_img to run inverse_transform
+            X, _ = generate_data_to_fit(estimator)
+            mask_img = new_img_like(X, np.ones(X.shape[:3]))
+            estimator.mask_img = mask_img
+
+        with warnings.catch_warnings(record=True) as warning_list:
+            warnings.simplefilter("always")
+            estimator = fit_estimator(estimator, X, y)
+        # no data conversion should happen during fitting
+        assert not any(
+            "data has been converted to int32" in str(x.message)
+            for x in warning_list
+        )
 
         for method in ["predict", "score", "decision_function"]:
             if not hasattr(estimator, method):
@@ -1318,15 +1331,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
             mask_img = new_img_like(X, np.ones(X.shape[:3]))
             estimator.mask_img = mask_img
 
-        with warnings.catch_warnings(record=True) as warning_list:
-            warnings.simplefilter("always")
-            estimator = fit_estimator(estimator)
-        # no data conversion should happen during fitting
-        assert not any(
-            "data has been converted to int32" in str(x.message)
-            for x in warning_list
-        )
-
+        fit_estimator(estimator)
         signal = _generate_inverse_transform_signal(estimator, 10, input_dtype)
 
         with warnings.catch_warnings(record=True) as warning_list:
