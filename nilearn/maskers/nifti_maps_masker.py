@@ -12,6 +12,10 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg import (
+    apply_mask_to_maps_img,
+    find_non_empty_maps,
+)
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
 )
@@ -34,10 +38,6 @@ from nilearn.maskers.base_masker import (
 )
 from nilearn.masking import load_mask_img
 from nilearn.nilearn_typing import Signals, SingleConfound
-from nilearn.regions.utils import (
-    _non_empty_maps,
-    apply_mask_to_maps_img,
-)
 
 
 class _ExtractionFunctor:
@@ -369,7 +369,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         # Drop empty maps so that later steps
         # only report maps removed by resampling or masking.
         maps_data = get_data(self.maps_img_)
-        non_empty_maps = _non_empty_maps(maps_data)
+        non_empty_maps = find_non_empty_maps(maps_data)
         if len(non_empty_maps) == 0:
             raise ValueError("maps_img contains no map.")
 
@@ -413,7 +413,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             ):
                 mask_logger("resample_regions", verbose=self.verbose)
 
-                maps_before = _non_empty_maps(get_data(self.maps_img_))
+                maps_before = find_non_empty_maps(get_data(self.maps_img_))
 
                 with warnings.catch_warnings():
                     # in case all voxel maps contains same value,
@@ -435,7 +435,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                         target_affine=ref_img.affine,
                     )
 
-                    maps_after = _non_empty_maps(get_data(self.maps_img_))
+                    maps_after = find_non_empty_maps(get_data(self.maps_img_))
 
                     maps_diff = maps_before.difference(maps_after)
 

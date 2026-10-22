@@ -17,17 +17,17 @@ from scipy import linalg, ndimage
 from nilearn import masking
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg import (
+    apply_mask_to_maps_img,
+    safe_get_data,
+    trim_maps,
+)
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
 )
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
-from nilearn.regions.utils import (
-    apply_mask_to_maps_img,
-    trim_maps,
-)
 
 INF = 1000 * np.finfo(np.float32).eps
 
