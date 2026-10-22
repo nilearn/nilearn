@@ -667,9 +667,7 @@ def check_img_estimator_fit_check_is_fitted(estimator) -> None:
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         check_is_fitted(estimator)
 
-    # Failure should happen before the input type is determined
-    # so we can pass nifti image (or array) to surface maskers.
-    signals = np.ones((10, 11))
+    X, y = generate_data_to_fit(estimator)
     methods_to_check = [
         "transform",
         "transform_single_imgs",
@@ -679,16 +677,13 @@ def check_img_estimator_fit_check_is_fitted(estimator) -> None:
         "score",
         "predict",
     ]
-    method_inputs = [_img_3d_rand(), [_img_3d_rand()], signals]
-    for method, input_img in zip(
-        methods_to_check, method_inputs, strict=False
-    ):
+    for method in methods_to_check:
         if not hasattr(estimator, method):
             continue
         with pytest.raises(
             ValueError, match=_not_fitted_error_message(estimator)
         ):
-            getattr(estimator, method)(input_img)
+            _run_method(estimator, method, X, y)
 
     estimator = fit_estimator(estimator)
 
