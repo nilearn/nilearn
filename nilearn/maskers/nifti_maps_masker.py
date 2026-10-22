@@ -455,6 +455,10 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                             f"{len(maps_after)} non-empty maps.",
                             stacklevel=find_stack_level(),
                         )
+                        self.maps_img_ = new_img_like(
+                            self.maps_img_,
+                            get_data(self.maps_img_)[..., sorted(maps_after)],
+                        )
 
             if self.mask_img_ is not None and not check_same_fov(
                 ref_img, self.mask_img_
@@ -747,9 +751,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if len(extracted_maps) != self.n_elements_:
             warnings.warn(
                 (
-                    "Due to masking/resampling done at transform time"
+                    "Due to masking/resampling done at transform time, "
                     "more maps were dropped. "
-                    "The extraceted data will not have the shape "
+                    "The extracted data will not have the shape "
                     "expected by 'inverse_transform()'. "
                     "To avoid this issue use 'fit_transform()'."
                 ),

@@ -551,7 +551,6 @@ def check_inverse_transform(masker, signal) -> None:
     masker.inverse_transform(signal)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("with_mask", [False, True])
 def test_maps_emptied_by_resampling_are_dropped(affine_eye, with_mask):
     """Maps emptied by resampling at fit time are dropped.
@@ -637,6 +636,17 @@ def test_masking_inverse_transform(n_regions, length, affine_eye, with_mask):
         (
             pytest.warns(
                 UserWarning, match="Resampling mask at transform time"
+            )
+            if with_mask
+            else nullcontext()
+        ),
+        (
+            pytest.warns(
+                UserWarning,
+                match=(
+                    "extracted data will not have the shape "
+                    "expected by 'inverse_transform"
+                ),
             )
             if with_mask
             else nullcontext()
