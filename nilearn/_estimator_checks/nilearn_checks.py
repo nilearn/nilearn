@@ -696,13 +696,12 @@ def check_nilearn_methods_sample_order_invariance(estimator) -> None:
             # TODO
             continue
 
-        msg = (
-            f"'{method}' of {estimator.__class__.__name__} "
-            "is not invariant when applied to a dataset "
-            "with different sample order."
-        )
-
         if hasattr(estimator, method):
+            msg = (
+                f"'{method}' of {estimator.__class__.__name__} "
+                "is not invariant when applied to a dataset "
+                "with different sample order."
+            )
             assert_allclose_dense_sparse(
                 getattr(estimator, method)(index_img(new_X, idx)),
                 _safe_indexing(getattr(estimator, method)(new_X), idx),
