@@ -745,10 +745,16 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         # we update some attributes
         # that may have been changed by resampling or masking
         if len(extracted_maps) != self.n_elements_:
-            self.n_elements_ = len(extracted_maps)
-            maps_data = get_data(maps_img_)[:, :, :, extracted_maps]
-            self.maps_img_ = new_img_like(self.maps_img_, maps_data)
-            self._reporting_data["maps_image"] = self.maps_img_
+            warnings.warn(
+                (
+                    "Due to masking/resampling done at transform time"
+                    "more maps were dropped. "
+                    "The extraceted data will not have the shape "
+                    "expected by 'inverse_transform()'. "
+                    "To avoid this issue use 'fit_transform()'."
+                ),
+                stacklevel=find_stack_level(),
+            )
 
         # if target_dtype is still None, self.dtype is None: no explicit
         # dtype was requested, so keep the dtype produced by the

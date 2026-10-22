@@ -551,6 +551,43 @@ def check_inverse_transform(masker, signal) -> None:
     masker.inverse_transform(signal)
 
 
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("with_mask", [False, True])
+def test_maps_emptied_by_resampling_are_dropped(affine_eye, with_mask):
+    """Maps emptied by resampling at fit time are dropped.
+
+    This should happen whether a mask is used or not.
+    """
+    fmri_img, _ = generate_random_img((7, 8, 9, 10), affine=affine_eye * 2)
+    _, mask_img = generate_random_img((8, 9, 10, 1), affine=affine_eye * 3)
+    maps_img, _ = generate_maps((16, 18, 20), 9, affine=affine_eye * 3)
+
+    masker = NiftiMapsMasker(
+        maps_img, mask_img=mask_img if with_mask else None
+    )
+
+    with pytest.warns(
+        UserWarning,
+        match=(
+            r"removed: \{2, 3, 4, 5, 6, 7, 8\}. Out of 9 maps, "
+            "the resampled map image only contains 2 non-empty maps"
+        ),
+    ):
+        signals = masker.fit_transform(fmri_img)
+
+    assert masker.n_elements_ == 2
+    assert masker.maps_img_.shape[-1] == 2
+    assert signals.shape == (10, 2)
+
+
+def _mask_warning(with_mask):
+    if not with_mask:
+        return nullcontext()
+    return pytest.warns(
+        UserWarning, match="After applying mask to the maps image"
+    )
+
+
 @pytest.mark.parametrize("with_mask", [False, True])
 def test_masking_inverse_transform(n_regions, length, affine_eye, with_mask):
     """Check for regression for https://github.com/nilearn/nilearn/issues/6658."""
@@ -559,8 +596,10 @@ def test_masking_inverse_transform(n_regions, length, affine_eye, with_mask):
     fmri_img, _ = generate_random_img(shape1, affine=affine_eye * 2)
 
     # Generate mask that will mask some maps
+    # at fit time and some more at transform time
+    # when maps and mask are resampled to the data
     shape2 = (8, 9, 10, 1)
-    _, mask_img = generate_random_img(shape2, affine=affine_eye)
+    _, mask_img = generate_random_img(shape2, affine=affine_eye * 3)
 
     # Generate label image
     shape3 = (16, 18, 20)
@@ -570,28 +609,16 @@ def test_masking_inverse_transform(n_regions, length, affine_eye, with_mask):
         maps_img, mask_img=mask_img if with_mask else None
     )
 
-    def _mask_warning():
-        if not with_mask:
-            return nullcontext()
-        return pytest.warns(
-            UserWarning, match="After applying mask to the maps image"
-        )
-
-    # resampling to data at fit time
+    # fit_transform
     masker = clone(masker)
-    with (
-        pytest.warns(UserWarning, match="After resampling the maps image"),
-        _mask_warning(),
-    ):
+    with pytest.warns(UserWarning, match="After resampling the maps image"):
         signals = masker.fit_transform(fmri_img)
     assert signals.shape[1] == masker.n_elements_
     check_inverse_transform(masker, signals)
 
+    # same data at fit and transform time
     masker = clone(masker)
-    with (
-        pytest.warns(UserWarning, match="After resampling the maps image"),
-        _mask_warning(),
-    ):
+    with pytest.warns(UserWarning, match="After resampling the maps image"):
         masker = masker.fit(fmri_img)
     n_elements_post_fit = masker.n_elements_
     signals = masker.transform(fmri_img)
@@ -601,9 +628,10 @@ def test_masking_inverse_transform(n_regions, length, affine_eye, with_mask):
 
     # resampling to data at transform time
     masker = clone(masker)
-    with _mask_warning():
+    with _mask_warning(with_mask):
         masker = masker.fit()
     n_elements_post_fit = masker.n_elements_
+
     with (
         pytest.warns(UserWarning, match="Resampling maps at transform time"),
         (
@@ -615,6 +643,12 @@ def test_masking_inverse_transform(n_regions, length, affine_eye, with_mask):
         ),
     ):
         signals = masker.transform(fmri_img)
+
     assert masker.n_elements_ == n_elements_post_fit
-    assert signals.shape[1] == masker.n_elements_
-    check_inverse_transform(masker, signals)
+
+    if not with_mask:
+        # in this case signal shape
+        # does not match the expected n_elements_
+        # because some maps were dropped at transform time
+        assert signals.shape[1] == masker.n_elements_
+        check_inverse_transform(masker, signals)
