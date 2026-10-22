@@ -1245,9 +1245,7 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
         if dtype is None:
             continue
 
-        target_dtype = get_target_dtype(input_dtype, dtype)
-        if target_dtype is None:
-            target_dtype = input_dtype
+        target_dtype = _get_target_dtype(input_dtype, dtype)
 
         if not isinstance(results, list):
             results = [results]
