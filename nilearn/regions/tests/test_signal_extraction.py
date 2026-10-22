@@ -19,11 +19,11 @@ from nilearn.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.regions.signal_extraction import (
     _check_shape_and_affine_compatibility,
-    _trim_maps,
     img_to_signals_labels,
     img_to_signals_maps,
     signals_to_img_labels,
     signals_to_img_maps,
+    trim_maps,
 )
 
 _3D_EXPECTED_ERROR_MSG = (
@@ -671,7 +671,7 @@ def test_trim_maps_all_regions(shape_3d_default):
     mask_data = np.zeros(shape_3d_default, dtype=np.int8)
     mask_data[1:-1, 1:-1, 1:-1] = 1
 
-    maps_i, maps_i_mask, maps_i_indices = _trim_maps(maps_data, mask_data)
+    maps_i, maps_i_mask, maps_i_indices = trim_maps(maps_data, mask_data)
 
     assert maps_i.flags["F_CONTIGUOUS"]
     assert len(maps_i_indices) == maps_i.shape[-1]
@@ -703,7 +703,7 @@ def test_trim_maps_half_regions(shape_3d_default):
     mask_data = np.zeros(shape_3d_default, dtype=np.int8)
     mask_data[1:2, 1:-1, 1:-1] = 1
 
-    maps_i, maps_i_mask, maps_i_indices = _trim_maps(maps_data, mask_data)
+    maps_i, maps_i_mask, maps_i_indices = trim_maps(maps_data, mask_data)
 
     assert maps_i.flags["F_CONTIGUOUS"]
     assert len(maps_i_indices) == maps_i.shape[-1]
@@ -734,7 +734,7 @@ def test_trim_maps_support_covers_negative_weights(shape_3d_default, weight):
 
     mask_data = np.ones(shape_3d_default, dtype=np.int8)
 
-    _, maps_i_mask, maps_i_indices = _trim_maps(maps_data, mask_data)
+    _, maps_i_mask, maps_i_indices = trim_maps(maps_data, mask_data)
 
     assert len(maps_i_indices) == 2
     assert maps_i_mask.sum() == 2

@@ -34,6 +34,10 @@ from nilearn.maskers.base_masker import (
 )
 from nilearn.masking import load_mask_img
 from nilearn.nilearn_typing import Signals, SingleConfound
+from nilearn.regions.utils import (
+    _non_empty_maps,
+    apply_mask_to_maps_img,
+)
 
 
 class _ExtractionFunctor:
@@ -331,11 +335,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return embedded_images
 
     def _fit(self, imgs=None):
-        from nilearn.regions.signal_extraction import (
-            _non_empty_maps,
-            apply_mask_to_maps_img,
-        )
-
         check_parameter_in_allowed(
             self.resampling_target,
             ("mask", "maps", "data", None),
