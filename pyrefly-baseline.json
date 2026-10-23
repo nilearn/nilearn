@@ -17,11 +17,6 @@
     },
     {
       "path": "nilearn/glm/first_level/first_level.py",
-      "name": "bad-return",
-      "concise_description": "Returned type `tuple[ndarray | ndarray[Unknown], dict[float, RegressionResults] | dict[Any, Unknown]]` is not assignable to declared return type `tuple[ndarray, dict[float | str, RegressionResults]]`"
-    },
-    {
-      "path": "nilearn/glm/first_level/first_level.py",
       "name": "bad-argument-type",
       "concise_description": "Argument `Unknown | None` is not assignable to parameter `x` with type `Buffer | SupportsIndex | SupportsInt | SupportsTrunc | str` in function `int.__new__`"
     },
