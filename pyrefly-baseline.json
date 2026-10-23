@@ -33,11 +33,6 @@
     {
       "path": "nilearn/regions/signal_extraction.py",
       "name": "no-matching-overload",
-      "concise_description": "No matching overload found for function `numpy._core.multiarray.asarray` called with arguments: (Unknown, dtype=type[float64] | type[float32], order=str | Unknown)"
-    },
-    {
-      "path": "nilearn/regions/signal_extraction.py",
-      "name": "no-matching-overload",
       "concise_description": "No matching overload found for function `numpy._core.multiarray.zeros` called with arguments: (Unknown, dtype=Unknown, order=str | Unknown)"
     },
     {
