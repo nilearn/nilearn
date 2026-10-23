@@ -1091,14 +1091,10 @@ def check_img_estimator_dtype_bool(estimator_orig) -> None:
 
     estimator = clone(estimator_orig)
 
-    X, _ = generate_data_to_fit(estimator)
+    X, y = generate_data_to_fit(estimator)
+    set_mask_if_nifti_spheres(estimator, X)
 
-    if isinstance(estimator, NiftiSpheresMasker):
-        # NiftiSpheresMasker needs mask_img to run inverse_transform
-        mask_img = new_img_like(X, np.ones(X.shape[:3]))
-        estimator.mask_img = mask_img
-
-    estimator = fit_estimator(estimator)
+    fit_estimator(estimator, X, y)
 
     signal = estimator.transform(X)
     if isinstance(signal, list):
