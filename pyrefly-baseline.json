@@ -46,16 +46,6 @@
       "path": "nilearn/maskers/_mixin.py"
     },
     {
-      "path": "nilearn/maskers/base_masker.py",
-      "name": "bad-override",
-      "concise_description": "Class member `BaseMasker._get_summary_html` overrides parent class `_BaseMasker` in an inconsistent manner"
-    },
-    {
-      "path": "nilearn/maskers/base_masker.py",
-      "name": "bad-override",
-      "concise_description": "Class member `_BaseSurfaceMasker._get_summary_html` overrides parent class `_BaseMasker` in an inconsistent manner"
-    },
-    {
       "path": "nilearn/masking.py",
       "name": "unsupported-operation",
       "concise_description": "`>` is not supported between `None` and `float`"

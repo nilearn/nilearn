@@ -580,6 +580,6 @@ class MaskerReportMixin(ReportMixin):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _get_summary_html(self):
+    def _get_summary_html(self, summary):
         """Convert summary part of the report content to html and return."""
         raise NotImplementedError()
