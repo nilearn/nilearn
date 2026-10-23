@@ -111,11 +111,6 @@
       "path": "nilearn/maskers/_mixin.py"
     },
     {
-      "concise_description": "Argument `list[DataFrame | Path | ndarray | str | None] | None` is not assignable to parameter `iter2` with type `Iterable[DataFrame | Path | ndarray | str | None]` in function `zip.__new__`",
-      "name": "bad-argument-type",
-      "path": "nilearn/maskers/_mixin.py"
-    },
-    {
       "concise_description": "Object of class `object` has no attribute `transform`",
       "name": "missing-attribute",
       "path": "nilearn/maskers/_mixin.py"
@@ -129,11 +124,6 @@
       "path": "nilearn/maskers/base_masker.py",
       "name": "bad-override",
       "concise_description": "Class member `_BaseSurfaceMasker._get_summary_html` overrides parent class `_BaseMasker` in an inconsistent manner"
-    },
-    {
-      "concise_description": "Argument `list[DataFrame | Path | ndarray | str | None] | None` is not assignable to parameter `iter2` with type `Iterable[DataFrame | Path | ndarray | str | None]` in function `zip.__new__`",
-      "name": "bad-argument-type",
-      "path": "nilearn/maskers/multi_nifti_masker.py"
     },
     {
       "path": "nilearn/masking.py",

@@ -119,7 +119,7 @@ class _MultiMixin:
             memory_level=self.memory_level,
         )
 
-        confounds = self._prepare_confounds(imgs_list, confounds)
+        prepared_confounds = self._prepare_confounds(imgs_list, confounds)
 
         sample_mask = self._prepare_sample_mask(imgs_list, sample_mask)
 
@@ -130,7 +130,7 @@ class _MultiMixin:
         region_signals = Parallel(n_jobs=self.n_jobs)(
             delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sms)
             for imgs, cfs, sms in zip(
-                niimg_iter, confounds, sample_mask, strict=False
+                niimg_iter, prepared_confounds, sample_mask, strict=False
             )
         )
         return region_signals
