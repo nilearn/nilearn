@@ -2,8 +2,7 @@
 
 import warnings
 from collections.abc import Generator
-from typing import Literal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 import pytest
