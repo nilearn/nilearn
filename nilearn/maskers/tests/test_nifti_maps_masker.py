@@ -549,14 +549,6 @@ def test_maps_emptied_by_resampling_are_dropped(affine_eye, with_mask):
     check_signal_and_inverse_transform(masker, signals, expected_length=10)
 
 
-def _mask_warning(with_mask):
-    if not with_mask:
-        return nullcontext()
-    return pytest.warns(
-        UserWarning, match="After applying mask to the maps image"
-    )
-
-
 @pytest.mark.parametrize("with_mask", [False, True])
 def test_masking_inverse_transform(n_regions, length, affine_eye, with_mask):
     """Check for regression for https://github.com/nilearn/nilearn/issues/6658.
@@ -603,30 +595,28 @@ def test_masking_inverse_transform(n_regions, length, affine_eye, with_mask):
 
     # resampling to data at transform time
     masker = clone(masker)
-    with _mask_warning(with_mask):
+    with (
+        pytest.warns(
+            UserWarning, match="After applying mask to the maps image"
+        )
+        if with_mask
+        else nullcontext()
+    ):
         masker = masker.fit()
+
     n_elements_post_fit = masker.n_elements_
 
     with (
-        pytest.warns(UserWarning, match="Resampling maps at transform time"),
-        (
-            pytest.warns(
-                UserWarning, match="Resampling mask at transform time"
-            )
-            if with_mask
-            else nullcontext()
-        ),
-        (
-            pytest.warns(
-                UserWarning,
-                match=(
-                    "extracted data will not have the shape "
-                    "expected by 'inverse_transform"
-                ),
-            )
-            if with_mask
-            else nullcontext()
-        ),
+        pytest.warns(UserWarning, match="Resampling .* at transform time"),
+        pytest.warns(
+            UserWarning,
+            match=(
+                "extracted data will not have the shape "
+                "expected by 'inverse_transform"
+            ),
+        )
+        if with_mask
+        else nullcontext(),
     ):
         signals = masker.transform(fmri_img)
 

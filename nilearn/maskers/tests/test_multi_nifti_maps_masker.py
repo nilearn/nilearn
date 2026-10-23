@@ -12,15 +12,6 @@ from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 from .conftest import check_signal_and_inverse_transform
 
 
-def _mask_warning(n_regions):
-    if n_regions == 1:
-        return nullcontext()
-    return pytest.warns(
-        UserWarning,
-        match=" Out of 3 maps, the masked map image only contains 2 maps",
-    )
-
-
 @pytest.mark.parametrize("n_regions", [1, 3])
 def test_multi_nifti_maps_masker(
     affine_eye, length, n_regions, shape_3d_default
@@ -32,6 +23,16 @@ def test_multi_nifti_maps_masker(
 
     With 3 regions, one of them is masked out.
     """
+
+    def _mask_warning(n_regions):
+        """Return warning context manager depending on number of region."""
+        if n_regions == 1:
+            return nullcontext()
+        return pytest.warns(
+            UserWarning,
+            match=" Out of 3 maps, the masked map image only contains 2 maps",
+        )
+
     img_maps, _ = generate_maps(
         shape=shape_3d_default, n_regions=n_regions, affine=affine_eye
     )
