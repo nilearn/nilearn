@@ -334,7 +334,7 @@ baseline-matching-mode = "concise-description"
 # as Any, as mypy did.
 check-unannotated-defs = false
 infer-return-types = "never"
-preset = "legacy"
+preset = "default"
 project-excludes = ["**/nilearn_cache/**/*", "**/nilearn/_version.py"]
 project-includes = ["nilearn/**/*.py"]
 python-version = "3.11"
@@ -355,8 +355,7 @@ replace-imports-with-any = [
     "rich.*",
     "scipy.*",
     "sklearn.*",
-    "statsmodels.*",
-    "svg.*"
+    "statsmodels.*"
 ]
 
 [tool.pyrefly.errors]

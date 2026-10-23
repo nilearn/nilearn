@@ -101,8 +101,10 @@ def load_mask_img(
             f"Got {mask_img.__class__.__name__}."
         )
 
+    affine = None
     if isinstance(mask_img, NiimgLike):
         loaded_img = check_niimg_3d(mask_img)
+        affine = loaded_img.affine
         mask = safe_get_data(loaded_img, ensure_finite=True)
     else:
         mask_img.data._check_ndims(1)
@@ -133,7 +135,9 @@ def load_mask_img(
     mask = as_ndarray(mask, dtype=bool)
 
     if isinstance(mask_img, NiimgLike):
-        return mask, loaded_img.affine
+        if TYPE_CHECKING:
+            assert affine is not None
+        return mask, affine
 
     for hemi in mask_img.data.parts:
         mask_img.data.parts[hemi] = as_ndarray(

@@ -1321,6 +1321,8 @@ def fetch_atlas_aal(  # numpydoc ignore=RT05
         "SPM5": "https://osf.io/948y2/download",
     }
 
+    basenames = ()
+    filenames = []
     if url is None:
         base_url = "https://www.gin.cnrs.fr/"
         if version == "SPM12":
