@@ -1,20 +1,22 @@
 """
-FREM on Jimura et al "mixed gambles" dataset
-============================================
+Regression with fast ensembling of regularized models
+=====================================================
 
 In this example, we use fast ensembling of regularized models (FREM) to
 solve a regression problem, predicting the gain level corresponding to each
 :term:`beta<Beta>` maps regressed from mixed gambles experiment.
 :term:`FREM` uses an implicit spatial regularization through fast clustering
 and aggregates a high number
-of  estimators trained on various splits of the training set, thus returning
+of estimators trained on various splits of the training set, thus returning
 a very robust decoder at a lower computational cost than other spatially
 regularized methods.
 
 To have more details, see: :ref:`frem`.
 
-See the :ref:`dataset description <mixed_gamble_maps>`
-for more information on the data used in this example.
+.. admonition:: dataset
+
+    This example uses the :ref:`mixed gambles dataset <mixed_gamble_maps>`.
+
 """
 
 # %%

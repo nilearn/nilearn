@@ -9,11 +9,13 @@ This example aims to provide a clear understanding of the
 :class:`~nilearn.decoding.Decoder` object by demonstrating these steps via a
 Scikit-Learn pipeline.
 
-We will use the :footcite:t:`Haxby2001` dataset where the participants were
-shown images of 8 different types as described in the
-:ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py` example.
 We will train a classifier to predict the label of the object in the stimulus
 image based on the subject's fMRI data from the Ventral Temporal cortex.
+
+.. admonition:: dataset
+
+    We will use the the :ref:`Haxby dataset <haxby_dataset>`.
+
 """
 
 # %%

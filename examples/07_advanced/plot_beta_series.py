@@ -13,6 +13,12 @@ to two common beta-series modeling approaches,
 Least Squares All (LSA) and Least Squares Separate (LSS).
 Then, we show how to use the resulting beta-series for a simple
 task-based functional connectivity analysis.
+
+.. admonition:: dataset
+
+   This example uses the :ref:`language localizer demo dataset
+   <language_localizer_demo>`.
+
 """
 
 # %%
@@ -20,10 +26,6 @@ task-based functional connectivity analysis.
 # ------------------------------------
 # Download data in :term:`BIDS` format and event information for one subject,
 # and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
-#
-# For more information
-# see the :ref:`dataset description <language_localizer_demo>`.
-#
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.plotting import plot_design_matrix, plot_stat_map, show
