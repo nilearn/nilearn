@@ -5,6 +5,7 @@ Mask nifti images by spherical volumes for seed-region analyses
 
 import contextlib
 import warnings
+from collections.abc import Sequence
 from typing import Any, ClassVar
 
 import numpy as np
@@ -36,7 +37,22 @@ from nilearn.maskers.base_masker import (
     sanitize_displayed_maps,
 )
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
-from nilearn.nilearn_typing import Signals, SingleConfound
+from nilearn.nilearn_typing import (
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    Signals,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 
 
 def apply_mask_and_get_affinity(
@@ -325,24 +341,24 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     # memory and memory_level are used by CacheMixin.
     def __init__(
         self,
-        seeds=None,
-        radius=None,
-        mask_img=None,
-        allow_overlap=False,
-        smoothing_fwhm=None,
-        standardize=None,
-        standardize_confounds=True,
-        high_variance_confounds=False,
-        detrend=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
-        memory=None,
-        memory_level=1,
-        verbose=0,
-        reports=True,
-        clean_args=None,
+        seeds: Sequence[Sequence[float]] | np.ndarray | None = None,
+        radius: float | None = None,
+        mask_img: NiimgLike | None = None,
+        allow_overlap: bool = False,
+        smoothing_fwhm: SmoothingFwhm = None,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        high_variance_confounds: bool = False,
+        detrend: Detrend = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
+        reports: bool = True,
+        clean_args: dict[str, Any] | None = None,
     ):
         self.seeds = seeds
         self.mask_img = mask_img

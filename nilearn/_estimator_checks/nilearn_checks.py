@@ -34,7 +34,7 @@ import warnings
 from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory, mkdtemp
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 import pandas as pd
@@ -2825,7 +2825,9 @@ def check_masker_inverse_transform(estimator_orig) -> None:
     ):
         estimator = clone(estimator_orig)
 
-        if isinstance(estimator, (NiftiSpheresMasker)):
+        if isinstance(estimator, NiftiSpheresMasker) and isinstance(
+            mask_img, Nifti1Image
+        ):
             estimator.mask_img = mask_img
 
         estimator.fit(imgs)
@@ -2908,7 +2910,10 @@ def check_masker_transform_resampling(estimator_orig) -> None:
         expected_shape = input_shape
         if resampling_target == "labels":
             if isinstance(estimator_orig, NiftiMapsMasker):
-                expected_shape = (*estimator_orig.maps_img.shape[:3], n_sample)
+                maps_img = estimator_orig.maps_img
+                if TYPE_CHECKING:
+                    assert isinstance(maps_img, Nifti1Image)
+                expected_shape = (*maps_img.shape[:3], n_sample)
                 resampling_target = "maps"
             else:
                 expected_shape = (*estimator_orig.labels_img.shape, n_sample)
