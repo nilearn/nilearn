@@ -61,11 +61,6 @@
       "concise_description": "`>` is not supported between `None` and `float`"
     },
     {
-      "path": "nilearn/plotting/displays/_figures.py",
-      "name": "bad-override",
-      "concise_description": "Class member `PlotlySurfaceFigure.add_contours` overrides parent class `SurfaceFigure` in an inconsistent manner"
-    },
-    {
       "path": "nilearn/plotting/html_stat_map.py",
       "name": "bad-argument-type",
       "concise_description": "Argument `str | Unknown` is not assignable to parameter `black_bg` with type `Literal['auto'] | bool` in function `load_bg_img`"
