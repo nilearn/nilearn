@@ -6,7 +6,7 @@ import warnings
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, get_args
+from typing import TYPE_CHECKING, Any, ClassVar, Self, get_args
 
 import numpy as np
 import pandas as pd
@@ -27,13 +27,30 @@ from nilearn.nilearn_typing import NiimgLike, NJobs, Signals, SingleConfound
 from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
 
+if TYPE_CHECKING:
+    from nilearn.maskers.base_masker import _BaseMasker
+
+    _MultiMixinBase = _BaseMasker
+else:
+    _MultiMixinBase = object
+
 
 @fill_doc
-class _MultiMixin:
+class _MultiMixin(_MultiMixinBase):
     """Mixin class to add common MultiMasker functionalities."""
 
     if TYPE_CHECKING:
         n_jobs: NJobs
+
+        def fit(self, imgs=None, y: None = None) -> Self: ...
+
+        def _cache(
+            self, func, func_memory_level=1, shelve=False, **kwargs
+        ): ...
+
+        def transform_single_imgs(
+            self, imgs, confounds=None, sample_mask=None, **kwargs
+        ): ...
 
     @fill_doc
     def fit_transform(
@@ -119,7 +136,7 @@ class _MultiMixin:
             memory_level=self.memory_level,
         )
 
-        confounds = self._prepare_confounds(imgs_list, confounds)
+        prepared_confounds = self._prepare_confounds(imgs_list, confounds)
 
         sample_mask = self._prepare_sample_mask(imgs_list, sample_mask)
 
@@ -130,7 +147,7 @@ class _MultiMixin:
         region_signals = Parallel(n_jobs=self.n_jobs)(
             delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sms)
             for imgs, cfs, sms in zip(
-                niimg_iter, confounds, sample_mask, strict=False
+                niimg_iter, prepared_confounds, sample_mask, strict=False
             )
         )
         return region_signals
@@ -580,6 +597,6 @@ class MaskerReportMixin(ReportMixin):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _get_summary_html(self):
+    def _get_summary_html(self, summary):
         """Convert summary part of the report content to html and return."""
         raise NotImplementedError()

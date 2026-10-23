@@ -2600,10 +2600,7 @@ def concat_imgs(
 
     iterator, literator = itertools.tee(iter(niimgs))
     try:
-        first_niimg = check_niimg(
-            next(literator),
-            ensure_ndim=ndim,  # type: ignore[arg-type]
-        )
+        first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
     except StopIteration as e:
         raise TypeError("Cannot concatenate empty objects") from e
     except DimensionError as exc:
@@ -3056,6 +3053,18 @@ def check_niimg(
     return_iterator: Literal[True] = ...,
     wildcards=...,
 ) -> Iterator[Nifti1Image]: ...
+
+
+# return_iterator=False always returns a NiftiImage
+@overload
+def check_niimg(
+    niimg,
+    ensure_ndim: Literal[3, 4] | None = ...,
+    atleast_4d=...,
+    dtype=...,
+    return_iterator: Literal[False] = ...,
+    wildcards=...,
+) -> Nifti1Image: ...
 
 
 @fill_doc
