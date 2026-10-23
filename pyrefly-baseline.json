@@ -28,11 +28,6 @@
     {
       "path": "nilearn/image/tests/test_image.py",
       "name": "bad-override",
-      "concise_description": "Class member `PhonyNiimage._data_cache` overrides parent class `SpatialImage` in an inconsistent manner"
-    },
-    {
-      "path": "nilearn/image/tests/test_image.py",
-      "name": "bad-override",
       "concise_description": "Class member `PhonyNiimage._dataobj` overrides parent class `SpatialImage` in an inconsistent manner"
     },
     {
