@@ -92,10 +92,7 @@ def return_expected_failed_checks(
             "check_estimator_sparse_tag": "TODO",
         }
         if isinstance(estimator, GroupSparseCovarianceCV):
-            expected_failed_checks |= {
-                "check_estimators_dtypes": "TODO",
-                "check_dtype_object": "TODO",
-            }
+            expected_failed_checks |= {"check_dtype_object": "TODO"}
         return expected_failed_checks
 
     # below this point we should only deal with estimators
