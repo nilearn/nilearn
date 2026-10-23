@@ -37,6 +37,10 @@ class _MultiMixin:
 
         def fit(self, imgs=None, y: None = None) -> Self: ...
 
+        def _cache(
+            self, func, func_memory_level=1, shelve=False, **kwargs
+        ): ...
+
     @fill_doc
     def fit_transform(
         self,
