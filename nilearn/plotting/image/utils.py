@@ -56,7 +56,7 @@ class _MNI152Template(SpatialImage):
         self._load()
         return self.data
 
-    def get_data(self):
+    def get_data(self, caching="fill"):  # noqa: ARG002
         self._load()
         return self.data
 

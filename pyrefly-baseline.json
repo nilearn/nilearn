@@ -96,11 +96,6 @@
       "concise_description": "Class member `_MNI152Template._dataobj` overrides parent class `SpatialImage` in an inconsistent manner"
     },
     {
-      "path": "nilearn/plotting/image/utils.py",
-      "name": "bad-override",
-      "concise_description": "Class member `_MNI152Template.get_data` overrides parent class `SpatialImage` in an inconsistent manner"
-    },
-    {
       "path": "nilearn/regions/region_extractor.py",
       "name": "bad-argument-type",
       "concise_description": "Argument `Iterable[Unknown] | list[str | Unknown]` is not assignable to parameter `obj` with type `Sized` in function `len`"
