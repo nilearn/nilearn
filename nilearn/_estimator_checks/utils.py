@@ -167,6 +167,10 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
 
 
 def generate_inverse_transform_signal(estimator, nb, dtype=None):
+    """Generate a signal to be used as an input to inverse_transform function
+    of the estimator.
+    Return the signal in a list when necessary.
+    """
     signal = _rng().random((nb, estimator.n_elements_)).astype(dtype)
 
     if isinstance(estimator, _BaseDecomposition):
@@ -175,6 +179,9 @@ def generate_inverse_transform_signal(estimator, nb, dtype=None):
 
 
 def set_mask_if_nifti_spheres(estimator, X):
+    """Generate a mask image from X and set mask_img for the estimator if it is
+    a NiftiSpheresMasker.
+    """
     if isinstance(estimator, NiftiSpheresMasker):
         # NiftiSpheresMasker needs mask_img to run inverse_transform
         mask_img = new_img_like(X, np.ones(X.shape[:3]))
