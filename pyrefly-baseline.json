@@ -27,11 +27,6 @@
     },
     {
       "path": "nilearn/image/tests/test_image.py",
-      "name": "bad-assignment",
-      "concise_description": "`Literal[False]` is not assignable to attribute `EXPAND_PATH_WILDCARDS` with type `Literal[True]`"
-    },
-    {
-      "path": "nilearn/image/tests/test_image.py",
       "name": "bad-override",
       "concise_description": "Class member `PhonyNiimage.get_data` overrides parent class `SpatialImage` in an inconsistent manner"
     },
