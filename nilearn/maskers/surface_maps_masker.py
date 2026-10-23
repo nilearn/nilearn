@@ -31,7 +31,22 @@ from nilearn.maskers.base_masker import (
     mask_logger,
     sanitize_displayed_maps,
 )
-from nilearn.nilearn_typing import Signals, SingleConfound
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    Signals,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -128,7 +143,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     --------
         nilearn.maskers.SurfaceMasker
         nilearn.maskers.SurfaceLabelsMasker
-
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
@@ -145,24 +159,24 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     def __init__(
         self,
-        maps_img=None,
-        mask_img=None,
-        allow_overlap=True,
-        smoothing_fwhm=None,
-        standardize=None,
-        standardize_confounds=True,
-        detrend=False,
-        high_variance_confounds=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
-        memory=None,
-        memory_level=1,
-        verbose=0,
-        reports=True,
-        cmap=DEFAULT_SEQUENTIAL_CMAP,
-        clean_args=None,
+        maps_img: SurfaceImage | None = None,
+        mask_img: SurfaceImage | None = None,
+        allow_overlap: bool = True,
+        smoothing_fwhm: SmoothingFwhm = None,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        detrend: Detrend = False,
+        high_variance_confounds: bool = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
+        reports: bool = True,
+        cmap: ColormapLike = DEFAULT_SEQUENTIAL_CMAP,
+        clean_args: dict[str, Any] | None = None,
     ):
         self.maps_img = maps_img
         self.mask_img = mask_img
@@ -308,8 +322,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        check_compatibility_mask_and_images(self.maps_img, imgs)
-        check_polymesh_equal(self.maps_img.mesh, imgs.mesh)
+        check_compatibility_mask_and_images(self.maps_img_, imgs)
+        check_polymesh_equal(self.maps_img_.mesh, imgs.mesh)
 
         if isinstance(imgs, SurfaceImage) and any(
             hemi.ndim > 2 for hemi in imgs.data.parts.values()
@@ -330,7 +344,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         ).astype(np.float32)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
-        maps_data = get_data(self.maps_img)
+        maps_data = get_data(self.maps_img_)
 
         if not self.allow_overlap:
             # Create mask depending on dtype
@@ -395,7 +409,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         region_signals = self._check_array(region_signals)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
-        maps_data = get_data(self.maps_img)
+        maps_data = get_data(self.maps_img_)
         mask_data = (
             get_data(self.mask_img) if self.mask_img is not None else None
         )
@@ -413,7 +427,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             # so we initialize the vertex signals with 0
             # and shape (n_timepoints, n_vertices)
             vertex_signals = np.zeros(
-                (region_signals.shape[0], self.maps_img.mesh.n_vertices)
+                (region_signals.shape[0], self.maps_img_.mesh.n_vertices)
             )
             # dot product between (n_timepoints, n_regions) and
             # (n_regions, n_vertices)
@@ -430,13 +444,13 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         # split the signal into hemispheres
         data = {
             "left": vertex_signals[
-                : self.maps_img.data.parts["left"].shape[0], :
+                : self.maps_img_.data.parts["left"].shape[0], :
             ],
             "right": vertex_signals[
-                self.maps_img.data.parts["left"].shape[0] :, :
+                self.maps_img_.data.parts["left"].shape[0] :, :
             ],
         }
-        imgs = SurfaceImage(mesh=self.maps_img.mesh, data=data)
+        imgs = SurfaceImage(mesh=self.maps_img_.mesh, data=data)
 
         return self._post_process_inverse_transform(
             region_signals, imgs, return_1D

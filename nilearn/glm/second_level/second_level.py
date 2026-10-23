@@ -181,7 +181,6 @@ def _check_input_as_first_level_model(
     - for volumetric analysis
         - must all have the same affine / shape
           (checking all against those of the first model)
-
     """
     ref_affine = None
     ref_shape = None
@@ -635,7 +634,6 @@ class SecondLevelModel(BaseGLM):
         %(second_level_confounds)s
 
         %(second_level_design_matrix)s
-
         """
         check_params(self.__dict__)
         self.second_level_input_ = None
@@ -766,7 +764,6 @@ class SecondLevelModel(BaseGLM):
             If ``output_type == 'all'``,
             then the output is a dictionary of images,
             keyed by the type of image.
-
         """
         check_is_fitted(self)
 
@@ -878,7 +875,6 @@ class SecondLevelModel(BaseGLM):
         See Also
         --------
         nilearn.glm.second_level.SecondLevelModel.compute_contrast
-
         """
         return {
             contrast_name: self.compute_contrast(
@@ -920,7 +916,6 @@ class SecondLevelModel(BaseGLM):
         -------
         output : :obj:`list`
             A list of Nifti1Image(s).
-
         """
         check_is_fitted(self)
         # check if valid attribute is being accessed.
@@ -1018,7 +1013,7 @@ def non_parametric_inference(
 
 
 @fill_doc
-def non_parametric_inference(
+def non_parametric_inference(  # numpydoc ignore=RT05
     second_level_input: list[FirstLevelModel]
     | pd.DataFrame
     | pd.Series

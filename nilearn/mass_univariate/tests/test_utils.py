@@ -1,4 +1,4 @@
-"""Tests for nilearn.mass_univariate._utils."""
+"""Test for nilearn.mass_univariate._utils."""
 
 import math
 

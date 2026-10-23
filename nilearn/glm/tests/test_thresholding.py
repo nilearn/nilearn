@@ -564,9 +564,8 @@ def test_cluster_level_inference_surface_realistic_data(
     assert len(np.unique(vals)) == expected_n_unique_values
 
 
-@pytest.mark.ai_generated
 def test_cluster_level_inference_surface_uses_mesh_connectivity():
-    """Clusters follow mesh edges rather than consecutive vertex indices."""
+    """Check clusters follow mesh edges, not consecutive vertex indices."""
     n_vertices = 100
     coordinates = np.column_stack(
         [

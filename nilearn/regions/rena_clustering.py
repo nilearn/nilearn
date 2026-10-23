@@ -33,10 +33,6 @@ def _compute_weights(X, mask_img):
 
     i.e. weights = (weight_deep, weights_right, weight_down).
 
-    Notes
-    -----
-    Here we assume a square lattice (no diagonal connections).
-
     Parameters
     ----------
     X : ndarray, shape = [n_samples, n_features]
@@ -51,6 +47,9 @@ def _compute_weights(X, mask_img):
         Weights corresponding to all edges in the mask.
         shape: (n_edges,).
 
+    Notes
+    -----
+    Here we assume a square lattice (no diagonal connections).
     """
     n_samples, _ = X.shape
 
@@ -88,7 +87,6 @@ def _make_3d_edges(vertices, is_mask):
         Edges corresponding to the image or mask.
         shape: (1, n_edges) if_mask,
                (2, n_edges) otherwise.
-
     """
     if is_mask:
         edges_deep = np.logical_and(
@@ -128,12 +126,11 @@ def _make_edges_and_weights(X, mask_img):
     Returns
     -------
     edges : ndarray
-        Array containing [edges_deep, edges_right, edges_down]
+        Array containing [edges_deep, edges_right, edges_down].
 
     weights : ndarray
         Weights corresponding to all edges in the mask.
         shape: (n_edges,).
-
     """
     mask = get_data(mask_img)
     shape = mask.shape
@@ -181,7 +178,6 @@ def _compute_weights_surface(X, mask, edges):
     weights : ndarray
         Weights corresponding to all edges.
         shape: (n_edges,).
-
     """
     n_samples, _ = X.shape
     shape = mask.shape
@@ -215,7 +211,6 @@ def _circular_pairwise(iterable):
     Returns
     -------
     output : iterable
-
     """
     a, b = itertools.tee(iterable)
     return itertools.zip_longest(a, b, fillvalue=next(b, None))
@@ -239,7 +234,6 @@ def make_edges_surface(faces, mask):
 
     edges_masked : ndarray
         Edges corresponding to the mask with shape: (1, n_edges).
-
     """
     mesh_edges = {
         tuple(sorted(pair))
@@ -267,12 +261,11 @@ def _make_edges_and_weights_surface(X, mask_img):
     Returns
     -------
     edges : dict[str, np.array]
-        Array containing edges of mesh
+        Array containing edges of mesh.
 
     weights : dict[str, np.array]
         Weights corresponding to all edges in the mask.
         shape: (n_edges,).
-
     """
     weights = {}
     edges = {}
@@ -327,7 +320,6 @@ def _weighted_connectivity_graph(X, mask_img):
     -------
     connectivity : a CSR matrix
         Sparse matrix representation of the weighted adjacency graph.
-
     """
     n_features = X.shape[1]
 
@@ -365,7 +357,6 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     Returns
     -------
     nn_connectivity : a sparse matrix in COOrdinate format.
-
     """
     n_features = connectivity.shape[0]
 
@@ -429,7 +420,6 @@ def _reduce_data_and_connectivity(
 
     reduced_X : ndarray
         Data reduced with agglomerated signal for each cluster.
-
     """
     n_features = len(labels)
 
@@ -492,7 +482,6 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
 
     labels : :class:`numpy.ndarray`, shape = [n_features]
         It contains the clusters assignation.
-
     """
     # Nearest neighbor connectivity
     nn_connectivity = _nn_connectivity(connectivity, threshold)
@@ -561,12 +550,11 @@ def recursive_neighbor_agglomeration(
         Number of clusters.
 
     labels : :class:`numpy.ndarray`
-        Cluster assignation. shape = [n_features]
+        Cluster assignation. shape = [n_features].
 
     References
     ----------
     .. footbibliography::
-
     """
     check_params(locals())
 
@@ -647,7 +635,6 @@ class ReNA(
     References
     ----------
     .. footbibliography::
-
     """
 
     def __init__(
@@ -714,7 +701,6 @@ class ReNA(
         Returns
         -------
         self : `ReNA` object
-
         """
         del y
         check_params(self.__dict__)
@@ -803,7 +789,6 @@ class ReNA(
         -------
         X_red : :class:`numpy.ndarray`, shape = [n_samples, n_clusters]
             Data reduced with agglomerated signal for each cluster.
-
         """
         del y
         check_is_fitted(self)
@@ -836,7 +821,6 @@ class ReNA(
         -------
         X_inv : :class:`numpy.ndarray`, shape = [n_samples, n_features]
             Data reduced expanded to the original feature space.
-
         """
         check_is_fitted(self)
 

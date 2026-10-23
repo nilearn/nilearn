@@ -296,6 +296,33 @@ name = "assets only imported by reporting, plotting, glm"
 protected_modules = ["nilearn._assets"]
 type = "protected"
 
+[tool.numpydoc_validation]
+# https://numpydoc.readthedocs.io/en/latest/validation.html#built-in-validation-checks
+checks = [
+    "all",
+    "GL06",
+    "GL08",
+    "SS01",
+    "ES01",
+    "PR01",
+    "PR02",
+    "PR03",
+    "PR04",
+    "PR05",
+    "PR07",
+    "PR08",
+    "PR09",
+    "RT01",
+    "RT02",
+    "RT03",
+    "SA01",
+    "SA02",
+    "SA03",
+    "SA04",
+    "SS06",
+    "EX01"
+]
+
 [tool.pyrefly]
 # Errors already present in the code base are listed in the baseline file
 # and are not reported, so only new errors fail the check.

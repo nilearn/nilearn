@@ -2,7 +2,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import numpy as np
 import pandas as pd
@@ -35,14 +35,18 @@ from nilearn.maskers.base_masker import (
 )
 from nilearn.masking import load_mask_img
 from nilearn.nilearn_typing import (
+    ColormapLike,
     Detrend,
     DType,
     HighPass,
     LowPass,
-    Memory,
     MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    ReductionStrategy,
     Signals,
     SingleConfound,
+    SmoothingFwhm,
     Standardize,
     StandardizeConfounds,
     TableLike,
@@ -118,7 +122,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             extra regions will get the 'unknown' label.
 
     %(masker_lut)s
-
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
@@ -204,11 +207,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     memory_ : joblib memory cache
 
-
     See Also
     --------
     nilearn.maskers.NiftiMasker
-
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
@@ -223,28 +224,28 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     def __init__(
         self,
-        labels_img=None,
-        labels=None,
+        labels_img: NiimgLike | None = None,
+        labels: list[str] | None = None,
         lut: TableLike | None = None,
-        background_label=0,
-        mask_img=None,
-        smoothing_fwhm=None,
+        background_label: int | float = 0,
+        mask_img: NiimgLike | None = None,
+        smoothing_fwhm: SmoothingFwhm = None,
         standardize: Standardize = None,
         standardize_confounds: StandardizeConfounds = True,
-        high_variance_confounds=False,
+        high_variance_confounds: bool = False,
         detrend: Detrend = False,
         low_pass: LowPass = None,
         high_pass: HighPass = None,
         t_r: Tr = None,
         dtype: DType = None,
-        resampling_target="data",
-        memory: Memory = None,
+        resampling_target: Literal["data", "labels"] | None = "data",
+        memory: MemoryLike = None,
         memory_level: MemoryLevel = 1,
         verbose: Verbose = 0,
-        strategy="mean",
+        strategy: ReductionStrategy = "mean",
         reports: bool = True,
-        cmap=None,
-        clean_args=None,
+        cmap: ColormapLike = None,
+        clean_args: dict[str, Any] | None = None,
     ):
         self.labels_img = labels_img
         self.background_label = background_label
@@ -641,7 +642,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         del y
         return self.fit(imgs).transform(
@@ -686,7 +686,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -897,7 +896,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         Returns
         -------
         %(img_inv_transform_nifti)s
-
         """
         from nilearn.regions import signal_extraction
 

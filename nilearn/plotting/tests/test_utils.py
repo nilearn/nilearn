@@ -1,4 +1,4 @@
-"""Tests for private function \
+"""Test for private function \
    nilearn.plotting.image.img_plotting.get_colorbar_and_data_ranges.
 """
 
@@ -108,7 +108,7 @@ def data_masked(data_pos_neg) -> np.ma.MaskedArray:
 
 
 def test_get_colorbar_and_data_ranges_error():
-    """Tests for expected errors in get_colorbar_and_data_ranges."""
+    """Test for expected errors in get_colorbar_and_data_ranges."""
     vmin = 0
     vmax = 1.0
     # incompatible vmin and vmax if symmetric_cbar is True

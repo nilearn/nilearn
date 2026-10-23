@@ -6,7 +6,7 @@ import warnings
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, ClassVar, get_args
+from typing import TYPE_CHECKING, Any, ClassVar, get_args
 
 import numpy as np
 import pandas as pd
@@ -32,7 +32,8 @@ from nilearn.surface.surface import SurfaceImage
 class _MultiMixin:
     """Mixin class to add common MultiMasker functionalities."""
 
-    n_jobs: NJobs
+    if TYPE_CHECKING:
+        n_jobs: NJobs
 
     @fill_doc
     def fit_transform(
@@ -103,7 +104,6 @@ class _MultiMixin:
         Returns
         -------
         %(signals_transform_imgs_multi_nifti)s
-
         """
         # We handle the resampling of maps and mask separately because the
         # affine of the maps and mask images should not impact the extraction
@@ -157,7 +157,6 @@ class _MultiMixin:
         Returns
         -------
         %(signals_transform_multi_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -234,9 +233,10 @@ class _MultiMixin:
 
 
 class _LabelMaskerMixin:
-    lut_: pd.DataFrame
-    _lut_: pd.DataFrame
-    background_label: int | float
+    if TYPE_CHECKING:
+        background_label: int | float
+        lut_: pd.DataFrame
+        _lut_: pd.DataFrame
 
     @property
     def n_elements_(self) -> int:
@@ -570,11 +570,12 @@ class MaskerReportMixin(ReportMixin):
 
         Returns
         -------
-        displays : :obj:`list` of :class:`~matplotlib.figure.Figure`, None or
-                   bytes
+        displays : :obj:`list` of :class:`~matplotlib.figure.Figure`, \
+                   None or bytes
             A list of all displays to be rendered, either as figures encoded as
-        bytes or Matplotlib figures.
-        When masker is not fitted, return a list with a single None element.
+            bytes or Matplotlib figures.
+            When masker is not fitted,
+            return a list with a single None element.
         """
         raise NotImplementedError()
 

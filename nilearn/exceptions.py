@@ -48,12 +48,11 @@ class DimensionError(TypeError):
 
     Parameters
     ----------
-    file_dimension : integer
+    file_dimension : :obj:`int`
         Indicates the dimensionality of the bottom-level nifti file.
 
-    required_dimension : integer
+    required_dimension : :obj:`int`
         The dimension the nifti file should have.
-
     """
 
     def __init__(self, file_dimension, required_dimension):
@@ -64,12 +63,11 @@ class DimensionError(TypeError):
         super().__init__()
 
     def increment_stack_counter(self) -> None:
-        """Increments the counter of recursive calls.
+        """Increment the counter of recursive calls.
 
         Called when the error is caught and re-raised to count the
         number of recursive calls, ie the number of dimensions added by
         imbrication in lists.
-
         """
         self.stack_counter += 1
 

@@ -418,7 +418,7 @@ def test_searchlight_custom_no_cv_estimator_runs_and_warns():
 
 
 def test_searchlight_no_cv_estimator_receives_groups():
-    """Groups are forwarded to fit() when nilearn_searchlight_uses_cv=False."""
+    """Check groups reach fit() if nilearn_searchlight_uses_cv=False."""
     frames = 20
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
     run = np.arange(frames) % 4

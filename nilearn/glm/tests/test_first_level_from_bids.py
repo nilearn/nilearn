@@ -888,7 +888,6 @@ def test_mismatch_run_index(tmp_path_factory):
     """Test error when run index is zero padded in raw but not in derivatives.
 
     Regression test for https://github.com/nilearn/nilearn/issues/3029
-
     """
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("renamed_runs"))
     files_to_rename = (bids_dataset / "derivatives").glob(

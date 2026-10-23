@@ -114,7 +114,7 @@ def hierarchical_k_means(
     Returns
     -------
     labels : :obj:`list` of ints (len n_features)
-        Parcellation of features in clusters
+        Parcellation of features in clusters.
     """
     check_params(locals())
 
@@ -225,7 +225,6 @@ class HierarchicalKMeans(
 
     sizes_ : ndarray, shape = [n_features]
         It contains the size of each cluster.
-
     """
 
     def __init__(
@@ -385,7 +384,7 @@ class HierarchicalKMeans(
         Returns
         -------
         X_inv : ndarray, shape = [n_samples, n_features]
-            Data reduced expanded to the original feature space
+            Data reduced expanded to the original feature space.
         """
         check_is_fitted(self)
 

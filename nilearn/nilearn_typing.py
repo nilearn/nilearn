@@ -29,6 +29,7 @@ from numpy.typing import DTypeLike
 
 if TYPE_CHECKING:
     import polars as pl
+    from matplotlib.colors import Colormap
 
 Integer: TypeAlias = int | np.integer
 Float: TypeAlias = float | np.floating
@@ -50,6 +51,10 @@ BlackBg: TypeAlias = Literal[True, False, "auto"]
 BorderSize: TypeAlias = Integer
 CbarTickFormat: TypeAlias = str
 ColorBar: TypeAlias = bool
+if TYPE_CHECKING:
+    ColormapLike: TypeAlias = Colormap | str | None
+else:
+    ColormapLike: TypeAlias = str | None
 ClusterThreshold: TypeAlias = Integer
 Connected: TypeAlias = bool
 CopyHeader: TypeAlias = bool
@@ -99,6 +104,9 @@ else:
 HighPass: TypeAlias = Scalar
 LowerCutoff: TypeAlias = Float
 LowPass: TypeAlias = Scalar
+MaskStrategy: TypeAlias = Literal[
+    "background", "epi", "whole-brain-template", "gm-template", "wm-template"
+]
 MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
 MemoryLevel: TypeAlias = Integer
 NJobs: TypeAlias = Integer
@@ -108,6 +116,15 @@ NiimgLike: TypeAlias = Nifti1Image | str | pathlib.Path
 Opening: TypeAlias = bool | Integer
 OutputFile: TypeAlias = str | pathlib.Path | None
 Radiological: TypeAlias = bool
+ReductionStrategy: TypeAlias = Literal[
+    "mean",
+    "median",
+    "sum",
+    "minimum",
+    "maximum",
+    "standard_deviation",
+    "variance",
+]
 RandomState: TypeAlias = Integer | np.random.RandomState | None
 ResamplingInterpolation: TypeAlias = Literal["continuous", "nearest"]
 Resolution: TypeAlias = Integer | None

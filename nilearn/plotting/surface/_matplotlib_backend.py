@@ -86,7 +86,7 @@ def _normalize_bg_data(data):
     Returns
     -------
     data : :obj:`numpy.ndarray`
-        An array containing normalized surface data
+        An array containing normalized surface data.
     """
     vmin, vmax = np.nanmin(data), np.nanmax(data)
     if vmin < 0 or vmax > 1:
@@ -163,7 +163,6 @@ def _compute_surf_map_faces(
         This method is called exclusively when using matplotlib,
         since it only supports plotting face-colour maps and not
         vertex-colour maps.
-
     """
     surf_map_data = check_surf_map(surf_map, n_vertices)
 
@@ -221,7 +220,7 @@ def _get_bounds(data, vmin=None, vmax=None):
 
 
 def _rescale(data, vmin=None, vmax=None):
-    """Rescales the data."""
+    """Rescale the data."""
     data_copy = np.copy(data)
     # if no vmin/vmax are passed figure them out from data
     vmin, vmax = _get_bounds(data_copy, vmin, vmax)
@@ -231,7 +230,7 @@ def _rescale(data, vmin=None, vmax=None):
 
 
 def _threshold(data, threshold, vmin, vmax):
-    """Thresholds the data."""
+    """Threshold the data."""
     # If no thresholding and nans, filter them out
     if threshold is None:
         mask = np.logical_not(np.isnan(data))

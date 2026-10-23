@@ -150,7 +150,7 @@ def _confounds_regression(
 def test_confounds_standardization(
     standardize_signal, standardize_confounds, expected
 ):
-    """Tests for confounds standardization.
+    """Test for confounds standardization.
 
     Explicit standardization of confounds
 
@@ -178,7 +178,7 @@ def test_confounds_standardization(
     ],
 )
 def test_confounds_not_standardized(standardize_signal):
-    """Tests for confounds standardization.
+    """Test for confounds standardization.
 
     Confounds are not standardized
     In this case, the regression should fail...
@@ -652,7 +652,6 @@ def img_2d_mask_bottom_right(affine_eye) -> Nifti1Image:
     +---+---+---+---+
     |   |   | X | X |
     +---+---+---+---+
-
     """
     mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
@@ -672,7 +671,6 @@ def img_2d_mask_center(affine_eye) -> Nifti1Image:
     +---+---+---+---+
     |   |   |   |   |
     +---+---+---+---+
-
     """
     mask_b = np.zeros((4, 4, 1), dtype=bool)
     mask_b[1:3, 1:3] = 1

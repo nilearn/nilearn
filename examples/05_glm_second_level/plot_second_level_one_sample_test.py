@@ -15,7 +15,6 @@ We focus on a given contrast of the localizer dataset: the motor response to
 left versus right button press. Both at the individual and group level, this is
 expected to elicit activity in the motor cortex (positive in the right
 hemisphere, negative in the left hemisphere).
-
 """
 
 from nilearn import plotting

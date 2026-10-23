@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearn.plotting.plot_stat_map`."""
+"""Test for :func:`nilearn.plotting.plot_stat_map`."""
 
 # ruff: noqa: ARG001
 
@@ -56,7 +56,7 @@ def test_save_plot_stat_map(matplotlib_pyplot, params, img_3d_mni, tmp_path):
 def test_plot_stat_map_cut_coords_and_display_mode(
     matplotlib_pyplot, display_mode, cut_coords, img_3d_mni
 ):
-    """Smoke-tests for plot_stat_map.
+    """Run smoke tests for plot_stat_map.
 
     Tests different combinations of parameters `cut_coords`
     and `display_mode`.
@@ -86,7 +86,7 @@ def test_plot_stat_map_with_masked_image(
     ],
 )
 def test_plot_stat_map_threshold(matplotlib_pyplot, data, affine_eye):
-    """Tests plot_stat_map with threshold (see #510)."""
+    """Test plot_stat_map with threshold (see #510)."""
     plot_stat_map(Nifti1Image(data, affine_eye), threshold=1000, colorbar=True)
 
 
@@ -94,7 +94,7 @@ def test_plot_stat_map_threshold(matplotlib_pyplot, data, affine_eye):
 def test_plot_stat_map_threshold_for_affine_with_rotation(
     matplotlib_pyplot, rng
 ):
-    """Tests for plot_stat_map with thresholding and resampling.
+    """Test for plot_stat_map with thresholding and resampling.
 
     Threshold was not being applied when affine has a rotation.
     See https://github.com/nilearn/nilearn/issues/599 for more details.
@@ -158,7 +158,7 @@ def test_plot_stat_map_colorbar_variations(
 def test_plot_stat_map_singleton_ax_dim(
     matplotlib_pyplot, shape, direction, affine_eye
 ):
-    """Tests for plot_stat_map and singleton display mode."""
+    """Test for plot_stat_map and singleton display mode."""
     plot_stat_map(
         Nifti1Image(np.ones(shape), affine_eye), None, display_mode=direction
     )

@@ -7,7 +7,7 @@ import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Self, overload
+from typing import TYPE_CHECKING, Any, Self, overload
 
 import numpy as np
 import pandas as pd
@@ -48,7 +48,23 @@ from nilearn.image.image import (
 from nilearn.image.resampling import resample_img
 from nilearn.maskers._mixin import MaskerReportMixin
 from nilearn.masking import load_mask_img, unmask
-from nilearn.nilearn_typing import Signals, SingleConfound
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    Signals,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
@@ -94,7 +110,6 @@ def filter_and_extract(
     Notes
     -----
     For all other parameters refer to NiftiMasker documentation
-
     """
     if memory is None:
         memory = Memory(location=None)
@@ -322,6 +337,25 @@ class _BaseMasker(
 ):
     """Base class for NiftiMaskers."""
 
+    # Parameters shared by all maskers declared only for type checkers:
+    # with TYPE_CHECKING keeps them out of the class __annotations__,
+    # so they are not listed as undocumented members in the API docs.
+    if TYPE_CHECKING:
+        clean_args: dict[str, Any] | None
+        detrend: Detrend
+        dtype: DType
+        high_pass: HighPass
+        high_variance_confounds: bool
+        low_pass: LowPass
+        memory: MemoryLike
+        memory_level: MemoryLevel
+        smoothing_fwhm: SmoothingFwhm
+        reports: bool
+        standardize: Standardize
+        standardize_confounds: StandardizeConfounds
+        t_r: Tr
+        verbose: Verbose
+
     _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
 
     @property
@@ -343,7 +377,7 @@ class _BaseMasker(
     def _get_target_dtype(
         self, imgs: Nifti1Image | SurfaceImage | list[SurfaceImage]
     ):
-        """Adapts dtype to apply to transform() output."""
+        """Adapt dtype to apply to transform() output."""
         if isinstance(imgs, Nifti1Image):
             source_dtype = img_data_dtype(imgs)
         elif isinstance(imgs, SurfaceImage):
@@ -367,6 +401,9 @@ class _BaseMasker(
 @fill_doc
 class BaseMasker(_BaseMasker):
     """Base class for NiftiMaskers."""
+
+    if TYPE_CHECKING:
+        mask_img: NiimgLike | None
 
     _template_name = "body_masker.jinja"
 
@@ -440,7 +477,6 @@ class BaseMasker(_BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         raise NotImplementedError()
 
@@ -479,7 +515,6 @@ class BaseMasker(_BaseMasker):
         -------
         params : dict
             The dict of parameters.
-
         """
         _ignore = {"memory", "memory_level", "verbose", "copy", "n_jobs"}
         if ignore is not None:
@@ -607,7 +642,6 @@ class BaseMasker(_BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         with warnings.catch_warnings():
             # ignore warning in case the masker
@@ -636,7 +670,6 @@ class BaseMasker(_BaseMasker):
         Returns
         -------
         %(img_inv_transform_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -754,6 +787,10 @@ class BaseMasker(_BaseMasker):
 @fill_doc
 class _BaseSurfaceMasker(_BaseMasker):
     """Class from which all surface maskers should inherit."""
+
+    if TYPE_CHECKING:
+        mask_img: SurfaceImage | None
+        cmap: ColormapLike
 
     _template_name = "body_surface_masker.jinja"
 

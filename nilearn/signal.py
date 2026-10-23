@@ -140,7 +140,6 @@ def _mean_of_squares(signals, n_batches=20):
             and computation time. The higher the value, the lower the
             memory consumption.
 
-
     Returns
     -------
     var : :class:`numpy.ndarray`
@@ -184,7 +183,6 @@ def row_sum_of_squares(signals, n_batches=20):
             Tweaking this value can lead to variation of memory usage
             and computation time. The higher the value, the lower the
             memory consumption.
-
 
     Returns
     -------
@@ -391,8 +389,6 @@ def butterworth(
         >>> leg = plt.legend(["Initial signals", "Filtered signals"])
         >>> plt.grid(True)
         >>> plt.show()
-
-
     """
     check_params(locals())
     if low_pass is None and high_pass is None:
@@ -510,7 +506,11 @@ def high_variance_confounds(
     Returns
     -------
     v : :class:`numpy.ndarray`
-        Highest variance confounds. Shape: (samples, n_confounds)
+        Highest variance confounds with shape: (samples, n_confounds).
+
+    See Also
+    --------
+    nilearn.image.high_variance_confounds
 
     Notes
     -----
@@ -528,10 +528,6 @@ def high_variance_confounds(
     References
     ----------
     .. footbibliography::
-
-    See Also
-    --------
-    nilearn.image.high_variance_confounds
     """
     check_params(locals())
     if detrend:
@@ -698,12 +694,15 @@ def clean(
         Kwargs prefixed with ``'butterworth__'`` will be passed to
         :func:`~nilearn.signal.butterworth`.
 
-
     Returns
     -------
     cleaned_signals : :class:`numpy.ndarray`
         Input signals, cleaned. Same shape as `signals` unless `sample_mask`
         is applied.
+
+    See Also
+    --------
+    nilearn.image.clean_img
 
     Notes
     -----
@@ -716,10 +715,6 @@ def clean(
     References
     ----------
     .. footbibliography::
-
-    See Also
-    --------
-    nilearn.image.clean_img
 
     Examples
     --------
@@ -963,12 +958,11 @@ def create_cosine_drift(high_pass, frame_times):
     Returns
     -------
     cosine_drift : array of shape(n_scans, n_drifts)
-        Cosine drifts plus a constant regressor at cosine_drift[:, -1]
+        Cosine drifts plus a constant regressor at cosine_drift[:, -1].
 
     References
     ----------
     http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
-
     """
     n_frames = len(frame_times)
     n_times = np.arange(n_frames)

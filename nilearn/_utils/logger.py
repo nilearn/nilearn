@@ -81,7 +81,6 @@ def log(
     displayed to the user. If several matching objects exist in the call
     stack, the highest one is used (first call chronologically), because this
     is the one which is most likely to have been written in the user's script.
-
     """
     from nilearn._utils.helpers import is_notebook
 
@@ -141,7 +140,8 @@ def compose_err_msg(msg: str, **kwargs) -> str:
     Returns
     -------
     updated_msg : :obj:`str`
-        msg, with "key: value" appended. Only string values are appended.
+        Input ``msg``, with "key: value" appended.
+        Only string values are appended.
 
     Examples
     --------
@@ -149,7 +149,6 @@ def compose_err_msg(msg: str, **kwargs) -> str:
         arg_str='filename.nii', arg_bool=True)
     'Error message with arguments...\\narg_str: filename.nii'
     >>>
-
     """
     updated_msg = msg
     for k, v in sorted(kwargs.items()):

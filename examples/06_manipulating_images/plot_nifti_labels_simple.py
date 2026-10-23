@@ -7,7 +7,6 @@ This simple example shows how to extract signals from functional
 More precisely, this example shows how to use the
 :class:`~nilearn.maskers.NiftiLabelsMasker` object to perform this
 operation in just a few lines of code.
-
 """
 
 # %%

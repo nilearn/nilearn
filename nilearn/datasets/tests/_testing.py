@@ -81,7 +81,8 @@ def dict_to_archive(data, archive_format="gztar"):
 
     Returns
     -------
-    bytes : the contents of the resulting archive file, to be used for example
+    bytes
+        The contents of the resulting archive file, to be used for example
         as the contents of a mock response object (see Sender).
 
     Examples
@@ -94,7 +95,6 @@ def dict_to_archive(data, archive_format="gztar"):
         └── README.txt
 
     where labels.csv and README.txt contain the corresponding values in `data`
-
     """
     with tempfile.TemporaryDirectory() as root_tmp_dir:
         root_tmp_dir = Path(root_tmp_dir)
@@ -124,7 +124,6 @@ def list_to_archive(sequence, archive_format="gztar", content=""):
         └── README.txt
 
     and "labels.csv" and "README.txt" contain the value of `content`.
-
     """
     return dict_to_archive(
         dict.fromkeys(sequence, content), archive_format=archive_format

@@ -135,7 +135,7 @@ class ReportMixin:
         Returns
         -------
         list of str
-            the list of warnings, empty list if there are no warnings
+            The list of warnings, empty list if there are no warnings.
         """
         return sorted(set(self._report_content["warning_messages"]))
 
@@ -301,7 +301,6 @@ class ReportMixin:
         -------
         embed : :obj:`str`
             Binary image string.
-
         """
         if display is None:  # no image to display
             return None

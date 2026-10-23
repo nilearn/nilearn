@@ -2,7 +2,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import numpy as np
 from nibabel import Nifti1Image
@@ -33,7 +33,23 @@ from nilearn.maskers.base_masker import (
     sanitize_displayed_maps,
 )
 from nilearn.masking import load_mask_img
-from nilearn.nilearn_typing import Signals, SingleConfound
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    Signals,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 
 
 class _ExtractionFunctor:
@@ -139,7 +155,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         .. nilearn_versionadded:: 0.12.0
 
-
     Attributes
     ----------
     %(clean_args_)s
@@ -157,17 +172,16 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         .. nilearn_versionadded:: 0.9.2
 
-    Notes
-    -----
-    If resampling_target is set to "maps", every 3D image processed by
-    transform() will be resampled to the shape of maps_img. It may lead to a
-    very large memory consumption if the voxel number in maps_img is large.
-
     See Also
     --------
     nilearn.maskers.NiftiMasker
     nilearn.maskers.NiftiLabelsMasker
 
+    Notes
+    -----
+    If resampling_target is set to "maps", every 3D image processed by
+    transform() will be resampled to the shape of maps_img. It may lead to a
+    very large memory consumption if the voxel number in maps_img is large.
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
@@ -182,25 +196,25 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     def __init__(
         self,
-        maps_img=None,
-        mask_img=None,
-        allow_overlap=True,
-        smoothing_fwhm=None,
-        standardize=None,
-        standardize_confounds=True,
-        high_variance_confounds=False,
-        detrend=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
-        resampling_target="data",
-        memory=None,
-        memory_level=0,
-        verbose=0,
-        reports=True,
-        cmap="CMRmap_r",
-        clean_args=None,
+        maps_img: NiimgLike | None = None,
+        mask_img: NiimgLike | None = None,
+        allow_overlap: bool = True,
+        smoothing_fwhm: SmoothingFwhm = None,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        high_variance_confounds: bool = False,
+        detrend: Detrend = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
+        resampling_target: Literal["data", "mask", "maps"] | None = "data",
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 0,
+        verbose: Verbose = 0,
+        reports: bool = True,
+        cmap: ColormapLike = "CMRmap_r",
+        clean_args: dict[str, Any] | None = None,
     ):
         self.maps_img = maps_img
         self.mask_img = mask_img
@@ -275,7 +289,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         -------
         displays : :obj:`list`
             A list of all displays to be rendered.
-
         """
         if not self._has_report_data():
             return [None]
@@ -528,7 +541,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -718,7 +730,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(img_inv_transform_nifti)s
-
         """
         from nilearn.regions import signal_extraction
 

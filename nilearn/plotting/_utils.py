@@ -161,8 +161,8 @@ def get_cbar_ticks(
     Returns
     -------
     :class:`~numpy.ndarray`
-        an array with ``n_ticks`` elements if ``vmin`` != ``vmax``, else array
-        with one element.
+        An array with ``n_ticks`` elements if ``vmin`` != ``vmax``,
+        else array with one element.
     """
     f_vmin = float(tick_format % vmin)
     f_vmax = float(tick_format % vmax)

@@ -63,7 +63,6 @@ def compare_version(
     -------
     result : :obj:`bool`
         The result of the version comparison.
-
     """
     if operator not in VERSION_OPERATORS:
         error_msg = "'compare_version' received an unexpected operator "

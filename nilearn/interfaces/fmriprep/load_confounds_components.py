@@ -10,7 +10,6 @@ See an example below:
     loaded_confounds = getattr(components, f"_load_{component}")(
         confounds_raw, **params
     )  # noqa
-
 """
 
 import re

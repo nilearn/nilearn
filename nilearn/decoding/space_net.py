@@ -1,4 +1,4 @@
-"""sklearn-compatible implementation of spatially structured learners.
+"""Scikit-learn compatible implementation of spatially structured learners.
 
 For example: TV-L1, Graph-Net, etc
 """
@@ -49,7 +49,7 @@ from nilearn.utils.tags import InputTags
 
 
 def _crop_mask(mask):
-    """Crops input mask to produce tighter (i.e smaller) bounding box \
+    """Crop input mask to produce tighter (i.e smaller) bounding box \
     with the same support (active voxels).
     """
     idx = np.where(mask)
@@ -170,7 +170,6 @@ def _space_net_alpha_grid(
 
     logistic : :obj:`bool`, default=False
         Indicates where the underlying loss function is logistic.
-
     """
     if logistic:
         # Computes the theoretical upper bound for the overall
@@ -262,7 +261,7 @@ class _EarlyStoppingCallback:
         return False
 
     def _debias(self, w):
-        """Debias w by rescaling the coefficients by a fixed factor.
+        """Rescale the coefficients w by a fixed factor to debias them.
 
         Precisely, the scaling factor is: <y_pred, y_test> / ||y_test||^2.
         """
@@ -284,7 +283,6 @@ class _EarlyStoppingCallback:
         output, but tends to have 'flat' regions. The other
         is the Pearson correlation, that we can use to disambiguate
         between regions with equivalent Spearman correlation.
-
         """
         if self.is_classif:
             w = w[:-1]
@@ -316,11 +314,11 @@ def _center_data(X, y):
     Returns
     -------
     X : ndarray of shape (n_samples, n_features)
-        Centered version of X
+        Centered version of X.
     y : ndarray of shape (n_samples,) or (n_samples, n_targets)
-        Centered version of y
+        Centered version of y.
     y_offset : :obj:`float` or ndarray of shape (n_features,)
-        Mean of y
+        Mean of y.
     """
     X = check_array(
         X,
@@ -412,7 +410,6 @@ def path_scores(
     %(screening_percentile)s
 
     %(verbose0)s
-
     """
     if l1_ratios is None:
         raise ValueError("l1_ratios must be specified!")
@@ -658,7 +655,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
         .. nilearn_versionadded:: 0.12.0
 
     %(spacenet_fit_attributes)s
-
     """
 
     SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
@@ -1111,7 +1107,6 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
     See Also
     --------
     nilearn.decoding.SpaceNetRegressor: Graph-Net and TV-L1 priors/penalties
-
     """
 
     SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
@@ -1329,14 +1324,11 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
 
         .. nilearn_versionadded:: 0.12.1
 
-
     %(spacenet_fit_attributes)s
-
 
     See Also
     --------
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
-
     """
 
     def __init__(

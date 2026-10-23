@@ -179,6 +179,10 @@ def load_confounds_strategy(
         - Non-steady-state volumes (if present)
         - Motion outliers detected by scrubbing
 
+    See Also
+    --------
+    :func:`nilearn.interfaces.fmriprep.load_confounds`
+
     Notes
     -----
     1. The following table details the default options of each preset
@@ -232,15 +236,9 @@ def load_confounds_strategy(
             and consequently the suffixes of files produced by `fmripost-aroma`
             may differ from the ones produced by `fMRIPrep < 24.0.0`.
 
-
-    See Also
-    --------
-    :func:`nilearn.interfaces.fmriprep.load_confounds`
-
     References
     ----------
     .. footbibliography::
-
     """
     check_parameter_in_allowed(
         denoise_strategy, preset_strategies.keys(), "denoise_strategy"

@@ -84,7 +84,6 @@ def show() -> None:
     This function is equivalent to :func:`matplotlib.pyplot.show`,
     but is skipped on the 'Agg' backend where it has no effect other
     than to emit a warning.
-
     """
     if get_backend().lower() != "agg":  # avoid warnings
         plt.show()
@@ -419,11 +418,6 @@ def plot_img(
     ValueError
         if the specified threshold is a negative number
 
-    Notes
-    -----
-    This is a low-level function. For most use cases, other plotting
-    functions might be more appropriate and easier to use.
-
     See Also
     --------
         :func:`~nilearn.plotting.plot_anat`
@@ -436,6 +430,11 @@ def plot_img(
             To simply plot probabilistic atlases (4D images)
         :mod:`nilearn.plotting`
             See API reference for other options
+
+    Notes
+    -----
+    This is a low-level function. For most use cases, other plotting
+    functions might be more appropriate and easier to use.
 
     Examples
     --------
@@ -450,7 +449,6 @@ def plot_img(
         >>>
         >>> display = plot_img(data, title="Plotting a 3D image with plot_img")
         >>> show()
-
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -595,7 +593,6 @@ def plot_anat(
         >>> fig = plot_anat(mni152_template, title="mni152 template")
         >>>
         >>> show()
-
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -762,7 +759,6 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     -------
     display : :class:`~nilearn.plotting.displays.BaseSlicer`, object
         Contours displayed on the background image.
-
     """
     roi_img = check_niimg_3d(roi_img)
     roi_data = get_data(roi_img)
@@ -902,6 +898,11 @@ def plot_roi(
     ValueError
         if the specified threshold is a negative number
 
+    See Also
+    --------
+    nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
+        (4D images)
+
     Notes
     -----
     A small threshold is applied by default to eliminate numerical
@@ -909,11 +910,6 @@ def plot_roi(
 
     For visualization, non-finite values found in passed 'roi_img' or
     'bg_img' are set to zero.
-
-    See Also
-    --------
-    nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
-        (4D images)
 
     Examples
     --------
@@ -1379,18 +1375,18 @@ def plot_stat_map(
     ValueError
         if the specified threshold is a negative number
 
+    See Also
+    --------
+    nilearn.plotting.plot_anat : To simply plot anatomical images
+    nilearn.plotting.plot_epi : To simply plot raw EPI images
+    nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
 
     For visualization, non-finite values found in passed 'stat_map_img' or
     'bg_img' are set to zero.
-
-    See Also
-    --------
-    nilearn.plotting.plot_anat : To simply plot anatomical images
-    nilearn.plotting.plot_epi : To simply plot raw EPI images
-    nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
 
     Examples
     --------
@@ -1778,7 +1774,6 @@ def plot_connectome(
         coords on brain parcellations.
     nilearn.plotting.find_probabilistic_atlas_cut_coords : Extraction of
         node coords on brain probabilistic atlases.
-
     """
     check_params(locals())
 
@@ -2097,7 +2092,6 @@ def plot_carpet(
         ... )
         >>>
         >>> show()
-
     """
     check_params(locals())
     img = check_niimg_4d(img, dtype="auto")
