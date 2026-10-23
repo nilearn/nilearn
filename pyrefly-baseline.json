@@ -61,11 +61,6 @@
       "concise_description": "`>` is not supported between `None` and `float`"
     },
     {
-      "path": "nilearn/plotting/html_stat_map.py",
-      "name": "bad-argument-type",
-      "concise_description": "Argument `str | Unknown` is not assignable to parameter `black_bg` with type `Literal['auto'] | bool` in function `load_bg_img`"
-    },
-    {
       "path": "nilearn/regions/region_extractor.py",
       "name": "bad-argument-type",
       "concise_description": "Argument `Iterable[Unknown] | list[str | Unknown]` is not assignable to parameter `obj` with type `Sized` in function `len`"
