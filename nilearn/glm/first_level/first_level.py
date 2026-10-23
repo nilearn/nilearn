@@ -703,6 +703,8 @@ class FirstLevelModel(BaseGLM):
         elif step == "masking":
             msg = "Performing mask computation."
         elif step == "masking_done":
+            if TYPE_CHECKING:
+                assert time_in_second is not None
             msg = f"Masking took {int(time_in_second)} seconds."
         elif step == "done":
             msg = (
