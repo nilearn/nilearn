@@ -590,8 +590,11 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
     def send(
         self,
         request,
+        stream=False,  # noqa: ARG002
         timeout=None,
-        **kwargs,  # noqa: ARG002
+        verify=True,  # noqa: ARG002
+        cert=None,  # noqa: ARG002
+        proxies=None,  # noqa: ARG002
     ):
         with contextlib.suppress(Exception):
             timeout, _ = timeout

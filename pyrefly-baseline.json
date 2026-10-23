@@ -6,11 +6,6 @@
       "concise_description": "Argument `tuple[Unknown, Unknown]` is not assignable to parameter `object` with type `list[Unknown]` in function `list.append`"
     },
     {
-      "path": "nilearn/datasets/_utils.py",
-      "name": "bad-override",
-      "concise_description": "Class member `_NaiveFTPAdapter.send` overrides parent class `BaseAdapter` in an inconsistent manner"
-    },
-    {
       "path": "nilearn/datasets/func.py",
       "name": "bad-argument-type",
       "concise_description": "Argument `int | None` is not assignable to parameter `x` with type `Buffer | SupportsFloat | SupportsIndex | str` in function `float.__new__`"
