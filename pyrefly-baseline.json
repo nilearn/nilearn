@@ -11,16 +11,6 @@
       "concise_description": "Argument `int | None` is not assignable to parameter `x` with type `Buffer | SupportsFloat | SupportsIndex | str` in function `float.__new__`"
     },
     {
-      "path": "nilearn/decoding/space_net.py",
-      "name": "bad-argument-type",
-      "concise_description": "Argument `Iterable[Unknown] | list[Unknown]` is not assignable to parameter `obj` with type `Sized` in function `len`"
-    },
-    {
-      "path": "nilearn/decoding/space_net.py",
-      "name": "bad-argument-type",
-      "concise_description": "Argument `Iterable[Unknown] | list[Unknown]` is not assignable to parameter `obj` with type `Sized` in function `len`"
-    },
-    {
       "concise_description": "Argument `DataFrame | Path | list[DataFrame | Path | ndarray | str | None] | ndarray | str` is not assignable to parameter `iter2` with type `Iterable[Hashable]` in function `zip.__new__`",
       "name": "bad-argument-type",
       "path": "nilearn/decomposition/_base.py"
