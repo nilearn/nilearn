@@ -52,6 +52,7 @@ body:
         label: Python version
         description: What python version are you using?
         options:
+        -   label: '3.15'
         -   label: '3.14'
         -   label: '3.13'
         -   label: '3.12'
