@@ -697,6 +697,8 @@ class FirstLevelModel(BaseGLM):
         elif step == "running":
             msg = "Performing GLM computation."
         elif step == "run_done":
+            if TYPE_CHECKING:
+                assert time_in_second is not None
             msg = f"GLM took {int(time_in_second)} seconds."
         elif step == "masking":
             msg = "Performing mask computation."
