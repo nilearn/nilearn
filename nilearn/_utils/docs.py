@@ -11,6 +11,7 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 
 # sourcery skip: merge-dict-assign
 
+import importlib
 import json
 import re
 import sys
@@ -2012,11 +2013,14 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
         license="usage is unrestricted for non-commercial research purposes.",
     ),
     "dosenbach_2010_atlas": Bunch(),
-    "fiac": Bunch(license="unknown"),
+    "fiac": Bunch(),
+    "fsaverage": Bunch(),
+    "fsaverage_polymesh": Bunch(),
     "harvard_oxford_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
         license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
     ),
+    "icbm152_2009": Bunch(),
     "juelich_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
         license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
@@ -2027,6 +2031,9 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     ),
     "msdl_atlas": Bunch(
         license="usage is unrestricted for non-commercial research purposes."
+    ),
+    "oasis_vbm": Bunch(
+        license="Provided under an open access data use agreement (DUA)."
     ),
     "pauli_2017_atlas": Bunch(
         content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
@@ -2076,7 +2083,10 @@ def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
                 "to dataset description: key already present."
             )
         content[key] = Bunch(**value)
-        content[key].type = eval(content[key].type)
+        # nilearn types cannot be imported here (circular import):
+        # keep them as strings, they are resolved lazily when needed.
+        if not content[key].type.startswith("nilearn."):
+            content[key].type = eval(content[key].type)
 
     return content
 
@@ -2131,7 +2141,7 @@ def content_to_rst(name: str, indent="") -> str:
 def type_to_rst(type_) -> str:
     """Render a type (or type hint) as restructured text."""
     if isinstance(type_, str):
-        return type_
+        return f":class:`{type_}`" if type_.startswith("nilearn.") else type_
     if type_ is None or type_ is type(None):
         return "``None``"
 
@@ -2185,10 +2195,16 @@ def render_description_directives(rst: str) -> str:
 def _matches_type(value, type_) -> bool:
     """Check if value matches a type (or type hint).
 
-    Types given as strings cannot be checked and are considered a match.
+    Nilearn types given as dotted strings (e.g. 'nilearn.surface.PolyMesh')
+    are imported before checking.
+    Other types given as strings cannot be checked
+    and are considered a match.
     """
     if isinstance(type_, str):
-        return True
+        if not type_.startswith("nilearn."):
+            return True
+        module, name = type_.rsplit(".", 1)
+        type_ = getattr(importlib.import_module(module), name)
     if type_ is None or type_ is type(None):
         return value is None
 
