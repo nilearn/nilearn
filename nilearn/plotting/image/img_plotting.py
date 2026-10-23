@@ -243,6 +243,8 @@ def _plot_img_with_bg(
         )
         warnings.warn(nan_msg, stacklevel=find_stack_level())
 
+    data = np.empty(1)
+    affine = np.empty(1)
     if img is not False and img is not None:
         img = check_niimg_3d(img, dtype="auto")
         data = safe_get_data(img, ensure_finite=True)
@@ -930,8 +932,9 @@ def plot_roi(
 
     valid_view_types = ["continuous", "contours"]
     check_parameter_in_allowed(view_type, valid_view_types, "view_type")
+
+    img = roi_img
     if view_type == "contours":
-        img = roi_img
         roi_img = None
 
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
@@ -2106,6 +2109,7 @@ def plot_carpet(
         mask_img = check_niimg_3d(mask_img, dtype="auto")
 
     is_atlas = len(np.unique(mask_img.get_fdata())) > 2
+    atlas_values = np.empty(1)
     if is_atlas:
         background_label = 0
 

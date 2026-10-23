@@ -679,7 +679,9 @@ def check_nilearn_methods_sample_order_invariance(estimator) -> None:
         }
         new_X = new_img_like(X, data=data)
 
-    elif isinstance(X, Nifti1Image):
+    else:
+        if TYPE_CHECKING:
+            assert isinstance(X, Nifti1Image)
         data = _rng().random((*X.shape[:3], n_samples))
 
         new_X = new_img_like(X, data=data)
@@ -1357,12 +1359,14 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
             else:
                 assert not any(warning_present)
 
+            output_dtype = output_img.data._dtype
+            if isinstance(output_img, Nifti1Image):
+                output_dtype = (
+                    f"img type={img_data_dtype(output_img)}, "
+                    f"dataobj type={output_img.get_data_dtype()}"
+                )
             try:
                 if isinstance(output_img, Nifti1Image):
-                    output_dtype = (
-                        f"img type={img_data_dtype(output_img)}, "
-                        f"dataobj type={output_img.get_data_dtype()}"
-                    )
                     if target_dtype != np.int64:
                         # ensure both image and dataobj have consistent type
                         assert (
@@ -1378,7 +1382,6 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
                         assert img_data_dtype(output_img) == "int32"
                         assert output_img.get_data_dtype() == target_dtype
                 else:
-                    output_dtype = output_img.data._dtype
                     assert output_dtype == target_dtype
             except AssertionError as e:
                 raise TypeError(
@@ -1464,7 +1467,9 @@ def check_img_estimator_clean_dtype(estimator_orig) -> None:
             input_img = Nifti1Image(
                 data.astype(input_dtype), _affine_eye(), dtype=input_dtype
             )
-        elif accepts_surface(estimator_orig):
+        else:
+            if TYPE_CHECKING:
+                assert accepts_surface(estimator_orig)
             input_img = _make_surface_img(n_samples)
             input_img.data._set_dtype(input_dtype)
 
@@ -1708,11 +1713,11 @@ def check_img_estimator_standardization(estimator_orig) -> None:
 
         unstandarized_result = results[str(None)]
 
-        if isinstance(estimator, _BaseDecomposition):
+        if isinstance(estimator_orig, _BaseDecomposition):
             # TODO
             return
 
-        if isinstance(estimator, Decoder):
+        if isinstance(estimator_orig, Decoder):
             # differences are too small to have an effect in this test
             return
 
@@ -2775,9 +2780,8 @@ def check_masker_inverse_transform(estimator_orig) -> None:
 
         estimator.fit(imgs)
 
-        if i == 0:
-            signals = _rng().random((estimator.n_elements_,))
-        elif i == 1:
+        signals = _rng().random((estimator.n_elements_,))
+        if i == 1:
             signals = _rng().random((1, estimator.n_elements_))
         elif i == 2:
             signals = _rng().random((10, estimator.n_elements_))

@@ -26,7 +26,7 @@ Note that more power would be obtained from using a larger sample of subjects.
 .. seealso::
 
     For more information
-    see the :ref:`dataset description <oasis_maps>`.
+    see the :ref:`dataset description <oasis_vbm>`.
 """
 
 # %%
