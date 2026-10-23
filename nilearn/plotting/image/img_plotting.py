@@ -243,6 +243,8 @@ def _plot_img_with_bg(
         )
         warnings.warn(nan_msg, stacklevel=find_stack_level())
 
+    data = np.empty(1)
+    affine = np.empty(1)
     if img is not False and img is not None:
         img = check_niimg_3d(img, dtype="auto")
         data = safe_get_data(img, ensure_finite=True)
@@ -418,11 +420,6 @@ def plot_img(
     ValueError
         if the specified threshold is a negative number
 
-    Notes
-    -----
-    This is a low-level function. For most use cases, other plotting
-    functions might be more appropriate and easier to use.
-
     See Also
     --------
         :func:`~nilearn.plotting.plot_anat`
@@ -435,6 +432,11 @@ def plot_img(
             To simply plot probabilistic atlases (4D images)
         :mod:`nilearn.plotting`
             See API reference for other options
+
+    Notes
+    -----
+    This is a low-level function. For most use cases, other plotting
+    functions might be more appropriate and easier to use.
 
     Examples
     --------
@@ -898,6 +900,11 @@ def plot_roi(
     ValueError
         if the specified threshold is a negative number
 
+    See Also
+    --------
+    nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
+        (4D images)
+
     Notes
     -----
     A small threshold is applied by default to eliminate numerical
@@ -905,11 +912,6 @@ def plot_roi(
 
     For visualization, non-finite values found in passed 'roi_img' or
     'bg_img' are set to zero.
-
-    See Also
-    --------
-    nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
-        (4D images)
 
     Examples
     --------
@@ -930,8 +932,9 @@ def plot_roi(
 
     valid_view_types = ["continuous", "contours"]
     check_parameter_in_allowed(view_type, valid_view_types, "view_type")
+
+    img = roi_img
     if view_type == "contours":
-        img = roi_img
         roi_img = None
 
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
@@ -1375,18 +1378,18 @@ def plot_stat_map(
     ValueError
         if the specified threshold is a negative number
 
+    See Also
+    --------
+    nilearn.plotting.plot_anat : To simply plot anatomical images
+    nilearn.plotting.plot_epi : To simply plot raw EPI images
+    nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
 
     For visualization, non-finite values found in passed 'stat_map_img' or
     'bg_img' are set to zero.
-
-    See Also
-    --------
-    nilearn.plotting.plot_anat : To simply plot anatomical images
-    nilearn.plotting.plot_epi : To simply plot raw EPI images
-    nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
 
     Examples
     --------
@@ -2106,6 +2109,7 @@ def plot_carpet(
         mask_img = check_niimg_3d(mask_img, dtype="auto")
 
     is_atlas = len(np.unique(mask_img.get_fdata())) > 2
+    atlas_values = np.empty(1)
     if is_atlas:
         background_label = 0
 

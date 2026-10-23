@@ -1,4 +1,4 @@
-"""sklearn-compatible implementation of spatially structured learners.
+"""Scikit-learn compatible implementation of spatially structured learners.
 
 For example: TV-L1, Graph-Net, etc
 """
@@ -49,7 +49,7 @@ from nilearn.utils.tags import InputTags
 
 
 def _crop_mask(mask):
-    """Crops input mask to produce tighter (i.e smaller) bounding box \
+    """Crop input mask to produce tighter (i.e smaller) bounding box \
     with the same support (active voxels).
     """
     idx = np.where(mask)
@@ -261,7 +261,7 @@ class _EarlyStoppingCallback:
         return False
 
     def _debias(self, w):
-        """Debias w by rescaling the coefficients by a fixed factor.
+        """Rescale the coefficients w by a fixed factor to debias them.
 
         Precisely, the scaling factor is: <y_pred, y_test> / ||y_test||^2.
         """
@@ -314,11 +314,11 @@ def _center_data(X, y):
     Returns
     -------
     X : ndarray of shape (n_samples, n_features)
-        Centered version of X
+        Centered version of X.
     y : ndarray of shape (n_samples,) or (n_samples, n_targets)
-        Centered version of y
+        Centered version of y.
     y_offset : :obj:`float` or ndarray of shape (n_features,)
-        Mean of y
+        Mean of y.
     """
     X = check_array(
         X,

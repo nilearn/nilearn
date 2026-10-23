@@ -408,6 +408,7 @@ def butterworth(
     nyq = sampling_rate * 0.5
 
     critical_freq = []
+    btype = "low"  # scipy.signal.butter default
     if high_pass is not None:
         btype = "high"
         critical_freq.append(_check_wn(btype, high_pass, nyq))
@@ -506,7 +507,11 @@ def high_variance_confounds(
     Returns
     -------
     v : :class:`numpy.ndarray`
-        Highest variance confounds. Shape: (samples, n_confounds)
+        Highest variance confounds with shape: (samples, n_confounds).
+
+    See Also
+    --------
+    nilearn.image.high_variance_confounds
 
     Notes
     -----
@@ -524,10 +529,6 @@ def high_variance_confounds(
     References
     ----------
     .. footbibliography::
-
-    See Also
-    --------
-    nilearn.image.high_variance_confounds
     """
     check_params(locals())
     if detrend:
@@ -700,6 +701,10 @@ def clean(
         Input signals, cleaned. Same shape as `signals` unless `sample_mask`
         is applied.
 
+    See Also
+    --------
+    nilearn.image.clean_img
+
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
@@ -711,10 +716,6 @@ def clean(
     References
     ----------
     .. footbibliography::
-
-    See Also
-    --------
-    nilearn.image.clean_img
 
     Examples
     --------
@@ -958,7 +959,7 @@ def create_cosine_drift(high_pass, frame_times):
     Returns
     -------
     cosine_drift : array of shape(n_scans, n_drifts)
-        Cosine drifts plus a constant regressor at cosine_drift[:, -1]
+        Cosine drifts plus a constant regressor at cosine_drift[:, -1].
 
     References
     ----------

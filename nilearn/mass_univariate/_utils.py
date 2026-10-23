@@ -319,7 +319,7 @@ def normalize_matrix_on_axis(m, axis=0):
     Returns
     -------
     ret : numpy array, shape = m.shape
-        The normalized matrix
+        The normalized matrix.
 
     Examples
     --------
@@ -394,7 +394,7 @@ def orthonormalize_matrix(m, tol=1.0e-12):
 def t_score_with_covars_and_normalized_design(
     tested_vars, target_vars, covars_orthonormalized=None
 ):
-    """t-score in the regression of tested variates against target variates.
+    """Compute t-scores of tested variates regressed against target variates.
 
     Covariates are taken into account (if not None).
     The normalized_design case corresponds to the following assumptions:
@@ -418,8 +418,8 @@ def t_score_with_covars_and_normalized_design(
     Returns
     -------
     score : numpy.ndarray, shape=(n_target_vars, n_tested_vars)
-        t-scores associated with the tests of each explanatory variate against
-        each target variate (in the presence of covars).
+        T-scores associated with the tests of each explanatory variate
+        against each target variate (in the presence of covars).
     """
     if covars_orthonormalized is None:
         lost_dof = 0

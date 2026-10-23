@@ -76,7 +76,7 @@ class OrthoProjector(OrthoSlicer):
         Returns
         -------
         cut_coords : :obj:`tuple` of `None`
-            tuple of None of length corresponding to the number of
+            Tuple of None of length corresponding to the number of
             directions of this projector.
         """
         return (None,) * len(cls._cut_displayed)

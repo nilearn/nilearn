@@ -219,7 +219,7 @@ def _wrap_param_grid(param_grid, param_name):
     Returns
     -------
     dict of str to sequence, or sequence of such
-        The updated parameter grid
+        The updated parameter grid.
     """
     if param_grid is None:
         return param_grid
@@ -273,7 +273,7 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
     Returns
     -------
     dict of str to sequence, or sequence of such
-        The updated parameter grid
+        The updated parameter grid.
     """
     # ensure param_grid is a list so that we can loop over it
     input_is_dict = isinstance(param_grid, dict)
@@ -977,9 +977,9 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         Returns
         -------
         coefs : dict
-            Coefficients for each classification/regression problem
+            Coefficients for each classification/regression problem.
         intercepts : dict
-            Intercept for each classification/regression problem
+            Intercept for each classification/regression problem.
         """
         coefs = {}
         intercepts = {}
@@ -1574,15 +1574,15 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(base_decoder_fit_attributes)s
 
-    References
-    ----------
-    .. footbibliography::
-
     See Also
     --------
     nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
     nilearn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(
@@ -1769,15 +1769,15 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     n_classes_ : int
         number of classes
 
-    References
-    ----------
-    .. footbibliography::
-
     See Also
     --------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
     nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(

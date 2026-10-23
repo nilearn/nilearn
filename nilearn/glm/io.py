@@ -132,7 +132,7 @@ def save_glm_to_bids(
 
 
 @fill_doc
-def save_glm_to_bids(
+def save_glm_to_bids(  # numpydoc ignore=RT05
     model,
     contrasts,
     first_level_contrast=None,
@@ -422,6 +422,7 @@ def save_glm_to_bids(
         first_level_contrast=first_level_contrast,
     )
     for contrast_name, contrast_maps in statistical_maps.items():
+        img = None
         for output_type in contrast_maps:
             if output_type in ["metadata", "clusters_tsv"]:
                 continue
@@ -445,6 +446,8 @@ def save_glm_to_bids(
                         )
                     )
 
+        if TYPE_CHECKING:
+            assert img is not None
         thresholded_img, threshold = threshold_stats_img(
             stat_img=img,
             threshold=report_kwargs["threshold"],

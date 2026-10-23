@@ -57,9 +57,8 @@ def set_mpl_backend() -> None:
 
 
 def engine_warning(engine: str) -> None:
-    if engine == "matplolib":
-        option = "plotting"
-    elif engine == "plotly":
+    option = "plotting"
+    if engine == "plotly":
         option = "matplolib, plotly"
     message = (
         f"'{engine}' is not installed. To be able to use '{engine}' as "
@@ -161,8 +160,8 @@ def get_cbar_ticks(
     Returns
     -------
     :class:`~numpy.ndarray`
-        an array with ``n_ticks`` elements if ``vmin`` != ``vmax``, else array
-        with one element.
+        An array with ``n_ticks`` elements if ``vmin`` != ``vmax``,
+        else array with one element.
     """
     f_vmin = float(tick_format % vmin)
     f_vmax = float(tick_format % vmax)

@@ -86,7 +86,7 @@ def is_volume_image(imgs) -> bool:
     Returns
     -------
     bool
-        True if volume object or iterable of volume objects, False otherwise
+        True if volume object or iterable of volume objects, False otherwise.
     """
     if not (
         isinstance(imgs, (NiimgLike, SpatialImage))
@@ -114,7 +114,7 @@ def is_empty_volume(img) -> bool:
     Returns
     -------
     bool
-        True if the image is empty; False otherwise
+        True if the image is empty; False otherwise.
     """
     return 0 in img.dataobj.shape
 
@@ -263,6 +263,10 @@ def high_variance_confounds(
     :class:`numpy.ndarray`
         Highest variance confounds. Shape: *(number_of_scans, n_confounds)*.
 
+    See Also
+    --------
+    nilearn.signal.high_variance_confounds
+
     Notes
     -----
     This method is related to what has been published in the literature
@@ -275,10 +279,6 @@ def high_variance_confounds(
     - Computes an SVD of the extracted signals.
     - Returns a given number (n_confounds) of signals from the SVD with
       highest singular values.
-
-    See Also
-    --------
-    nilearn.signal.high_variance_confounds
     """
     from nilearn import masking
 
@@ -642,7 +642,7 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
 
 @fill_doc
 def _crop_img_to(img, slices, copy=True, copy_header=True):
-    """Crops an image to a smaller size.
+    """Crop an image to a smaller size.
 
     Crop `img` to size indicated by slices and adjust affine accordingly.
 
@@ -673,7 +673,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
     offset : :obj:`list`, optional
         List of tuples representing the number of voxels removed
         (before, after) the cropped volumes, i.e.:
-        *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
+        *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*.
     """
     img = check_niimg(img)
     data = _get_data(img)
@@ -705,7 +705,7 @@ def crop_img(
     return_offset: bool = False,
     copy_header: bool = True,
 ) -> Nifti1Image | tuple[Nifti1Image, tuple[slice, ...]]:
-    """Crops an image as much as possible.
+    """Crop an image as much as possible.
 
     Will crop `img`, removing as many zero entries as possible without
     touching non-zero entries.
@@ -1099,7 +1099,7 @@ def index_img(imgs: NiimgLike, index) -> Nifti1Image: ...
 
 
 def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
-    """Indexes into a image in the last dimension.
+    """Index into an image in the last dimension.
 
     Common use cases include extracting an image out of `img` or
     creating a 4D (or 2D for surface) image
@@ -1692,6 +1692,7 @@ def threshold_img(
             f"Got {img.__class__.__name__}."
         )
 
+    affine = np.empty(1)
     if isinstance(img, NiimgLike):
         img = check_niimg(img)
         img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
@@ -2277,6 +2278,10 @@ def clean_img(
     Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Input images, cleaned. Same shape as `imgs`.
 
+    See Also
+    --------
+        nilearn.signal.clean
+
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
@@ -2288,10 +2293,6 @@ def clean_img(
     References
     ----------
     .. footbibliography::
-
-    See Also
-    --------
-        nilearn.signal.clean
 
     Examples
     --------
@@ -2766,7 +2767,7 @@ def copy_img(img) -> Nifti1Image:
     Returns
     -------
     img_copy : :obj:`~nibabel.nifti1.Nifti1Image`
-        copy of input (data, affine and header)
+        Copy of input (data, affine and header).
 
     Examples
     --------
@@ -3111,6 +3112,10 @@ def check_niimg(
         and that its data can be retrieved
         with :func:`nilearn.image.get_data`.
 
+    See Also
+    --------
+        check_niimg_3d, check_niimg_4d
+
     Notes
     -----
     In nilearn, special care has been taken to make image manipulation easy.
@@ -3120,10 +3125,6 @@ def check_niimg(
     and loads them if necessary.
 
     Its application is idempotent.
-
-    See Also
-    --------
-        check_niimg_3d, check_niimg_4d
 
     Examples
     --------

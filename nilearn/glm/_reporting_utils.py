@@ -787,7 +787,7 @@ def _stat_map_to_png(
         PNG Image Data representing a statistical map.
 
     fig : matplotlib figure
-        only used for testing
+        Only used for testing.
     """
     if not is_matplotlib_installed():
         return None, None

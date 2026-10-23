@@ -400,7 +400,7 @@ def test_smooth_img_integer_input_conserves_mass(affine_eye, dtype):
 
 @pytest.mark.parametrize("create_files", (False, True))
 def test_smooth_img(tmp_path, create_files):
-    """Checks added functionalities compared to image._smooth_array()."""
+    """Check added functionalities compared to image._smooth_array()."""
     shapes = ((10, 11, 12), (13, 14, 15))
     lengths = (17, 18)
     fwhm = (1.0, 2.0, 3.0)
@@ -1199,6 +1199,8 @@ def _check_thresholded_output(input, output, threshold) -> None:
     - a one-sided threshold that keeps data > threshold
     - no extra mask used
     """
+    original_data = np.empty(1)
+    data = np.empty(1)
     if isinstance(input, Nifti1Image):
         original_data = input.get_fdata()
         data = output.get_fdata()
@@ -2037,8 +2039,9 @@ def test_new_img_like_mgh_image(affine_eye, shape_3d_default):
 
 
 @pytest.mark.parametrize("image", [MGHImage, AnalyzeImage])
+@pytest.mark.ai_generated
 def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
-    """Checks defaulting boolean input data to np.uint8 dtype is valid \
+    """Check defaulting boolean input data to np.uint8 dtype is valid \
        forencoding with nibabel image classes MGHImage and AnalyzeImage.
     """
     data = rng.standard_normal(shape_3d_default).astype("uint8")
@@ -2420,6 +2423,10 @@ def img_in_home_folder(
     is deleted after the test,
     even if the test fails.
     https://docs.pytest.org/en/stable/how-to/fixtures.html#teardown-cleanup-aka-fixture-finalization
+
+    Yields
+    ------
+    nibabel.Nifti1Image
     """
     created_file = Path("~/test.nii")
     img_3d_mni.to_filename(created_file.expanduser())
@@ -2509,7 +2516,12 @@ def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
 
 @pytest.fixture
 def set_expand_path_wildcards() -> Generator[None, None, None]:
-    """Toggles EXPAND_PATH_WILDCARDS before and after a test."""
+    """Toggle EXPAND_PATH_WILDCARDS before and after a test.
+
+    Yields
+    ------
+    None
+    """
     # Test when global variable is set to False => no globbing allowed
     ni.EXPAND_PATH_WILDCARDS = False
     yield

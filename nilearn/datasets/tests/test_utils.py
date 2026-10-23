@@ -19,33 +19,6 @@ from nilearn.datasets.tests.conftest import Response
 
 datadir = _utils.PACKAGE_DIRECTORY / "data"
 
-DATASET_NAMES = {
-    "ABIDE_pcp",
-    "adhd",
-    "brainomics_localizer",
-    "development_fmri",
-    "dosenbach_2010",
-    "fiac",
-    "fsaverage3",
-    "fsaverage4",
-    "fsaverage5",
-    "fsaverage6",
-    "fsaverage",
-    "haxby2001",
-    "icbm152_2009",
-    "language_localizer_demo",
-    "localizer_first_level",
-    "Megatrawls",
-    "mixed_gambles",
-    "miyawaki2008",
-    "neurovault",
-    "nki_enhanced_surface",
-    "oasis1",
-    "power_2011",
-    "spm_auditory",
-    "spm_multimodal",
-}
-
 
 @pytest.mark.parametrize(
     ("n_subjects", "expected"),
@@ -473,6 +446,18 @@ def test_uncompress_gzip(tmp_path, ext):
     _utils.uncompress_file(ztemp, verbose=0)
 
     assert (tmp_path / ftemp).exists()
+
+
+@pytest.mark.parametrize(
+    "target, expected",
+    [("data/file.txt", True), ("data-other/file.txt", False)],
+)
+def test_is_within_directory_path_components(tmp_path, target, expected):
+    """Check containment by directory components, not character prefixes."""
+    assert (
+        _utils._is_within_directory(tmp_path / "data", tmp_path / target)
+        is expected
+    )
 
 
 def test_safe_extract(tmp_path):

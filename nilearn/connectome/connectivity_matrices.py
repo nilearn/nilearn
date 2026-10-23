@@ -119,10 +119,6 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
     See Algorithm 3 of :footcite:t:`Fletcher2007`.
 
-    References
-    ----------
-    .. footbibliography::
-
     Parameters
     ----------
     matrices : :obj:`list` of numpy.ndarray, \
@@ -147,6 +143,10 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     -------
     gmean : numpy.ndarray, shape (n_features, n_features)
         Geometric mean of the matrices.
+
+    References
+    ----------
+    .. footbibliography::
     """
     # Shape and symmetry positive definiteness checks
     n_features = matrices[0].shape[0]
@@ -293,16 +293,16 @@ def vec_to_sym_matrix(vec, diagonal=None) -> np.ndarray:
     sym : numpy.ndarray, shape (..., n_columns, n_columns).
         The output symmetric matrix.
 
+    See Also
+    --------
+    nilearn.connectome.sym_matrix_to_vec
+
     Notes
     -----
     This function is meant to be the inverse of sym_matrix_to_vec. If you have
     discarded the diagonal in sym_matrix_to_vec, you need to provide it
     separately to reconstruct the symmetric matrix. For instance this can be
     useful for correlation matrices for which we know the diagonal is 1.
-
-    See Also
-    --------
-    nilearn.connectome.sym_matrix_to_vec
 
     Examples
     --------
@@ -624,6 +624,8 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             )
 
         # Compute all the matrices, stored in "connectivities"
+        connectivities = []
+        covariances = []
         if self.kind == "correlation":
             covariances_std = [
                 self.cov_estimator_.fit(

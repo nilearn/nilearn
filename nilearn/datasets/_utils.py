@@ -226,6 +226,7 @@ def _chunk_read_(
         )
         total_size = None
 
+    task_id = None
     use_rich = report_hook and _has_rich()
     if use_rich:
         from rich.progress import (
@@ -262,7 +263,7 @@ def _chunk_read_(
         # otherwise the progress bar stays as the active live display
         # and all subsequent downloads fail.
         if use_rich:
-            progress.start()
+            progress.start()  # type: ignore[unbound-name]
         for chunk in response.iter_content(chunk_size):
             bytes_so_far += len(chunk)
 
@@ -412,9 +413,7 @@ def _is_within_directory(directory, target):
     abs_directory = Path(directory).resolve().absolute()
     abs_target = Path(target).resolve().absolute()
 
-    prefix = os.path.commonprefix([abs_directory, abs_target])
-
-    return prefix == str(abs_directory)
+    return abs_target.is_relative_to(abs_directory)
 
 
 def _safe_extract(tar, path=".", members=None, *, numeric_owner=False) -> None:

@@ -60,6 +60,20 @@ def requires_y(estimator) -> bool:
     return getattr(tags.target_tags, "required", True)
 
 
+def run_method(estimator, method, X, y):
+    """Run the specified method on the estimator with correct parameters."""
+    if method == "score":
+        return getattr(estimator, method)(X, y)
+    elif method == "generate_report":
+        # TODO
+        # fix for free threaded python
+        if not is_gil_enabled():
+            pytest.xfail("May fail without the GIL")
+        return getattr(estimator, method)()
+    else:
+        return getattr(estimator, method)(X)
+
+
 def generate_data_to_fit(estimator: NilearnBaseEstimator):
     """Generate fit data for the specified estimator."""
     if is_glm(estimator):

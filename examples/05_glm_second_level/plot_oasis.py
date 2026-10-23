@@ -10,7 +10,7 @@ relationship between aging, sex, and gray matter density.
     This example uses:
 
     - the :ref:`ICBM 152 template <icbm_152_template>`
-    - the :ref:`OASIS VBM dataset <oasis_maps>`
+    - the :ref:`OASIS VBM dataset <oasis_vbm>`
       run through a standard :term:`VBM` pipeline
       (using SPM8 and NewSegment)
       to create :term:`VBM` maps, which we study here.

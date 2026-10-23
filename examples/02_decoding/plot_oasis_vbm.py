@@ -7,7 +7,7 @@ to study the relationship between aging and gray matter density.
 
 .. admonition:: dataset
 
-    This example uses the :ref:`OASIS VBM dataset <oasis_maps>`.
+    This example uses the :ref:`OASIS VBM dataset <oasis_vbm>`.
 
     It has been processed through a standard :term:`VBM` pipeline
     (using SPM8 and NewSegment)
@@ -52,13 +52,13 @@ from nilearn.datasets import fetch_oasis_vbm
 n_subjects = 200  # more subjects require more memory
 
 oasis_dataset = fetch_oasis_vbm(n_subjects=n_subjects, verbose=verbose)
+gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 
 print(
     "First gray-matter anatomy image (3D) is located at: "
-    f"{oasis_dataset.gray_matter_maps[0]}"
+    f"{gray_matter_map_filenames[0]}"
 )
 
-gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars["age"].to_numpy()
 gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
     gray_matter_map_filenames, age, train_size=0.6, random_state=0

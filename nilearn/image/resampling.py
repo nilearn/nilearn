@@ -219,8 +219,8 @@ def get_bounds(shape, affine) -> list[tuple[np.float64, np.float64]]:
     Returns
     -------
     coord : :obj:`list` of tuples
-        coord[i] is a 2-tuple giving minimal and maximal coordinates along
-        i-th axis.
+        Element ``coord[i]`` is a 2-tuple giving minimal and maximal
+        coordinates along i-th axis.
     """
     adim, bdim, cdim = shape
     adim -= 1
@@ -256,8 +256,8 @@ def get_mask_bounds(img):
     Returns
     -------
     xmin, xmax, ymin, ymax, zmin, zmax : :obj:`float`
-        The world-space bounds (field of view) occupied by the
-        non-zero values in the image
+        The world-space bounds (field of view) occupied
+        by the non-zero values in the image.
 
     Notes
     -----
@@ -444,8 +444,8 @@ def resample_img(
     Returns
     -------
     resampled : nibabel.Nifti1Image
-        input image, resampled to have respectively target_shape and
-        target_affine as shape and affine.
+        Input image, resampled to have respectively
+        target_shape and target_affine as shape and affine.
 
     See Also
     --------
@@ -859,8 +859,8 @@ def resample_to_img(
     Returns
     -------
     resampled : nibabel.Nifti1Image
-        input image, resampled to have respectively target image shape and
-        affine as shape and affine.
+        Input image, resampled to have respectively
+        target image shape and affine as shape and affine.
 
     See Also
     --------

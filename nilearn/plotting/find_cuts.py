@@ -254,18 +254,18 @@ def find_cut_slices(
     cut_coords : 1D array of length n_cuts
         The computed cut_coords.
 
+    Warnings
+    --------
+    If a non-diagonal img is given. This function automatically reorders
+    img to get it back to diagonal. This is to avoid finding same cuts in
+    the slices.
+
     Notes
     -----
     This code works by iteratively locating peak activations that are
     separated by a distance of at least 'spacing'. If n_cuts is very
     large and all the activated regions are covered, cuts with a spacing
     less than 'spacing' will be returned.
-
-    Warnings
-    --------
-    If a non-diagonal img is given. This function automatically reorders
-    img to get it back to diagonal. This is to avoid finding same cuts in
-    the slices.
     """
     # misc
     check_parameter_in_allowed(direction, ("x", "y", "z"), "direction")
@@ -361,6 +361,7 @@ def find_cut_slices(
         slice_below = min(cut_coords) - 2
         slice_above = max(cut_coords) + 2
         candidates = [slice_above]
+        best_candidate = 0
         # One slice where there is the biggest gap in the existing
         # cut_coords
         if len(cut_coords) > 1:
@@ -445,8 +446,8 @@ def find_parcellation_cut_coords(
     unique_labels = np.unique(labels_data)
     unique_labels = np.delete(unique_labels, background_label)
 
-    # Loop over parcellation labels, grab center of mass and dump into coords
-    # list
+    # Loop over parcellation labels,
+    # grab center of mass and dump into coords list
     coord_list = []
     label_list = []
 
@@ -482,11 +483,10 @@ def find_parcellation_cut_coords(
         label_list.append(cur_label)
         coord_list.append((x, y, z))
 
-        # Transform coordinates
-        coords = [
-            coord_transform(i[0], i[1], i[2], labels_affine)
-            for i in coord_list
-        ]
+    # Transform coordinates
+    coords = [
+        coord_transform(i[0], i[1], i[2], labels_affine) for i in coord_list
+    ]
 
     if return_label_names:
         return np.array(coords), label_list

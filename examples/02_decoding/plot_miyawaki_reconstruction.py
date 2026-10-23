@@ -187,7 +187,7 @@ y_pred = np.asarray(y_pred).T
 
 # We need to the multi scale reconstruction
 def split_multi_scale(y, y_shape):
-    """Split data into 4 original multi_scale images"""
+    """Split data into 4 original multi_scale images."""
     yw, yh = y_shape
 
     # Index of original image

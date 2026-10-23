@@ -44,7 +44,7 @@ def _get_metadata_from_bids(
     Returns
     -------
     float or None
-        value of the field or None if the field is not found.
+        Value of the field or None if the field is not found.
     """
     if json_files:
         assert isinstance(json_files, list) and isinstance(

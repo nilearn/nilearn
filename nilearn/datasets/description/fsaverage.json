@@ -1,0 +1,74 @@
+{
+    "white_left": {
+        "desc": "Full path to a Gifti file containing left hemisphere white surface mesh",
+        "type": "str"
+    },
+    "white_right": {
+        "desc": "Full path to a Gifti file containing right hemisphere white surface mesh",
+        "type": "str"
+    },
+    "pial_left": {
+        "desc": "Full path to a Gifti file containing left hemisphere pial surface mesh",
+        "type": "str"
+    },
+    "pial_right": {
+        "desc": "Full path to a Gifti file containing right hemisphere pial surface mesh",
+        "type": "str"
+    },
+    "infl_left": {
+        "desc": "Full path to a Gifti file containing left hemisphere inflated pial surface mesh",
+        "type": "str"
+    },
+    "infl_right": {
+        "desc": "Full path to a Gifti file containing right hemisphere inflated pial surface mesh",
+        "type": "str"
+    },
+    "sphere_left": {
+        "desc": "Full path to a Gifti file containing left hemisphere sphere surface mesh",
+        "type": "str"
+    },
+    "sphere_right": {
+        "desc": "Full path to a Gifti file containing right hemisphere sphere surface mesh",
+        "type": "str"
+    },
+    "flat_left": {
+        "desc": "Full path to a Gifti file containing left hemisphere flat surface mesh",
+        "type": "str"
+    },
+    "flat_right": {
+        "desc": "Full path to a Gifti file containing right hemisphere flat surface mesh",
+        "type": "str"
+    },
+    "area_left": {
+        "desc": "Full path to a Gifti file containing left hemisphere area data",
+        "type": "str"
+    },
+    "area_right": {
+        "desc": "Full path to a Gifti file containing right hemisphere area data",
+        "type": "str"
+    },
+    "curv_left": {
+        "desc": "Full path to a Gifti file containing left hemisphere curvature data",
+        "type": "str"
+    },
+    "curv_right": {
+        "desc": "Full path to a Gifti file containing right hemisphere curvature data",
+        "type": "str"
+    },
+    "sulc_left": {
+        "desc": "Full path to a Gifti file containing left hemisphere sulcal depth data",
+        "type": "str"
+    },
+    "sulc_right": {
+        "desc": "Full path to a Gifti file containing right hemisphere sulcal depth data",
+        "type": "str"
+    },
+    "thick_left": {
+        "desc": "Full path to a Gifti file containing left hemisphere cortical thickness data",
+        "type": "str"
+    },
+    "thick_right": {
+        "desc": "Full path to a Gifti file containing right hemisphere cortical thickness data",
+        "type": "str"
+    }
+}

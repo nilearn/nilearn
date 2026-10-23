@@ -63,7 +63,7 @@ def _gamma_difference_hrf(
     Returns
     -------
     hrf : array of shape (length / t_r * oversampling, dtype=float)
-         hrf sampling on the oversampled time grid
+         :term:`HRF` sampled on the oversampled time grid.
     """
     dt = t_r / oversampling
     time_stamps = np.linspace(
@@ -109,7 +109,7 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0) -> np.ndarray:
     Returns
     -------
     hrf : array of shape (length / t_r * oversampling, dtype=float)
-         :term:`HRF` sampling on the oversampled time grid
+         :term:`HRF` sampling on the oversampled time grid.
 
     Examples
     --------
@@ -234,7 +234,7 @@ def spm_time_derivative(
     Returns
     -------
     dhrf : array of shape (length / t_r, dtype=float)
-          dhrf sampling on the provided grid
+          Derivative of the :term:`HRF` sampled on the provided grid.
 
     Examples
     --------
@@ -279,7 +279,7 @@ def glover_time_derivative(
     Returns
     -------
     dhrf : array of shape (length / t_r), dtype=float
-          dhrf sampling on the provided grid
+          Derivative of the :term:`HRF` sampled on the provided grid.
 
     Examples
     --------
@@ -372,7 +372,8 @@ def spm_dispersion_derivative(
     Returns
     -------
     dhrf : array of shape (length / tr * oversampling), dtype=float
-          dhrf sampling on the oversampled time grid
+          Derivative of the :term:`HRF` sampled on the oversampled
+          time grid.
 
     Examples
     --------
@@ -415,7 +416,8 @@ def glover_dispersion_derivative(
     Returns
     -------
     dhrf : array of shape (length / t_r * oversampling), dtype=float
-          dhrf sampling on the oversampled time grid
+          Derivative of the :term:`HRF` sampled on the oversampled
+          time grid.
 
     Examples
     --------
@@ -602,7 +604,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     Returns
     -------
     names : :obj:`list` of strings,
-        regressor names
+        Regressor names.
     """
     check_params(locals())
     # Default value
@@ -858,6 +860,6 @@ def _calculate_tr(frame_times):
     Returns
     -------
     :obj:`float`
-        repetition time
+        Repetition time.
     """
     return float(np.min(np.diff(frame_times)))

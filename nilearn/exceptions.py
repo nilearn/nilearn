@@ -63,7 +63,7 @@ class DimensionError(TypeError):
         super().__init__()
 
     def increment_stack_counter(self) -> None:
-        """Increments the counter of recursive calls.
+        """Increment the counter of recursive calls.
 
         Called when the error is caught and re-raised to count the
         number of recursive calls, ie the number of dimensions added by

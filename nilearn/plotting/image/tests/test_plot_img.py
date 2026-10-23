@@ -65,7 +65,7 @@ def test_display_methods_invalid_threshold(matplotlib_pyplot, img_3d_mni):
 
 @pytest.mark.thread_unsafe
 def test_check_string_threshold(matplotlib_pyplot, img_3d_mni):
-    """Checks threshold can be passed as string percentage value."""
+    """Check threshold can be passed as string percentage value."""
     plot_img(img_3d_mni, threshold="97%")
 
 

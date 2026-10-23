@@ -287,8 +287,7 @@ class PolyMesh:
                 )
             return None
 
-        if "hemi-L" in filename.stem:
-            mesh = self.parts["left"]
+        mesh = self.parts["left"]
         if "hemi-R" in filename.stem:
             mesh = self.parts["right"]
 
@@ -499,8 +498,7 @@ class PolyData:
                 )
             return None
 
-        if "hemi-L" in filename.stem:
-            data = self.parts["left"]
+        data = self.parts["left"]
         if "hemi-R" in filename.stem:
             data = self.parts["right"]
 
@@ -772,7 +770,7 @@ def _sample_locations_between_surfaces(
 def _ball_sample_locations(
     mesh, affine, ball_radius=3.0, n_points=20, depth=None
 ):
-    """Locations to draw samples from to project volume data onto a mesh.
+    """Compute locations to sample from to project volume data onto a mesh.
 
     For each mesh vertex, the locations of `n_points` points evenly spread in a
     ball around the vertex are returned.
@@ -841,7 +839,7 @@ def _ball_sample_locations(
 def _line_sample_locations(
     mesh, affine, segment_half_width=3.0, n_points=10, depth=None
 ):
-    """Locations to draw samples from to project volume data onto a mesh.
+    """Compute locations to sample from to project volume data onto a mesh.
 
     For each mesh vertex, the locations of `n_points` points evenly spread in a
     segment of the normal to the vertex are returned. The line segment has
@@ -1549,7 +1547,7 @@ def load_surf_data(surf_data) -> np.ndarray:
     Returns
     -------
     data : :obj:`numpy.ndarray`
-        An array containing surface data
+        An array containing surface data.
     """
     # avoid circular import
     from nilearn.image.image import get_data as get_vol_data
@@ -1572,6 +1570,8 @@ def load_surf_data(surf_data) -> np.ndarray:
         file_list = resolve_globbing(surf_data)
         # resolve_globbing handles empty lists
 
+        data = np.empty(1)
+        data_part = np.empty(1)
         for i, surf_data in enumerate(file_list):
             surf_data = str(surf_data)
 
@@ -1858,7 +1858,7 @@ def load_surf_mesh(surf_mesh) -> InMemoryMesh:
     -------
     mesh : :obj:`~nilearn.surface.InMemoryMesh`
         With the attributes "coordinates" and "faces", each containing a
-        :obj:`numpy.ndarray`
+        :obj:`numpy.ndarray`.
     """
     # if input is a filename, try to load it
     surf_mesh = stringify_path(surf_mesh)
