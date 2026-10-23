@@ -17,16 +17,6 @@
     },
     {
       "path": "nilearn/decomposition/tests/conftest.py",
-      "name": "missing-attribute",
-      "concise_description": "Object of class `NoneType` has no attribute `parts`"
-    },
-    {
-      "path": "nilearn/decomposition/tests/conftest.py",
-      "name": "missing-attribute",
-      "concise_description": "Object of class `NoneType` has no attribute `parts`"
-    },
-    {
-      "path": "nilearn/decomposition/tests/conftest.py",
       "name": "not-iterable",
       "concise_description": "Expected an iterable, got `Unknown | None`"
     },

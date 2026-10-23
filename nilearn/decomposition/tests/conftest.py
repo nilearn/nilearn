@@ -137,6 +137,8 @@ def _decomposition_img(
 ) -> SurfaceImage | Nifti1Image:
     """Return a single image for decomposition."""
     if data_type == "surface":
+        if TYPE_CHECKING:
+            assert mesh is not None
         data = {
             "left": rng.standard_normal(
                 size=(
