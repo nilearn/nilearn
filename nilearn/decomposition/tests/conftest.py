@@ -3,6 +3,7 @@
 import warnings
 from collections.abc import Generator
 from typing import Literal
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -103,6 +104,8 @@ def decomposition_masker(
     Use detrend=True to check how masker parameters are passed to estimators.
     """
     if data_type == "surface":
+        if TYPE_CHECKING:
+            assert isinstance(decomposition_mask_img, SurfaceImage)
         return MultiSurfaceMasker(
             mask_img=decomposition_mask_img, standardize="zscore_sample"
         ).fit()
