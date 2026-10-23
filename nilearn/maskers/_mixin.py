@@ -27,9 +27,16 @@ from nilearn.nilearn_typing import NiimgLike, NJobs, Signals, SingleConfound
 from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
 
+if TYPE_CHECKING:
+    from nilearn.maskers.base_masker import _BaseMasker
+
+    _MultiMixinBase = _BaseMasker
+else:
+    _MultiMixinBase = object
+
 
 @fill_doc
-class _MultiMixin:
+class _MultiMixin(_MultiMixinBase):
     """Mixin class to add common MultiMasker functionalities."""
 
     if TYPE_CHECKING:
