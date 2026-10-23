@@ -26,13 +26,27 @@ from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
 
-def check_inverse_transform(masker, signal) -> None:
+def check_signal_and_inverse_transform(
+    masker,
+    signal: np.ndarray | list[np.ndarray],
+    expected_length: int | None = None,
+) -> None:
     """Check signal extracted by a masker is
     inverse transformable by that same masker.
     """
-    img = masker.inverse_transform(signal)
-    assert_almost_equal(img.affine, masker.maps_img_.affine)
-    assert img.shape == ((*masker.maps_img_.shape[:3], signal.shape[0]))
+    signal_list: list[np.ndarray] = (
+        [signal] if not isinstance(signal, list) else signal
+    )
+
+    for s in signal_list:
+        if expected_length is not None:
+            assert s.shape == (expected_length, masker.n_elements_)
+        else:
+            assert s.shape[1] == masker.n_elements_
+
+        img = masker.inverse_transform(s)
+        assert_almost_equal(img.affine, masker.maps_img_.affine)
+        assert img.shape == ((*masker.maps_img_.shape[:3], s.shape[0]))
 
 
 def test_data_atlas_different_shape(length, affine_eye, img_maps):
@@ -293,8 +307,9 @@ def test_with_nans_and_infs(length, n_regions, affine_eye):
 
     signals = masker.fit_transform(fmri_img)
 
-    assert signals.shape == (length, n_regions)
     assert np.all(np.isfinite(signals))
+
+    check_signal_and_inverse_transform(masker, signals, expected_length=length)
 
 
 def test_with_nans_and_infs_in_data(length, n_regions, affine_eye):
@@ -321,8 +336,9 @@ def test_with_nans_and_infs_in_data(length, n_regions, affine_eye):
     with pytest.warns(UserWarning, match="Non-finite values detected."):
         signals = masker.fit_transform(fmri_img)
 
-    assert signals.shape == (length, n_regions)
     assert np.all(np.isfinite(signals))
+
+    check_signal_and_inverse_transform(masker, signals, expected_length=length)
 
 
 @pytest.mark.parametrize("estimator", [NiftiMapsMasker, MultiNiftiMapsMasker])
@@ -392,13 +408,7 @@ def test_resampling_to_mask(
     assert_almost_equal(masker.maps_img_.affine, masker.mask_img_.affine)
     assert masker.maps_img_.shape[:3] == masker.mask_img_.shape
 
-    if isinstance(masker, NiftiMapsMasker):
-        signals = [signals]
-
-    for t in signals:
-        assert t.shape == (length, n_regions_left)
-
-        check_inverse_transform(masker, t)
+    check_signal_and_inverse_transform(masker, signals, expected_length=length)
 
 
 @pytest.mark.parametrize("estimator", [NiftiMapsMasker, MultiNiftiMapsMasker])
@@ -445,13 +455,7 @@ def test_resampling_to_maps(
     assert_array_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
-    if isinstance(masker, NiftiMapsMasker):
-        signals = [signals]
-
-    for t in signals:
-        assert t.shape == (length, n_regions_left)
-
-        check_inverse_transform(masker, t)
+    check_signal_and_inverse_transform(masker, signals, expected_length=length)
 
 
 @pytest.mark.parametrize("estimator", [NiftiMapsMasker, MultiNiftiMapsMasker])
@@ -479,12 +483,15 @@ def test_clipped_mask(estimator, affine_eye, length, n_regions, img_fmri):
         match="Out of 9 maps, the masked map image only contains 4 maps",
     ):
         masker.fit()
+
     n_regions_left = 4
     assert masker.n_elements_ == n_regions_left
+
     with pytest.warns(
         UserWarning, match="Resampling images at transform time"
     ):
         signals = masker.transform(input_img)
+
     assert masker.n_elements_ == n_regions_left
 
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
@@ -493,15 +500,13 @@ def test_clipped_mask(estimator, affine_eye, length, n_regions, img_fmri):
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
+    check_signal_and_inverse_transform(masker, signals, expected_length=length)
+
     if isinstance(masker, NiftiMapsMasker):
         signals = [signals]
-
     for t in signals:
-        assert t.shape == (length, n_regions_left)
         # Some regions have been clipped. Resulting signal must be zero
         assert (t.var(axis=0) == 0).sum() < n_regions
-
-        check_inverse_transform(masker, t)
 
 
 def non_overlapping_maps():
@@ -541,7 +546,8 @@ def test_overlap(maps_img_fn, allow_overlap, img_fmri):
         with pytest.raises(ValueError, match="Overlap detected"):
             masker.fit_transform(img_fmri)
     else:
-        masker.fit_transform(img_fmri)
+        signal = masker.fit_transform(img_fmri)
+        check_signal_and_inverse_transform(masker, signal)
 
 
 @pytest.mark.parametrize("with_mask", [False, True])
@@ -569,7 +575,8 @@ def test_maps_emptied_by_resampling_are_dropped(affine_eye, with_mask):
 
     assert masker.n_elements_ == 2
     assert masker.maps_img_.shape[-1] == 2
-    assert signals.shape == (10, 2)
+
+    check_signal_and_inverse_transform(masker, signals, expected_length=10)
 
 
 def _mask_warning(with_mask):
@@ -582,7 +589,15 @@ def _mask_warning(with_mask):
 
 @pytest.mark.parametrize("with_mask", [False, True])
 def test_masking_inverse_transform(n_regions, length, affine_eye, with_mask):
-    """Check for regression for https://github.com/nilearn/nilearn/issues/6658."""
+    """Check for regression for https://github.com/nilearn/nilearn/issues/6658.
+
+    Checks consistency of behavior for inverse transform whether doing:
+    - using different 'methods'
+        - fit_transform
+        - fit then transform passing the same data to both
+        - only passing data at transform time
+    - with and without a mask that will drop some maps
+    """
     # Generate data
     shape1 = (7, 8, 9, length)
     fmri_img, _ = generate_random_img(shape1, affine=affine_eye * 2)
@@ -605,8 +620,7 @@ def test_masking_inverse_transform(n_regions, length, affine_eye, with_mask):
     masker = clone(masker)
     with pytest.warns(UserWarning, match="After resampling the maps image"):
         signals = masker.fit_transform(fmri_img)
-    assert signals.shape[1] == masker.n_elements_
-    check_inverse_transform(masker, signals)
+    check_signal_and_inverse_transform(masker, signals)
 
     # same data at fit and transform time
     masker = clone(masker)
@@ -615,8 +629,7 @@ def test_masking_inverse_transform(n_regions, length, affine_eye, with_mask):
     n_elements_post_fit = masker.n_elements_
     signals = masker.transform(fmri_img)
     assert masker.n_elements_ == n_elements_post_fit
-    assert signals.shape[1] == masker.n_elements_
-    check_inverse_transform(masker, signals)
+    check_signal_and_inverse_transform(masker, signals)
 
     # resampling to data at transform time
     masker = clone(masker)
@@ -653,5 +666,4 @@ def test_masking_inverse_transform(n_regions, length, affine_eye, with_mask):
         # in this case signal shape
         # does not match the expected n_elements_
         # because some maps were dropped at transform time
-        assert signals.shape[1] == masker.n_elements_
-        check_inverse_transform(masker, signals)
+        check_signal_and_inverse_transform(masker, signals)
