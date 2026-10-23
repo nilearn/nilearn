@@ -96,6 +96,7 @@ def log(
     stack = inspect.stack()
     object_frame = None
     object_self = None
+    func_name = ""
     for f in reversed(stack):
         frame = f[0]
         current_self = frame.f_locals.get("self", None)
@@ -105,7 +106,6 @@ def log(
             object_self = current_self
             break
 
-    func_name = ""
     if object_frame is None:  # no object found: use stack_level
         if stack_level >= len(stack):
             func_name = "<top_level>"
