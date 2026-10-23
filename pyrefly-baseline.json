@@ -26,11 +26,6 @@
       "concise_description": "Argument `list[Unknown] | ndarray | tuple[int, int, int] | tuple[Unknown, ...] | None` is not assignable to parameter `iterable` with type `Iterable[int]` in function `tuple.__new__`"
     },
     {
-      "concise_description": "Object of class `_MultiMixin` has no attribute `fit`",
-      "name": "missing-attribute",
-      "path": "nilearn/maskers/_mixin.py"
-    },
-    {
       "concise_description": "Object of class `_MultiMixin` has no attribute `_cache`",
       "name": "missing-attribute",
       "path": "nilearn/maskers/_mixin.py"

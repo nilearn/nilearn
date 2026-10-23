@@ -6,7 +6,7 @@ import warnings
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, get_args
+from typing import TYPE_CHECKING, Any, ClassVar, Self, get_args
 
 import numpy as np
 import pandas as pd
@@ -34,6 +34,8 @@ class _MultiMixin:
 
     if TYPE_CHECKING:
         n_jobs: NJobs
+
+        def fit(self, imgs=None, y: None = None) -> Self: ...
 
     @fill_doc
     def fit_transform(
