@@ -61,21 +61,6 @@
       "concise_description": "`>` is not supported between `None` and `float`"
     },
     {
-      "path": "nilearn/plotting/displays/_axes.py",
-      "name": "unsupported-operation",
-      "concise_description": "`>` is not supported between `None` and `Literal[0]`"
-    },
-    {
-      "path": "nilearn/plotting/displays/_axes.py",
-      "name": "unsupported-operation",
-      "concise_description": "Unary `-` is not supported on `None`"
-    },
-    {
-      "path": "nilearn/plotting/displays/_axes.py",
-      "name": "bad-argument-type",
-      "concise_description": "Argument `Unknown | None` is not assignable to parameter `x` with type `SupportsAbs[Unknown]` in function `abs`"
-    },
-    {
       "path": "nilearn/plotting/displays/_figures.py",
       "name": "bad-override",
       "concise_description": "Class member `PlotlySurfaceFigure.add_contours` overrides parent class `SurfaceFigure` in an inconsistent manner"
