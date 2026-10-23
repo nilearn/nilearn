@@ -6,11 +6,6 @@
       "concise_description": "Argument `tuple[Unknown, Unknown]` is not assignable to parameter `object` with type `list[Unknown]` in function `list.append`"
     },
     {
-      "path": "nilearn/_utils/testing.py",
-      "name": "not-callable",
-      "concise_description": "Expected a callable, got `None`"
-    },
-    {
       "path": "nilearn/datasets/_utils.py",
       "name": "bad-override",
       "concise_description": "Class member `_NaiveFTPAdapter.send` overrides parent class `BaseAdapter` in an inconsistent manner"
