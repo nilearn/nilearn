@@ -1199,6 +1199,8 @@ def _check_thresholded_output(input, output, threshold) -> None:
     - a one-sided threshold that keeps data > threshold
     - no extra mask used
     """
+    original_data = np.empty(1)
+    data = np.empty(1)
     if isinstance(input, Nifti1Image):
         original_data = input.get_fdata()
         data = output.get_fdata()
