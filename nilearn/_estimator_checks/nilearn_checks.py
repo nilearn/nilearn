@@ -23,6 +23,9 @@ to yield the checks for each estimator.
 
 Most of those checks have pytest dependencies
 and importing them will fail if pytest is not installed.
+
+Checks for a specific group of estimators might have exceptional cases. These
+are specified through skip_if, skip_if_not and xfail_if_not_gil decorators.
 """
 
 import contextlib
@@ -68,6 +71,7 @@ from nilearn._estimator_checks.utils import (
     clone,
     fit_estimator,
     generate_data_to_fit,
+    run_method,
     skip_if,
     skip_if_not,
     xfail_if_not_gil,
@@ -616,22 +620,18 @@ def check_img_estimator_fit_check_is_fitted(estimator) -> None:
     - __sklearn_is_fitted__ returns True
     - running sklearn check_is_fitted throws no error
     """
-    if not hasattr(estimator, "__sklearn_is_fitted__"):
-        raise TypeError(
-            "All nilearn estimators must have __sklearn_is_fitted__ method."
-        )
+    assert hasattr(estimator, "__sklearn_is_fitted__"), (
+        "All nilearn estimators must have __sklearn_is_fitted__ method."
+    )
 
-    if estimator.__sklearn_is_fitted__() is True:
-        raise ValueError(
-            "Estimator __sklearn_is_fitted__ must return False before fit."
-        )
+    assert not estimator.__sklearn_is_fitted__(), (
+        "Estimator __sklearn_is_fitted__ must return False before fit."
+    )
 
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         check_is_fitted(estimator)
 
-    # Failure should happen before the input type is determined
-    # so we can pass nifti image (or array) to surface maskers.
-    signals = np.ones((10, 11))
+    X, y = generate_data_to_fit(estimator)
     methods_to_check = [
         "transform",
         "transform_single_imgs",
@@ -641,17 +641,13 @@ def check_img_estimator_fit_check_is_fitted(estimator) -> None:
         "score",
         "predict",
     ]
-    method_inputs = [_img_3d_rand(), [_img_3d_rand()], signals]
-    for method, method_input in zip(
-        methods_to_check, method_inputs, strict=False
-    ):
-        method = getattr(estimator, method, None)
-        if method is None:
+    for method in methods_to_check:
+        if not hasattr(estimator, method):
             continue
         with pytest.raises(
             ValueError, match=_not_fitted_error_message(estimator)
         ):
-            method(method_input)
+            run_method(estimator, method, X, y)
 
     estimator = fit_estimator(estimator)
 
@@ -700,13 +696,12 @@ def check_nilearn_methods_sample_order_invariance(estimator) -> None:
             # TODO
             continue
 
-        msg = (
-            f"'{method}' of {estimator.__class__.__name__} "
-            "is not invariant when applied to a dataset "
-            "with different sample order."
-        )
-
         if hasattr(estimator, method):
+            msg = (
+                f"'{method}' of {estimator.__class__.__name__} "
+                "is not invariant when applied to a dataset "
+                "with different sample order."
+            )
             assert_allclose_dense_sparse(
                 getattr(estimator, method)(index_img(new_X, idx)),
                 _safe_indexing(getattr(estimator, method)(new_X), idx),
@@ -936,18 +931,7 @@ def check_img_estimator_dict_unchanged(estimator) -> None:
         if not hasattr(estimator, method):
             continue
 
-        if method == "transform" and isinstance(estimator, _BaseDecomposition):
-            getattr(estimator, method)([input_img])
-        elif method == "score":
-            getattr(estimator, method)(input_img, y)
-        elif method == "generate_report":
-            # TODO
-            # fix for free threaded python
-            if not is_gil_enabled():
-                pytest.xfail("May fail without the GIL")
-            getattr(estimator, method)()
-        else:
-            getattr(estimator, method)(input_img)
+        run_method(estimator, method, input_img, y)
 
         dict_after = estimator.__dict__
 
@@ -956,55 +940,48 @@ def check_img_estimator_dict_unchanged(estimator) -> None:
         if isinstance(estimator, (NiftiLabelsMasker)):
             with pytest.raises(AssertionError):
                 assert dict_after == dict_before
-        else:
-            # The following try / except is mostly
-            # to give more informative error messages when this check fails.
-            try:
-                assert dict_after == dict_before
-            except AssertionError as e:
-                unmatched_keys = set(dict_after.keys()) ^ set(
-                    dict_before.keys()
-                )
-                if len(unmatched_keys) > 0:
-                    raise ValueError(
-                        "Estimator changes '__dict__' keys "
-                        f"during '{method}'.\n"
-                        f"{unmatched_keys} \n"
-                    ) from e
+            continue
 
-                difference = {}
-                for x in dict_before:
-                    if type(dict_before[x]) is not type(dict_after[x]):
-                        difference[x] = {
-                            "before": dict_before[x],
-                            "after": dict_after[x],
-                        }
-                        continue
-                    if (
+        # The following try / except is mostly
+        # to give more informative error messages when this check fails.
+        try:
+            assert dict_after == dict_before
+        except AssertionError as e:
+            unmatched_keys = set(dict_after.keys()) ^ set(dict_before.keys())
+            assert len(unmatched_keys) == 0, (
+                "Estimator changes '__dict__' keys "
+                f"during '{method}'.\n"
+                f"{unmatched_keys} \n"
+            )
+
+            difference = {
+                x: {
+                    "before": dict_before[x],
+                    "after": dict_after[x],
+                }
+                for x in dict_before
+                if (
+                    not isinstance(dict_before[x], type(dict_after[x]))
+                    or (
                         isinstance(dict_before[x], np.ndarray)
                         and not np.array_equal(dict_before[x], dict_after[x])
                         and not check_imgs_equal(dict_before[x], dict_after[x])
-                    ) or (
+                    )
+                    or (
                         not isinstance(
                             dict_before[x], (np.ndarray, Nifti1Image)
                         )
                         and dict_before[x] != dict_after[x]
-                    ):
-                        difference[x] = {
-                            "before": dict_before[x],
-                            "after": dict_after[x],
-                        }
-                        continue
-                if difference:
-                    raise ValueError(
-                        "Estimator changes the following '__dict__' keys \n"
-                        f"during '{method}'.\n"
-                        f"{difference}"
-                    ) from e
-                else:
-                    raise e
-            except Exception as e:
-                raise e
+                    )
+                )
+            }
+
+            assert difference == {}, (
+                "Estimator changes the following '__dict__' keys \n"
+                f"during '{method}'.\n"
+                f"{difference}"
+            )
+            raise e
 
 
 @xfail_if_not_gil(classes=[SearchLight])
