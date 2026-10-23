@@ -942,6 +942,8 @@ def check_img_estimator_dict_unchanged(estimator) -> None:
                 assert dict_after == dict_before
             continue
 
+        # The following try / except is mostly
+        # to give more informative error messages when this check fails.
         try:
             assert dict_after == dict_before
         except AssertionError as e:
