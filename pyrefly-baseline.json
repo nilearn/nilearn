@@ -16,11 +16,6 @@
       "path": "nilearn/decomposition/_base.py"
     },
     {
-      "path": "nilearn/decomposition/tests/conftest.py",
-      "name": "not-iterable",
-      "concise_description": "Expected an iterable, got `Unknown | None`"
-    },
-    {
       "path": "nilearn/glm/first_level/first_level.py",
       "name": "bad-return",
       "concise_description": "Returned type `tuple[ndarray | ndarray[Unknown], dict[float, RegressionResults] | dict[Any, Unknown]]` is not assignable to declared return type `tuple[ndarray, dict[float | str, RegressionResults]]`"

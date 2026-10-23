@@ -159,6 +159,8 @@ def _decomposition_img(
 
         return SurfaceImage(mesh=mesh, data=data)
 
+    if TYPE_CHECKING:
+        assert shape is not None
     shape = (*shape, N_SAMPLES)
     this_img = rng.normal(size=shape)
     if with_activation:
