@@ -41,6 +41,10 @@ class _MultiMixin:
             self, func, func_memory_level=1, shelve=False, **kwargs
         ): ...
 
+        def transform_single_imgs(
+            self, imgs, confounds=None, sample_mask=None, **kwargs
+        ): ...
+
     @fill_doc
     def fit_transform(
         self,
