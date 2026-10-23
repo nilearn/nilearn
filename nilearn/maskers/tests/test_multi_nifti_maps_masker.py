@@ -9,6 +9,8 @@ from nilearn._utils.data_gen import generate_fake_fmri, generate_maps
 from nilearn.exceptions import DimensionError
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
+from .conftest import check_signal_and_inverse_transform
+
 
 def _mask_warning(n_regions):
     if n_regions == 1:
@@ -46,7 +48,9 @@ def test_multi_nifti_maps_masker(
     with _mask_warning(n_regions):
         signals11 = masker.fit_transform(fmri11_img)
 
-    assert signals11.shape == (length, n_regions_left)
+    check_signal_and_inverse_transform(
+        masker, signals11, expected_length=length
+    )
 
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]

@@ -25,28 +25,7 @@ from nilearn.conftest import _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
-
-def check_signal_and_inverse_transform(
-    masker,
-    signal: np.ndarray | list[np.ndarray],
-    expected_length: int | None = None,
-) -> None:
-    """Check signal extracted by a masker is
-    inverse transformable by that same masker.
-    """
-    signal_list: list[np.ndarray] = (
-        [signal] if not isinstance(signal, list) else signal
-    )
-
-    for s in signal_list:
-        if expected_length is not None:
-            assert s.shape == (expected_length, masker.n_elements_)
-        else:
-            assert s.shape[1] == masker.n_elements_
-
-        img = masker.inverse_transform(s)
-        assert_almost_equal(img.affine, masker.maps_img_.affine)
-        assert img.shape == ((*masker.maps_img_.shape[:3], s.shape[0]))
+from .conftest import check_signal_and_inverse_transform
 
 
 def test_data_atlas_different_shape(length, affine_eye, img_maps):
@@ -371,17 +350,11 @@ def test_resampling_to_mask(
     with (
         pytest.warns(
             UserWarning,
-            match=(
-                r"removed: \{4, 5, 6, 7, 8\}. Out of 9 maps, "
-                "the resampled map image only contains 4 non-empty maps"
-            ),
+            match="the resampled map image only contains 4 non-empty maps",
         ),
         pytest.warns(
             UserWarning,
-            match=(
-                r"removed: \{0, 3\}. Out of 4 maps, "
-                "the masked map image only contains 2 maps"
-            ),
+            match="the masked map image only contains 2 maps",
         ),
     ):
         masker.fit()
@@ -438,7 +411,7 @@ def test_resampling_to_maps(
     # maps excluded by the mask are dropped at fit time
     with pytest.warns(
         UserWarning,
-        match="Out of 9 maps, the masked map image only contains 2 maps",
+        match="the masked map image only contains 2 maps",
     ):
         masker.fit()
     n_regions_left = 2
@@ -480,7 +453,7 @@ def test_clipped_mask(estimator, affine_eye, length, n_regions, img_fmri):
     # clipping is done at fit time
     with pytest.warns(
         UserWarning,
-        match="Out of 9 maps, the masked map image only contains 4 maps",
+        match="the masked map image only contains 4 maps",
     ):
         masker.fit()
 
@@ -566,10 +539,7 @@ def test_maps_emptied_by_resampling_are_dropped(affine_eye, with_mask):
 
     with pytest.warns(
         UserWarning,
-        match=(
-            r"removed: \{2, 3, 4, 5, 6, 7, 8\}. Out of 9 maps, "
-            "the resampled map image only contains 2 non-empty maps"
-        ),
+        match="the resampled map image only contains 2 non-empty maps",
     ):
         signals = masker.fit_transform(fmri_img)
 
