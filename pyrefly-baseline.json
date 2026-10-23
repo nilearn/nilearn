@@ -13,11 +13,6 @@
     {
       "path": "nilearn/decoding/space_net.py",
       "name": "bad-argument-type",
-      "concise_description": "Argument `SurfaceImage | Unknown` is not assignable to parameter `img` with type `Nifti1Image | Path | SpatialImage | str` in function `nilearn.image.image.get_data`"
-    },
-    {
-      "path": "nilearn/decoding/space_net.py",
-      "name": "bad-argument-type",
       "concise_description": "Argument `Iterable[Unknown] | list[Unknown]` is not assignable to parameter `obj` with type `Sized` in function `len`"
     },
     {
