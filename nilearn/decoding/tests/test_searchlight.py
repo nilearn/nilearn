@@ -44,7 +44,6 @@ def test_error_searchlight_no_mask():
         sl.fit(data_img, y=cond)
 
 
-@pytest.mark.ai_generated
 def test_error_searchlight_no_mask_nor_process_mask():
     """Check error when neither mask_img nor process_mask_img is given."""
     sl = searchlight.SearchLight()
