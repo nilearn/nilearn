@@ -51,6 +51,10 @@ class _MNI152Template(SpatialImage):
         self._load()
         return self.data
 
+    @_data_cache.setter
+    def _data_cache(self, value):
+        self.data = value
+
     @property
     def _dataobj(self):
         self._load()

@@ -88,11 +88,6 @@
     {
       "path": "nilearn/plotting/image/utils.py",
       "name": "bad-override",
-      "concise_description": "Class member `_MNI152Template._data_cache` overrides parent class `SpatialImage` in an inconsistent manner"
-    },
-    {
-      "path": "nilearn/plotting/image/utils.py",
-      "name": "bad-override",
       "concise_description": "Class member `_MNI152Template._dataobj` overrides parent class `SpatialImage` in an inconsistent manner"
     },
     {
