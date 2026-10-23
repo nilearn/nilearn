@@ -4,9 +4,35 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
 
-from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn._base import NilearnBaseEstimator
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
-from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.maskers.masker_validation import check_embedded_masker, get_params
+from nilearn.utils.tags import InputTags
+
+
+class A(NilearnBaseEstimator):
+    """Dummy class A."""
+
+    def __init__(self, a=1):
+        self.a = a
+
+
+class B(A):
+    """Dummy class B derived from A."""
+
+    def __init__(self, a=1, b=2):
+        self.a = a
+        self.b = b
+
+
+def test_get_params():
+    """Ensure get_params returns parameters common to both class
+    unless ignored.
+    """
+    b = B()
+    assert get_params(A, b) == {"a": 1}
+    assert get_params(A, b, ignore=["a"]) == {}
+    assert get_params(A, b, ignore=["a", "b"]) == {}
 
 
 class OwningClass(BaseEstimator):
@@ -18,7 +44,7 @@ class OwningClass(BaseEstimator):
         self,
         mask=None,
         smoothing_fwhm=None,
-        standardize=False,
+        standardize=None,
         detrend=False,
         low_pass=None,
         high_pass=None,
@@ -54,14 +80,6 @@ class OwningClass(BaseEstimator):
         self.dummy = dummy
 
     def __sklearn_tags__(self):
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(surf_img=True, niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
         tags = BaseEstimator().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=True, niimg_like=False)
         return tags
@@ -77,13 +95,6 @@ class DummyEstimator:
             setattr(self, k, v)
 
     def __sklearn_tags__(self):
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(surf_img=True, niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
 
         tags = BaseEstimator().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=True, niimg_like=False)
@@ -94,11 +105,12 @@ class DummyEstimator:
         self.masker = check_embedded_masker(self, masker_type="nii")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, warning_msg, expected_verbose, expected_memory_level",
     [
         ({"memory": None, "memory_level": 1}, "verbose", 0, 0),
-        ({"verbose": 1}, "memory", 1, 0),
+        ({"verbose": 1}, "memory", 0, 0),
     ],
 )
 def test_check_embedded_masker_defaults(
@@ -143,15 +155,21 @@ def test_check_embedded_masker(mask, masker_type):
 
     assert isinstance(masker, type(mask))
     for param_key in masker.get_params():
-        if param_key not in [
+        if param_key in [
             "memory",
             "memory_level",
             "n_jobs",
             "verbose",
         ]:
-            assert getattr(masker, param_key) == getattr(mask, param_key)
-        else:
             assert getattr(masker, param_key) == getattr(owner, param_key)
+
+        # TODO (nilearn >= 0.15) if not needed anymore
+        # as this assertion should be true for all attributes
+        elif param_key != "standardize":
+            assert getattr(masker, param_key) == getattr(mask, param_key)
+        # TODO (nilearn >= 0.15) remove elif
+        elif getattr(mask, param_key) is False:
+            assert getattr(masker, param_key) is None
 
 
 def test_check_embedded_masker_with_mask():
