@@ -33,7 +33,7 @@ from nilearn.mass_univariate._utils import (
 
 
 @fill_doc
-def _permuted_ols_on_chunk(
+def _permuted_ols_on_chunk(  # numpydoc ignore=RT05
     scores_original_data,
     tested_vars,
     target_vars,
@@ -166,7 +166,6 @@ def _permuted_ols_on_chunk(
     References
     ----------
     .. footbibliography::
-
     """
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
@@ -300,7 +299,7 @@ def _permuted_ols_on_chunk(
 
 
 @fill_doc
-def permuted_ols(
+def permuted_ols(  # numpydoc ignore=RT05
     tested_vars,
     target_vars,
     confounding_vars=None,
@@ -520,7 +519,6 @@ def permuted_ols(
     ----------
     .. footbibliography::
 
-
     Examples
     --------
 
@@ -559,7 +557,6 @@ def permuted_ols(
         >>> _ = ax.set(xlabel="t-statistic",
         ...            title="Distribution max t-statistic under $H_0$")
         >>> plt.show()
-
     """
     check_params(locals())
     _check_inputs_permuted_ols(n_jobs, target_vars)

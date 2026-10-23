@@ -37,6 +37,7 @@ on:
         -   tox.ini
         -   pyproject.toml
         -   .github/workflows/test_with_tox.yml
+        -   maint_tools/templates
     pull_request:
         branches:
         -   '*'
@@ -45,6 +46,7 @@ on:
         -   tox.ini
         -   pyproject.toml
         -   .github/workflows/test_with_tox.yml
+        -   maint_tools/templates
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}

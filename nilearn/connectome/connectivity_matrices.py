@@ -2,9 +2,10 @@
 
 import warnings
 from math import floor, sqrt
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 import numpy as np
+import pandas as pd
 from scipy import linalg
 from sklearn.base import TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
@@ -26,7 +27,6 @@ def _check_square(matrix: np.ndarray) -> None:
     ----------
     matrix : numpy.ndarray
         Input array.
-
     """
     if matrix.ndim != 2 or (matrix.shape[0] != matrix.shape[-1]):
         raise ValueError(
@@ -42,7 +42,6 @@ def _check_spd(matrix: np.ndarray) -> None:
     ----------
     matrix : numpy.ndarray
         Input array.
-
     """
     if not is_spd(matrix, decimal=7):
         raise ValueError("Expected a symmetric positive definite matrix.")
@@ -70,7 +69,6 @@ def _form_symmetric(
     output : numpy.ndarray, shape (n_features, n_features)
         The symmetric matrix obtained after transforming the eigenvalues, while
         keeping the same eigenvectors.
-
     """
     return np.dot(eigenvectors * function(eigenvalues), eigenvectors.T)
 
@@ -98,7 +96,6 @@ def _map_eigenvalues(function, symmetric):
     -----
     If input matrix is not real symmetric, no error is reported but result will
     be wrong.
-
     """
     eigenvalues, eigenvectors = linalg.eigh(symmetric)
     return _form_symmetric(function, eigenvalues, eigenvectors)
@@ -121,10 +118,6 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     In case of positive numbers, this mean is the usual geometric mean.
 
     See Algorithm 3 of :footcite:t:`Fletcher2007`.
-
-    References
-    ----------
-    .. footbibliography::
 
     Parameters
     ----------
@@ -151,6 +144,9 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     gmean : numpy.ndarray, shape (n_features, n_features)
         Geometric mean of the matrices.
 
+    References
+    ----------
+    .. footbibliography::
     """
     # Shape and symmetry positive definiteness checks
     n_features = matrices[0].shape[0]
@@ -261,7 +257,6 @@ def sym_matrix_to_vec(symmetric, discard_diagonal: bool = False) -> np.ndarray:
     >>> vec_no_diag = sym_matrix_to_vec(sym_matrix, discard_diagonal=True)
     >>> vec_no_diag
     array([2., 3., 5.])
-
     """
     if discard_diagonal:
         # No scaling, we directly return the values
@@ -298,16 +293,16 @@ def vec_to_sym_matrix(vec, diagonal=None) -> np.ndarray:
     sym : numpy.ndarray, shape (..., n_columns, n_columns).
         The output symmetric matrix.
 
+    See Also
+    --------
+    nilearn.connectome.sym_matrix_to_vec
+
     Notes
     -----
     This function is meant to be the inverse of sym_matrix_to_vec. If you have
     discarded the diagonal in sym_matrix_to_vec, you need to provide it
     separately to reconstruct the symmetric matrix. For instance this can be
     useful for correlation matrices for which we know the diagonal is 1.
-
-    See Also
-    --------
-    nilearn.connectome.sym_matrix_to_vec
 
     Examples
     --------
@@ -322,7 +317,6 @@ def vec_to_sym_matrix(vec, diagonal=None) -> np.ndarray:
     array([[1.41421356, 2.        , 4.        ],
            [2.        , 4.24264069, 5.        ],
            [4.        , 5.        , 8.48528137]])
-
     """
     n = vec.shape[-1]
     # Compute the number of the symmetric matrix columns
@@ -391,7 +385,6 @@ def cov_to_corr(covariance: np.ndarray) -> np.ndarray:
     >>> cov_to_corr(cov)
     array([[1.        , 0.33333333],
            [0.33333333, 1.        ]])
-
     """
     diagonal = np.atleast_2d(1.0 / np.sqrt(np.diag(covariance)))
     correlation = covariance * diagonal * diagonal.T
@@ -422,7 +415,6 @@ def prec_to_partial(precision: np.ndarray) -> np.ndarray:
     >>> prec_to_partial(precision)
     array([[1. , 0.5],
            [0.5, 1. ]])
-
     """
     partial_correlation = -cov_to_corr(precision)
     np.fill_diagonal(partial_correlation, 1.0)
@@ -490,7 +482,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
     References
     ----------
     .. footbibliography::
-
     """
 
     def __init__(
@@ -507,7 +498,9 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         self.discard_diagonal = discard_diagonal
         self.verbose = verbose
 
-    def _check_input(self, X, confounds=None, reset=True):
+    def _check_input(
+        self, X, confounds: pd.DataFrame | np.ndarray | None = None, reset=True
+    ):
         """Run several checks on input and confounds.
 
         - all inputs must be 2D arrays of same dimensions
@@ -553,7 +546,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                 raise ValueError(error_message)
 
     @fill_doc
-    def fit(self, X, y=None) -> Self:
+    def fit(self, X, y: None = None) -> Self:
         """Fit the covariance estimator to the given time series for each \
         subject.
 
@@ -570,14 +563,17 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         -------
         self : ConnectivityMatrix instance
             The object itself. Useful for chaining operations.
-
         """
         del y
         self._fit_transform(X, do_fit=True)
         return self
 
     def _fit_transform(
-        self, X, do_transform=False, do_fit=False, confounds=None
+        self,
+        X,
+        do_transform=False,
+        do_fit=False,
+        confounds: pd.DataFrame | np.ndarray | None = None,
     ):
         """Avoid duplication of computation."""
         if not hasattr(X, "__iter__"):
@@ -669,6 +665,8 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         # Compute the vector we return on transform
         if do_transform:
             if self.kind == "tangent":
+                if TYPE_CHECKING:
+                    assert self.whitening_ is not None
                 connectivities = [
                     _map_eigenvalues(
                         np.log, self.whitening_.dot(cov).dot(self.whitening_)
@@ -690,7 +688,12 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         return connectivities
 
     @fill_doc
-    def fit_transform(self, X, y=None, confounds=None):
+    def fit_transform(
+        self,
+        X,
+        y: None = None,
+        confounds: pd.DataFrame | np.ndarray | None = None,
+    ):
         """Fit the covariance estimator to the given time series \
         for each subject. \
         Then apply transform to covariance matrices for the chosen kind.
@@ -718,14 +721,13 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             is set to True.
             The transformed individual connectivities, as matrices or vectors.
             Vectors are cleaned when vectorize=True and confounds are provided.
-
         """
         del y
         return self._fit_transform(
             X, do_fit=True, do_transform=True, confounds=confounds
         )
 
-    def transform(self, X, confounds=None):
+    def transform(self, X, confounds: pd.DataFrame | np.ndarray | None = None):
         """Apply transform to covariances matrices to get the connectivity \
         matrices for the chosen kind.
 
@@ -750,7 +752,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             is set to True.
             The transformed individual connectivities, as matrices or vectors.
             Vectors are cleaned when vectorize=True and confounds are provided.
-
         """
         check_is_fitted(self)
         return self._fit_transform(X, do_transform=True, confounds=confounds)
@@ -781,7 +782,6 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             'partial correlation', the correlation/partial correlation
             matrices are returned.
             If kind is 'tangent', the covariance matrices are reconstructed.
-
         """
         check_is_fitted(self)
 

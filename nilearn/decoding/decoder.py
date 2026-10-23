@@ -100,7 +100,6 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     -------
     param_grid : dict of str to sequence, or sequence of such. Sensible default
     dict has size 1 for linear models.
-
     """
     if param_grid is None:
         param_grid = _default_param_grid(estimator, X, y)
@@ -220,7 +219,7 @@ def _wrap_param_grid(param_grid, param_name):
     Returns
     -------
     dict of str to sequence, or sequence of such
-        The updated parameter grid
+        The updated parameter grid.
     """
     if param_grid is None:
         return param_grid
@@ -274,7 +273,7 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
     Returns
     -------
     dict of str to sequence, or sequence of such
-        The updated parameter grid
+        The updated parameter grid.
     """
     # ensure param_grid is a list so that we can loop over it
     input_is_dict = isinstance(param_grid, dict)
@@ -535,7 +534,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
     nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
-
     """
 
     # dummy_output_ starts as a dict of accumulated fold outputs
@@ -613,7 +611,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
             Must have exactly as many samples as the input images.
 
         %(groups)s
-
         """
         check_params(self.__dict__)
 
@@ -852,7 +849,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         -------
         score : :obj:`float`
             Prediction score.
-
         """
         check_is_fitted(self)
         X = self._prep_input_post_fit(X)
@@ -981,9 +977,9 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         Returns
         -------
         coefs : dict
-            Coefficients for each classification/regression problem
+            Coefficients for each classification/regression problem.
         intercepts : dict
-            Intercept for each classification/regression problem
+            Intercept for each classification/regression problem.
         """
         coefs = {}
         intercepts = {}
@@ -1155,7 +1151,6 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
     %(screening_percentile)s
 
     %(screening_n_features)s
-
 
     scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1345,7 +1340,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_n_features)s
 
-
     scoring : :obj:`str`, callable or None, default='r2'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
@@ -1356,7 +1350,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
-
 
     %(smoothing_fwhm)s
 
@@ -1581,15 +1574,15 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(base_decoder_fit_attributes)s
 
-    References
-    ----------
-    .. footbibliography::
-
     See Also
     --------
     nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
     nilearn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(
@@ -1776,16 +1769,15 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     n_classes_ : int
         number of classes
 
-    References
-    ----------
-    .. footbibliography::
-
     See Also
     --------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
     nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
 
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(

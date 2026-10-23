@@ -21,8 +21,8 @@ from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
 from nilearn._utils import logger
-from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import rename_parameters
+from nilearn._utils.docs import Description, fill_doc
+from nilearn._utils.helpers import remove_parameters, rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import (
@@ -95,7 +95,7 @@ def fetch_haxby(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'anat': :obj:`list` of :obj:`str`.
             Paths to anatomic images.
@@ -128,10 +128,6 @@ def fetch_haxby(
         - 't_r': :obj:`float`
             Repetition time of the functional data.
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
     %(fetcher_note)s
@@ -147,6 +143,10 @@ def fetch_haxby(
 
     Run 8 in subject 5 does not contain any task labels.
     The anatomical image for subject 6 is unavailable.
+
+    References
+    ----------
+    .. footbibliography::
     """
     check_params(locals())
 
@@ -318,7 +318,7 @@ def fetch_adhd(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'func':
             Paths to functional :term:`resting-state` images
@@ -335,7 +335,6 @@ def fetch_adhd(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -376,7 +375,7 @@ def fetch_adhd(
         data_dir, [phenotypic], resume=resume, verbose=verbose
     )[0]
 
-    # Load the csv file
+    # Load the CSV file
     phenotypic_df = pd.read_table(phenotypic, delimiter=",")
     phenotypic_df["Subject"] = phenotypic_df["Subject"].apply(
         lambda x: f"{x:07d}"
@@ -486,7 +485,7 @@ def fetch_miyawaki2008(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'func': :obj:`list` of :obj:`str`
             Paths to nifti file with :term:`BOLD` data
@@ -499,14 +498,13 @@ def fetch_miyawaki2008(
             Path to nifti file containing a background image usable as a
             background image for miyawaki images.
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
     %(fetcher_note)s
 
+    References
+    ----------
+    .. footbibliography::
     """
     check_params(locals())
 
@@ -751,7 +749,7 @@ def fetch_localizer_contrasts(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'cmaps': :obj:`list` of :obj:`str`
             Paths to nifti contrast maps
@@ -762,6 +760,10 @@ def fetch_localizer_contrasts(
         - 'anats': :obj:`list` of :obj:`str`
             Path to nifti files corresponding to the subjects structural images
 
+    See Also
+    --------
+    nilearn.datasets.fetch_localizer_button_task
+
     Notes
     -----
     %(fetcher_note)s
@@ -769,11 +771,6 @@ def fetch_localizer_contrasts(
     References
     ----------
     .. footbibliography::
-
-    See Also
-    --------
-    nilearn.datasets.fetch_localizer_button_task
-
     """
     check_params(locals())
 
@@ -1000,8 +997,13 @@ def fetch_localizer_calculation_task(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the interest attributes are :
-        'cmaps': string list, giving paths to nifti contrast maps
+        Dictionary-like object, contains:
+        'cmaps': string list, giving paths to nifti contrast maps.
+
+    See Also
+    --------
+    nilearn.datasets.fetch_localizer_button_task
+    nilearn.datasets.fetch_localizer_contrasts
 
     Notes
     -----
@@ -1010,12 +1012,6 @@ def fetch_localizer_calculation_task(
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
     The 'calculation (auditory and visual cue)' contrast is used.
-
-    See Also
-    --------
-    nilearn.datasets.fetch_localizer_button_task
-    nilearn.datasets.fetch_localizer_contrasts
-
     """
     check_params(locals())
 
@@ -1053,7 +1049,6 @@ def fetch_localizer_button_task(
     """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
-
     Parameters
     ----------
     %(data_dir)s
@@ -1063,11 +1058,15 @@ def fetch_localizer_button_task(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'cmaps': string list, giving paths to nifti :term:`contrast` maps
         - 'tmap': string, giving paths to nifti :term:`contrast` maps
         - 'anat': string, giving paths to normalized anatomical image
+
+    See Also
+    --------
+    nilearn.datasets.fetch_localizer_contrasts
 
     Notes
     -----
@@ -1076,12 +1075,6 @@ def fetch_localizer_button_task(
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
     The 'left vs right button press' contrast is used.
-
-    See Also
-    --------
-    nilearn.datasets.fetch_localizer_contrasts
-
-
     """
     check_params(locals())
 
@@ -1120,7 +1113,6 @@ def fetch_abide_pcp(
     that can be passed as parameter. Note that this is the preprocessed
     version of ABIDE provided by the preprocess connectome projects (PCP).
     See :footcite:t:`Nielsen2013`.
-
 
     Parameters
     ----------
@@ -1188,71 +1180,71 @@ def fetch_abide_pcp(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, the keys are described below.
+        Dictionary-like object, contains:
 
-    - 'description': :obj:`str`, description of the dataset.
+        - 'description': :obj:`str`, description of the dataset.
 
-    - 'phenotypic': :obj:`pandas.DataFrame`
-      phenotypic information for each subject.
+        - 'phenotypic': :obj:`pandas.DataFrame`
+          Phenotypic information for each subject.
 
-    - Specific Derivative Keys:
-      Additional keys,'func_preproc' being the default, are
-      introduced based on the provided 'derivatives'
-      parameter during fetching. Any combination of the
-      parameters below may occur.
+        - Specific Derivative Keys:
+          Additional keys,'func_preproc' being the default, are
+          introduced based on the provided 'derivatives'
+          parameter during fetching. Any combination of the
+          parameters below may occur.
 
-        - 'func_preproc' (default): :obj:`numpy.ndarray`,
-          paths to preprocessed functional MRI data in NIfTI format.
-          This key is present by default when fetching the dataset.
-        - 'alff': :obj:`numpy.ndarray`,
-          amplitude values of low-frequency fluctuations
-          in functional MRI data.
-        - 'degree_binarize': :obj:`numpy.ndarray`,
-          data specific to binarized node degree in brain networks.
-        - 'degree_weighted': :obj:`numpy.ndarray`,
-          data specific to weighted node degree,
-          considering connectivity strength in brain networks.
-        - 'dual_regression': :obj:`numpy.ndarray`,
-          results from dual regression analysis,
-          often involving the identification of resting-state networks.
-        - 'eigenvector_binarize': :obj:`numpy.ndarray`,
-          data specific to binarized eigenvector
-          centrality, a measure of node influence in brain networks.
-        - 'eigenvector_weighted': :obj:`numpy.ndarray`,
-          data specific to weighted eigenvector
-          centrality, reflecting node influence with consideration
-          of connectivity strength.
-        - 'falff': :obj:`numpy.ndarray`,
-          data specific to fractional amplitude values of
-          low-frequency fluctuations.
-        - 'func_mask': :obj:`numpy.ndarray`,
-          functional mask data, often used to define regions of interest.
-        - 'func_mean': :obj:`numpy.ndarray`,
-          mean functional MRI data,
-          representing average activity across the brain.
-        - 'lfcd': :obj:`numpy.ndarray`,
-          data specific to local functional connectivity density
-          in brain networks.
-        - 'reho': :obj:`numpy.ndarray`,
-          data specific to regional homogeneity in functional MRI data.
-        - 'rois_aal': :obj:`numpy.ndarray`,
-          data specific to anatomical regions
-          defined by the Automatic Anatomical Labeling atlas.
-        - 'rois_cc200': :obj:`numpy.ndarray`
-          data specific to regions defined by the Craddock 200 atlas.
-        - 'rois_cc400': :obj:`numpy.ndarray`,
-          data specific to regions defined by the Craddock 400 atlas.
-        - 'rois_dosenbach160': :obj:`numpy.ndarray`,
-          data specific to regions defined by the Dosenbach 160 atlas.
-        - 'rois_ez': :obj:`numpy.ndarray`,
-          data specific to regions defined by the EZ atlas.
-        - 'rois_ho': :obj:`numpy.ndarray`,
-          data specific to regions defined by the Harvard-Oxford atlas.
-        - 'rois_tt': :obj:`numpy.ndarray`,
-          data specific to regions defined by the Talairach atlas.
-        - 'vmhc': :obj:`numpy.ndarray`,
-          data specific to voxel-mirrored homotopic connectivity in
-          functional MRI data.
+            - 'func_preproc' (default): :obj:`numpy.ndarray`,
+              paths to preprocessed functional MRI data in NIfTI format.
+              This key is present by default when fetching the dataset.
+            - 'alff': :obj:`numpy.ndarray`,
+              amplitude values of low-frequency fluctuations
+              in functional MRI data.
+            - 'degree_binarize': :obj:`numpy.ndarray`,
+              data specific to binarized node degree in brain networks.
+            - 'degree_weighted': :obj:`numpy.ndarray`,
+              data specific to weighted node degree,
+              considering connectivity strength in brain networks.
+            - 'dual_regression': :obj:`numpy.ndarray`,
+              results from dual regression analysis,
+              often involving the identification of resting-state networks.
+            - 'eigenvector_binarize': :obj:`numpy.ndarray`,
+              data specific to binarized eigenvector
+              centrality, a measure of node influence in brain networks.
+            - 'eigenvector_weighted': :obj:`numpy.ndarray`,
+              data specific to weighted eigenvector
+              centrality, reflecting node influence with consideration
+              of connectivity strength.
+            - 'falff': :obj:`numpy.ndarray`,
+              data specific to fractional amplitude values of
+              low-frequency fluctuations.
+            - 'func_mask': :obj:`numpy.ndarray`,
+              functional mask data, often used to define regions of interest.
+            - 'func_mean': :obj:`numpy.ndarray`,
+              mean functional MRI data,
+              representing average activity across the brain.
+            - 'lfcd': :obj:`numpy.ndarray`,
+              data specific to local functional connectivity density
+              in brain networks.
+            - 'reho': :obj:`numpy.ndarray`,
+              data specific to regional homogeneity in functional MRI data.
+            - 'rois_aal': :obj:`numpy.ndarray`,
+              data specific to anatomical regions
+              defined by the Automatic Anatomical Labeling atlas.
+            - 'rois_cc200': :obj:`numpy.ndarray`
+              data specific to regions defined by the Craddock 200 atlas.
+            - 'rois_cc400': :obj:`numpy.ndarray`,
+              data specific to regions defined by the Craddock 400 atlas.
+            - 'rois_dosenbach160': :obj:`numpy.ndarray`,
+              data specific to regions defined by the Dosenbach 160 atlas.
+            - 'rois_ez': :obj:`numpy.ndarray`,
+              data specific to regions defined by the EZ atlas.
+            - 'rois_ho': :obj:`numpy.ndarray`,
+              data specific to regions defined by the Harvard-Oxford atlas.
+            - 'rois_tt': :obj:`numpy.ndarray`,
+              data specific to regions defined by the Talairach atlas.
+            - 'vmhc': :obj:`numpy.ndarray`,
+              data specific to voxel-mirrored homotopic connectivity in
+              functional MRI data.
 
     Notes
     -----
@@ -1264,7 +1256,6 @@ def fetch_abide_pcp(
     References
     ----------
     .. footbibliography::
-
     """
     check_params(locals())
 
@@ -1336,7 +1327,7 @@ def fetch_abide_pcp(
     )
 
     # Note: the phenotypic file contains string that contains comma which mess
-    # up numpy array csv loading. This is why I do a pass to remove the last
+    # up numpy array CSV loading. This is why I do a pass to remove the last
     # field. This can be
     # done simply with pandas but we don't want such dependency ATM
     # pheno = pandas.read_csv(path_csv).to_records()
@@ -1475,7 +1466,7 @@ def fetch_mixed_gambles(
     Returns
     -------
     data : :class:`~sklearn.utils.Bunch`
-        Dictionary-like object, the attributes of interest are:
+        Dictionary-like object, contains:
 
         - 'zmaps': :obj:`list` of :obj:`str`
           Paths to realigned gain betamaps (one nifti per subject).
@@ -1611,7 +1602,7 @@ def fetch_megatrawls_netmats(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the attributes are :
+        Dictionary-like object, contains:
 
         - 'dimensions': int, consists of given input in dimensions.
 
@@ -1629,7 +1620,6 @@ def fetch_megatrawls_netmats(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -1829,7 +1819,7 @@ def fetch_surf_nki_enhanced(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'func_left': Paths to Gifti files containing resting state
                         time series left hemisphere
@@ -1849,7 +1839,6 @@ def fetch_surf_nki_enhanced(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -1888,7 +1877,7 @@ def fetch_surf_nki_enhanced(
         data_dir, [phenotypic], resume=resume, verbose=verbose
     )[0]
 
-    # Load the csv file
+    # Load the CSV file
     phenotypic_df = pd.read_csv(
         phenotypic,
         header=1,
@@ -1991,7 +1980,6 @@ def load_nki(
     -------
     list of SurfaceImage objects
         One image per subject.
-
     """
     check_params(locals())
     check_parameter_in_allowed(mesh_type, ALLOWED_MESH_TYPES, "mesh_type")
@@ -2034,10 +2022,10 @@ def _fetch_development_fmri_participants(
 ) -> pd.DataFrame:
     """Use in fetch_development_fmri function.
 
-    This function helps in downloading and loading participants data from .tsv
+    This function helps in downloading and loading participants data from TSV
     uploaded on Open Science Framework (OSF).
 
-    The original .tsv file contains many columns but this function picks only
+    The original TSV file contains many columns but this function picks only
     those columns that are relevant.
 
     Parameters
@@ -2053,7 +2041,6 @@ def _fetch_development_fmri_participants(
     participants : pandas.DataFrame
         Contains data of each subject age, age group, child or adult,
         gender, handedness.
-
     """
     check_params(locals())
 
@@ -2111,7 +2098,6 @@ def _fetch_development_fmri_functional(
 
     regressors : :obj:`list` of str (tsv files)
         Paths to regressors related to each subject.
-
     """
     check_params(locals())
 
@@ -2132,7 +2118,7 @@ def _fetch_development_fmri_functional(
         ("key_bold", "U24"),
     ]
     names = ["participant_id", "key_r", "key_b"]
-    # csv file contains download information related to OpenScience(osf)
+    # CSV file contains download information related to OpenScience(osf)
     osf_data = csv_to_array(
         (PACKAGE_DIRECTORY / "data" / "development_fmri.csv"),
         skip_header=True,
@@ -2194,7 +2180,6 @@ def fetch_development_fmri(
 
     .. nilearn_versionadded:: 0.5.2
 
-
     Parameters
     ----------
     %(n_subjects)s
@@ -2224,7 +2209,7 @@ def fetch_development_fmri(
     Returns
     -------
     data : Bunch
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
         - 'func': :obj:`list` of :obj:`str` (Nifti files)
             Paths to downsampled functional MRI data (4D) for each subject.
@@ -2258,7 +2243,6 @@ def fetch_development_fmri(
     References
     ----------
     .. footbibliography::
-
     """
     check_params(locals())
 
@@ -2404,13 +2388,13 @@ def _reduce_confounds(regressors, keep_confounds):
 
 
 @fill_doc
-def fetch_language_localizer_demo_dataset(
+def fetch_language_localizer_demo_dataset(  # numpydoc ignore=RT05
     data_dir: DataDir = None, verbose: Verbose = 1
 ) -> Bunch[str, Any]:
     """Download language localizer demo dataset.
 
     For more information
-    see the :ref:`dataset description <language_localizer_dataset>`.
+    see the :ref:`dataset description <language_localizer_demo>`.
 
     Parameters
     ----------
@@ -2421,14 +2405,9 @@ def fetch_language_localizer_demo_dataset(
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are :
+        Dictionary-like object, contains:
 
-        - ``'data_dir'``: :obj:`str` Path to downloaded dataset.
-
-        - ``'func'``: :obj:`list` of :obj:`str`,
-          Absolute paths of downloaded files on disk
-
-        - ``'description'`` : :obj:`str`, dataset description
+        %(language_localizer_demo_content)s
 
     Notes
     -----
@@ -2475,7 +2454,7 @@ def fetch_language_localizer_demo_dataset(
         str(path) for path in dataset_dir.rglob("*") if path.is_file()
     ]
 
-    description = get_dataset_descr("language_localizer_demo")
+    description = Description.from_registry("language_localizer_demo")
     return Bunch(
         data_dir=str(dataset_dir),
         func=sorted(file_list),
@@ -2531,7 +2510,6 @@ def fetch_ds000030_urls(
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -2603,7 +2581,6 @@ def select_from_index(
     -------
     urls : :obj:`list` of :obj:`str`
         Sorted list of filtered dataset directories.
-
     """
     check_params(locals())
 
@@ -2729,6 +2706,11 @@ def fetch_openneuro_dataset(
     downloaded_files : :obj:`list` of :obj:`str`
         Absolute paths of downloaded files on disk.
 
+    See Also
+    --------
+    :func:`fetch_ds000030_urls`
+    :func:`patch_openneuro_dataset`
+
     Notes
     -----
     %(fetcher_note)s
@@ -2741,12 +2723,6 @@ def fetch_openneuro_dataset(
     This copy includes filenames that are not compliant with the current
     version of :term:`BIDS`, so this function also calls
     :func:`patch_openneuro_dataset` to generate BIDS-compliant symlinks.
-
-    See Also
-    --------
-    :func:`fetch_ds000030_urls`
-    :func:`patch_openneuro_dataset`
-
     """
     check_params(locals())
 
@@ -2833,13 +2809,13 @@ def fetch_openneuro_dataset(
 
 
 @fill_doc
-def fetch_localizer_first_level(
+def fetch_localizer_first_level(  # numpydoc ignore=RT05
     data_dir: DataDir = None, verbose: Verbose = 1
 ) -> Bunch[str, Any]:
     """Download a first-level localizer :term:`fMRI` dataset.
 
     For more information
-    see the :ref:`dataset description <localizer_first_level_dataset>`.
+    see the :ref:`dataset description <localizer_first_level>`.
 
     Parameters
     ----------
@@ -2850,20 +2826,9 @@ def fetch_localizer_first_level(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, with the keys:
+        Dictionary-like object, contains:
 
-        - epi_img: the input 4D image
-
-        - events: a csv file describing the paradigm
-
-        - description: data description
-
-        - t_r: repetition time of the function data in seconds
-
-        - slice_time_ref:
-            slice timing reference used during slice timing correction
-
-        - %(template)s
+        %(localizer_first_level_content)s
 
     Notes
     -----
@@ -2888,7 +2853,8 @@ def fetch_localizer_first_level(
     params = dict(list(zip(options, files, strict=False)))
     data = Bunch(**params)
 
-    description = get_dataset_descr(dataset_name)
+    description = Description.from_registry(dataset_name)
+
     data.description = description
     data.t_r = 2.4
     data.slice_time_ref = 0.5
@@ -2933,7 +2899,7 @@ def fetch_spm_auditory(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are:
+        Dictionary-like object, contains:
 
         - 'anat': :obj:`list` of :obj:`str`.
             Paths to anat images
@@ -2950,14 +2916,13 @@ def fetch_spm_auditory(
         - 't_r' : :obj:`float`.
             Repetition time in seconds of the functional images.
 
-    References
-    ----------
-    .. footbibliography::
-
-
     Notes
     -----
     %(fetcher_note)s
+
+    References
+    ----------
+    .. footbibliography::
     """
     check_params(locals())
 
@@ -3135,7 +3100,13 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
 
 
 @fill_doc
-def fetch_spm_multimodal_fmri(
+# TODO (nilearn >= 0.17.0) remove 'data_name' parameter
+@remove_parameters(
+    removed_params=["data_name"],
+    reason="parameter is unused",
+    end_version="0.17.0",
+)
+def fetch_spm_multimodal_fmri(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     data_name: str = "spm_multimodal_fmri",
     verbose: Verbose = 1,
@@ -3143,7 +3114,7 @@ def fetch_spm_multimodal_fmri(
     """Fetcher for Multi-modal Face Dataset.
 
     For more information,
-    see the :ref:`dataset description <spm_multimodal_dataset>`.
+    see the :ref:`dataset description <spm_multimodal>`.
 
     Parameters
     ----------
@@ -3152,35 +3123,16 @@ def fetch_spm_multimodal_fmri(
     data_name : :obj:`str`, default='spm_multimodal_fmri'
         Name of the dataset.
 
+        .. nilearn_deprecated:: 0.15.0
+
     %(verbose)s
 
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are:
+        Dictionary-like object, contains:
 
-        - 'func1' : :obj:`list` of :obj:`str`.
-          Paths to functional images for run 1
-
-        - 'func2' : :obj:`list` of :obj:`str`.
-          Paths to functional images for run 2
-
-        - 'events1' : :obj:`str`. Path to onsets TSV file for run 1
-
-        - 'events2' : :obj:`str`. Path to onsets TSV file for run 2
-
-        - 'trials_ses1' : :obj:`str`.
-          Path to .mat file containing onsets for run 1
-
-        - 'trials_ses1' : :obj:`str`.
-          Path to .mat file containing onsets for run 2
-
-        - 'anat' : :obj:`str`. Path to anat file
-
-        - 'description' : :obj:`str`. Description of the data
-
-        - 't_r' : :obj:`float`. Repetition time in seconds
-           of the functional images.
+        %(spm_multimodal_content)s
 
     Notes
     -----
@@ -3194,16 +3146,14 @@ def fetch_spm_multimodal_fmri(
     subject_id = "sub001"
     subject_dir = dataset_dir / subject_id
 
-    description = get_dataset_descr("spm_multimodal")
-
     # maybe data_dir already contains the data ?
     data = _glob_spm_multimodal_fmri_data(subject_dir, verbose)
     if data is None:
         # No. Download the data
         data = _download_data_spm_multimodal(dataset_dir, subject_dir, verbose)
 
-    data.description = description
-    data.t_r = 2
+    data.description = Description.from_registry("spm_multimodal")
+    data.t_r = 2.0
     return data
 
 
@@ -3214,7 +3164,7 @@ def fetch_fiac_first_level(
     """Download a first-level fiac :term:`fMRI` dataset (2 runs).
 
     For more information
-    see the :ref:`dataset description <fiac_dataset>`.
+    see the :ref:`dataset description <fiac>`.
 
     Parameters
     ----------
@@ -3225,21 +3175,13 @@ def fetch_fiac_first_level(
     Returns
     -------
     data : :obj:`sklearn.utils.Bunch`
-        Dictionary-like object, the interest attributes are:
+        Dictionary-like object, contains:
 
-        - 'design_matrix1': :obj:`pandas.DataFrame`.
-          Design matrix for run 1
-        - 'func1': :obj:`str`. Path to Nifti file of run 1
-        - 'design_matrix2': :obj:`pandas.DataFrame`.
-          Design matrix for run 2
-        - 'func2': :obj:`str`. Path to Nifti file of run 2
-        - 'mask': :obj:`str`. Path to mask file
-        - 'description': :obj:`str`. Data description
+         %(fiac_content)s
 
     Notes
     -----
     %(fetcher_note)s
-
     """
     check_params(locals())
 
@@ -3285,7 +3227,7 @@ def fetch_fiac_first_level(
         _subject_data["mask"] = str(mask)
         return Bunch(**_subject_data)
 
-    description = get_dataset_descr("fiac")
+    description = Description.from_registry("fiac")
 
     # maybe data_dir already contains the data ?
     data = _glob_fiac_data(verbose)
@@ -3310,7 +3252,8 @@ def fetch_fiac_first_level(
         return data
 
     data = _glob_fiac_data(verbose)
-    data.description = description
+    if data is not None:
+        data.description = description
     return data
 
 
@@ -3323,15 +3266,15 @@ def load_sample_motor_activation_image() -> str:
     str
         Path to the sample functional image.
 
-    Notes
-    -----
-    The 'left vs right button press' contrast is used:
-    https://neurovault.org/images/10426/
-
     See Also
     --------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
     nilearn.datasets.fetch_neurovault_auditory_computation_task
+
+    Notes
+    -----
+    The 'left vs right button press' contrast is used:
+    https://neurovault.org/images/10426/
     """
     return str(Path(__file__).parent / "data" / "image_10426.nii.gz")

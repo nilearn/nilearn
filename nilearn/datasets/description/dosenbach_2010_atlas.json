@@ -1,0 +1,14 @@
+{
+    "rois": {
+        "type": "pd.DataFrame",
+        "desc": "Coordinates of the 160 regions in :term:`MNI` space with x, y, z coordinates."
+    },
+    "networks": {
+        "type": "np.ndarray",
+        "desc": "Names of the corresponding network for each region."
+    },
+    "labels": {
+        "type": "np.ndarray",
+        "desc": "Names of the regions."
+    }
+}

@@ -59,7 +59,6 @@ def _data_to_sprite(
         size is (M x nz) x (N x ny), where M and N are computed to be roughly
         equal. All slices are pasted together row by row, from top left to
         bottom right. The last row is completed with empty slices.
-
     """
     nx, ny, nz = data.shape
     nrows = int(np.ceil(np.sqrt(nx)))
@@ -108,7 +107,6 @@ def _threshold_data(data: np.ndarray, threshold: Any = None):
 
     threshold : :obj:`float`
         Updated threshold value.
-
     """
     # If threshold is None, do nothing
     if threshold is None:
@@ -179,7 +177,6 @@ def _save_sprite(
     -------
     sprite : :class:`numpy.ndarray`
         Returned sprite.
-
     """
     # Create sprite
     sprite = _data_to_sprite(data, radiological)
@@ -743,7 +740,6 @@ def view_img(
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
-
     """
     check_params(locals())
 

@@ -68,6 +68,7 @@ warnings.filterwarnings(
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     "changelog_anchors",
+    "dataset_descriptions",
     "gh_substitutions",
     "myst_parser",
     "numpydoc",
@@ -317,6 +318,11 @@ html_css_files = [
     f"{font_awesome}solid.min.css",
     f"{font_awesome}brands.min.css",
 ]
+
+# Privacy-friendly page view analytics with GoatCounter
+# (https://nilearn.goatcounter.com).
+# Only active on https://nilearn.github.io (see themes/goatcounter.js).
+html_js_files = ["goatcounter.js"]
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths

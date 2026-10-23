@@ -7,9 +7,10 @@ import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Self, overload
+from typing import TYPE_CHECKING, Any, Self, overload
 
 import numpy as np
+import pandas as pd
 from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.base import TransformerMixin
@@ -47,6 +48,23 @@ from nilearn.image.image import (
 from nilearn.image.resampling import resample_img
 from nilearn.maskers._mixin import MaskerReportMixin
 from nilearn.masking import load_mask_img, unmask
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    Signals,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
@@ -92,7 +110,6 @@ def filter_and_extract(
     Notes
     -----
     For all other parameters refer to NiftiMasker documentation
-
     """
     if memory is None:
         memory = Memory(location=None)
@@ -154,7 +171,7 @@ def filter_and_extract(
     # --------
     # Detrending (optional)
     # Filtering
-    # Confounds removing (from csv file or numpy array)
+    # Confounds removing (from CSV file or numpy array)
     # Normalizing
 
     mask_logger("cleaning", verbose=verbose)
@@ -320,6 +337,25 @@ class _BaseMasker(
 ):
     """Base class for NiftiMaskers."""
 
+    # Parameters shared by all maskers declared only for type checkers:
+    # with TYPE_CHECKING keeps them out of the class __annotations__,
+    # so they are not listed as undocumented members in the API docs.
+    if TYPE_CHECKING:
+        clean_args: dict[str, Any] | None
+        detrend: Detrend
+        dtype: DType
+        high_pass: HighPass
+        high_variance_confounds: bool
+        low_pass: LowPass
+        memory: MemoryLike
+        memory_level: MemoryLevel
+        smoothing_fwhm: SmoothingFwhm
+        reports: bool
+        standardize: Standardize
+        standardize_confounds: StandardizeConfounds
+        t_r: Tr
+        verbose: Verbose
+
     _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
 
     @property
@@ -341,7 +377,7 @@ class _BaseMasker(
     def _get_target_dtype(
         self, imgs: Nifti1Image | SurfaceImage | list[SurfaceImage]
     ):
-        """Adapts dtype to apply to transform() output."""
+        """Adapt dtype to apply to transform() output."""
         if isinstance(imgs, Nifti1Image):
             source_dtype = img_data_dtype(imgs)
         elif isinstance(imgs, SurfaceImage):
@@ -366,10 +402,13 @@ class _BaseMasker(
 class BaseMasker(_BaseMasker):
     """Base class for NiftiMaskers."""
 
+    if TYPE_CHECKING:
+        mask_img: NiimgLike | None
+
     _template_name = "body_masker.jinja"
 
     @fill_doc
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y: None = None) -> Self:
         """Compute the mask corresponding to the data.
 
         Parameters
@@ -412,7 +451,11 @@ class BaseMasker(_BaseMasker):
     @abc.abstractmethod
     @fill_doc
     def transform_single_imgs(
-        self, imgs, confounds=None, sample_mask=None, copy=True
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+        copy=True,
     ):
         """Extract signals from a single niimg.
 
@@ -434,7 +477,6 @@ class BaseMasker(_BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         raise NotImplementedError()
 
@@ -473,7 +515,6 @@ class BaseMasker(_BaseMasker):
         -------
         params : dict
             The dict of parameters.
-
         """
         _ignore = {"memory", "memory_level", "verbose", "copy", "n_jobs"}
         if ignore is not None:
@@ -526,7 +567,12 @@ class BaseMasker(_BaseMasker):
         check_volume_for_fit(imgs)
 
     @fill_doc
-    def transform(self, imgs, confounds=None, sample_mask=None):
+    def transform(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ) -> Signals:
         """Apply mask, spatial and temporal preprocessing.
 
         Parameters
@@ -571,8 +617,13 @@ class BaseMasker(_BaseMasker):
 
     @fill_doc
     def fit_transform(
-        self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
-    ):
+        self,
+        imgs,
+        y: None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+        **fit_params,
+    ) -> Signals:
         """Fit to data, then transform it.
 
         Parameters
@@ -591,7 +642,6 @@ class BaseMasker(_BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         with warnings.catch_warnings():
             # ignore warning in case the masker
@@ -606,7 +656,7 @@ class BaseMasker(_BaseMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, X) -> Nifti1Image:
+    def inverse_transform(self, X: Signals) -> Nifti1Image:
         """Transform the data matrix back to an image in brain space.
 
         This step only performs spatial unmasking,
@@ -620,7 +670,6 @@ class BaseMasker(_BaseMasker):
         Returns
         -------
         %(img_inv_transform_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -739,6 +788,10 @@ class BaseMasker(_BaseMasker):
 class _BaseSurfaceMasker(_BaseMasker):
     """Class from which all surface maskers should inherit."""
 
+    if TYPE_CHECKING:
+        mask_img: SurfaceImage | None
+        cmap: ColormapLike
+
     _template_name = "body_surface_masker.jinja"
 
     def __sklearn_tags__(self):
@@ -809,11 +862,16 @@ class _BaseSurfaceMasker(_BaseMasker):
         return mask_img_
 
     @abc.abstractmethod
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y: None = None) -> Self:
         """Present only to comply with sklearn estimators checks."""
 
     @fill_doc
-    def transform(self, imgs, confounds=None, sample_mask=None):
+    def transform(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ) -> Signals:
         """Apply mask, spatial and temporal preprocessing.
 
         Parameters
@@ -896,13 +954,24 @@ class _BaseSurfaceMasker(_BaseMasker):
         return output
 
     @abc.abstractmethod
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from a single surface image."""
         # implemented in children classes
         raise NotImplementedError()
 
     @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+    def fit_transform(
+        self,
+        imgs,
+        y: None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ) -> Signals:
         """Prepare and perform signal extraction from regions.
 
         Parameters
@@ -918,7 +987,6 @@ class _BaseSurfaceMasker(_BaseMasker):
         %(confounds)s
 
         %(sample_mask)s
-
 
         Returns
         -------
@@ -947,7 +1015,7 @@ class _BaseSurfaceMasker(_BaseMasker):
         return imgs
 
     def _check_array(
-        self, signals: np.ndarray, sklearn_check: bool = True
+        self, signals: np.ndarray | pd.DataFrame, sklearn_check: bool = True
     ) -> np.ndarray:
         """Check array to inverse transform.
 

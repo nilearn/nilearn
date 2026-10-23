@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearn.plotting.plot_glass_brain`."""
+"""Test for :func:`nilearn.plotting.plot_glass_brain`."""
 
 # ruff: noqa: ARG001
 
@@ -52,7 +52,7 @@ def test_plot_noncurrent_axes(matplotlib_pyplot, rng):
 
 @pytest.mark.thread_unsafe
 def test_add_markers_using_plot_glass_brain(matplotlib_pyplot):
-    """Tests for adding markers through plot_glass_brain."""
+    """Test for adding markers through plot_glass_brain."""
     fig = plot_glass_brain(None)
     coords = [(-34, -39, -9)]
     fig.add_markers(coords)

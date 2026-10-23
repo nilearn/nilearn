@@ -124,7 +124,7 @@ def test_invalids_extract_types_in_connected_regions(
     "extract_type", ["connected_components", "local_regions"]
 )
 def test_connected_regions_4d(maps, extract_type):
-    """Regions extracted should be equal or more than already present."""
+    """Check extracted regions are equal or more than already present."""
     connected_extraction_img, index = connected_regions(
         maps, min_region_size=10, extract_type=extract_type
     )
@@ -470,7 +470,7 @@ def test_connected_label_regions_check_labels(img_labels):
 def test_connected_label_regions_names_follow_label_order(
     affine_eye, label_values
 ):
-    """Names must be assigned in the order of the unique labels.
+    """Check names are assigned in the order of the unique labels.
 
     The docstring asks callers to order names to match the unique labels, and
     np.unique returns them sorted, so iteration must stay sorted too.

@@ -21,15 +21,21 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Literal, TypeAlias
 
 import numpy as np
+import pandas as pd
 from joblib.memory import Memory
 from nibabel import Nifti1Image
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
+if TYPE_CHECKING:
+    import polars as pl
+    from matplotlib.colors import Colormap
+
 Integer: TypeAlias = int | np.integer
 Float: TypeAlias = float | np.floating
 NonNullScalar: TypeAlias = Float | Integer
 Scalar: TypeAlias = NonNullScalar | None
+SingleConfound: TypeAlias = pd.DataFrame | np.ndarray | str | pathlib.Path
 
 Annotate: TypeAlias = bool
 AvailableMeshes: TypeAlias = Literal[
@@ -45,6 +51,10 @@ BlackBg: TypeAlias = Literal[True, False, "auto"]
 BorderSize: TypeAlias = Integer
 CbarTickFormat: TypeAlias = str
 ColorBar: TypeAlias = bool
+if TYPE_CHECKING:
+    ColormapLike: TypeAlias = Colormap | str | None
+else:
+    ColormapLike: TypeAlias = str | None
 ClusterThreshold: TypeAlias = Integer
 Connected: TypeAlias = bool
 CopyHeader: TypeAlias = bool
@@ -94,6 +104,9 @@ else:
 HighPass: TypeAlias = Scalar
 LowerCutoff: TypeAlias = Float
 LowPass: TypeAlias = Scalar
+MaskStrategy: TypeAlias = Literal[
+    "background", "epi", "whole-brain-template", "gm-template", "wm-template"
+]
 MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
 MemoryLevel: TypeAlias = Integer
 NJobs: TypeAlias = Integer
@@ -103,11 +116,24 @@ NiimgLike: TypeAlias = Nifti1Image | str | pathlib.Path
 Opening: TypeAlias = bool | Integer
 OutputFile: TypeAlias = str | pathlib.Path | None
 Radiological: TypeAlias = bool
+ReductionStrategy: TypeAlias = Literal[
+    "mean",
+    "median",
+    "sum",
+    "minimum",
+    "maximum",
+    "standard_deviation",
+    "variance",
+]
 RandomState: TypeAlias = Integer | np.random.RandomState | None
 ResamplingInterpolation: TypeAlias = Literal["continuous", "nearest"]
 Resolution: TypeAlias = Integer | None
 Resume: TypeAlias = bool
 ScreeningPercentile: TypeAlias = Scalar
+if TYPE_CHECKING:
+    Signals: TypeAlias = np.ndarray | pd.DataFrame | pl.DataFrame
+else:
+    Signals: TypeAlias = np.ndarray | pd.DataFrame
 SmoothingFwhm: TypeAlias = Scalar
 Standardize: TypeAlias = Literal["zscore_sample", "psc", None]
 StandardizeConfounds: TypeAlias = bool
@@ -129,6 +155,7 @@ SupportedClassifiers: TypeAlias = Literal[
     "ridge_classifier",
     "dummy_classifier",
 ]
+TableLike: TypeAlias = str | pathlib.Path | pd.DataFrame
 TargetAffine: TypeAlias = ndarray | list | tuple | None
 
 # Note that this is usable as for static type checking,

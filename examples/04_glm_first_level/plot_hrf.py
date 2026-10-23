@@ -72,9 +72,9 @@ def mion_response_function(t_r, oversampling=16, onset=0.0):
 
     Returns
     -------
-    response_function :
-        array of shape(length / t_r * oversampling, dtype=float)
-        response_function sampling on the oversampled time grid
+    response_function : array of shape(length / t_r * oversampling, \
+                        dtype=float)
+        Response function sampled on the oversampled time grid.
     """
     dt = t_r / oversampling
     time_stamps = np.linspace(
@@ -106,7 +106,7 @@ def mion_time_derivative(t_r, oversampling=16.0):
     Returns
     -------
     drf : array of shape(time_length / t_r * oversampling, dtype=float)
-        derived_response_function sampling on the provided grid
+        Derived response function sampled on the provided grid.
     """
     do = 0.1
     drf = (

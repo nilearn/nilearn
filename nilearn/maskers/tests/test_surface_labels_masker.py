@@ -152,8 +152,8 @@ def test_fit_with_lut(surf_label_img, tmp_path):
     """Check passing lut is reflected in attributes.
 
     Check that lut can be read from:
-    - a tsv file (str or path)
-    - a csv file (doc strings only mention TSV but testing for robustness)
+    - a TSV file (str or path)
+    - a CSV file (doc strings only mention TSV but testing for robustness)
     - a dataframe
     """
     lut_df = pd.DataFrame({"index": [0, 1], "name": ["Background", "bar"]})

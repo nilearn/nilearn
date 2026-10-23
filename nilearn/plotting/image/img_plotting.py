@@ -14,9 +14,10 @@ from typing import Literal
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import scipy
 from matplotlib import get_backend
 from matplotlib.axes import Axes
-from matplotlib.colors import LinearSegmentedColormap, Normalize
+from matplotlib.colors import Colormap, LinearSegmentedColormap, Normalize
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpecFromSubplotSpec
 from matplotlib.ticker import MaxNLocator
@@ -83,7 +84,6 @@ def show() -> None:
     This function is equivalent to :func:`matplotlib.pyplot.show`,
     but is skipped on the 'Agg' backend where it has no effect other
     than to emit a warning.
-
     """
     if get_backend().lower() != "agg":  # avoid warnings
         plt.show()
@@ -418,11 +418,6 @@ def plot_img(
     ValueError
         if the specified threshold is a negative number
 
-    Notes
-    -----
-    This is a low-level function. For most use cases, other plotting
-    functions might be more appropriate and easier to use.
-
     See Also
     --------
         :func:`~nilearn.plotting.plot_anat`
@@ -435,6 +430,11 @@ def plot_img(
             To simply plot probabilistic atlases (4D images)
         :mod:`nilearn.plotting`
             See API reference for other options
+
+    Notes
+    -----
+    This is a low-level function. For most use cases, other plotting
+    functions might be more appropriate and easier to use.
 
     Examples
     --------
@@ -449,7 +449,6 @@ def plot_img(
         >>>
         >>> display = plot_img(data, title="Plotting a 3D image with plot_img")
         >>> show()
-
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -594,7 +593,6 @@ def plot_anat(
         >>> fig = plot_anat(mni152_template, title="mni152 template")
         >>>
         >>> show()
-
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -761,7 +759,6 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     -------
     display : :class:`~nilearn.plotting.displays.BaseSlicer`, object
         Contours displayed on the background image.
-
     """
     roi_img = check_niimg_3d(roi_img)
     roi_data = get_data(roi_img)
@@ -800,7 +797,7 @@ def plot_roi(
     black_bg: BlackBg = "auto",
     threshold=0.5,
     alpha=0.7,
-    cmap="gist_ncar",
+    cmap: Colormap | str | pd.DataFrame = "gist_ncar",
     dim: float | Literal["auto"] = "auto",
     colorbar: ColorBar = True,
     cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
@@ -901,6 +898,11 @@ def plot_roi(
     ValueError
         if the specified threshold is a negative number
 
+    See Also
+    --------
+    nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
+        (4D images)
+
     Notes
     -----
     A small threshold is applied by default to eliminate numerical
@@ -908,11 +910,6 @@ def plot_roi(
 
     For visualization, non-finite values found in passed 'roi_img' or
     'bg_img' are set to zero.
-
-    See Also
-    --------
-    nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
-        (4D images)
 
     Examples
     --------
@@ -1378,18 +1375,18 @@ def plot_stat_map(
     ValueError
         if the specified threshold is a negative number
 
+    See Also
+    --------
+    nilearn.plotting.plot_anat : To simply plot anatomical images
+    nilearn.plotting.plot_epi : To simply plot raw EPI images
+    nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
 
     For visualization, non-finite values found in passed 'stat_map_img' or
     'bg_img' are set to zero.
-
-    See Also
-    --------
-    nilearn.plotting.plot_anat : To simply plot anatomical images
-    nilearn.plotting.plot_epi : To simply plot raw EPI images
-    nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
 
     Examples
     --------
@@ -1663,7 +1660,10 @@ def plot_glass_brain(
 
 @fill_doc
 def plot_connectome(
-    adjacency_matrix,
+    adjacency_matrix: np.ndarray
+    | np.ma.masked_array
+    | scipy.sparse.coo_matrix
+    | scipy.sparse.coo_array,
     node_coords,
     node_color="auto",
     node_size=50,
@@ -1694,10 +1694,11 @@ def plot_connectome(
 
     Parameters
     ----------
-    adjacency_matrix : numpy array of shape (n, n)
-        Represents the link strengths of the graph. The matrix can be
-        symmetric which will result in an undirected graph, or not
-        symmetric which will result in a directed graph.
+    adjacency_matrix : :class:`numpy.ndarray` of shape ``(n, n)``, \
+            or :class:`scipy.sparse.coo_array`.
+        Represents the link strengths of the graph.
+        The matrix can be symmetric which will result in an undirected graph,
+        or not symmetric which will result in a directed graph.
 
     node_coords : numpy array_like of shape (n, 3)
         3d coordinates of the graph nodes in world space.
@@ -1773,7 +1774,6 @@ def plot_connectome(
         coords on brain parcellations.
     nilearn.plotting.find_probabilistic_atlas_cut_coords : Extraction of
         node coords on brain probabilistic atlases.
-
     """
     check_params(locals())
 
@@ -2092,7 +2092,6 @@ def plot_carpet(
         ... )
         >>>
         >>> show()
-
     """
     check_params(locals())
     img = check_niimg_4d(img, dtype="auto")

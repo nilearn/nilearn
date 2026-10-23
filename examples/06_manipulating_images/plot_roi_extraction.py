@@ -22,7 +22,6 @@ visualization & results checking are possible at each step.
     :doc:`plot_extract_rois_smith_atlas`
     for automatic ROI extraction of brain connected networks
     given in 4D image.
-
 """
 
 # %%
