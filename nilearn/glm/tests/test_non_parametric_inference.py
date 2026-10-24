@@ -184,6 +184,35 @@ def test_permutation_computation(n_subjects):
     assert get_data(neg_log_pvals_img).shape == SHAPE[:3]
 
 
+def test_permutation_computation_with_exchangeability_blocks():
+    """Second-level inference forwards blocks for repeated observations."""
+    func_img, mask = fake_fmri_data()
+    n_subjects = 3
+    n_conditions = 2
+    blocks = np.repeat(np.arange(n_subjects), n_conditions)
+    design_matrix = pd.DataFrame(
+        {
+            "condition": np.tile([0, 1], n_subjects),
+            "subject_1": np.repeat([1, 0, 0], n_conditions),
+            "subject_2": np.repeat([0, 1, 0], n_conditions),
+            "subject_3": np.repeat([0, 0, 1], n_conditions),
+        }
+    )
+
+    out = non_parametric_inference(
+        [func_img] * blocks.size,
+        design_matrix=design_matrix,
+        second_level_contrast="condition",
+        model_intercept=False,
+        mask=mask,
+        n_perm=N_PERM,
+        random_state=0,
+        exchangeability_blocks=blocks,
+    )
+
+    assert get_data(out).shape == SHAPE[:3]
+
+
 def test_tfce(n_subjects):
     """Test non-parametric inference with TFCE inference."""
     shapes = [SHAPE] * n_subjects
