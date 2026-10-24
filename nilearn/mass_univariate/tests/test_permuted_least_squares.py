@@ -7,6 +7,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import (
     assert_array_almost_equal,
+    assert_array_equal,
     assert_array_less,
     assert_equal,
 )
@@ -17,6 +18,10 @@ from nilearn.conftest import _rng
 from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
 from nilearn.mass_univariate.permuted_least_squares import (
+    _get_block_indices,
+    _get_permutation_indices,
+    _get_signs,
+    _sanitize_exchangeability_blocks,
     _sanitize_inputs_permuted_ols,
 )
 
@@ -927,6 +932,89 @@ def test_permuted_ols_boolean_tested_vars(dummy_design):
     output = permuted_ols(tested_var, target_var, n_perm=0)
 
     assert output["t"].shape == (1, target_var.shape[1])
+
+
+def test_permutation_indices_are_restricted_to_blocks():
+    """Rows are rearranged only within exchangeability blocks."""
+    block_ids = _sanitize_exchangeability_blocks(
+        ["subject-1", "subject-1", "subject-2", "subject-2", "subject-2"],
+        n_samples=5,
+    )
+    block_indices = _get_block_indices(block_ids)
+    rng = np.random.RandomState(0)
+    identity = np.arange(block_ids.size)
+
+    permutations = [
+        _get_permutation_indices(rng, block_ids.size, block_indices)
+        for _ in range(20)
+    ]
+
+    for permutation in permutations:
+        assert_array_equal(np.sort(permutation), identity)
+        assert_array_equal(block_ids[permutation], block_ids)
+    assert any(not np.array_equal(p, identity) for p in permutations)
+
+
+def test_sign_flips_are_shared_within_blocks():
+    """All samples in a block receive the same random sign."""
+    block_ids = _sanitize_exchangeability_blocks([1, 1, 2, 2, 3], n_samples=5)
+    signs = _get_signs(np.random.RandomState(0), 5, block_ids)
+
+    for block_id in np.unique(block_ids):
+        block_signs = np.unique(signs[block_ids == block_id])
+        assert block_signs.size == 1
+    assert set(signs) == {-1, 1}
+
+
+@pytest.mark.parametrize(
+    "blocks, message",
+    [
+        ([[1, 1], [2, 2]], "one-dimensional"),
+        ([1, 2], "one value per sample"),
+        ([1, np.nan, 2, 2, 1, 1, 1, 1, 1, 1], "NaNs"),
+    ],
+)
+def test_permuted_ols_exchangeability_blocks_validation(
+    blocks, message, dummy_design
+):
+    """Invalid exchangeability block labels produce clear errors."""
+    target_var, tested_var, *_ = dummy_design
+
+    with pytest.raises(ValueError, match=message):
+        permuted_ols(
+            tested_var,
+            target_var,
+            n_perm=0,
+            exchangeability_blocks=blocks,
+        )
+
+
+def test_permuted_ols_with_exchangeability_blocks(dummy_design):
+    """The public function accepts block-restricted permutations."""
+    target_var, tested_var, *_ = dummy_design
+    blocks = np.arange(tested_var.shape[0]) // 2
+
+    output = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        n_perm=N_PERM,
+        random_state=0,
+        exchangeability_blocks=blocks,
+    )
+
+    assert output["h0_max_t"].shape == (tested_var.shape[1], N_PERM)
+
+    intercept_output = permuted_ols(
+        np.ones_like(tested_var),
+        target_var,
+        model_intercept=False,
+        n_perm=N_PERM,
+        random_state=0,
+        exchangeability_blocks=blocks,
+    )
+
+    assert intercept_output["h0_max_t"].shape == (1, N_PERM)
 
 
 @pytest.mark.ai_generated

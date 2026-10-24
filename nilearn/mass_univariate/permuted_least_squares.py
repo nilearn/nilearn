@@ -32,6 +32,88 @@ from nilearn.mass_univariate._utils import (
 )
 
 
+def _sanitize_exchangeability_blocks(exchangeability_blocks, n_samples):
+    """Validate and encode exchangeability block labels."""
+    if exchangeability_blocks is None:
+        return None
+
+    try:
+        blocks = np.asarray(exchangeability_blocks)
+    except (TypeError, ValueError) as exc:
+        raise TypeError(
+            "'exchangeability_blocks' must be a one-dimensional array."
+        ) from exc
+
+    if blocks.ndim != 1:
+        raise ValueError(
+            "'exchangeability_blocks' must be a one-dimensional array."
+        )
+    if blocks.size != n_samples:
+        raise ValueError(
+            "'exchangeability_blocks' must contain one value per sample. "
+            f"You provided {blocks.size} values for {n_samples} samples."
+        )
+
+    if blocks.dtype.kind in "fc" and np.isnan(blocks).any():
+        raise ValueError("'exchangeability_blocks' must not contain NaNs.")
+    if blocks.dtype.kind in "mM" and np.isnat(blocks).any():
+        raise ValueError("'exchangeability_blocks' must not contain NaTs.")
+    if blocks.dtype.kind == "O" and any(
+        value is None
+        or (isinstance(value, float | np.floating) and np.isnan(value))
+        for value in blocks
+    ):
+        raise ValueError(
+            "'exchangeability_blocks' must not contain missing values."
+        )
+
+    try:
+        _, block_ids = np.unique(blocks, return_inverse=True)
+    except (TypeError, ValueError) as exc:
+        raise TypeError(
+            "'exchangeability_blocks' must contain comparable scalar labels."
+        ) from exc
+
+    return block_ids
+
+
+def _get_block_indices(exchangeability_blocks):
+    """Return sample indices for blocks that contain multiple samples."""
+    if exchangeability_blocks is None:
+        return None
+
+    n_blocks = int(exchangeability_blocks.max()) + 1
+    block_indices = []
+    for block_id in range(n_blocks):
+        indices = np.flatnonzero(exchangeability_blocks == block_id)
+        if indices.size > 1:
+            block_indices.append(indices)
+    return block_indices
+
+
+def _get_permutation_indices(rng, n_samples, block_indices):
+    """Get sample indices permuted within their exchangeability blocks."""
+    if block_indices is None:
+        return rng.permutation(n_samples)
+
+    indices = np.arange(n_samples)
+    permutation = indices.copy()
+    for indices_in_block in block_indices:
+        permutation[indices_in_block] = rng.permutation(indices_in_block)
+
+    return permutation
+
+
+def _get_signs(rng, n_samples, exchangeability_blocks):
+    """Draw sign flips independently per sample or per block."""
+    if exchangeability_blocks is None:
+        return rng.randint(2, size=n_samples) * 2 - 1
+
+    n_blocks = int(exchangeability_blocks.max()) + 1
+    block_signs = rng.randint(2, size=n_blocks) * 2 - 1
+    return block_signs[exchangeability_blocks]
+
+
 @fill_doc
 def _permuted_ols_on_chunk(  # numpydoc ignore=RT05
     scores_original_data,
@@ -40,6 +122,7 @@ def _permuted_ols_on_chunk(  # numpydoc ignore=RT05
     thread_id,
     threshold=None,
     confounding_vars=None,
+    exchangeability_blocks=None,
     masker=None,
     n_perm=10000,
     n_perm_chunk=10000,
@@ -79,6 +162,11 @@ def _permuted_ols_on_chunk(  # numpydoc ignore=RT05
     confounding_vars : array-like of shape=(n_samples, n_covars) \
              or None, default=None
         Clinical data (covariates).
+
+    exchangeability_blocks : array-like of shape=(n_samples,) or None
+        Encoded labels specifying which samples may be permuted together.
+        Samples are only permuted within the same block. For intercept tests,
+        sign flips are shared by all samples in a block.
 
     masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
             :class:`~nilearn.maskers.MultiNiftiMasker` or None, default=None
@@ -190,27 +278,32 @@ def _permuted_ols_on_chunk(  # numpydoc ignore=RT05
         h0_csfwe_part = np.empty((n_regressors, n_perm_chunk))
         h0_cmfwe_part = np.empty((n_regressors, n_perm_chunk))
 
+    block_indices = _get_block_indices(exchangeability_blocks)
+
     for i_perm in range(n_perm_chunk):
+        permuted_tested_vars = tested_vars
+        permuted_target_vars = target_vars
+        permuted_confounding_vars = confounding_vars
+
         if intercept_test:
-            # sign swap (random multiplication by 1 or -1)
-            target_vars = target_vars * (
-                rng.randint(2, size=(n_samples, 1)) * 2 - 1
-            )
+            signs = _get_signs(rng, n_samples, exchangeability_blocks)
+            permuted_target_vars = target_vars * signs[:, np.newaxis]
         else:
-            # shuffle data
-            # Regarding computation costs, we choose to shuffle testvars
-            # and covars rather than fmri_signal.
-            # Also, it is important to shuffle tested_vars and covars
-            # jointly to simplify t-scores computation (null dot product).
-            shuffle_idx = rng.permutation(n_samples)
-            tested_vars = tested_vars[shuffle_idx]
+            # Shuffle tested variables and covariates jointly rather than
+            # the fMRI signal. Keep the shuffle within exchangeability blocks.
+            shuffle_idx = _get_permutation_indices(
+                rng, n_samples, block_indices
+            )
+            permuted_tested_vars = tested_vars[shuffle_idx]
             if confounding_vars is not None:
-                confounding_vars = confounding_vars[shuffle_idx]
+                permuted_confounding_vars = confounding_vars[shuffle_idx]
 
         # OLS regression on randomized data
         perm_scores = np.asfortranarray(
             t_score_with_covars_and_normalized_design(
-                tested_vars, target_vars, confounding_vars
+                permuted_tested_vars,
+                permuted_target_vars,
+                permuted_confounding_vars,
             )
         )
 
@@ -312,6 +405,7 @@ def permuted_ols(  # numpydoc ignore=RT05
     masker=None,
     tfce=False,
     threshold=None,
+    exchangeability_blocks=None,
 ) -> dict[str, np.ndarray]:
     """Massively univariate group analysis with permuted OLS.
 
@@ -413,6 +507,14 @@ def permuted_ols(  # numpydoc ignore=RT05
     %(tfce)s
 
         .. nilearn_versionadded:: 0.9.2
+
+    exchangeability_blocks : array-like, shape=(n_samples,), default=None
+        Labels identifying groups of samples that may be exchanged. Samples
+        are permuted only within the same block. During sign-flipping tests,
+        one sign is drawn per block and applied to all its samples. If None,
+        the existing unrestricted permutation scheme is used.
+
+        .. nilearn_versionadded:: 0.15.0
 
     Returns
     -------
@@ -571,6 +673,9 @@ def permuted_ols(  # numpydoc ignore=RT05
     n_descriptors = target_vars.shape[1]
 
     n_samples, n_regressors = tested_vars.shape
+    exchangeability_blocks = _sanitize_exchangeability_blocks(
+        exchangeability_blocks, n_samples
+    )
 
     intercept_test = n_regressors == np.unique(tested_vars).size == 1
 
@@ -754,6 +859,7 @@ def permuted_ols(  # numpydoc ignore=RT05
             thread_id=thread_id + 1,
             threshold=threshold_t,
             confounding_vars=covars_orthonormalized,
+            exchangeability_blocks=exchangeability_blocks,
             masker=masker,
             n_perm=n_perm,
             n_perm_chunk=n_perm_chunk,
