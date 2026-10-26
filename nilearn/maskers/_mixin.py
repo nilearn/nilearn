@@ -27,20 +27,17 @@ from nilearn.nilearn_typing import NiimgLike, NJobs, Signals, SingleConfound
 from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
 
-if TYPE_CHECKING:
-    from nilearn.maskers.base_masker import _BaseMasker
-
-    _MultiMixinBase = _BaseMasker
-else:
-    _MultiMixinBase = object
-
 
 @fill_doc
-class _MultiMixin(_MultiMixinBase):
+class _MultiMixin:
     """Mixin class to add common MultiMasker functionalities."""
 
     if TYPE_CHECKING:
         n_jobs: NJobs
+
+        # MultiMixin calls some of the methods of the class
+        # it is attached to, so static type checking
+        # needs the following.
 
         def fit(self, imgs=None, y: None = None) -> Self: ...
 
@@ -192,7 +189,7 @@ class _MultiMixin(_MultiMixinBase):
                 confounds = confounds[0]
             if isinstance(sample_mask, list):
                 sample_mask = sample_mask[0]
-            return super().transform(
+            return super().transform(  # type: ignore[missing-attribute]
                 imgs, confounds=confounds, sample_mask=sample_mask
             )
 
