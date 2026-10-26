@@ -408,6 +408,7 @@ def butterworth(
     nyq = sampling_rate * 0.5
 
     critical_freq = []
+    btype = "low"  # scipy.signal.butter default
     if high_pass is not None:
         btype = "high"
         critical_freq.append(_check_wn(btype, high_pass, nyq))

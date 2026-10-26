@@ -692,6 +692,7 @@ class FirstLevelModel(BaseGLM):
         self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
     ) -> None:
         """Generate and log messages for different step of the model fit."""
+        msg = ""
         if step == "progress":
             msg = self._report_progress(run_idx, n_runs, t0)
         elif step == "running":
@@ -1523,7 +1524,7 @@ def first_level_from_bids(
     t_r=None,
     slice_time_ref=None,
     hrf_model: HrfModel = "glover",
-    drift_model="cosine",
+    drift_model: Literal["polynomial", "cosine", None] = "cosine",
     high_pass=0.01,
     drift_order=1,
     fir_delays=None,
@@ -1807,8 +1808,7 @@ def first_level_from_bids(
         and kwargs_load_confounds is not None
         and "high_pass" in kwargs_load_confounds.get("strategy", [])
     ):
-        if drift_model == "cosine":
-            verb = "duplicate"
+        verb = "duplicate"
         if drift_model == "polynomial":
             verb = "conflict with"
 

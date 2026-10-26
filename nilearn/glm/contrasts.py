@@ -130,6 +130,7 @@ class Contrast:
 
         # Case: one-dimensional contrast ==> t or t**2
         check_parameter_in_allowed(self.stat_type, ["F", "t"], "stat_type")
+        stat = np.empty(1)
         if self.stat_type == "F":
             stat = (
                 np.sum((self.effect - baseline) ** 2, 0)
@@ -371,9 +372,14 @@ def compute_contrast(
 
     check_parameter_in_allowed(stat_type, ["t", "F"], "stat_type")
 
+    effect_ = (
+        np.zeros(labels.size)
+        if stat_type == "t"
+        else np.zeros((dim, labels.size))
+    )
+    var_ = np.zeros(labels.size)
+
     if stat_type == "t":
-        effect_ = np.zeros(labels.size)
-        var_ = np.zeros(labels.size)
         for label_ in regression_result:
             label_mask = labels == label_
             reg = regression_result[label_].Tcontrast(con_val)
@@ -383,8 +389,6 @@ def compute_contrast(
     elif stat_type == "F":
         from scipy.linalg import sqrtm
 
-        effect_ = np.zeros((dim, labels.size))
-        var_ = np.zeros(labels.size)
         # TODO
         # explain why we cannot simply do
         # reg = regression_result[label_].Tcontrast(con_val)
@@ -404,7 +408,7 @@ def compute_contrast(
             effect_[:, label_mask] = wcbeta
             var_[label_mask] = rss
 
-    dof_ = regression_result[label_].df_residuals
+    dof_ = regression_result[list(regression_result)[-1]].df_residuals
     return Contrast(
         effect=effect_,
         variance=var_,

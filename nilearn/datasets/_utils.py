@@ -226,6 +226,7 @@ def _chunk_read_(
         )
         total_size = None
 
+    task_id = None
     use_rich = report_hook and _has_rich()
     if use_rich:
         from rich.progress import (
@@ -262,7 +263,7 @@ def _chunk_read_(
         # otherwise the progress bar stays as the active live display
         # and all subsequent downloads fail.
         if use_rich:
-            progress.start()
+            progress.start()  # type: ignore[unbound-name]
         for chunk in response.iter_content(chunk_size):
             bytes_so_far += len(chunk)
 
