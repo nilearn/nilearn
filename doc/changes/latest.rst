@@ -82,6 +82,8 @@ Enhancements
 
 - :bdg-info:`Plotting` add a ``plot_predicted_signal_and_residuals`` method to :class:`~glm.first_level.FirstLevelModel` and :class:`~glm.second_level.SecondLevelModel` to easily visualize predicted VS observed time series as well as residuals time series and distribution at given coordinates or for some regions (:gh:`5761` by `Fernanda Ponce`_).
 
+- :bdg-secondary:`Maint` Refactor ``math_img`` and ``new_img_like`` to reduce complexity (:gh:`6676` by `Akaash P`_)
+
 Changes
 -------
 

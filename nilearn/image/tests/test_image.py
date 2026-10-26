@@ -1109,7 +1109,7 @@ def test_new_img_like_accepts_paths(affine_eye, tmp_path, rng):
     assert new_img.shape == (10, 10, 10)
 
 
-def test_new_img_like_non_iterable_header(rng):
+def test_new_img_like_non_iterable_header_error(rng):
     """Test that when an niimg's header is not iterable \
        and it is set to be copied, an error is not raised.
     """
@@ -1120,6 +1120,24 @@ def test_new_img_like_non_iterable_header(rng):
     )
 
     assert new_img_like(fake_spatial_image, data=fake_fmri_data)
+
+
+def test_new_img_like_non_iterable_header_copy(rng, shape_4d_default):
+    """Test that when an niimg's header is not iterable \
+       and it is set to be copied, it is copied over as is.
+    """
+    fake_fmri_data = rng.uniform(size=shape_4d_default)
+    fake_affine = rng.uniform(size=(4, 4))
+    fake_spatial_image = spatialimages.SpatialImage(
+        fake_fmri_data, fake_affine
+    )
+    fake_spatial_image.header.set_data_dtype(str)
+    copied_img = new_img_like(fake_spatial_image, data=fake_fmri_data)
+
+    assert (
+        fake_spatial_image.header.get_data_dtype()
+        == copied_img.header.get_data_dtype()
+    )
 
 
 def test_new_img_like_int64(shape_3d_default):
