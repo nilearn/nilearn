@@ -1109,7 +1109,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
     nilearn.decoding.SpaceNetRegressor: Graph-Net and TV-L1 priors/penalties
     """
 
-    SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
+    _SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
 
     def __init__(
         self,
@@ -1167,7 +1167,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     def _validate_loss(self, value) -> None:
         if value is not None:
-            check_parameter_in_allowed(value, self.SUPPORTED_LOSSES, "loss")
+            check_parameter_in_allowed(value, self._SUPPORTED_LOSSES, "loss")
 
     def _check_params(self):
         super()._check_params()
