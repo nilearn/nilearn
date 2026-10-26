@@ -3,7 +3,7 @@ brain regions.
 """
 
 import warnings
-from typing import TYPE_CHECKING, Any, ClassVar, Self
+from typing import Any, ClassVar, Self
 
 import numpy as np
 from scipy import linalg
@@ -552,9 +552,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         threshold = 1e-6
 
-        if TYPE_CHECKING:
-            assert self._report_content["engine"] in ["matplotlib", "plotly"]
-
         if self._report_content["engine"] == "plotly":
             from nilearn.plotting import view_surf
 
@@ -574,9 +571,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
             return [fig]
 
-        elif self._report_content["engine"] == "matplotlib":
-            fig = self._generate_figure(
-                img=roi, bg_map=bg_img, threshold=threshold
-            )
+        fig = self._generate_figure(
+            img=roi, bg_map=bg_img, threshold=threshold
+        )
 
-            return [fig]
+        return [fig]
