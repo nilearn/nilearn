@@ -707,23 +707,6 @@ def test_generate_report_unsupported_engine(masker_class, engine):
     assert masker._report_content["engine"] == "matplotlib"
 
 
-@pytest.mark.ai_generated
-@pytest.mark.thread_unsafe
-def test_surface_maps_masker_generate_report_invalid_engine(
-    matplotlib_pyplot,  # noqa: ARG001
-    surf_maps_img,
-    surf_img_2d,
-):
-    """Test fallback to matplotlib with a warning
-    when engine is not 'plotly' or 'matplotlib'.
-    """
-    masker = SurfaceMapsMasker(surf_maps_img)
-    masker.fit_transform(surf_img_2d(10))
-    with pytest.warns(UserWarning, match="'engine' must be one of"):
-        masker.generate_report(engine="invalid", displayed_maps=2)
-    assert masker._report_content["engine"] == "matplotlib"
-
-
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(
     is_plotly_installed(),
