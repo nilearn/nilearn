@@ -10,7 +10,7 @@ using Pearson product-moment correlation coefficient.
 
 This example use the resting state time series
 of a single subject's left hemisphere
-the :ref:`nki_dataset`.
+the :ref:`nki` dataset.
 
 The :ref:`destrieux_2009_atlas` in fsaverage5 space
 is used to select a seed region in the posterior cingulate cortex.
@@ -31,7 +31,7 @@ to plot the resulting statistical map on the pial surface.
 
     - the :ref:`Destrieux atlas <destrieux_2009_atlas>`
     - the :ref:`fsaverage template <fs_average_template>`
-    - the :ref:`NKI enhanced surface dataset <nki_dataset>`
+    - the :ref:`NKI enhanced surface dataset <nki>`
 """
 
 # %%

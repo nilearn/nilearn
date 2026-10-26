@@ -2042,6 +2042,7 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     "neurovault": Bunch(
         license="All data are distributed under the CC0 license."
     ),
+    "nki": Bunch(),
     "oasis_vbm": Bunch(
         license="Provided under an open access data use agreement (DUA)."
     ),
