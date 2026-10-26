@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import (
+    assert_allclose,
     assert_array_almost_equal,
     assert_array_equal,
     assert_array_less,
@@ -935,7 +936,7 @@ def test_permuted_ols_boolean_tested_vars(dummy_design):
 
 
 def test_permutation_indices_are_restricted_to_blocks():
-    """Rows are rearranged only within exchangeability blocks."""
+    """Restrict row permutations to exchangeability blocks."""
     block_ids = _sanitize_exchangeability_blocks(
         ["subject-1", "subject-1", "subject-2", "subject-2", "subject-2"],
         n_samples=5,
@@ -953,6 +954,18 @@ def test_permutation_indices_are_restricted_to_blocks():
         assert_array_equal(np.sort(permutation), identity)
         assert_array_equal(block_ids[permutation], block_ids)
     assert any(not np.array_equal(p, identity) for p in permutations)
+
+
+def test_permutation_indices_are_identity_for_singleton_blocks():
+    """Singleton blocks have no valid non-identity permutation."""
+    block_ids = _sanitize_exchangeability_blocks([1, 2, 3], n_samples=3)
+    block_indices = _get_block_indices(block_ids)
+
+    permutation = _get_permutation_indices(
+        np.random.RandomState(0), block_ids.size, block_indices
+    )
+
+    assert_array_equal(permutation, np.arange(block_ids.size))
 
 
 def test_sign_flips_are_shared_within_blocks():
@@ -987,6 +1000,69 @@ def test_permuted_ols_exchangeability_blocks_validation(
             n_perm=0,
             exchangeability_blocks=blocks,
         )
+
+
+@pytest.mark.parametrize(
+    "blocks, message",
+    [
+        ([np.datetime64("NaT"), np.datetime64("2020-01-01")], "NaTs"),
+        (np.array([None, "subject"], dtype=object), "missing values"),
+        (np.array([np.nan, "subject"], dtype=object), "missing values"),
+        (np.array([1, "subject"], dtype=object), "comparable scalar labels"),
+    ],
+)
+def test_sanitize_exchangeability_blocks_invalid_labels(blocks, message):
+    """Missing or incomparable labels produce clear errors."""
+    with pytest.raises((ValueError, TypeError), match=message):
+        _sanitize_exchangeability_blocks(blocks, n_samples=2)
+
+
+def test_block_permutation_matches_within_subject_contrast_reference():
+    """Block-restricted inference matches a direct paired-contrast test."""
+    rng = np.random.default_rng(0)
+    n_subjects = 8
+    n_voxels = 8
+    subject_offsets = rng.normal(size=(n_subjects, 1, n_voxels)) * 3
+    samples = subject_offsets + rng.normal(size=(n_subjects, 2, n_voxels))
+    samples[:, 1, :] += 0.3
+
+    blocks = np.repeat(np.arange(n_subjects), 2)
+    tested_vars = np.tile([0.0, 1.0], n_subjects)[:, np.newaxis]
+    subject_design = np.eye(n_subjects)[blocks]
+    common_kwargs = {
+        "model_intercept": False,
+        "n_perm": 63,
+        "random_state": 13,
+        "two_sided_test": True,
+    }
+
+    repeated_measure_data = samples.reshape(n_subjects * 2, n_voxels)
+    blocked = permuted_ols(
+        tested_vars,
+        repeated_measure_data,
+        confounding_vars=subject_design,
+        exchangeability_blocks=blocks,
+        **common_kwargs,
+    )
+    unrestricted = permuted_ols(
+        tested_vars,
+        repeated_measure_data,
+        confounding_vars=subject_design,
+        **common_kwargs,
+    )
+    reference = permuted_ols(
+        np.ones((n_subjects, 1)),
+        samples[:, 1, :] - samples[:, 0, :],
+        **common_kwargs,
+    )
+
+    blocked_p_values = 10 ** (-blocked["logp_max_t"])
+    unrestricted_p_values = 10 ** (-unrestricted["logp_max_t"])
+    reference_p_values = 10 ** (-reference["logp_max_t"])
+    assert_allclose(blocked_p_values, reference_p_values, atol=0.05)
+    assert np.mean(np.abs(blocked_p_values - reference_p_values)) < np.mean(
+        np.abs(unrestricted_p_values - reference_p_values)
+    )
 
 
 def test_permuted_ols_with_exchangeability_blocks(dummy_design):

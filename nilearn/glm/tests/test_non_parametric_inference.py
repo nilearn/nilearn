@@ -4,9 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image, load
-from numpy.testing import (
-    assert_array_equal,
-)
+from numpy.testing import assert_array_equal
 from scipy import stats
 
 from nilearn._utils.data_gen import (
