@@ -23,7 +23,7 @@ def matrix() -> np.ndarray:
 
 
 def test_check_threshold_positive_and_zero_ts_true(matrix):
-    """Tests nilearn._utils.param_validation.check_threshold when
+    """Test nilearn._utils.param_validation.check_threshold when
     two_sided=True, threshold is specified as a number and threshold >=0.
     """
     # Test threshold=0 should return as it is since it is not string
@@ -47,7 +47,7 @@ def test_check_threshold_positive_and_zero_ts_true(matrix):
 
 
 def test_check_threshold_positive_and_zero_ts_false(matrix):
-    """Tests nilearn._utils.param_validation.check_threshold when
+    """Test nilearn._utils.param_validation.check_threshold when
     two_sided=False, threshold is specified as a number and threshold >=0.
     """
     # Test threshold=4 should return as it is since it is not string
@@ -60,7 +60,7 @@ def test_check_threshold_positive_and_zero_ts_false(matrix):
 
 
 def test_check_threshold_percentile_positive_and_zero_ts_true(matrix):
-    """Tests nilearn._utils.param_validation.check_threshold when
+    """Test nilearn._utils.param_validation.check_threshold when
     two_sided=True, threshold is specified as percentile (str ending with a %)
     and threshold >=0.
     """
@@ -83,7 +83,7 @@ def test_check_threshold_percentile_positive_and_zero_ts_true(matrix):
 
 
 def test_check_threshold_percentile_positive_and_zero_ts_false(matrix):
-    """Tests nilearn._utils.param_validation.check_threshold when
+    """Test nilearn._utils.param_validation.check_threshold when
     two_sided=False, threshold is specified as percentile (str ending with a %)
     and threshold >=0.
     """
@@ -104,7 +104,7 @@ def test_check_threshold_percentile_positive_and_zero_ts_false(matrix):
 
 
 def test_check_threshold_negative_ts_false(matrix):
-    """Tests nilearn._utils.param_validation.check_threshold when
+    """Test nilearn._utils.param_validation.check_threshold when
     two_sided=False, threshold is specified as a number and threshold <=0.
     """
     # Test threshold=0 should return as it is since it is not string
@@ -122,7 +122,7 @@ def test_check_threshold_negative_ts_false(matrix):
 
 
 def test_check_threshold_for_error(matrix):
-    """Tests nilearn._utils.param_validation.check_threshold for errors."""
+    """Test nilearn._utils.param_validation.check_threshold for errors."""
     name = "threshold"
     # few not correctly formatted strings for 'threshold'
     wrong_thresholds = ["0.1", "10", "10.2.3%", "asdf%"]

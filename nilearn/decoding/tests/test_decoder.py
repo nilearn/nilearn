@@ -7,7 +7,6 @@ Order of tests from top to bottom:
 - classification
 - regression
 - multiclass
-
 """
 
 import collections

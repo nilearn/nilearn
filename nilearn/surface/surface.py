@@ -287,8 +287,7 @@ class PolyMesh:
                 )
             return None
 
-        if "hemi-L" in filename.stem:
-            mesh = self.parts["left"]
+        mesh = self.parts["left"]
         if "hemi-R" in filename.stem:
             mesh = self.parts["right"]
 
@@ -363,7 +362,7 @@ class PolyData:
                         "Object dtype is not supported for surface data. "
                         f"Part '{hemi}' will be cast to np.float32.",
                         UserWarning,
-                        stacklevel=2,
+                        stacklevel=find_stack_level(),
                     )
                     param = param.astype(np.float32)
                 parts[hemi] = param
@@ -499,8 +498,7 @@ class PolyData:
                 )
             return None
 
-        if "hemi-L" in filename.stem:
-            data = self.parts["left"]
+        data = self.parts["left"]
         if "hemi-R" in filename.stem:
             data = self.parts["right"]
 
@@ -522,7 +520,7 @@ class PolyData:
                     "Object dtype is not supported for surface data. "
                     "Data will be cast to np.float32 instead.",
                     UserWarning,
-                    stacklevel=2,
+                    stacklevel=find_stack_level(),
                 )
                 dtype = np.float32
             for h, v in self.parts.items():
@@ -697,7 +695,6 @@ def _face_outer_normals(mesh):
     They are the outer normals if the mesh respects the convention that the
     direction given by the direct order of a triangle's vertices (right-hand
     rule) points outwards.
-
     """
     mesh = load_surf_mesh(mesh)
     vertices = mesh.coordinates
@@ -716,7 +713,6 @@ def _surrounding_faces(mesh) -> csr_array:
     """Get matrix indicating which faces the nodes belong to.
 
     i, j is set if node i is a vertex of triangle j.
-
     """
     mesh = load_surf_mesh(mesh)
     vertices = mesh.coordinates
@@ -737,7 +733,6 @@ def _vertex_outer_normals(mesh):
     They are the outer normals if the mesh respects the convention that the
     direction given by the direct order of a triangle's vertices (right-hand
     rule) points outwards.
-
     """
     vertex_faces = _surrounding_faces(mesh)
     face_normals = _face_outer_normals(mesh)
@@ -775,7 +770,7 @@ def _sample_locations_between_surfaces(
 def _ball_sample_locations(
     mesh, affine, ball_radius=3.0, n_points=20, depth=None
 ):
-    """Locations to draw samples from to project volume data onto a mesh.
+    """Compute locations to sample from to project volume data onto a mesh.
 
     For each mesh vertex, the locations of `n_points` points evenly spread in a
     ball around the vertex are returned.
@@ -811,7 +806,6 @@ def _ball_sample_locations(
         First dimension iterates over mesh vertices, second dimension iterates
         over the sample points associated to a vertex, third dimension is x, y,
         z in voxel space.
-
     """
     #  Avoid circular import
     from nilearn.image.resampling import coord_transform
@@ -845,7 +839,7 @@ def _ball_sample_locations(
 def _line_sample_locations(
     mesh, affine, segment_half_width=3.0, n_points=10, depth=None
 ):
-    """Locations to draw samples from to project volume data onto a mesh.
+    """Compute locations to sample from to project volume data onto a mesh.
 
     For each mesh vertex, the locations of `n_points` points evenly spread in a
     segment of the normal to the vertex are returned. The line segment has
@@ -882,7 +876,6 @@ def _line_sample_locations(
         First dimension iterates over mesh vertices, second dimension iterates
         over the sample points associated to a vertex, third dimension is x, y,
         z in voxel space.
-
     """
     #  Avoid circular import
     from nilearn.image.resampling import coord_transform
@@ -968,7 +961,6 @@ def _masked_indices(sample_locations, img_shape, mask=None):
     array of shape (n_sample_locations,)
         True if this particular location should be ignored (outside of image or
         masked).
-
     """
     kept = (sample_locations >= 0).all(axis=1)
     for dim, size in enumerate(img_shape):
@@ -1066,7 +1058,6 @@ def _projection_matrix(
     --------
     nilearn.surface.vol_to_surf
         Compute the projection for one or several images.
-
     """
     # A user might want to call this function directly so check mask size.
     if mask is not None and tuple(mask.shape) != img_shape:
@@ -1175,7 +1166,6 @@ def _nearest_voxel_sampling(
     A 2-d array is returned, where each row corresponds to an image and each
     column to a mesh vertex.
     See documentation of vol_to_surf for details.
-
     """
     data = np.asarray(images).reshape(len(images), -1).T
     proj = _projection_matrix(
@@ -1215,7 +1205,6 @@ def _interpolation_sampling(
     A 2-d array is returned, where each row corresponds to an image and each
     column to a mesh vertex.
     See documentation of vol_to_surf for details.
-
     """
     sample_locations = _sample_locations(
         mesh,
@@ -1435,7 +1424,6 @@ def vol_to_surf(
      ...     surf_mesh=fsaverage["pial_left"],
      ...     inner_mesh=fsaverage["white_left"],
      ... )
-
     """
     # avoid circular import
     from nilearn.image import check_niimg, load_img
@@ -1509,7 +1497,6 @@ def _gifti_img_to_data(gifti_img):
 
     Used by load_surf_data function in common to surface sulcal data
     acceptable to .gii or .gii.gz
-
     """
     if not gifti_img.darrays:
         raise ValueError("Gifti must contain at least one data array")
@@ -1560,8 +1547,7 @@ def load_surf_data(surf_data) -> np.ndarray:
     Returns
     -------
     data : :obj:`numpy.ndarray`
-        An array containing surface data
-
+        An array containing surface data.
     """
     # avoid circular import
     from nilearn.image.image import get_data as get_vol_data
@@ -1584,6 +1570,8 @@ def load_surf_data(surf_data) -> np.ndarray:
         file_list = resolve_globbing(surf_data)
         # resolve_globbing handles empty lists
 
+        data = np.empty(1)
+        data_part = np.empty(1)
         for i, surf_data in enumerate(file_list):
             surf_data = str(surf_data)
 
@@ -1671,7 +1659,6 @@ def _gifti_img_to_mesh(gifti_img):
 
     Used by load_surf_mesh function in common to surface mesh
     acceptable to .gii or .gii.gz
-
     """
     error_message = (
         "The surf_mesh input is not recognized. "
@@ -1871,8 +1858,7 @@ def load_surf_mesh(surf_mesh) -> InMemoryMesh:
     -------
     mesh : :obj:`~nilearn.surface.InMemoryMesh`
         With the attributes "coordinates" and "faces", each containing a
-        :obj:`numpy.ndarray`
-
+        :obj:`numpy.ndarray`.
     """
     # if input is a filename, try to load it
     surf_mesh = stringify_path(surf_mesh)
@@ -2175,7 +2161,6 @@ def compute_adjacency_matrix(
     -------
     matrix : scipy.sparse.csr_array
         A sparse matrix representing the edge relationships in `surface`.
-
     """
     n = mesh.coordinates.shape[0]
 

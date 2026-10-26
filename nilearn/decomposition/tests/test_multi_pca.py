@@ -24,7 +24,7 @@ def test_multi_pca(
     decomposition_mask_img,
     decomposition_images,
 ):
-    """Components are the same if we put twice the same data, \
+    """Check components are the same if we put twice the same data, \
        and that fit output is deterministic.
     """
     multi_pca = _MultiPCA(

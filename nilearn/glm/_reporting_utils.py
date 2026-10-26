@@ -255,7 +255,6 @@ class GLMReportMixin(ReportMixin):
             .. note::
                 ``cut_coords`` will not be used when ``plot_type='glass'``.
 
-
         display_mode :  :obj:`str`, default=None
             Default is 'z' if plot_type is 'slice';
             'ortho' if plot_type is 'glass'.
@@ -281,7 +280,6 @@ class GLMReportMixin(ReportMixin):
         -------
         report : :class:`~nilearn.reporting.HTMLReport`
             HTML report for the :term:`GLM`.
-
         """
         check_params(locals())
         self._reset_report_warnings()
@@ -454,12 +452,10 @@ def mask_to_plot(model, bg_img):
         The background image that the mask will be plotted on top of.
         To turn off background image, just pass "bg_img=None".
 
-
     Returns
     -------
     mask_plot : :obj:`str`
         PNG Image for the mask plot.
-
     """
     if not is_matplotlib_installed() or not model.__sklearn_is_fitted__():
         return None
@@ -574,7 +570,6 @@ def make_stat_maps_contrast_clusters(
     results : dict
         Each key contains
         contrast name, contrast plot, statistical map, cluster table.
-
     """
     if not model.__sklearn_is_fitted__():
         return None
@@ -792,8 +787,7 @@ def _stat_map_to_png(
         PNG Image Data representing a statistical map.
 
     fig : matplotlib figure
-        only used for testing
-
+        Only used for testing.
     """
     if not is_matplotlib_installed():
         return None, None
@@ -907,7 +901,6 @@ def _add_params_to_plot(table_details, stat_map_plot):
     -------
     stat_map_plot : matplotlib.Axes
         Axes object of the stat map plot, with the added suptitle.
-
     """
     from matplotlib import pyplot as plt
 

@@ -58,7 +58,7 @@ min_plotting = [
     "plotly==6.1.1"
 ]
 # For prettier printing
-rich = ["rich>=12.0.0"]
+rich = ["rich>=12.3.0"]
 # Applying style guide
 style = ['prek']
 test = [
@@ -296,6 +296,33 @@ name = "assets only imported by reporting, plotting, glm"
 protected_modules = ["nilearn._assets"]
 type = "protected"
 
+[tool.numpydoc_validation]
+# https://numpydoc.readthedocs.io/en/latest/validation.html#built-in-validation-checks
+checks = [
+    "all",
+    "GL06",
+    "GL08",
+    "SS01",
+    "ES01",
+    "PR01",
+    "PR02",
+    "PR03",
+    "PR04",
+    "PR05",
+    "PR07",
+    "PR08",
+    "PR09",
+    "RT01",
+    "RT02",
+    "RT03",
+    "SA01",
+    "SA02",
+    "SA03",
+    "SA04",
+    "SS06",
+    "EX01"
+]
+
 [tool.pyrefly]
 # Errors already present in the code base are listed in the baseline file
 # and are not reported, so only new errors fail the check.
@@ -307,7 +334,7 @@ baseline-matching-mode = "concise-description"
 # as Any, as mypy did.
 check-unannotated-defs = false
 infer-return-types = "never"
-preset = "legacy"
+preset = "default"
 project-excludes = ["**/nilearn_cache/**/*", "**/nilearn/_version.py"]
 project-includes = ["nilearn/**/*.py"]
 python-version = "3.11"
@@ -328,8 +355,7 @@ replace-imports-with-any = [
     "rich.*",
     "scipy.*",
     "sklearn.*",
-    "statsmodels.*",
-    "svg.*"
+    "statsmodels.*"
 ]
 
 [tool.pyrefly.errors]
@@ -350,7 +376,12 @@ junit_family = "xunit2"
 log_cli_level = "INFO"
 log_level = "INFO"
 markers = [
-    "slow",  # for tests that exceed the timeout allowed for each test
+    # For tests that exceed the timeout allowed for each test.
+    # Slow tests are run separately from the others in a different pytest invocation
+    # with no timeout limit so that slow tests are only run if all "fasts" tests pass.
+    # Also helps find tests that could point
+    # to potential performance issues (in the code or in the test).
+    "slow",
     "single_process",  # for test that require testing n_jobs>1 or that are flaky when used xdist testing parallelization
     "thread_unsafe",  # used by pytest-run-parallel: adding it here to avoid warning and not always install the extension
     "ai_generated",  # used by AI agents to flag tests they generate or modify

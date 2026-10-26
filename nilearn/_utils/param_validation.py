@@ -258,7 +258,6 @@ def check_params(fn_dict) -> None:
                 check_params(self.__dict__)
                 # check parameters passed to the method
                 check_params(locals())
-
     """
     keys_to_check = set(TYPE_MAPS.keys()).intersection(set(fn_dict.keys()))
     # Send a message to dev if they are using this function needlessly.
@@ -288,7 +287,6 @@ def check_is_of_allowed_type(
     Ignore truthy / falsy so that:
 
     check_is_of_allowed_type(True, (int), "foo") will fail.
-
     """
     if not isinstance(type_to_check, tuple):
         type_to_check = (type_to_check,)
@@ -346,3 +344,11 @@ def sanitize_verbose(verbose: int | bool) -> int:
     elif verbose is False:
         verbose = 0
     return verbose
+
+
+def check_n_confounds_match_n_images(confounds, imgs_list) -> None:
+    if len(confounds) != len(imgs_list):
+        raise ValueError(
+            f"Number of confounds ({len(confounds)}) "
+            f"must match number of images ({len(imgs_list)})."
+        )

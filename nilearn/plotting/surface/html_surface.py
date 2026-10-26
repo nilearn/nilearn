@@ -72,7 +72,6 @@ def _full_brain_info(
     This computes the dictionary that gets inserted in the web page,
     which contains encoded meshes, colors, min and max values, and
     background color.
-
     """
     if vol_to_surf_kwargs is None:
         vol_to_surf_kwargs = {}
@@ -278,7 +277,6 @@ def view_img_on_surf(
     See Also
     --------
     nilearn.plotting.view_surf: plot from a surface map on a cortical mesh.
-
     """
     check_params(locals())
 

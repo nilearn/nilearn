@@ -71,7 +71,6 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
     output_file : :obj:`str`
         Output file path.
-
     """
 
     @property
@@ -105,7 +104,6 @@ class PlotlySurfaceFigure(SurfaceFigure):
         ----------
         renderer : :obj:`str` or None, default=None
             Plotly renderer to be used.
-
         """
         if self.figure is not None:
             # Figure should be returned for sphinx-gallery to be able to
@@ -506,8 +504,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Returns
         -------
-            check: :obj:`bool`
-                True if segments intersect, otherwise False
+        check : :obj:`bool`
+            True if segments intersect, otherwise False.
 
         Notes
         -----

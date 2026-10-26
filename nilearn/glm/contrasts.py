@@ -124,13 +124,13 @@ class Contrast:
         Returns
         -------
         stat : 1-d array, shape=(n_voxels,)
-            statistical values, one per voxel.
-
+            Statistical values, one per voxel.
         """
         self.baseline = baseline
 
         # Case: one-dimensional contrast ==> t or t**2
         check_parameter_in_allowed(self.stat_type, ["F", "t"], "stat_type")
+        stat = np.empty(1)
         if self.stat_type == "F":
             stat = (
                 np.sum((self.effect - baseline) ** 2, 0)
@@ -156,12 +156,10 @@ class Contrast:
         baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
-
         Returns
         -------
         p_values : 1-d array, shape=(n_voxels,)
-            p-values, one per voxel
-
+            P-values, one per voxel.
         """
         if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
@@ -191,8 +189,7 @@ class Contrast:
         Returns
         -------
         one_minus_pvalues : 1-d array, shape=(n_voxels,)
-            one_minus_pvalues, one per voxel
-
+            One minus p-values, one per voxel.
         """
         if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
@@ -218,17 +215,13 @@ class Contrast:
         baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
-
         Returns
         -------
         z_score : 1-d array, shape=(n_voxels,)
-            statistical values, one per voxel
-
+            Statistical values, one per voxel.
         """
-        if self.p_value_ is None or self.baseline != baseline:
-            self.p_value_ = self.p_value(baseline)
-        if self.one_minus_pvalue_ is None:
-            self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
+        self.p_value_ = self.p_value(baseline)
+        self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
 
         # Avoid inf values kindly supplied by scipy.
         self.z_score_ = z_score(
@@ -309,7 +302,6 @@ def expression_to_contrast_vector(expression, design_columns) -> np.ndarray:
     array([1., 0.])
     >>> expression_to_contrast_vector("task - rest", ["task", "rest"])
     array([ 1., -1.])
-
     """
     if expression in design_columns:
         contrast_vector = np.zeros(len(design_columns))
@@ -369,7 +361,6 @@ def compute_contrast(
     con : Contrast instance,
         Yields the statistics of the :term:`contrast`
         (:term:`effects<Parameter Estimate>`, variance, p-values).
-
     """
     con_val = np.asarray(con_val)
     dim = 1
@@ -381,9 +372,14 @@ def compute_contrast(
 
     check_parameter_in_allowed(stat_type, ["t", "F"], "stat_type")
 
+    effect_ = (
+        np.zeros(labels.size)
+        if stat_type == "t"
+        else np.zeros((dim, labels.size))
+    )
+    var_ = np.zeros(labels.size)
+
     if stat_type == "t":
-        effect_ = np.zeros(labels.size)
-        var_ = np.zeros(labels.size)
         for label_ in regression_result:
             label_mask = labels == label_
             reg = regression_result[label_].Tcontrast(con_val)
@@ -393,8 +389,6 @@ def compute_contrast(
     elif stat_type == "F":
         from scipy.linalg import sqrtm
 
-        effect_ = np.zeros((dim, labels.size))
-        var_ = np.zeros(labels.size)
         # TODO
         # explain why we cannot simply do
         # reg = regression_result[label_].Tcontrast(con_val)
@@ -414,7 +408,7 @@ def compute_contrast(
             effect_[:, label_mask] = wcbeta
             var_[label_mask] = rss
 
-    dof_ = regression_result[label_].df_residuals
+    dof_ = regression_result[list(regression_result)[-1]].df_residuals
     return Contrast(
         effect=effect_,
         variance=var_,
@@ -428,7 +422,6 @@ def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
     """Compute the summary contrast assuming fixed effects.
 
     Adds the same contrast applied to all labels and results lists.
-
     """
     contrast = None
     n_contrasts = 0
@@ -520,8 +513,7 @@ def compute_fixed_effects(
         The fixed effects stat computed within the mask.
 
     fixed_fx_z_score_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
-        The fixed effects corresponding z-transform
-
+        The fixed effects corresponding z-transform.
     """
     n_runs = len(contrast_imgs)
     if n_runs != len(variance_imgs):

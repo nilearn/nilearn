@@ -1,5 +1,4 @@
 """
-
 Using brain templates from TemplateFlow
 =======================================
 
@@ -17,7 +16,6 @@ for the Harvard-Oxford volumetric atlas.
     - :ref:`harvard_oxford_atlas`
 
     - The `Desikan-Killiany atlas <https://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation>`_
-
 """
 
 # %%
@@ -176,7 +174,7 @@ harvard_oxford_sub = fetch_atlas_harvard_oxford("sub-maxprob-thr25-1mm")
 
 
 plot_roi(
-    harvard_oxford_sub.filename,
+    harvard_oxford_sub.maps,
     title="Harvard-Oxford atlas | sub-cortical | ICBM152 2009",
     **plotting_params,
 )
@@ -210,7 +208,7 @@ MNI152NLin6Asym_template_img = tflow.get(
 print(f"{MNI152NLin6Asym_template_img=}")
 
 plot_roi(
-    harvard_oxford_sub.filename,
+    harvard_oxford_sub.maps,
     title="Harvard-Oxford atlas | sub-cortical | MNI152NLin6Asym",
     bg_img=MNI152NLin6Asym_template_img,
     **plotting_params,

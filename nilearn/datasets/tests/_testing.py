@@ -5,6 +5,7 @@ import pickle
 import shutil
 import tempfile
 from pathlib import Path
+from types import GenericAlias
 
 import pandas as pd
 from nibabel import Nifti1Image
@@ -80,7 +81,8 @@ def dict_to_archive(data, archive_format="gztar"):
 
     Returns
     -------
-    bytes : the contents of the resulting archive file, to be used for example
+    bytes
+        The contents of the resulting archive file, to be used for example
         as the contents of a mock response object (see Sender).
 
     Examples
@@ -93,7 +95,6 @@ def dict_to_archive(data, archive_format="gztar"):
         └── README.txt
 
     where labels.csv and README.txt contain the corresponding values in `data`
-
     """
     with tempfile.TemporaryDirectory() as root_tmp_dir:
         root_tmp_dir = Path(root_tmp_dir)
@@ -123,7 +124,6 @@ def list_to_archive(sequence, archive_format="gztar", content=""):
         └── README.txt
 
     and "labels.csv" and "README.txt" contain the value of `content`.
-
     """
     return dict_to_archive(
         dict.fromkeys(sequence, content), archive_format=archive_format
@@ -134,7 +134,7 @@ def check_type_fetcher(data):
     """Check type content of datasets.
 
     Recursively checks the content returned by fetchers
-    to make sure they do not contain only some allowed type of objects.
+    to make sure they contain only allowed type of objects.
 
     If the data is a Bunch and contains a dataset description,
     ensures the description is not empty.
@@ -150,13 +150,14 @@ def check_type_fetcher(data):
             pd.DataFrame,
             PolyMesh,
             pathlib.Path,
+            type,
+            GenericAlias,
         ),
     ):
         pass
     elif isinstance(data, (Bunch, dict)):
         for k, v in data.items():
-            if k == "description":
-                assert isinstance(v, str)
+            if k == "description" and isinstance(v, str):
                 assert v != ""
             if not check_type_fetcher(v):
                 raise TypeError(f"Found {k} : {v.__class__.__name__}")
