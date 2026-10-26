@@ -27,8 +27,8 @@ from nilearn.image import (
 )
 from nilearn.image.image import check_same_fov
 from nilearn.maskers._mixin import (
-    MaskerReportDefaults,
     _LabelMaskerMixin,
+    _MaskerReportDefaults,
 )
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
@@ -217,7 +217,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
     nilearn.maskers.NiftiMasker
     """
 
-    _REPORT_DEFAULTS: ClassVar[MaskerReportDefaults] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": (
             "This report shows the regions defined by the labels of the mask."
         ),

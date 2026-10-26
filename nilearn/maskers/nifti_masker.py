@@ -16,7 +16,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import sanitize_verbose
 from nilearn.image import check_niimg, crop_img, load_img, resample_img
 from nilearn.image.image import check_same_fov
-from nilearn.maskers._mixin import MaskerReportDefaults
+from nilearn.maskers._mixin import _MaskerReportDefaults
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -343,7 +343,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     nilearn.signal.clean
     """
 
-    _REPORT_DEFAULTS: ClassVar[MaskerReportDefaults] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": (
             "This report shows the input Nifti image overlaid "
             "with the outlines of the mask. "

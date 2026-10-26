@@ -22,7 +22,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
-from nilearn.maskers._mixin import MaskerReportDefaults
+from nilearn.maskers._mixin import _MaskerReportDefaults
 from nilearn.maskers.base_masker import (
     _BaseSurfaceMasker,
     check_displayed_maps,
@@ -145,7 +145,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         nilearn.maskers.SurfaceLabelsMasker
     """
 
-    _REPORT_DEFAULTS: ClassVar[MaskerReportDefaults] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": (
             "This report shows the input surface image "
             "(if provided via img) overlaid with the regions provided "

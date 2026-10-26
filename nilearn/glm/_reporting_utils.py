@@ -31,15 +31,15 @@ from nilearn.reporting.get_clusters_table import (
 from nilearn.reporting.html_report import HTMLReport
 from nilearn.reporting.mixin import (
     DEFAULT_ENGINE,
-    ReportDefaults,
     ReportMixin,
+    _ReportDefaults,
 )
 from nilearn.reporting.utils import figure_to_png_base64
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
 
-class GLMReportDefaults(ReportDefaults, total=False):
+class GLMReportDefaults(_ReportDefaults, total=False):
     """Type of the default content of GLM reports."""
 
     model_type: str

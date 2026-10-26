@@ -17,7 +17,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
-from nilearn.maskers._mixin import MaskerReportDefaults
+from nilearn.maskers._mixin import _MaskerReportDefaults
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.nilearn_typing import (
     ColormapLike,
@@ -105,7 +105,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         number of vertices included in mask
     """
 
-    _REPORT_DEFAULTS: ClassVar[MaskerReportDefaults] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": (
             "This report shows the input surface image overlaid "
             "with the outlines of the mask. "

@@ -30,7 +30,7 @@ from nilearn.reporting.utils import figure_to_svg_base64
 DEFAULT_ENGINE: ReportEngine = "matplotlib"
 
 
-class ReportDefaults(TypedDict, total=False):
+class _ReportDefaults(TypedDict, total=False):
     """Type of the default content of reports.
 
     Classes inheriting from ReportMixin that add new keys
@@ -85,7 +85,7 @@ class ReportMixin:
     should should define ``_template_name`` and ``_estimator_type`` attributes.
     """
 
-    _REPORT_DEFAULTS: ClassVar[ReportDefaults] = {
+    _REPORT_DEFAULTS: ClassVar[_ReportDefaults] = {
         "unique_id": "",
         "title": "",
         "page_title": "",

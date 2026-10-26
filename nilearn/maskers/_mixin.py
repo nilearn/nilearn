@@ -33,8 +33,8 @@ from nilearn.nilearn_typing import (
 from nilearn.reporting.mixin import (
     DEFAULT_ENGINE,
     HTMLReport,
-    ReportDefaults,
     ReportMixin,
+    _ReportDefaults,
 )
 from nilearn.surface.surface import SurfaceImage
 
@@ -404,7 +404,7 @@ class _LabelMaskerMixin:
         )
 
 
-class MaskerReportDefaults(ReportDefaults, total=False):
+class _MaskerReportDefaults(_ReportDefaults, total=False):
     """Type of the default content of masker reports."""
 
     description: str
@@ -434,7 +434,7 @@ class MaskerReportMixin(ReportMixin):
         - displayed_maps :
     """
 
-    _REPORT_DEFAULTS: ClassVar[MaskerReportDefaults] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": "",
         "summary": {},
         "coverage": "",
