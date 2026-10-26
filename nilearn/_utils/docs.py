@@ -2032,6 +2032,9 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
     "msdl_atlas": Bunch(
         license="usage is unrestricted for non-commercial research purposes."
     ),
+    "neurovault": Bunch(
+        license="All data are distributed under the CC0 license."
+    ),
     "oasis_vbm": Bunch(
         license="Provided under an open access data use agreement (DUA)."
     ),

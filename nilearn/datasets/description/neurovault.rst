@@ -19,18 +19,12 @@ and :footcite:t:`Yarkoni2011`.
 
 Content
 -------
-    :'images': Nifti images representing the statistical maps.
-    :'images_meta': Dictionaries containing metadata for each image.
-    :'collections_meta': Dictionaries containing metadata for collections.
-    :'vocabulary': A list of words retrieved from neurosynth.org
-    :'word_frequencies': For each image, the weights of the words
-                         from 'vocabulary'.
+.. nilearn_dataset_content:: neurovault_dataset
 
 References
 ----------
-
 .. footbibliography::
 
 License
 -------
-All data are distributed under the CC0 license.
+.. nilearn_dataset_license:: neurovault_dataset
