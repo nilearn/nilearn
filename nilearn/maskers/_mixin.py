@@ -404,7 +404,6 @@ class _LabelMaskerMixin:
         )
 
 
-@fill_doc
 class MaskerReportDefaults(ReportDefaults, total=False):
     """Type of the default content of masker reports."""
 
@@ -418,6 +417,7 @@ class MaskerReportDefaults(ReportDefaults, total=False):
     n_vertices: dict[str, int]
 
 
+@fill_doc
 class MaskerReportMixin(ReportMixin):
     """A mixin class that adapts ``ReportMixin`` to masker classes for
     reporting functionality.
