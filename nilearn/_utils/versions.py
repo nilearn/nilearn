@@ -73,6 +73,9 @@ def compare_version(
 SKLEARN_GTE_1_7 = compare_version(sklearn_version, ">=", "1.7.0")
 SKLEARN_GTE_1_8 = compare_version(sklearn_version, ">=", "1.8.0")
 SKLEARN_GTE_1_9 = compare_version(sklearn_version, ">=", "1.9.0")
+SKLEARN_GT_1_9 = (
+    parse(sklearn_version).major == 1 and parse(sklearn_version).minor > 9
+)
 
 
 def sparray_context():
