@@ -63,12 +63,10 @@ is shown in the rest of this example.
 
     This example uses:
 
-    - the :ref:`Brainomics Localizer dataset <brainomics_maps>`
-    - the :ref:`SPM auditory dataset <spm_auditory_dataset>`
-    - the :ref:`ICBM 152 template <icbm_152_template>`
-    - a sample motor activation statistical map (`image 10426
-      <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
-      <neurovault_dataset>`)
+    - the :ref:`Brainomics Localizer dataset <brainomics_maps>`,
+    - the :ref:`SPM auditory dataset <spm_auditory_dataset>`,
+    - the :ref:`ICBM 152 template <icbm_152_template>`,
+    - a :ref:`sample motor activation statistical map`.
 """
 
 import matplotlib.pyplot as plt

@@ -225,3 +225,4 @@ General functions descriptions
     :titlesonly:
 
     description/neurovault.rst
+    description/sample_motor_activation_image.rst

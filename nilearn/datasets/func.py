@@ -3259,22 +3259,20 @@ def fetch_fiac_first_level(
 
 @functools.lru_cache
 def load_sample_motor_activation_image() -> str:
-    """Load a single functional image showing motor activations.
+    """Return the full path to a single contrast image of motor activations.
+
+    For more information see the
+    :ref:`dataset description <sample motor activation statistical map>`.
 
     Returns
     -------
     str
-        Path to the sample functional image.
+        Full path to the sample image.
 
     See Also
     --------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
     nilearn.datasets.fetch_neurovault_auditory_computation_task
-
-    Notes
-    -----
-    The 'left vs right button press' contrast is used:
-    https://neurovault.org/images/10426/
     """
     return str(Path(__file__).parent / "data" / "image_10426.nii.gz")

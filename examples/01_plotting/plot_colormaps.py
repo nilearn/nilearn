@@ -9,9 +9,7 @@ This example show also some of the pros and cons of some of those maps.
 
 .. admonition:: dataset
 
-    This example uses a sample motor activation statistical map (`image 10426
-    <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
-    <neurovault_dataset>`).
+    This example uses a :ref:`sample motor activation statistical map`.
 """
 
 import matplotlib.pyplot as plt
