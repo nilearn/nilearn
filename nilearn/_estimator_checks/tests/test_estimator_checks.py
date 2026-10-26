@@ -26,7 +26,7 @@ def test_check_estimator_has_sklearn_is_fitted():
             pass
 
     with pytest.raises(
-        TypeError, match="must have __sklearn_is_fitted__ method"
+        AssertionError, match="must have __sklearn_is_fitted__ method"
     ):
         check_img_estimator_fit_check_is_fitted(DummyEstimator())
 
@@ -37,7 +37,7 @@ def test_check_estimator_has_sklearn_is_fitted():
         def __sklearn_is_fitted__(self):
             return True
 
-    with pytest.raises(ValueError, match="must return False before fit"):
+    with pytest.raises(AssertionError, match="must return False before fit"):
         check_img_estimator_fit_check_is_fitted(DummyEstimator())
 
 
@@ -62,7 +62,7 @@ def test_check_masker_dict_unchanged():
     estimator = DummyEstimator()
 
     with pytest.raises(
-        ValueError,
+        AssertionError,
         match=r"Estimator changes '__dict__' keys during 'transform'.",
     ):
         check_img_estimator_dict_unchanged(estimator)
@@ -84,6 +84,6 @@ def test_check_masker_dict_unchanged():
     estimator = DummyEstimator()
 
     with pytest.raises(
-        ValueError, match="Estimator changes the following '__dict__' keys"
+        AssertionError, match="Estimator changes the following '__dict__' keys"
     ):
         check_img_estimator_dict_unchanged(estimator)
