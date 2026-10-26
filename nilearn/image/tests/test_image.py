@@ -1122,11 +1122,11 @@ def test_new_img_like_non_iterable_header_error(rng):
     assert new_img_like(fake_spatial_image, data=fake_fmri_data)
 
 
-def test_new_img_like_non_iterable_header_copy(rng):
+def test_new_img_like_non_iterable_header_copy(rng, shape_4d_default):
     """Test that when an niimg's header is not iterable \
        and it is set to be copied, it is copied over as is.
     """
-    fake_fmri_data = rng.uniform(size=_shape_4d_default())
+    fake_fmri_data = rng.uniform(size=shape_4d_default)
     fake_affine = rng.uniform(size=(4, 4))
     fake_spatial_image = spatialimages.SpatialImage(
         fake_fmri_data, fake_affine
