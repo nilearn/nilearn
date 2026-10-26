@@ -514,26 +514,25 @@ class FirstLevelModel(BaseGLM):
         as it is set to ``None`` when ``signal_scaling`` is not False.
     """
 
-    if TYPE_CHECKING:
-        drift_model: Literal["polynomial", "cosine", None]
-        drift_order: int
-        high_pass: float
-        hrf_model: HrfModel
-        target_affine: TargetAffine
-        target_shape: TargetShape
-        smoothing_fwhm: SmoothingFwhm
-        memory: MemoryLike
-        memory_level: MemoryLevel
-        min_onset: float
-        minimize_memory: bool
-        noise_model: Literal["ar1", "ols"]
-        n_jobs: NJobs
-        reports: bool
-        slice_time_ref: NonNullScalar
-        standardize: Standardize
-        subject_label: str | None
-        t_r: Tr
-        verbose: Verbose
+    drift_model: Literal["polynomial", "cosine", None]
+    drift_order: int
+    high_pass: float
+    hrf_model: HrfModel
+    target_affine: TargetAffine
+    target_shape: TargetShape
+    smoothing_fwhm: SmoothingFwhm
+    memory: MemoryLike
+    memory_level: MemoryLevel
+    min_onset: float
+    minimize_memory: bool
+    noise_model: Literal["ar1", "ols"]
+    n_jobs: NJobs
+    reports: bool
+    slice_time_ref: NonNullScalar
+    standardize: Standardize
+    subject_label: str | None
+    t_r: Tr
+    verbose: Verbose
 
     def __str__(self):
         return "First Level Model"

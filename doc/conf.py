@@ -579,6 +579,30 @@ changeset.versionlabel_classes["nilearn_deprecated"] = "deprecated"
 changeset.versionlabel_classes["nilearn_versionremoved"] = "removed"
 
 
+try:  # sphinx >= 9
+    from sphinx.ext.autodoc._sentinels import INSTANCE_ATTR
+except ImportError:
+    from sphinx.ext.autodoc import INSTANCEATTR as INSTANCE_ATTR
+
+
+def skip_annotation_only_attributes(
+    app,  # noqa: ARG001
+    what,  # noqa: ARG001
+    name,  # noqa: ARG001
+    obj,
+    skip,  # noqa: ARG001
+    options,  # noqa: ARG001
+):
+    """Do not list bare class-level annotations (e.g. ``alpha: float``).
+
+    Those are only there for type checkers:
+    parameters are documented in the class docstring.
+    """
+    if obj is INSTANCE_ATTR:
+        return True
+    return None
+
+
 def setup(app):
     app.add_directive("nilearn_versionadded", changeset.VersionChange)
     app.add_directive("nilearn_versionchanged", changeset.VersionChange)
@@ -586,6 +610,7 @@ def setup(app):
     app.add_directive("nilearn_versionremoved", changeset.VersionChange)
 
     app.connect("autodoc-process-docstring", touch_example_backreferences)
+    app.connect("autodoc-skip-member", skip_annotation_only_attributes)
 
 
 # -- sphinxext.opengraph configuration -------------------------------------

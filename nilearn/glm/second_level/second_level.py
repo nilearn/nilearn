@@ -6,7 +6,7 @@ import operator
 import time
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Self, overload
+from typing import Literal, Self, overload
 
 import numpy as np
 import pandas as pd
@@ -589,16 +589,15 @@ class SecondLevelModel(BaseGLM):
         Input used to fit the GLM.
     """
 
-    if TYPE_CHECKING:
-        memory: MemoryLike
-        memory_level: MemoryLevel
-        minimize_memory: bool
-        n_jobs: NJobs
-        reports: bool
-        smoothing_fwhm: SmoothingFwhm
-        target_affine: TargetAffine
-        target_shape: TargetShape
-        verbose: Verbose
+    memory: MemoryLike
+    memory_level: MemoryLevel
+    minimize_memory: bool
+    n_jobs: NJobs
+    reports: bool
+    smoothing_fwhm: SmoothingFwhm
+    target_affine: TargetAffine
+    target_shape: TargetShape
+    verbose: Verbose
 
     def __str__(self):
         return "Second Level Model"

@@ -657,7 +657,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
     %(spacenet_fit_attributes)s
     """
 
-    SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
+    _SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
 
     def __init__(
         self,
@@ -745,7 +745,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
                 f"Got {self.screening_percentile:g}."
             )
         check_parameter_in_allowed(
-            self.penalty, self.SUPPORTED_PENALTIES, "penalty"
+            self.penalty, self._SUPPORTED_PENALTIES, "penalty"
         )
         if self.__sklearn_tags__().estimator_type == "classifier":
             self._validate_loss(self.loss)
