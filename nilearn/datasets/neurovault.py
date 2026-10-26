@@ -2830,6 +2830,10 @@ def fetch_neurovault_auditory_computation_task(  # numpydoc ignore=RT05
     check_params(locals())
 
     data = fetch_neurovault_ids(
-        image_ids=[32980], data_dir=data_dir, verbose=verbose, timeout=timeout
+        image_ids=[32980],
+        data_dir=data_dir,
+        verbose=verbose,
+        timeout=timeout,
+        fetch_neurosynth_words=True,
     )
     return data
