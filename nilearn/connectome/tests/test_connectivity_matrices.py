@@ -105,6 +105,7 @@ def _signals(
     and apply confounds while computing covariances.
     """
     signals = []
+    confounds = np.empty(1)
     for k in range(n_subjects):
         n_samples = 200 + k
         signal, _, confounds = generate_signals(
