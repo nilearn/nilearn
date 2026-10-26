@@ -698,14 +698,14 @@ class FirstLevelModel(BaseGLM):
         elif step == "running":
             msg = "Performing GLM computation."
         elif step == "run_done":
-            if TYPE_CHECKING:
-                assert time_in_second is not None
+            if time_in_second is None:  # pragma: no cover
+                raise TypeError(f"'time_in_second' cannot be None for {step=}")
             msg = f"GLM took {int(time_in_second)} seconds."
         elif step == "masking":
             msg = "Performing mask computation."
         elif step == "masking_done":
-            if TYPE_CHECKING:
-                assert time_in_second is not None
+            if time_in_second is None:  # pragma: no cover
+                raise TypeError(f"'time_in_second' cannot be None for {step=}")
             msg = f"Masking took {int(time_in_second)} seconds."
         elif step == "done":
             msg = (
