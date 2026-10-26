@@ -24,6 +24,7 @@ from nilearn.image import (
     resample_img,
 )
 from nilearn.image.image import check_same_fov
+from nilearn.maskers._mixin import MaskerReportDefaults
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -184,7 +185,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     very large memory consumption if the voxel number in maps_img is large.
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[MaskerReportDefaults] = {
         "description": (
             "This report shows the spatial maps provided to the mask."
         ),

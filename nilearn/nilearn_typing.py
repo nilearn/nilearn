@@ -126,6 +126,7 @@ ReductionStrategy: TypeAlias = Literal[
     "variance",
 ]
 RandomState: TypeAlias = Integer | np.random.RandomState | None
+ReportEngine: TypeAlias = Literal["matplotlib", "plotly", "brainsprite"]
 ResamplingInterpolation: TypeAlias = Literal["continuous", "nearest"]
 Resolution: TypeAlias = Integer | None
 Resume: TypeAlias = bool

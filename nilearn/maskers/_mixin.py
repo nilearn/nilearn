@@ -23,8 +23,18 @@ from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import check_n_confounds_match_n_images
 from nilearn.image import high_variance_confounds
 from nilearn.image.image import get_indices_from_image, iter_check_niimg
-from nilearn.nilearn_typing import NiimgLike, NJobs, Signals, SingleConfound
-from nilearn.reporting.mixin import HTMLReport, ReportMixin
+from nilearn.nilearn_typing import (
+    NiimgLike,
+    NJobs,
+    ReportEngine,
+    Signals,
+    SingleConfound,
+)
+from nilearn.reporting.mixin import (
+    HTMLReport,
+    ReportDefaults,
+    ReportMixin,
+)
 from nilearn.surface.surface import SurfaceImage
 
 
@@ -394,6 +404,19 @@ class _LabelMaskerMixin:
 
 
 @fill_doc
+class MaskerReportDefaults(ReportDefaults, total=False):
+    """Type of the default content of masker reports."""
+
+    description: str
+    summary: dict[str, Any] | pd.DataFrame
+    coverage: str | float
+    n_elements: int
+    displayed_maps: list[int]
+    number_of_maps: int
+    number_of_regions: int | None
+    n_vertices: dict[str, int]
+
+
 class MaskerReportMixin(ReportMixin):
     """A mixin class that adapts ``ReportMixin`` to masker classes for
     reporting functionality.
@@ -410,7 +433,7 @@ class MaskerReportMixin(ReportMixin):
         - displayed_maps :
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[MaskerReportDefaults] = {
         "description": "",
         "summary": {},
         "coverage": "",
@@ -425,7 +448,9 @@ class MaskerReportMixin(ReportMixin):
             MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
 
-    def _set_report_basics(self, engine, title):
+    def _set_report_basics(
+        self, engine: ReportEngine, title: str | None
+    ) -> None:
         """Set masker specific report attributes."""
         super()._set_report_basics(engine, title)
         report_content = self._report_content
@@ -474,7 +499,10 @@ class MaskerReportMixin(ReportMixin):
 
     @fill_doc
     def generate_report(
-        self, engine="matplotlib", title: str | None = None, **kwargs
+        self,
+        engine: ReportEngine = "matplotlib",
+        title: str | None = None,
+        **kwargs,
     ) -> HTMLReport:
         """Generate an HTML report for this masker.
 
@@ -487,7 +515,7 @@ class MaskerReportMixin(ReportMixin):
 
         Parameters
         ----------
-        engine : :obj:`str`, default="matplotlib"
+        engine : {"matplotlib", "brainsprite", "plotly"}, default="matplotlib"
             Choice of engine to display report figures.
 
             All maskers support ``"matplotlib"`` as engine.

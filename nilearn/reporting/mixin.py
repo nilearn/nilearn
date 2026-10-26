@@ -7,7 +7,7 @@ import uuid
 import warnings
 from copy import deepcopy
 from datetime import datetime
-from typing import Any, ClassVar
+from typing import Any, ClassVar, TypedDict
 
 import pandas as pd
 
@@ -15,6 +15,7 @@ from nilearn._assets import get_template
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.versions import SKLEARN_GTE_1_7, __short_version__
+from nilearn.nilearn_typing import ReportEngine
 from nilearn.reporting._utils import (
     dataframe_to_html,
 )
@@ -25,6 +26,26 @@ from nilearn.reporting.html_report import (
     assemble_report,
 )
 from nilearn.reporting.utils import figure_to_svg_base64
+
+
+class ReportDefaults(TypedDict, total=False):
+    """Type of the default content of reports.
+
+    Classes inheriting from ReportMixin that add new keys
+    to their ``_REPORT_DEFAULTS``
+    should define a subclass of this TypedDict.
+    """
+
+    unique_id: str
+    title: str
+    page_title: str
+    engine: ReportEngine
+    has_plotting_engine: bool
+    docstring: str
+    parameters: str
+    date: str
+    version: str
+    warning_messages: list[str]
 
 
 class ReportMixin:
@@ -62,7 +83,7 @@ class ReportMixin:
     should should define ``_template_name`` and ``_estimator_type`` attributes.
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[ReportDefaults] = {
         "unique_id": "",
         "title": "",
         "page_title": "",
@@ -165,7 +186,9 @@ class ReportMixin:
                     category=UserWarning,
                 )
 
-    def _set_report_basics(self, engine, title):
+    def _set_report_basics(
+        self, engine: ReportEngine, title: str | None
+    ) -> None:
         """Populate `_report_content` with values that will be used in report
         body template.
 
@@ -356,7 +379,10 @@ class ReportMixin:
 
     @abc.abstractmethod
     def generate_report(
-        self, engine="matplotlib", title: str | None = None, **kwargs
+        self,
+        engine: ReportEngine = "matplotlib",
+        title: str | None = None,
+        **kwargs,
     ) -> HTMLReport:
         """Generate an HTML report for this object.
 
@@ -369,7 +395,7 @@ class ReportMixin:
 
         Parameters
         ----------
-        engine : :obj:`str`, default="matplotlib"
+        engine : {"matplotlib", "brainsprite", "plotly"}, default="matplotlib"
             Choice of engine to generate plots.
 
         title : :obj:`str` or None, default=None
