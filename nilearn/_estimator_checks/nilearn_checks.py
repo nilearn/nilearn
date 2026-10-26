@@ -1359,14 +1359,13 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
             else:
                 assert not any(warning_present)
 
-            output_dtype = output_img.data._dtype
-            if isinstance(output_img, Nifti1Image):
-                output_dtype = (
-                    f"img type={img_data_dtype(output_img)}, "
-                    f"dataobj type={output_img.get_data_dtype()}"
-                )
+            output_dtype = None
             try:
                 if isinstance(output_img, Nifti1Image):
+                    output_dtype = (
+                        f"img type={img_data_dtype(output_img)}, "
+                        f"dataobj type={output_img.get_data_dtype()}"
+                    )
                     if target_dtype != np.int64:
                         # ensure both image and dataobj have consistent type
                         assert (
@@ -1382,6 +1381,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
                         assert img_data_dtype(output_img) == "int32"
                         assert output_img.get_data_dtype() == target_dtype
                 else:
+                    output_dtype = output_img.data._dtype
                     assert output_dtype == target_dtype
             except AssertionError as e:
                 raise TypeError(
