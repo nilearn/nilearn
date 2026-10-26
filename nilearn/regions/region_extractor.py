@@ -35,7 +35,7 @@ from nilearn.image.resampling import resample_img
 from nilearn.maskers import NiftiMapsMasker
 
 
-def _threshold_maps_ratio(maps_img, threshold):
+def _threshold_maps_ratio(maps_img, threshold) -> Nifti1Image:
     """Automatic thresholding of atlas maps image.
 
     Considers the given threshold as a ratio to the total number of voxels
@@ -64,7 +64,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     if (
         not isinstance(threshold, numbers.Real)
         or threshold <= 0
-        or threshold > n_maps
+        or float(threshold) > n_maps
     ):
         raise ValueError(
             "threshold given as ratio to the number of voxels must "
@@ -72,8 +72,8 @@ def _threshold_maps_ratio(maps_img, threshold):
             f"total number of maps i.e. n_maps={n_maps}. "
             f"You provided {threshold}"
         )
-    else:
-        ratio = threshold
+
+    ratio = float(threshold)
 
     # Get a copy of the data
     maps_data = safe_get_data(maps, ensure_finite=True, copy_data=True)
@@ -85,9 +85,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     )
     maps_data[abs_maps < cutoff_threshold] = 0.0
 
-    threshold_maps_img = new_img_like(maps, maps_data)
-
-    return threshold_maps_img
+    return new_img_like(maps, maps_data)
 
 
 def _remove_small_regions(input_data, affine, min_size):
@@ -550,22 +548,20 @@ class RegionExtractor(NiftiMapsMasker):
                 "Please submit a valid number specific to either of "
                 f"the strategy in {list_of_strategies}"
             )
-        elif isinstance(self.threshold, numbers.Number):
-            # foreground extraction
-            if self.thresholding_strategy == "ratio_n_voxels":
-                threshold_maps = _threshold_maps_ratio(
-                    maps_img, self.threshold
-                )
-            else:
-                if self.thresholding_strategy == "percentile":
-                    self.threshold = f"{self.threshold}%"
-                threshold_maps = threshold_img(
-                    maps_img,
-                    mask_img=self.mask_img_,
-                    copy=True,
-                    threshold=self.threshold,
-                    two_sided=self.two_sided,
-                )
+
+        # foreground extraction
+        if self.thresholding_strategy == "ratio_n_voxels":
+            threshold_maps = _threshold_maps_ratio(maps_img, self.threshold)
+        else:
+            if self.thresholding_strategy == "percentile":
+                self.threshold = f"{self.threshold}%"
+            threshold_maps = threshold_img(
+                maps_img,
+                mask_img=self.mask_img_,
+                copy=True,
+                threshold=self.threshold,
+                two_sided=self.two_sided,
+            )
 
         # connected component extraction
         self.regions_img_, self.index_ = connected_regions(
@@ -704,7 +700,8 @@ def connected_label_regions(
                 "Please provide appropriate match with unique "
                 "number of labels in labels_img."
             )
-        new_names = []
+
+    new_names = []
 
     this_labels = [None] * len(unique_labels) if labels is None else labels
 
