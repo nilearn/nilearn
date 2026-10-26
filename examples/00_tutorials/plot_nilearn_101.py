@@ -8,7 +8,6 @@ basic nilearn functionalities.
 .. admonition:: dataset
 
     This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-
 """
 
 # Let us use a Nifti file that is shipped with nilearn

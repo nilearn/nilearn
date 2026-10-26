@@ -31,7 +31,6 @@ as revealed by the higher detection rate.
 
     As in many other examples, we compare two visual categories from the
     the :ref:`Haxby dataset <haxby_dataset>`: "face" and "house" images.
-
 """
 
 # %%

@@ -14,7 +14,6 @@ depending on the software used.
 .. admonition:: dataset
 
    This example uses the :ref:`ADHD dataset <adhd_dataset>`.
-
 """
 
 # %%

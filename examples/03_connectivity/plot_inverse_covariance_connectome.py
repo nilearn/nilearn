@@ -21,7 +21,6 @@ display.
     we can visualize the matrix as a graph of interaction in a brain.
     To avoid having too dense a graph,
     we represent only the 20% edges with the highest values.
-
 """
 
 # %%

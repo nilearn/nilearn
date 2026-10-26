@@ -50,7 +50,6 @@ file paths.
 
    - the :ref:`ADHD dataset <adhd_dataset>`
    - the :ref:`BASC multiscale atlas <basc_multiscale_2015_atlas>`
-
 """
 # %%
 # Create a large fMRI image

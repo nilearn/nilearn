@@ -25,7 +25,6 @@ is performed; we then threshold and plot the resulting
    example for an illustration of
    how to use these external variates in other massively
    univariate analyses.
-
 """
 
 # %%

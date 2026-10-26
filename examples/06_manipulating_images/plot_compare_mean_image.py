@@ -11,7 +11,6 @@ could have been computed with nilearn :func:`~nilearn.image.mean_img` function.
 
    This example uses the :ref:`development fMRI dataset
    <development_dataset>`.
-
 """
 
 # %%

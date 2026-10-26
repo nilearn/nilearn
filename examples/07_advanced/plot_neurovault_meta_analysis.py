@@ -9,7 +9,6 @@ This example shows how to download statistical maps from :term:`Neurovault`.
    This example data from :ref:`Neurovault <neurovault_dataset>`.
    See :func:`~nilearn.datasets.fetch_neurovault_ids`
    documentation for more details.
-
 """
 
 # %%

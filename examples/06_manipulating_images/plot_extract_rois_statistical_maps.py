@@ -15,7 +15,6 @@ extract objects using a function
     We use localizer t-statistic maps from
     :func:`~nilearn.datasets.fetch_neurovault_auditory_computation_task`
     as input images.
-
 """
 
 # %%

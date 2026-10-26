@@ -19,7 +19,6 @@ see :footcite:t:`Dadi2019` for a careful study.
     - a subset of subjects from
       the :ref:`development fMRI dataset <development_dataset>`
       to save computation time.
-
 """
 
 # %%

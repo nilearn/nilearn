@@ -14,7 +14,6 @@ the error control accounts for arbitrary cluster selection.
     This example uses the the motor response
     to left versus right button press task
     from the :ref:`Brainomics Localizer dataset <brainomics_maps>`.
-
 """
 
 # %%

@@ -26,7 +26,6 @@ The reference paper is :footcite:t:`Varoquaux2010c`.
 
     This example uses the :ref:`development fMRI dataset
     <development_dataset>`.
-
 """
 
 # %%

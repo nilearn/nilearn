@@ -15,7 +15,6 @@ from a single subject dataset from the "Neurospin Localizer".
 
     This example uses the :ref:`localizer first level dataset
     <localizer_first_level>`.
-
 """
 
 # %%

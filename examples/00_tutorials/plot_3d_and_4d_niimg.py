@@ -12,7 +12,6 @@ Here we discover how to work with 3D and 4D niimgs.
     - a sample motor activation statistical map (`image 10426
       <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
       <neurovault_dataset>`)
-
 """
 
 # %%

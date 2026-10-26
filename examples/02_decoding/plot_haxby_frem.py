@@ -16,7 +16,6 @@ To have more details, see: :ref:`frem`.
 .. admonition:: dataset
 
     This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-
 """
 
 # %%

@@ -11,7 +11,6 @@ from the :mod:`~nilearn.regions` module.
 .. admonition:: dataset
 
     This example uses the :ref:`Smith 2009 atlas <smith_2009_atlas>`.
-
 """
 
 # %%

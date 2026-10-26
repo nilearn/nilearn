@@ -28,7 +28,6 @@ for an excellent explanation of how cross-validation works.
 .. admonition:: dataset
 
    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-
 """
 
 import warnings

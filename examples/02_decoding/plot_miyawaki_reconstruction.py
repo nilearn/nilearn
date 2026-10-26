@@ -18,7 +18,6 @@ a multiscale prediction on the images seen by the subject.
 .. admonition:: dataset
 
     This example uses the :ref:`Miyawaki 2008 dataset <miyawaki_dataset>`.
-.
 """
 
 # %%

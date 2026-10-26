@@ -21,7 +21,6 @@ tailored to :term:`fMRI` data, please refer to
 
    This example uses the :ref:`development fMRI dataset
    <development_dataset>`.
-
 """
 
 # %%

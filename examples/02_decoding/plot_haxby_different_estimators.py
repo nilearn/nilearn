@@ -8,7 +8,6 @@ decoding task of the Haxby dataset.
 .. admonition:: dataset
 
     This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-
 """
 
 # We start by loading data using nilearn dataset fetcher

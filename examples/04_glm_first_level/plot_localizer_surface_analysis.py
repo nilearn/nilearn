@@ -41,7 +41,6 @@ than using a subject-tailored mesh.
 
     - the :ref:`localizer first level dataset <localizer_first_level>`
     - the :ref:`fsaverage template <fs_average_template>`
-
 """
 
 # %%

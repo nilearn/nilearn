@@ -22,7 +22,6 @@ More specifically, this example will be divided into three sections:
 
    This example uses the :ref:`language localizer demo dataset
    <language_localizer_demo>`.
-
 """
 
 # %%

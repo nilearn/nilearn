@@ -6,7 +6,6 @@ Show stimuli of Haxby dataset
 
     This example plots an overview of the stimuli used
     in the :ref:`Haxby dataset <haxby_dataset>`.
-
 """
 
 # %%

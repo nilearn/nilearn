@@ -28,7 +28,6 @@ were already normalized to the same :term:`MNI` space.
 
    - the :ref:`language localizer demo dataset <language_localizer_demo>`
    - the :ref:`fsaverage template <fs_average_template>`
-
 """
 
 # %%

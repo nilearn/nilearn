@@ -20,7 +20,6 @@ computing a connectome from them.
     - the :ref:`Dosenbach 2010 atlas <dosenbach_2010_atlas>`
     - the :ref:`Power 2011 atlas <power_2011_atlas>`
     - the :ref:`development fMRI dataset <development_dataset>`
-
 """
 
 # %%

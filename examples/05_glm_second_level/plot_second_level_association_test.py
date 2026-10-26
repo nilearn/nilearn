@@ -12,7 +12,6 @@ complex contrast than a one- or two-sample t test.
     and seek association between the contrast values and a variate
     that measures the speed of pseudo-word reading.
     No confounding variate is included in the model.
-
 """
 
 # %%

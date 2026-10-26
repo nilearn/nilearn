@@ -18,7 +18,6 @@ task-based functional connectivity analysis.
 
    This example uses the :ref:`language localizer demo dataset
    <language_localizer_demo>`.
-
 """
 
 # %%

@@ -27,7 +27,6 @@ This shows:
    - the :ref:`Destrieux atlas <destrieux_2009_atlas>`
    - the :ref:`fsaverage template <fs_average_template>`
    - the :ref:`NKI enhanced surface dataset <nki_dataset>`
-
 """
 
 from nilearn._utils.helpers import check_matplotlib

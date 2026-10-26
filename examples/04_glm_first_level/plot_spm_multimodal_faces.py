@@ -11,7 +11,6 @@ sampled in different positions (encoded by different affine functions).
 .. admonition:: dataset
 
    This example uses the :ref:`SPM multimodal dataset <spm_multimodal>`.
-
 """
 
 # %%

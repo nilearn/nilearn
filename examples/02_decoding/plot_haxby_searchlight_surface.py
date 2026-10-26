@@ -21,7 +21,6 @@ as described in :footcite:t:`Chen2011`.
 
     - the :ref:`Haxby dataset <haxby_dataset>`
     - the :ref:`fsaverage template <fs_average_template>`
-
 """
 
 # %%

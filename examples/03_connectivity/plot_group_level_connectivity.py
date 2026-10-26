@@ -17,7 +17,6 @@ for a careful study.
     to extract time series
     from the :ref:`development fMRI dataset <development_dataset>`
     with the :class:`~nilearn.maskers.MultiNiftiMapsMasker`.
-
 """
 
 # overall verbosity of the example

@@ -27,7 +27,6 @@ The example is structured as follows:
    This model explicitly tests whether or not a voxel responds differently
    under different conditions of a visual task.
 
-
 .. admonition:: dataset
 
    We use the ``left button press (auditory cue)`` task contrast maps
@@ -36,7 +35,6 @@ The example is structured as follows:
    we therefore evaluate the association between a behavioral variate
    that measures the speed of pseudo-word reading (``pseudo``)
    and the :term:`contrast` map values, at every :term:`voxel`.
-
 """
 
 # %%

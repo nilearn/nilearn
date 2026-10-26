@@ -22,7 +22,6 @@ of the statistics across the two runs.
 
     See the :ref:`dataset description <fiac>`
     for more information on the data used in this example.
-
 """
 
 # %%

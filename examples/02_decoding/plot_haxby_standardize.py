@@ -29,7 +29,6 @@ example, so the two can be read side by side.
 .. admonition:: dataset
 
     This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-
 """
 
 # %%
