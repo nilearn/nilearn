@@ -677,7 +677,6 @@ def test_surface_masker_minimal_report_fit(
         assert float(masker._report_content["coverage"]) > 0
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class, engine",
