@@ -41,6 +41,7 @@ from nilearn.nilearn_typing import (
     MemoryLevel,
     MemoryLike,
     NiimgLike,
+    ReportEngine,
     SingleConfound,
     SmoothingFwhm,
     Standardize,
@@ -50,6 +51,7 @@ from nilearn.nilearn_typing import (
     Tr,
     Verbose,
 )
+from nilearn.reporting.mixin import DEFAULT_ENGINE
 
 
 class _ExtractionFunctor:
@@ -398,6 +400,10 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.clean_args = clean_args
 
         self._reset_report()
+
+    def _check_engine(self, allowed: list[ReportEngine] | None = None) -> None:
+        _ = allowed
+        super()._check_engine(allowed=[DEFAULT_ENGINE, "brainsprite"])
 
     def _run_report_checks(self, **kwargs):
         super()._run_report_checks(**kwargs)

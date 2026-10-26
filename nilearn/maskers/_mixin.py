@@ -31,6 +31,7 @@ from nilearn.nilearn_typing import (
     SingleConfound,
 )
 from nilearn.reporting.mixin import (
+    DEFAULT_ENGINE,
     HTMLReport,
     ReportDefaults,
     ReportMixin,
@@ -500,7 +501,7 @@ class MaskerReportMixin(ReportMixin):
     @fill_doc
     def generate_report(
         self,
-        engine: ReportEngine = "matplotlib",
+        engine: ReportEngine = DEFAULT_ENGINE,
         title: str | None = None,
         **kwargs,
     ) -> HTMLReport:
@@ -525,13 +526,14 @@ class MaskerReportMixin(ReportMixin):
             - ``"brainsprite"`` :
 
               NiftiMasker, MultiNiftiMasker, NiftiLabelsMasker,
-              MultiNiftiLabelsMasker:
+              MultiNiftiLabelsMasker
 
             - ``"plotly"``:
 
-              SurfaceMasker, MultiSurfaceMasker, SurfaceLabelsMasker,
-              MultiSurfaceLabelsMasker, SurfaceMapsMasker,
-              MultiSurfaceMapsMasker:
+              SurfaceMapsMasker, MultiSurfaceMapsMasker
+
+            If the engine is not supported by the masker,
+            a warning is thrown and ``"matplotlib"`` is used instead.
 
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.

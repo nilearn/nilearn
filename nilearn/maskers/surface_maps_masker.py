@@ -20,10 +20,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.param_validation import (
-    check_parameter_in_allowed,
-    check_params,
-)
+from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
 from nilearn.maskers._mixin import MaskerReportDefaults
 from nilearn.maskers.base_masker import (
@@ -40,6 +37,7 @@ from nilearn.nilearn_typing import (
     LowPass,
     MemoryLevel,
     MemoryLike,
+    ReportEngine,
     Signals,
     SingleConfound,
     SmoothingFwhm,
@@ -48,6 +46,7 @@ from nilearn.nilearn_typing import (
     Tr,
     Verbose,
 )
+from nilearn.reporting.mixin import DEFAULT_ENGINE
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -457,6 +456,10 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             region_signals, imgs, return_1D
         )
 
+    def _check_engine(self, allowed: list[ReportEngine] | None = None) -> None:
+        _ = allowed
+        super()._check_engine(allowed=[DEFAULT_ENGINE, "plotly"])
+
     def _run_report_checks(self, **kwargs):
         super()._run_report_checks(**kwargs)
 
@@ -493,13 +496,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if is_matplotlib_installed():
             engine = self._report_content["engine"]
 
-            check_parameter_in_allowed(
-                engine, ["plotly", "matplotlib"], "engine"
-            )
-
             # switch to matplotlib if plotly is selected but not installed
             if engine == "plotly" and not is_plotly_installed():
-                engine = "matplotlib"
+                engine = DEFAULT_ENGINE
                 warnings.warn(
                     "Plotly is not installed. "
                     "Switching to matplotlib for report generation.",

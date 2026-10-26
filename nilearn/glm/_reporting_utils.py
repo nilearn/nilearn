@@ -29,7 +29,11 @@ from nilearn.reporting.get_clusters_table import (
     get_clusters_table,
 )
 from nilearn.reporting.html_report import HTMLReport
-from nilearn.reporting.mixin import ReportDefaults, ReportMixin
+from nilearn.reporting.mixin import (
+    DEFAULT_ENGINE,
+    ReportDefaults,
+    ReportMixin,
+)
 from nilearn.reporting.utils import figure_to_png_base64
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
@@ -302,7 +306,7 @@ class GLMReportMixin(ReportMixin):
         check_params(locals())
         self._reset_report_warnings()
 
-        self._set_report_basics(engine="matplotlib", title=title)
+        self._set_report_basics(engine=DEFAULT_ENGINE, title=title)
         self._run_report_checks(
             height_control=height_control,
             cluster_threshold=cluster_threshold,

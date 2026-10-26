@@ -47,6 +47,7 @@ from nilearn.nilearn_typing import (
     MemoryLike,
     NiimgLike,
     ReductionStrategy,
+    ReportEngine,
     Signals,
     SingleConfound,
     SmoothingFwhm,
@@ -56,6 +57,7 @@ from nilearn.nilearn_typing import (
     Tr,
     Verbose,
 )
+from nilearn.reporting.mixin import DEFAULT_ENGINE
 
 
 class _ExtractionFunctor:
@@ -336,6 +338,10 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             display = plot_roi(masked_atlas, title="Masked atlas")
 
         return masked_atlas, removed_region_ids, removed_region_names, display
+
+    def _check_engine(self, allowed: list[ReportEngine] | None = None) -> None:
+        _ = allowed
+        super()._check_engine(allowed=[DEFAULT_ENGINE, "brainsprite"])
 
     def _run_report_checks(self, **kwargs):
         super()._run_report_checks(**kwargs)

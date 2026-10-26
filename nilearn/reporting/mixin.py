@@ -27,6 +27,8 @@ from nilearn.reporting.html_report import (
 )
 from nilearn.reporting.utils import figure_to_svg_base64
 
+DEFAULT_ENGINE: ReportEngine = "matplotlib"
+
 
 class ReportDefaults(TypedDict, total=False):
     """Type of the default content of reports.
@@ -87,7 +89,7 @@ class ReportMixin:
         "unique_id": "",
         "title": "",
         "page_title": "",
-        "engine": "matplotlib",
+        "engine": DEFAULT_ENGINE,
         "has_plotting_engine": False,
         "docstring": "",
         "parameters": "",
@@ -227,16 +229,40 @@ class ReportMixin:
             datetime.now().replace(microsecond=0).isoformat()
         )
 
+    def _check_engine(self, allowed: list[ReportEngine] | None = None) -> None:
+        """Check that the report engine is supported by this estimator.
+
+        Fall back to the default engine with a warning if it is not.
+
+        Estimators supporting other engines should override this method
+        to pass the list of engines they support.
+        """
+        if allowed is None:
+            allowed = [DEFAULT_ENGINE]
+        engine = self._report_content["engine"]
+        if engine not in allowed:
+            warnings.warn(
+                f"'engine' must be one of {allowed} "
+                f"for {self.__class__.__name__}. "
+                f"Got {engine!r} instead. "
+                f"Falling back to {DEFAULT_ENGINE!r}.",
+                stacklevel=find_stack_level(),
+            )
+            self._report_content["engine"] = DEFAULT_ENGINE
+
     def _run_report_checks(self, **kwargs):
         """Run standard checks before report is generated.
 
         Checks if:
+        - the report engine is supported
         - reporting is enabled
         - model is fitted
         - reporting was enabled at the time of fit
         - matplotlib is installed
         """
         _ = kwargs
+        self._check_engine()
+
         if self.reports is False:
             self._append_report_warning(
                 "\nReport generation not enabled!\nNo visual outputs created."
@@ -380,7 +406,7 @@ class ReportMixin:
     @abc.abstractmethod
     def generate_report(
         self,
-        engine: ReportEngine = "matplotlib",
+        engine: ReportEngine = DEFAULT_ENGINE,
         title: str | None = None,
         **kwargs,
     ) -> HTMLReport:
@@ -397,6 +423,8 @@ class ReportMixin:
         ----------
         engine : {"matplotlib", "brainsprite", "plotly"}, default="matplotlib"
             Choice of engine to generate plots.
+            If the engine is not supported by the estimator,
+            a warning is thrown and ``"matplotlib"`` is used instead.
 
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
