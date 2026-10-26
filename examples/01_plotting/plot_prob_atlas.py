@@ -23,6 +23,14 @@ See :ref:`plotting` for more information to know how to tune the parameters.
 
 Check the :ref:`list of atlases <listing_probabilistic_atlases>`
 to know the ones that are shipped with Nilearn.
+
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Allen 2011 atlas <allen_2011_atlas>`
+    - the :ref:`Smith 2009 atlas <smith_2009_atlas>`
+    - the :ref:`ICBM 152 template <icbm_152_template>`
 """
 
 # %%
