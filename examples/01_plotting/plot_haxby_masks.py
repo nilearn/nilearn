@@ -3,13 +3,11 @@ Plot Haxby masks
 ================
 
 Small script to show how to plot several masks at the same time.
-"""
 
-# %%
-# .. admonition:: dataset
-#
-#    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
-#
+.. admonition:: dataset
+
+   This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+"""
 
 # %%
 # Load Haxby dataset
