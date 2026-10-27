@@ -2,8 +2,11 @@
 Loading and plotting of a cortical surface atlas
 ================================================
 
-The Destrieux :term:`parcellation` (:footcite:t:`Destrieux2010`)
-in fsaverage5 space as distributed with Freesurfer is used as the chosen atlas.
+.. admonition:: dataset
+
+    This example plots the :ref:`Destrieux atlas <destrieux_2009_atlas>`
+    on the :ref:`fsaverage5 template <fs_average_template>`
+    as distributed with Freesurfer
 
 The :func:`~nilearn.plotting.plot_surf_roi` function is used
 to plot the :term:`parcellation` on the pial surface.
@@ -209,13 +212,5 @@ view = view_connectome(
     edge_threshold="90%",
 )
 view
-
-
-# %%
-# References
-# ----------
-#
-# .. footbibliography::
-
 
 # sphinx_gallery_dummy_images=1

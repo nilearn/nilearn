@@ -10,6 +10,8 @@
 
 .. _Aina Frau-Pascual: https://github.com/ainafp
 
+.. _Akaash P: https://github.com/theknuckle
+
 .. _Alex Rothberg: https://github.com/cancan101
 
 .. _Alexandre Abadie: https://github.com/aabadie

@@ -1,13 +1,9 @@
 """
-Visualizing a probabilistic atlas: the default mode in the MSDL atlas
-=====================================================================
+Visualizing a probabilistic atlas
+=================================
 
 Visualizing a :term:`probabilistic atlas` requires visualizing the different
 maps that compose it.
-
-Here we represent the nodes constituting the default mode network in the
-`MSDL atlas
-<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_.
 
 The tools that we need to leverage are:
 
@@ -18,7 +14,12 @@ The tools that we need to leverage are:
 
 Alternatively, :func:`~nilearn.plotting.plot_prob_atlas` allows
 to plot the maps in one step that
-with less control over the plot (see below)
+with less control over the plot (see below).
+
+.. admonition:: dataset
+
+   Here we represent the nodes constituting the default mode network
+   using the :ref:`MSDL atlas <msdl_atlas>`.
 """
 
 # %%

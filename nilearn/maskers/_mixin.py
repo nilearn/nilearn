@@ -7,6 +7,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Self, get_args
+from typing import Any, ClassVar, get_args
 
 import numpy as np
 import pandas as pd
@@ -32,8 +33,7 @@ from nilearn.surface.surface import SurfaceImage
 class _MultiMixin:
     """Mixin class to add common MultiMasker functionalities."""
 
-    if TYPE_CHECKING:
-        n_jobs: NJobs
+    n_jobs: NJobs
 
         # MultiMixin calls some of the methods of the class
         # it is attached to, so static type checking
@@ -247,10 +247,9 @@ class _MultiMixin:
 
 
 class _LabelMaskerMixin:
-    if TYPE_CHECKING:
-        background_label: int | float
-        lut_: pd.DataFrame
-        _lut_: pd.DataFrame
+    background_label: int | float
+    lut_: pd.DataFrame
+    _lut_: pd.DataFrame
 
     @property
     def n_elements_(self) -> int:

@@ -8,10 +8,9 @@ with two conditions: viewing a face image or a scrambled face image.
 This example takes a lot of time because the input are lists of 3D images
 sampled in different positions (encoded by different affine functions).
 
-.. seealso::
+.. admonition:: dataset
 
-    For more information
-    see the :ref:`dataset description <spm_multimodal>`.
+   This example uses the :ref:`SPM multimodal dataset <spm_multimodal>`.
 """
 
 # %%

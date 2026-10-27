@@ -51,6 +51,7 @@ Some other past or present contributors are:
 * `Achintya Singh`_
 * `Ahmad Chamma`_: Inria, Saclay, France
 * `Aina Frau-Pascual`_
+* `Akaash P`_
 * `Alex Rothberg`_: Free Agency, New York, USA
 * `Alexandre Abadie`_: Inria, Paris
 * `Alexandre Abraham`_: Bazemont, Île-de-France, France
