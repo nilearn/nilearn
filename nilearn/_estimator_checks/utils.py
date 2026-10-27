@@ -32,6 +32,8 @@ from nilearn.decomposition.tests.conftest import (
     _canica_components_volume,
     _make_volume_data_from_components,
 )
+from nilearn.image.image import new_img_like
+from nilearn.maskers.nifti_spheres_masker import NiftiSpheresMasker
 from nilearn.surface import SurfaceImage
 from nilearn.utils.tags import (
     accepts_surface,
@@ -162,6 +164,29 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
         data = _rng().random(_shape_3d_large()) + 10.0
         imgs = Nifti1Image(data, _affine_eye())
         return imgs, None
+
+
+def generate_inverse_transform_signal(estimator, nb, dtype=None):
+    """Generate a signal to be used as an input to inverse_transform function
+    of the estimator.
+    Return the signal in a list when necessary.
+    """
+    signal = _rng().random((nb, estimator.n_elements_)).astype(dtype)
+
+    if isinstance(estimator, _BaseDecomposition):
+        signal = [signal]
+    return signal
+
+
+def set_mask_if_nifti_spheres(estimator, X):
+    """Generate a mask image from X and set mask_img for the estimator if it is
+    a NiftiSpheresMasker.
+    """
+    if isinstance(estimator, NiftiSpheresMasker):
+        # NiftiSpheresMasker needs mask_img to run inverse_transform
+        mask_img = new_img_like(X, np.ones(X.shape[:3]))
+        estimator.mask_img = mask_img
+    return estimator
 
 
 def fit_estimator(
