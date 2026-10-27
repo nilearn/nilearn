@@ -363,7 +363,7 @@ def plot_bland_altman(
     gs0 = gridspec.GridSpec(1, 1)
 
     gs = gridspec.GridSpecFromSubplotSpec(
-        5, 6, subplot_spec=gs0[0], hspace=0.5, wspace=0.8
+        5, 6, subplot_spec=gs0[0], hspace=0.2, wspace=0.8
     )
 
     ax1 = figure.add_subplot(gs[:-1, 1:5])
@@ -377,8 +377,30 @@ def plot_bland_altman(
         extent=lims,
     )
     ax1.axis(lims)
-    ax1.axhline(linewidth=1, color="r")
-    ax1.axvline(linewidth=1, color="r")
+
+    # plot 0 lines and, mean and 95% confidence interval of difference
+    ax1.axhline(linewidth=1, color="r", linestyle="--")
+    ax1.axvline(linewidth=1, color="r", linestyle="--")
+
+    ax1.axhline(y=np.mean(diff), linewidth=1, color="white")
+    ax1.axhline(
+        y=np.percentile(diff, 2.5), linewidth=1, color="white", linestyle="--"
+    )
+    ax1.axhline(
+        y=np.percentile(diff, 97.5), linewidth=1, color="white", linestyle="--"
+    )
+
+    ax1.tick_params(
+        top=True,
+        labeltop=True,
+        bottom=True,
+        labelbottom=False,
+        right=True,
+        labelright=True,
+        left=True,
+        labelleft=False,
+    )
+
     if title:
         ax1.set_title(title)
 
@@ -392,6 +414,14 @@ def plot_bland_altman(
         orientation="horizontal",
         color="gray",
     )
+    ax2.axhline(y=np.mean(diff), linewidth=1, color="black", linestyle="--")
+    ax2.axhline(
+        y=np.percentile(diff, 2.5), linewidth=1, color="black", linestyle="--"
+    )
+    ax2.axhline(
+        y=np.percentile(diff, 97.5), linewidth=1, color="black", linestyle="--"
+    )
+
     ax2.invert_xaxis()
     ax2.set_ylabel(f"Difference : ({ref_label} - {src_label})")
 
