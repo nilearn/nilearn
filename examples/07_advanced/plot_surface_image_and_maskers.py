@@ -17,7 +17,7 @@ This shows:
 
 .. seealso::
 
-    See the :ref:`dataset description <nki_dataset>`
+    See the :ref:`dataset description <nki>`
     for more information on the data used in this example.
 
 .. admonition:: dataset
@@ -26,12 +26,8 @@ This shows:
 
    - the :ref:`Destrieux atlas <destrieux_2009_atlas>`
    - the :ref:`fsaverage template <fs_average_template>`
-   - the :ref:`NKI enhanced surface dataset <nki_dataset>`
+   - the :ref:`NKI enhanced surface dataset <nki>`
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
 
 # %%
 # Masking and plotting surface images

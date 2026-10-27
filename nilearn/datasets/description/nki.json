@@ -1,0 +1,14 @@
+{
+    "func_left": {
+        "type": "list[str]",
+        "desc": "Full paths to Gifti files containing resting-state data for the left hemisphere."
+    },
+    "func_right": {
+        "type": "list[str]",
+        "desc": "Full paths to Gifti files containing resting-state data for the right hemisphere."
+    },
+    "phenotypic": {
+        "type": "pd.DataFrame",
+        "desc": "Dataframe containing tuple with subject ID, age, dominant hand and sex for each subject."
+    }
+}

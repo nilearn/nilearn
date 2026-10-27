@@ -21,7 +21,7 @@ import requests
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
-from nilearn._utils.docs import fill_doc
+from nilearn._utils.docs import Description, fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -30,7 +30,6 @@ from nilearn._utils.param_validation import (
 from nilearn._utils.versions import sparray_context
 from nilearn.datasets._utils import (
     fetch_single_file,
-    get_dataset_descr,
     get_dataset_dir,
     logger,
 )
@@ -2377,7 +2376,7 @@ def _result_list_to_bunch(result_list, download_params):
         images=images,
         images_meta=images_meta,
         collections_meta=collections_meta,
-        description=get_dataset_descr("neurovault"),
+        description=Description.from_registry("neurovault"),
     )
     if (
         download_params["fetch_neurosynth_words"]
@@ -2461,7 +2460,7 @@ def _fetch_neurovault_implementation(
 
 
 @fill_doc
-def fetch_neurovault(
+def fetch_neurovault(  # numpydoc ignore=RT05
     max_images: int = _DEFAULT_MAX_IMAGES,
     collection_terms: dict | None = None,
     collection_filter=_empty_filter,
@@ -2479,17 +2478,13 @@ def fetch_neurovault(
 ) -> Bunch[str, Any]:
     """Download data from neurovault.org that match certain criteria.
 
-    Any downloaded data is saved on the local disk and subsequent
-    calls to this function will first look for the data locally before
-    querying the server for more if necessary.
-
     We explore the metadata for :term:`Neurovault` collections and images,
     keeping those that match a certain set of criteria, until we have
     skimmed through the whole database or until an (optional) maximum
     number of images to fetch has been reached.
 
-    For more information, see :footcite:t:`Gorgolewski2015`,
-    and :footcite:t:`Yarkoni2011`.
+    For more information,
+    see the :ref:`neurovault description <neurovault_dataset>`.
 
     Parameters
     ----------
@@ -2564,24 +2559,9 @@ def fetch_neurovault(
     Returns
     -------
     Bunch
-        A dict-like object which exposes its items as attributes. It contains:
+        Dictionary-like object, contains:
 
-            - 'images', the paths to downloaded files.
-            - 'images_meta', the metadata for the images in a list of
-              dictionaries.
-            - 'collections_meta', the metadata for the
-              collections.
-            - 'description', a short description
-              of the :term:`Neurovault` dataset.
-
-        If `fetch_neurosynth_words` and `vectorize_words` were set, it
-        also contains:
-
-            - 'vocabulary', a list of words
-            - 'word_frequencies', the weight of the words returned by
-              neurosynth.org for each image, such that the weight of word
-              `vocabulary[j]` for the image found in `images[i]` is
-              `word_frequencies[i, j]`
+        %(neurovault_content)s
 
     See Also
     --------
@@ -2591,7 +2571,20 @@ def fetch_neurovault(
 
     Notes
     -----
-    Images and collections from disk are fetched before remote data.
+    Any downloaded data is saved on the local disk and subsequent
+    calls to this function will first look for the data locally before
+    querying the server for more if necessary.
+
+    This is the fast way to get the data from the server if we already
+    know which images or collections we want.
+
+    In ``download_new`` mode, if a file exists on disk, it is not
+    downloaded again, even if the version on the server is newer.
+    Use ``overwrite`` mode to force a new download (you can filter on the
+    field ``modify_date`` to re-download the files that are newer on
+    the server - see Examples section).
+
+    Stops early if too many images fail to be downloaded in a row.
 
     Some helpers are provided in the ``neurovault`` module to express
     filtering criteria more concisely:
@@ -2615,19 +2608,9 @@ def fetch_neurovault(
     download: filtering on those fields makes the fetching faster
     because the filtering takes place on the server side.
 
-    In `download_new` mode, if a file exists on disk, it is not
-    downloaded again, even if the version on the server is newer. Use
-    `overwrite` mode to force a new download (you can filter on the
-    field ``modify_date`` to re-download the files that are newer on
-    the server - see Examples section).
-
-    Tries to yield `max_images` images; stops early if we have fetched
+    Tries to yield ``max_images`` images; stops early if we have fetched
     all the images matching the filters or if too many images fail to
     be downloaded in a row.
-
-    References
-    ----------
-    .. footbibliography::
 
     Examples
     --------
@@ -2710,7 +2693,7 @@ def fetch_neurovault(
 
 
 @fill_doc
-def fetch_neurovault_ids(
+def fetch_neurovault_ids(  # numpydoc ignore=RT05
     collection_ids=(),
     image_ids=(),
     mode: Literal["download_new", "overwrite", "offline"] = "download_new",
@@ -2723,15 +2706,8 @@ def fetch_neurovault_ids(
 ) -> Bunch[str, Any]:
     """Download specific images and collections from neurovault.org.
 
-    Any downloaded data is saved on the local disk and subsequent
-    calls to this function will first look for the data locally before
-    querying the server for more if necessary.
-
-    This is the fast way to get the data from the server if we already
-    know which images or collections we want.
-
-    For more information, see :footcite:t:`Gorgolewski2015`,
-    and :footcite:t:`Yarkoni2011`.
+    For more information,
+    see the :ref:`neurovault description <neurovault_dataset>`.
 
     Parameters
     ----------
@@ -2773,24 +2749,9 @@ def fetch_neurovault_ids(
     Returns
     -------
     Bunch
-        A dict-like object which exposes its items as attributes. It contains:
+        Dictionary-like object, contains:
 
-            - 'images', the paths to downloaded files.
-            - 'images_meta', the metadata for the images in a list of
-              dictionaries.
-            - 'collections_meta', the metadata for the
-              collections.
-            - 'description', a short description
-              of the :term:`Neurovault` dataset.
-
-        If `fetch_neurosynth_words` and `vectorize_words` were set, it
-        also contains:
-
-            - 'vocabulary', a list of words
-            - 'word_frequencies', the weight of the words returned by
-              neurosynth.org for each image, such that the weight of word
-              `vocabulary[j]` for the image found in `images[i]` is
-              `word_frequencies[i, j]`
+        %(neurovault_content)s
 
     See Also
     --------
@@ -2800,11 +2761,16 @@ def fetch_neurovault_ids(
 
     Notes
     -----
-    Images and collections from disk are fetched before remote data.
+    Any downloaded data is saved on the local disk and subsequent
+    calls to this function will first look for the data locally before
+    querying the server for more if necessary.
 
-    In `download_new` mode, if a file exists on disk, it is not
-    downloaded again, even if the version on the server is newer. Use
-    `overwrite` mode to force a new download.
+    This is the fast way to get the data from the server if we already
+    know which images or collections we want.
+
+    In ``download_new`` mode, if a file exists on disk, it is not
+    downloaded again, even if the version on the server is newer.
+    Use ``overwrite`` mode to force a new download.
 
     Stops early if too many images fail to be downloaded in a row.
 
@@ -2828,7 +2794,7 @@ def fetch_neurovault_ids(
 
 
 @fill_doc
-def fetch_neurovault_auditory_computation_task(
+def fetch_neurovault_auditory_computation_task(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     verbose: Verbose = 1,
     timeout: float = _DEFAULT_TIME_OUT,
@@ -2846,15 +2812,10 @@ def fetch_neurovault_auditory_computation_task(
 
     Returns
     -------
-    data : Bunch
-        A dict-like object which exposes its items as attributes. It contains:
-            - 'images', the paths to downloaded files.
-            - 'images_meta', the metadata for the images in a list of
-              dictionaries.
-            - 'collections_meta', the metadata for the
-              collections.
-            - 'description', a short description
-              of the :term:`Neurovault` dataset.
+    Bunch
+        Dictionary-like object, contains:
+
+        %(neurovault_content)s
 
     See Also
     --------
@@ -2869,6 +2830,10 @@ def fetch_neurovault_auditory_computation_task(
     check_params(locals())
 
     data = fetch_neurovault_ids(
-        image_ids=[32980], data_dir=data_dir, verbose=verbose, timeout=timeout
+        image_ids=[32980],
+        data_dir=data_dir,
+        verbose=verbose,
+        timeout=timeout,
+        fetch_neurosynth_words=True,
     )
     return data

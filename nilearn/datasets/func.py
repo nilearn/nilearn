@@ -1787,7 +1787,7 @@ def nki_ids():
 
 
 @fill_doc
-def fetch_surf_nki_enhanced(
+def fetch_surf_nki_enhanced(  # numpydoc ignore=RT05
     n_subjects: NSubject = 10,
     data_dir: DataDir = None,
     url: Url = None,
@@ -1798,7 +1798,7 @@ def fetch_surf_nki_enhanced(
     preprocessed and projected to the fsaverage5 space surface.
 
     For more information
-    see the :ref:`dataset description <nki_dataset>`.
+    see the :ref:`dataset description <nki>`.
 
     .. nilearn_versionadded:: 0.3
 
@@ -1821,13 +1821,7 @@ def fetch_surf_nki_enhanced(
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'func_left': Paths to Gifti files containing resting state
-                        time series left hemisphere
-        - 'func_right': Paths to Gifti files containing resting state
-                         time series right hemisphere
-        - 'phenotypic': pd.DataFrame containing tuple with subject ID, age,
-                         dominant hand and sex for each subject.
-        - 'description': data description of the release and references.
+        %(nki_content)s
 
     ..  admonition:: scipy >= 0.14.0 compatibility
         :class: important
@@ -1846,7 +1840,7 @@ def fetch_surf_nki_enhanced(
         url = "https://www.nitrc.org/frs/download.php/"
 
     # Preliminary checks and declarations
-    dataset_name = "nki_enhanced_surface"
+    dataset_name = "nki"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
@@ -1861,9 +1855,6 @@ def fetch_surf_nki_enhanced(
     )
     subject_indices = n_subjects
     ids = [all_ids[index] for index in subject_indices]
-
-    # Dataset description
-    fdescr = get_dataset_descr(dataset_name)
 
     # First, get the metadata
     phenotypic_file = "NKI_enhanced_surface_phenotypics.csv"
@@ -1926,7 +1917,7 @@ def fetch_surf_nki_enhanced(
         func_left=func_left,
         func_right=func_right,
         phenotypic=phenotypic_df,
-        description=fdescr,
+        description=Description.from_registry(dataset_name),
     )
 
 
@@ -1945,7 +1936,7 @@ def load_nki(
     """Load NKI enhanced surface data into a surface object.
 
     For more information
-    see the :ref:`dataset description <nki_dataset>`.
+    see the :ref:`dataset description <nki>`.
 
     .. nilearn_versionadded:: 0.11.0
 
@@ -3259,22 +3250,20 @@ def fetch_fiac_first_level(
 
 @functools.lru_cache
 def load_sample_motor_activation_image() -> str:
-    """Load a single functional image showing motor activations.
+    """Return the full path to a single contrast image of motor activations.
+
+    For more information see the
+    :ref:`dataset description <sample motor activation statistical map>`.
 
     Returns
     -------
     str
-        Path to the sample functional image.
+        Full path to the sample image.
 
     See Also
     --------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
     nilearn.datasets.fetch_neurovault_auditory_computation_task
-
-    Notes
-    -----
-    The 'left vs right button press' contrast is used:
-    https://neurovault.org/images/10426/
     """
     return str(Path(__file__).parent / "data" / "image_10426.nii.gz")

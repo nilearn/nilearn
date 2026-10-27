@@ -14,10 +14,9 @@ depends on the spatial extent of the effects that are expected.
 
     This example uses:
 
-    - the :ref:`development fMRI dataset <development_dataset>`
-    - the :ref:`fsaverage template <fs_average_template>`
-    - a sample motor activation statistical map (`image 10426
-        <https://neurovault.org/images/10426/>`_ from Neurovault)
+    - the :ref:`development fMRI dataset <development_dataset>`,
+    - the :ref:`fsaverage template <fs_average_template>`,
+    - a :ref:`sample motor activation statistical map`.
 """
 
 # %%

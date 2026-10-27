@@ -43,10 +43,8 @@ See :ref:`plotting` for more details.
 
     This example uses:
 
-    - the :ref:`Haxby dataset <haxby_dataset>`
-    - a sample motor activation statistical map (`image 10426
-      <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
-      <neurovault_dataset>`)
+    - the :ref:`Haxby dataset <haxby_dataset>`,
+    - a :ref:`sample motor activation statistical map`.
 """
 # %%
 # Display objects returned by plotting functions
