@@ -1251,15 +1251,25 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
 
     input_dtype np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    for estimator, X, y, _, _, _ in _dtype_case_generator(estimator_orig):
-        estimator = fit_estimator(estimator, X, y)
-        # for now we only check the output dtype for transform
-        if hasattr(estimator, "predict"):
-            estimator.predict(X)
-        if hasattr(estimator, "score"):
-            estimator.score(X, y)
-        if hasattr(estimator, "decision_function"):
-            estimator.decision_function(X)
+    for estimator, input_dtype, _, _ in _dtype_case_generator(estimator_orig):
+        X, y = _generate_fit_data_with_dtype(estimator, input_dtype)
+        set_mask_if_nifti_spheres(estimator, X)
+
+        with warnings.catch_warnings(record=True) as warning_list:
+            warnings.simplefilter("always")
+            estimator = fit_estimator(estimator, X, y)
+        # no data conversion should happen during fitting
+        assert not any(
+            "data has been converted to int32" in str(x.message)
+            for x in warning_list
+        )
+
+        for method in ["predict", "score", "decision_function"]:
+            if not hasattr(estimator, method):
+                continue
+            # for now we only check the output dtype for transform
+            # in check_img_estimator_dtypes_transform
+            run_method(estimator, method, X, y)
 
 
 @skip_if_not(
