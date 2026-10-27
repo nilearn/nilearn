@@ -259,6 +259,8 @@ def plot_bland_altman(
         The degree of disagreement is therefore evaluated
         by the perpendicular distance of points from the x-axis.
 
+        For more details see :footcite:t:`Altman1983`.
+
     Parameters
     ----------
     ref_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
@@ -324,7 +326,6 @@ def plot_bland_altman(
 
     References
     ----------
-
     .. footbibliography::
     """
     check_params(locals())
