@@ -7,7 +7,6 @@ from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Self, get_args
-from typing import Any, ClassVar, get_args
 
 import numpy as np
 import pandas as pd
@@ -35,6 +34,7 @@ class _MultiMixin:
 
     n_jobs: NJobs
 
+    if TYPE_CHECKING:
         # MultiMixin calls some of the methods of the class
         # it is attached to, so static type checking
         # needs the following.
