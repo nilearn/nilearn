@@ -1,6 +1,6 @@
 """
-Encoding models for visual stimuli from Miyawaki et al. 2008
-============================================================
+Encoding models for visual stimuli
+==================================
 
 This example partly reproduces the encoding model presented
 in :footcite:t:`Miyawaki2008`.
@@ -24,18 +24,16 @@ receptive fields for a set of voxels to see which pixel location a
 
     :doc:`plot_miyawaki_reconstruction` for a decoding approach
     for the same dataset.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`Miyawaki 2008 dataset <miyawaki_dataset>`.
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
-import matplotlib.pyplot as plt
 
 # %%
 # Loading the data
 # ----------------
-# Now we can load the data set:
+# Now we can load the dataset:
 from nilearn.datasets import fetch_miyawaki2008
 
 dataset = fetch_miyawaki2008()
@@ -82,6 +80,8 @@ stimuli = [
 
 # %%
 # Let's take a look at some of these binary images:
+import matplotlib.pyplot as plt
+
 plt.figure(figsize=(8, 4))
 plt.subplot(1, 2, 1)
 plt.imshow(stimuli[0][124], interpolation="nearest", cmap="gray")

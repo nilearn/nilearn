@@ -232,9 +232,9 @@ class _MultiMixin:
 
 
 class _LabelMaskerMixin:
+    background_label: int | float
     lut_: pd.DataFrame
     _lut_: pd.DataFrame
-    background_label: int | float
 
     @property
     def n_elements_(self) -> int:

@@ -375,7 +375,7 @@ class Parcellations(_MultiPCA):
       giving the matrix.
     """
 
-    VALID_METHODS: ClassVar[tuple[str, ...]] = (
+    _VALID_METHODS: ClassVar[tuple[str, ...]] = (
         "kmeans",
         "ward",
         "complete",
@@ -436,7 +436,7 @@ class Parcellations(_MultiPCA):
         )
 
     def _raw_fit(self, data):
-        """Fits the parcellation method on this reduced data.
+        """Fit the parcellation method on this reduced data.
 
         Data are coming from a base decomposition estimator which computes
         the mask and reduces the dimensionality of images using
@@ -457,7 +457,7 @@ class Parcellations(_MultiPCA):
             Note that, this attribute is returned only for selected methods
             such as 'ward', 'complete', 'average'.
         """
-        valid_methods = self.VALID_METHODS
+        valid_methods = self._VALID_METHODS
         if self.method is None:
             raise ValueError(
                 "Parcellation method is specified as None. "

@@ -220,7 +220,7 @@ def _get_bounds(data, vmin=None, vmax=None):
 
 
 def _rescale(data, vmin=None, vmax=None):
-    """Rescales the data."""
+    """Rescale the data."""
     data_copy = np.copy(data)
     # if no vmin/vmax are passed figure them out from data
     vmin, vmax = _get_bounds(data_copy, vmin, vmax)
@@ -230,7 +230,7 @@ def _rescale(data, vmin=None, vmax=None):
 
 
 def _threshold(data, threshold, vmin, vmax):
-    """Thresholds the data."""
+    """Threshold the data."""
     # If no thresholding and nans, filter them out
     if threshold is None:
         mask = np.logical_not(np.isnan(data))

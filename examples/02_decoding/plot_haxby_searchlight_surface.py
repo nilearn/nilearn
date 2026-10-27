@@ -14,6 +14,13 @@ as described in :footcite:t:`Chen2011`.
     to allow for such projection.
     It is done in this example for pedagogical reasons
     to show "how to do it".
+
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Haxby dataset <haxby_dataset>`
+    - the :ref:`fsaverage template <fs_average_template>`
 """
 
 # %%

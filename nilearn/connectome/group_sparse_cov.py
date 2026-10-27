@@ -605,7 +605,7 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
 
     @fill_doc
     def fit(self, subjects, y: None = None) -> Self:
-        """Fits the group sparse precision model according \
+        """Fit the group sparse precision model according \
         to the given training data and parameters.
 
         Parameters
@@ -1180,6 +1180,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         # Copying the cv generators to use them n_refinements times.
         cv_ = zip(*cv, strict=False)
 
+        best_index = 0
         for i, (this_cv) in enumerate(itertools.tee(cv_, n_refinements)):
             # Compute the cross-validated loss on the current grid
             train_test_subjs = []

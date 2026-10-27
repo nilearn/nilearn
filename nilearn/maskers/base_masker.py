@@ -48,7 +48,23 @@ from nilearn.image.image import (
 from nilearn.image.resampling import resample_img
 from nilearn.maskers._mixin import MaskerReportMixin
 from nilearn.masking import load_mask_img, unmask
-from nilearn.nilearn_typing import Signals, SingleConfound
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    Signals,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
@@ -321,6 +337,20 @@ class _BaseMasker(
 ):
     """Base class for NiftiMaskers."""
 
+    clean_args: dict[str, Any] | None
+    detrend: Detrend
+    dtype: DType
+    high_pass: HighPass
+    high_variance_confounds: bool
+    low_pass: LowPass
+    memory: MemoryLike
+    memory_level: MemoryLevel
+    smoothing_fwhm: SmoothingFwhm
+    reports: bool
+    standardize: Standardize
+    standardize_confounds: StandardizeConfounds
+    t_r: Tr
+    verbose: Verbose
     _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
 
     @property
@@ -342,7 +372,7 @@ class _BaseMasker(
     def _get_target_dtype(
         self, imgs: Nifti1Image | SurfaceImage | list[SurfaceImage]
     ):
-        """Adapts dtype to apply to transform() output."""
+        """Adapt dtype to apply to transform() output."""
         if isinstance(imgs, Nifti1Image):
             source_dtype = img_data_dtype(imgs)
         elif isinstance(imgs, SurfaceImage):
@@ -367,6 +397,7 @@ class _BaseMasker(
 class BaseMasker(_BaseMasker):
     """Base class for NiftiMaskers."""
 
+    mask_img: NiimgLike | None
     _template_name = "body_masker.jinja"
 
     @fill_doc
@@ -750,6 +781,8 @@ class BaseMasker(_BaseMasker):
 class _BaseSurfaceMasker(_BaseMasker):
     """Class from which all surface maskers should inherit."""
 
+    mask_img: SurfaceImage | None
+    cmap: ColormapLike
     _template_name = "body_surface_masker.jinja"
 
     def __sklearn_tags__(self):

@@ -400,7 +400,7 @@ def test_smooth_img_integer_input_conserves_mass(affine_eye, dtype):
 
 @pytest.mark.parametrize("create_files", (False, True))
 def test_smooth_img(tmp_path, create_files):
-    """Checks added functionalities compared to image._smooth_array()."""
+    """Check added functionalities compared to image._smooth_array()."""
     shapes = ((10, 11, 12), (13, 14, 15))
     lengths = (17, 18)
     fwhm = (1.0, 2.0, 3.0)
@@ -1109,7 +1109,7 @@ def test_new_img_like_accepts_paths(affine_eye, tmp_path, rng):
     assert new_img.shape == (10, 10, 10)
 
 
-def test_new_img_like_non_iterable_header(rng):
+def test_new_img_like_non_iterable_header_error(rng):
     """Test that when an niimg's header is not iterable \
        and it is set to be copied, an error is not raised.
     """
@@ -1120,6 +1120,24 @@ def test_new_img_like_non_iterable_header(rng):
     )
 
     assert new_img_like(fake_spatial_image, data=fake_fmri_data)
+
+
+def test_new_img_like_non_iterable_header_copy(rng, shape_4d_default):
+    """Test that when an niimg's header is not iterable \
+       and it is set to be copied, it is copied over as is.
+    """
+    fake_fmri_data = rng.uniform(size=shape_4d_default)
+    fake_affine = rng.uniform(size=(4, 4))
+    fake_spatial_image = spatialimages.SpatialImage(
+        fake_fmri_data, fake_affine
+    )
+    fake_spatial_image.header.set_data_dtype(str)
+    copied_img = new_img_like(fake_spatial_image, data=fake_fmri_data)
+
+    assert (
+        fake_spatial_image.header.get_data_dtype()
+        == copied_img.header.get_data_dtype()
+    )
 
 
 def test_new_img_like_int64(shape_3d_default):
@@ -1199,6 +1217,8 @@ def _check_thresholded_output(input, output, threshold) -> None:
     - a one-sided threshold that keeps data > threshold
     - no extra mask used
     """
+    original_data = np.empty(1)
+    data = np.empty(1)
     if isinstance(input, Nifti1Image):
         original_data = input.get_fdata()
         data = output.get_fdata()
@@ -2037,8 +2057,9 @@ def test_new_img_like_mgh_image(affine_eye, shape_3d_default):
 
 
 @pytest.mark.parametrize("image", [MGHImage, AnalyzeImage])
+@pytest.mark.ai_generated
 def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
-    """Checks defaulting boolean input data to np.uint8 dtype is valid \
+    """Check defaulting boolean input data to np.uint8 dtype is valid \
        forencoding with nibabel image classes MGHImage and AnalyzeImage.
     """
     data = rng.standard_normal(shape_3d_default).astype("uint8")
@@ -2513,7 +2534,7 @@ def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
 
 @pytest.fixture
 def set_expand_path_wildcards() -> Generator[None, None, None]:
-    """Toggles EXPAND_PATH_WILDCARDS before and after a test.
+    """Toggle EXPAND_PATH_WILDCARDS before and after a test.
 
     Yields
     ------

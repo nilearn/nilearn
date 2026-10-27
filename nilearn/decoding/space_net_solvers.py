@@ -484,7 +484,7 @@ def tvl1_solver(
     callback=None,
     verbose=0,
 ):
-    """Minimizes empirical risk for TV-L1 penalized models.
+    """Minimize empirical risk for TV-L1 penalized models.
 
     Can handle least squares (mean squared error --a.k.a mse) or logistic
     regression. The same solver works for both of these losses.

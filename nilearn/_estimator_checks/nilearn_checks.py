@@ -23,6 +23,9 @@ to yield the checks for each estimator.
 
 Most of those checks have pytest dependencies
 and importing them will fail if pytest is not installed.
+
+Checks for a specific group of estimators might have exceptional cases. These
+are specified through skip_if, skip_if_not and xfail_if_not_gil decorators.
 """
 
 import contextlib
@@ -34,7 +37,7 @@ import warnings
 from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory, mkdtemp
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
@@ -68,6 +71,9 @@ from nilearn._estimator_checks.utils import (
     clone,
     fit_estimator,
     generate_data_to_fit,
+    generate_inverse_transform_signal,
+    run_method,
+    set_mask_if_nifti_spheres,
     skip_if,
     skip_if_not,
     xfail_if_not_gil,
@@ -616,22 +622,18 @@ def check_img_estimator_fit_check_is_fitted(estimator) -> None:
     - __sklearn_is_fitted__ returns True
     - running sklearn check_is_fitted throws no error
     """
-    if not hasattr(estimator, "__sklearn_is_fitted__"):
-        raise TypeError(
-            "All nilearn estimators must have __sklearn_is_fitted__ method."
-        )
+    assert hasattr(estimator, "__sklearn_is_fitted__"), (
+        "All nilearn estimators must have __sklearn_is_fitted__ method."
+    )
 
-    if estimator.__sklearn_is_fitted__() is True:
-        raise ValueError(
-            "Estimator __sklearn_is_fitted__ must return False before fit."
-        )
+    assert not estimator.__sklearn_is_fitted__(), (
+        "Estimator __sklearn_is_fitted__ must return False before fit."
+    )
 
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         check_is_fitted(estimator)
 
-    # Failure should happen before the input type is determined
-    # so we can pass nifti image (or array) to surface maskers.
-    signals = np.ones((10, 11))
+    X, y = generate_data_to_fit(estimator)
     methods_to_check = [
         "transform",
         "transform_single_imgs",
@@ -641,17 +643,13 @@ def check_img_estimator_fit_check_is_fitted(estimator) -> None:
         "score",
         "predict",
     ]
-    method_inputs = [_img_3d_rand(), [_img_3d_rand()], signals]
-    for method, method_input in zip(
-        methods_to_check, method_inputs, strict=False
-    ):
-        method = getattr(estimator, method, None)
-        if method is None:
+    for method in methods_to_check:
+        if not hasattr(estimator, method):
             continue
         with pytest.raises(
             ValueError, match=_not_fitted_error_message(estimator)
         ):
-            method(method_input)
+            run_method(estimator, method, X, y)
 
     estimator = fit_estimator(estimator)
 
@@ -681,7 +679,9 @@ def check_nilearn_methods_sample_order_invariance(estimator) -> None:
         }
         new_X = new_img_like(X, data=data)
 
-    elif isinstance(X, Nifti1Image):
+    else:
+        if TYPE_CHECKING:
+            assert isinstance(X, Nifti1Image)
         data = _rng().random((*X.shape[:3], n_samples))
 
         new_X = new_img_like(X, data=data)
@@ -700,13 +700,12 @@ def check_nilearn_methods_sample_order_invariance(estimator) -> None:
             # TODO
             continue
 
-        msg = (
-            f"'{method}' of {estimator.__class__.__name__} "
-            "is not invariant when applied to a dataset "
-            "with different sample order."
-        )
-
         if hasattr(estimator, method):
+            msg = (
+                f"'{method}' of {estimator.__class__.__name__} "
+                "is not invariant when applied to a dataset "
+                "with different sample order."
+            )
             assert_allclose_dense_sparse(
                 getattr(estimator, method)(index_img(new_X, idx)),
                 _safe_indexing(getattr(estimator, method)(new_X), idx),
@@ -936,18 +935,7 @@ def check_img_estimator_dict_unchanged(estimator) -> None:
         if not hasattr(estimator, method):
             continue
 
-        if method == "transform" and isinstance(estimator, _BaseDecomposition):
-            getattr(estimator, method)([input_img])
-        elif method == "score":
-            getattr(estimator, method)(input_img, y)
-        elif method == "generate_report":
-            # TODO
-            # fix for free threaded python
-            if not is_gil_enabled():
-                pytest.xfail("May fail without the GIL")
-            getattr(estimator, method)()
-        else:
-            getattr(estimator, method)(input_img)
+        run_method(estimator, method, input_img, y)
 
         dict_after = estimator.__dict__
 
@@ -956,55 +944,57 @@ def check_img_estimator_dict_unchanged(estimator) -> None:
         if isinstance(estimator, (NiftiLabelsMasker)):
             with pytest.raises(AssertionError):
                 assert dict_after == dict_before
-        else:
-            # The following try / except is mostly
-            # to give more informative error messages when this check fails.
-            try:
-                assert dict_after == dict_before
-            except AssertionError as e:
-                unmatched_keys = set(dict_after.keys()) ^ set(
-                    dict_before.keys()
-                )
-                if len(unmatched_keys) > 0:
-                    raise ValueError(
-                        "Estimator changes '__dict__' keys "
-                        f"during '{method}'.\n"
-                        f"{unmatched_keys} \n"
-                    ) from e
+            continue
 
-                difference = {}
-                for x in dict_before:
-                    if type(dict_before[x]) is not type(dict_after[x]):
-                        difference[x] = {
-                            "before": dict_before[x],
-                            "after": dict_after[x],
-                        }
-                        continue
-                    if (
+        # The following try / except is mostly
+        # to give more informative error messages when this check fails.
+        try:
+            assert dict_after == dict_before
+        except AssertionError as e:
+            unmatched_keys = set(dict_after.keys()) ^ set(dict_before.keys())
+            assert len(unmatched_keys) == 0, (
+                "Estimator changes '__dict__' keys "
+                f"during '{method}'.\n"
+                f"{unmatched_keys} \n"
+            )
+
+            difference = {
+                x: {
+                    "before": dict_before[x],
+                    "after": dict_after[x],
+                }
+                for x in dict_before
+                if (
+                    not isinstance(dict_before[x], type(dict_after[x]))
+                    or (
                         isinstance(dict_before[x], np.ndarray)
                         and not np.array_equal(dict_before[x], dict_after[x])
                         and not check_imgs_equal(dict_before[x], dict_after[x])
-                    ) or (
+                    )
+                    or (
                         not isinstance(
                             dict_before[x], (np.ndarray, Nifti1Image)
                         )
                         and dict_before[x] != dict_after[x]
-                    ):
-                        difference[x] = {
-                            "before": dict_before[x],
-                            "after": dict_after[x],
-                        }
-                        continue
-                if difference:
-                    raise ValueError(
-                        "Estimator changes the following '__dict__' keys \n"
-                        f"during '{method}'.\n"
-                        f"{difference}"
-                    ) from e
-                else:
-                    raise e
-            except Exception as e:
-                raise e
+                    )
+                )
+            }
+
+            assert difference == {}, (
+                "Estimator changes the following '__dict__' keys \n"
+                f"during '{method}'.\n"
+                f"{difference}"
+            )
+            raise e
+
+
+def _check_equal_imglike(input1, input2):
+    if isinstance(input2, np.ndarray):
+        assert_allclose_dense_sparse(input1, input2)
+    elif isinstance(input2, SurfaceImage):
+        assert_surface_image_equal(input1, input2)
+    elif isinstance(input2, Nifti1Image):
+        check_imgs_equal(input1, input2)
 
 
 @xfail_if_not_gil(classes=[SearchLight])
@@ -1014,68 +1004,36 @@ def check_img_estimator_pickle(estimator) -> None:
     Adapted from sklearn's check_estimators_pickle
     """
     X, y = generate_data_to_fit(estimator)
+    estimator = set_mask_if_nifti_spheres(estimator, X)
 
-    if isinstance(estimator, NiftiSpheresMasker):
-        # NiftiSpheresMasker needs mask_img to run inverse_transform
-        mask_img = new_img_like(X, np.ones(X.shape[:3]))
-        estimator.mask_img = mask_img
+    estimator = fit_estimator(estimator, X, y)
 
-    fitted_estimator = fit_estimator(estimator)
-
-    pickled_estimator = pickle.dumps(fitted_estimator)
+    pickled_estimator = pickle.dumps(estimator)
     unpickled_estimator = pickle.loads(pickled_estimator)
 
-    result = {}
-
-    check_methods = ["transform"]
-
-    input_data: list[Any | tuple[Any, Any]] = []
-
-    input_data = [X] if isinstance(estimator, SearchLight) else [[X]]
-
-    for method in ["predict", "decision_function"]:
-        check_methods.append(method)
-        input_data.append(X)
-
-    check_methods.append("score")
-    input_data.append((X, y))
+    methods = {
+        "transform": X if isinstance(estimator, SearchLight) else [X],
+        "score": X,
+        "predict": X,
+        "decision_function": X,
+    }
 
     # TODO - As NiftiMapsMasker changes estimator at transform, inverse
-    # transform might not work
+    # transform might not work for estimators that have maps_masker
+    # This can be changed after NiftiMapsMasker is fixed
     if hasattr(estimator, "inverse_transform") and (
         hasattr(estimator, "maps_masker")
     ):
-        check_methods.append("inverse_transform")
-        signal = _rng().random((1, fitted_estimator.n_elements_))
-        if isinstance(estimator, _BaseDecomposition):
-            signal = [signal]
-        input_data.append(signal)
+        signal = generate_inverse_transform_signal(estimator, 1)
+        methods["inverse_transform"] = signal
 
-    for method, input in zip(check_methods, input_data, strict=False):
-        if hasattr(estimator, method):
-            result["input"] = input
-            if method == "score":
-                result[method] = getattr(estimator, method)(*input)
-            else:
-                result[method] = getattr(estimator, method)(input)
-
-    for method, input in zip(check_methods, input_data, strict=False):
-        if method not in result:
+    for method, X in methods.items():
+        if not hasattr(estimator, method):
             continue
 
-        if method == "score":
-            unpickled_result = getattr(unpickled_estimator, method)(*input)
-        else:
-            unpickled_result = getattr(unpickled_estimator, method)(input)
-
-        if isinstance(unpickled_result, np.ndarray):
-            assert_allclose_dense_sparse(result[method], unpickled_result)
-        elif isinstance(unpickled_result, SurfaceImage):
-            assert_surface_image_equal(
-                cast(SurfaceImage, result[method]), unpickled_result
-            )
-        elif isinstance(unpickled_result, Nifti1Image):
-            check_imgs_equal(result[method], unpickled_result)
+        result = run_method(estimator, method, X, y)
+        unpickled_result = run_method(unpickled_estimator, method, X, y)
+        _check_equal_imglike(result, unpickled_result)
 
 
 @xfail_if_not_gil(classes=[SearchLight])
@@ -1085,11 +1043,7 @@ def check_img_estimator_pipeline_consistency(estimator) -> None:
     Substitute for sklearn check_pipeline_consistency.
     """
     X, y = generate_data_to_fit(estimator)
-
-    if isinstance(estimator, NiftiSpheresMasker):
-        # NiftiSpheresMasker needs mask_img to run inverse_transform
-        mask_img = new_img_like(X, np.ones(X.shape[:3]))
-        estimator.mask_img = mask_img
+    estimator = set_mask_if_nifti_spheres(estimator, X)
 
     pipeline = make_pipeline(estimator)
 
@@ -1114,19 +1068,14 @@ def check_img_estimator_pipeline_consistency(estimator) -> None:
         else:
             pipeline.fit(X)
 
-    funcs = ["score", "transform"]
+    for method in ["score", "transform"]:
+        if not hasattr(estimator, method):
+            continue
 
-    for func_name in funcs:
-        func = getattr(estimator, func_name, None)
-        if func is not None:
-            func_pipeline = getattr(pipeline, func_name)
-            if func_name == "transform":
-                result = func(X)
-                result_pipe = func_pipeline(X)
-            else:
-                result = func(X, y)
-                result_pipe = func_pipeline(X, y)
-            assert_allclose_dense_sparse(result, result_pipe)
+        result = run_method(estimator, method, X, y)
+        result_pipe = run_method(pipeline, method, X, y)
+
+        assert_allclose_dense_sparse(result, result_pipe)
 
 
 def check_img_estimator_dtype_bool(estimator_orig) -> None:
@@ -1144,14 +1093,10 @@ def check_img_estimator_dtype_bool(estimator_orig) -> None:
 
     estimator = clone(estimator_orig)
 
-    X, _ = generate_data_to_fit(estimator)
+    X, y = generate_data_to_fit(estimator)
+    estimator = set_mask_if_nifti_spheres(estimator, X)
 
-    if isinstance(estimator, NiftiSpheresMasker):
-        # NiftiSpheresMasker needs mask_img to run inverse_transform
-        mask_img = new_img_like(X, np.ones(X.shape[:3]))
-        estimator.mask_img = mask_img
-
-    estimator = fit_estimator(estimator)
+    estimator = fit_estimator(estimator, X, y)
 
     signal = estimator.transform(X)
     if isinstance(signal, list):
@@ -1414,6 +1359,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
             else:
                 assert not any(warning_present)
 
+            output_dtype = None
             try:
                 if isinstance(output_img, Nifti1Image):
                     output_dtype = (
@@ -1521,7 +1467,9 @@ def check_img_estimator_clean_dtype(estimator_orig) -> None:
             input_img = Nifti1Image(
                 data.astype(input_dtype), _affine_eye(), dtype=input_dtype
             )
-        elif accepts_surface(estimator_orig):
+        else:
+            if TYPE_CHECKING:
+                assert accepts_surface(estimator_orig)
             input_img = _make_surface_img(n_samples)
             input_img.data._set_dtype(input_dtype)
 
@@ -1765,11 +1713,11 @@ def check_img_estimator_standardization(estimator_orig) -> None:
 
         unstandarized_result = results[str(None)]
 
-        if isinstance(estimator, _BaseDecomposition):
+        if isinstance(estimator_orig, _BaseDecomposition):
             # TODO
             return
 
-        if isinstance(estimator, Decoder):
+        if isinstance(estimator_orig, Decoder):
             # differences are too small to have an effect in this test
             return
 
@@ -2831,14 +2779,15 @@ def check_masker_inverse_transform(estimator_orig) -> None:
     ):
         estimator = clone(estimator_orig)
 
-        if isinstance(estimator, (NiftiSpheresMasker)):
+        if isinstance(estimator, NiftiSpheresMasker) and isinstance(
+            mask_img, Nifti1Image
+        ):
             estimator.mask_img = mask_img
 
         estimator.fit(imgs)
 
-        if i == 0:
-            signals = _rng().random((estimator.n_elements_,))
-        elif i == 1:
+        signals = _rng().random((estimator.n_elements_,))
+        if i == 1:
             signals = _rng().random((1, estimator.n_elements_))
         elif i == 2:
             signals = _rng().random((10, estimator.n_elements_))
@@ -2914,7 +2863,10 @@ def check_masker_transform_resampling(estimator_orig) -> None:
         expected_shape = input_shape
         if resampling_target == "labels":
             if isinstance(estimator_orig, NiftiMapsMasker):
-                expected_shape = (*estimator_orig.maps_img.shape[:3], n_sample)
+                maps_img = estimator_orig.maps_img
+                if TYPE_CHECKING:
+                    assert isinstance(maps_img, Nifti1Image)
+                expected_shape = (*maps_img.shape[:3], n_sample)
                 resampling_target = "maps"
             else:
                 expected_shape = (*estimator_orig.labels_img.shape, n_sample)

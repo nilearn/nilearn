@@ -105,6 +105,7 @@ def _signals(
     and apply confounds while computing covariances.
     """
     signals = []
+    confounds = np.empty(1)
     for k in range(n_subjects):
         n_samples = 200 + k
         signal, _, confounds = generate_signals(
@@ -820,6 +821,7 @@ def test_connectivity_measure_check_mean(kind, signals):
     assert_array_equal(mean, conn_measure.mean_)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
 def test_connectivity_measure_check_vectorization_option(kind, signals):
     conn_measure = ConnectivityMeasure(kind=kind)

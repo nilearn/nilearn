@@ -1,22 +1,17 @@
 """
-Voxel-Based Morphometry on Oasis dataset
-========================================
+Voxel-Based Morphometry: Regression
+===================================
 
 This example uses Voxel-Based Morphometry (:term:`VBM`)
 to study the relationship between aging and gray matter density.
 
-The data comes from the Open Access Series of Imaging Studies
-(`OASIS <https://sites.wustl.edu/oasisbrains/>`_) project.
-If you use it, you need to agree with the data usage agreement available
-on the website.
+.. admonition:: dataset
 
-It has been processed through a standard :term:`VBM` pipeline (using SPM8 and
-NewSegment) to create :term:`VBM` maps, which we study here.
+    This example uses the :ref:`OASIS VBM dataset <oasis_vbm>`.
 
-.. seealso::
-
-    For more information
-    see the :ref:`dataset description <oasis_maps>`.
+    It has been processed through a standard :term:`VBM` pipeline
+    (using SPM8 and NewSegment)
+    to create :term:`VBM` maps, which we study here.
 
 Predictive modeling analysis
 ----------------------------
@@ -57,13 +52,13 @@ from nilearn.datasets import fetch_oasis_vbm
 n_subjects = 200  # more subjects require more memory
 
 oasis_dataset = fetch_oasis_vbm(n_subjects=n_subjects, verbose=verbose)
+gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 
 print(
     "First gray-matter anatomy image (3D) is located at: "
-    f"{oasis_dataset.gray_matter_maps[0]}"
+    f"{gray_matter_map_filenames[0]}"
 )
 
-gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars["age"].to_numpy()
 gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
     gray_matter_map_filenames, age, train_size=0.6, random_state=0
