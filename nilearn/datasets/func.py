@@ -18,7 +18,6 @@ import pandas as pd
 from nibabel import Nifti1Image, four_to_three
 from scipy.io import loadmat
 from scipy.io.matlab import MatReadError
-from sklearn.utils import Bunch
 
 from nilearn._utils import logger
 from nilearn._utils.docs import Description, fill_doc
@@ -47,6 +46,7 @@ from nilearn.image import check_niimg, get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.nilearn_typing import (
     AvailableMeshes,
+    Bunch,
     DataDir,
     NSubject,
     Resume,

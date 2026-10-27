@@ -20,9 +20,9 @@ import typing
 from collections.abc import Callable
 
 import pandas as pd
-from sklearn.utils import Bunch
 
 from nilearn._base import PACKAGE_DIRECTORY, documentation_url
+from nilearn.nilearn_typing import Bunch
 
 ##############################################################################
 #

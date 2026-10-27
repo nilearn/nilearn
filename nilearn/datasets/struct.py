@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 from nibabel import Nifti1Image
 from scipy.ndimage import binary_closing
-from sklearn.utils import Bunch
 
 from nilearn._utils.docs import Description, fill_doc
 from nilearn._utils.logger import find_stack_level
@@ -29,6 +28,7 @@ from nilearn.datasets._utils import (
 from nilearn.image import check_niimg, get_data, new_img_like, resampling
 from nilearn.nilearn_typing import (
     AvailableMeshes,
+    Bunch,
     DataDir,
     NSubject,
     Resolution,
@@ -928,7 +928,7 @@ def _sanitize_vertices_order(
     bunch: Bunch,
     mesh: str,
     data_dir,
-) -> Bunch:
+) -> None:
     """Check first vertices have roughly same coordinates \
        as that of fs5 otherwise we resort them.
 

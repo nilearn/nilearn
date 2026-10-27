@@ -12,7 +12,6 @@ import numpy as np
 import pandas as pd
 from nibabel import freesurfer, load
 from requests.exceptions import SSLError
-from sklearn.utils import Bunch
 
 from nilearn._utils import logger
 from nilearn._utils.bids import (
@@ -32,7 +31,7 @@ from nilearn.datasets._utils import (
     get_dataset_dir,
 )
 from nilearn.image import check_niimg, new_img_like, reorder_img
-from nilearn.nilearn_typing import DataDir, Resume, Url, Verbose
+from nilearn.nilearn_typing import Bunch, DataDir, Resume, Url, Verbose
 
 
 class Atlas(Bunch):
@@ -1526,7 +1525,7 @@ def fetch_atlas_basc_multiscale_2015(
 @fill_doc
 def fetch_coords_dosenbach_2010(  # numpydoc ignore=RT05
     ordered_regions: bool = True,
-) -> Bunch[str, str | pd.DataFrame | list[str] | np.ndarray]:
+) -> Bunch[str, str | pd.DataFrame | pd.Series | list[str]]:
     """Load the Dosenbach et al 160 ROIs.
 
     These ROIs cover much of the cerebral cortex

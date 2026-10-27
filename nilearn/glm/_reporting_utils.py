@@ -6,7 +6,6 @@ from typing import Any, ClassVar, Literal
 
 import numpy as np
 import pandas as pd
-from sklearn.utils import Bunch
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
@@ -18,7 +17,7 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD, threshold_stats_img
-from nilearn.nilearn_typing import ClusterThreshold, HeightControl
+from nilearn.nilearn_typing import Bunch, ClusterThreshold, HeightControl
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
