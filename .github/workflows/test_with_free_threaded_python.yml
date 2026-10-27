@@ -5,6 +5,7 @@
 name: test free threaded python
 
 on:
+    pull_request:
     push:
         branches:
         -   main

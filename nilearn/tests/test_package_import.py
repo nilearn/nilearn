@@ -5,6 +5,7 @@ import pytest
 from nilearn._utils.helpers import is_matplotlib_installed
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="This test should run only if matplotlib is not installed.",

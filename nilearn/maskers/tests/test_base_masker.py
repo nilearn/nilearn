@@ -4,6 +4,7 @@ import contextlib
 import io
 
 import numpy as np
+import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
@@ -12,6 +13,7 @@ from nilearn.maskers.base_masker import mask_logger
 from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
 
 
+@pytest.mark.thread_unsafe
 def test_mask_logger(img_3d_mni, img_3d_mni_as_file, surf_img_1d):
     """Check verbosity of mask_logger."""
     # verbose = 0 --> no output

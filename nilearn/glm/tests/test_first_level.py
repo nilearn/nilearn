@@ -1722,6 +1722,7 @@ def test_generate_report_threshold_unused(threshold):
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="This test is run only if matplotlib is not installed.",
