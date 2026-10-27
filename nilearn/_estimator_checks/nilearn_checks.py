@@ -1109,7 +1109,7 @@ def check_img_estimator_dtype_bool(estimator_orig) -> None:
 
 
 def _generate_fit_data_with_dtype(estimator, input_dtype):
-    """Adjust generated fit data for this check."""
+    """Adjust dtype of generated fit data to specified ``input_type``."""
     X, y = generate_data_to_fit(estimator)
     if isinstance(estimator, NiftiMasker) and input_dtype == np.int32:
         # Needed for NiftiMasker because the default strategy
