@@ -35,7 +35,7 @@ from nilearn.image.resampling import resample_img
 from nilearn.maskers import NiftiMapsMasker
 
 
-def _threshold_maps_ratio(maps_img, threshold):
+def _threshold_maps_ratio(maps_img, threshold) -> Nifti1Image:
     """Automatic thresholding of atlas maps image.
 
     Considers the given threshold as a ratio to the total number of voxels
@@ -58,14 +58,13 @@ def _threshold_maps_ratio(maps_img, threshold):
     -------
     threshold_maps_img : Nifti1Image
         Gives us thresholded image.
-
     """
     maps = check_niimg(maps_img)
     n_maps = maps.shape[-1]
     if (
         not isinstance(threshold, numbers.Real)
         or threshold <= 0
-        or threshold > n_maps
+        or float(threshold) > n_maps
     ):
         raise ValueError(
             "threshold given as ratio to the number of voxels must "
@@ -73,8 +72,8 @@ def _threshold_maps_ratio(maps_img, threshold):
             f"total number of maps i.e. n_maps={n_maps}. "
             f"You provided {threshold}"
         )
-    else:
-        ratio = threshold
+
+    ratio = float(threshold)
 
     # Get a copy of the data
     maps_data = safe_get_data(maps, ensure_finite=True, copy_data=True)
@@ -86,9 +85,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     )
     maps_data[abs_maps < cutoff_threshold] = 0.0
 
-    threshold_maps_img = new_img_like(maps, maps_data)
-
-    return threshold_maps_img
+    return new_img_like(maps, maps_data)
 
 
 def _remove_small_regions(input_data, affine, min_size):
@@ -117,7 +114,6 @@ def _remove_small_regions(input_data, affine, min_size):
         Data returned will have regions removed specified by min_size
         Otherwise, if criterion is not met then same input data will be
         returned.
-
     """
     # with return_counts argument is introduced from numpy 1.9.0.
     # _, region_sizes = np.unique(input_data, return_counts=True)
@@ -451,15 +447,14 @@ class RegionExtractor(NiftiMapsMasker):
         List of separated regions with each region lying on an
         original volume concatenated into a 4D image.
 
-    References
-    ----------
-    .. footbibliography::
-
     See Also
     --------
     nilearn.regions.connected_label_regions : A function can be readily
         used for extraction of regions on labels based atlas images.
 
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(
@@ -519,7 +514,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.smoothing_fwhm = smoothing_fwhm
 
     @fill_doc
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y: None = None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -553,22 +548,20 @@ class RegionExtractor(NiftiMapsMasker):
                 "Please submit a valid number specific to either of "
                 f"the strategy in {list_of_strategies}"
             )
-        elif isinstance(self.threshold, numbers.Number):
-            # foreground extraction
-            if self.thresholding_strategy == "ratio_n_voxels":
-                threshold_maps = _threshold_maps_ratio(
-                    maps_img, self.threshold
-                )
-            else:
-                if self.thresholding_strategy == "percentile":
-                    self.threshold = f"{self.threshold}%"
-                threshold_maps = threshold_img(
-                    maps_img,
-                    mask_img=self.mask_img_,
-                    copy=True,
-                    threshold=self.threshold,
-                    two_sided=self.two_sided,
-                )
+
+        # foreground extraction
+        if self.thresholding_strategy == "ratio_n_voxels":
+            threshold_maps = _threshold_maps_ratio(maps_img, self.threshold)
+        else:
+            if self.thresholding_strategy == "percentile":
+                self.threshold = f"{self.threshold}%"
+            threshold_maps = threshold_img(
+                maps_img,
+                mask_img=self.mask_img_,
+                copy=True,
+                threshold=self.threshold,
+                two_sided=self.two_sided,
+            )
 
         # connected component extraction
         self.regions_img_, self.index_ = connected_regions(
@@ -639,12 +632,6 @@ def connected_label_regions(
         of regions relabelling. The total number of names should match with the
         number of labels assigned in the image.
 
-    Notes
-    -----
-    The order of the names given in labels should be appropriately matched with
-    the unique labels (integers) assigned to each region given in labels_img
-    (also excluding 'Background' label).
-
     Returns
     -------
     new_labels_img : :class:`nibabel.nifti1.Nifti1Image`
@@ -666,6 +653,11 @@ def connected_label_regions(
     nilearn.regions.connected_regions : A function used for region extraction
         on continuous type atlas images.
 
+    Notes
+    -----
+    The order of the names given in labels should be appropriately matched with
+    the unique labels (integers) assigned to each region given in labels_img
+    (also excluding 'Background' label).
     """
     labels_img = check_niimg_3d(labels_img)
     labels_data = safe_get_data(labels_img, ensure_finite=True)
@@ -708,7 +700,8 @@ def connected_label_regions(
                 "Please provide appropriate match with unique "
                 "number of labels in labels_img."
             )
-        new_names = []
+
+    new_names = []
 
     this_labels = [None] * len(unique_labels) if labels is None else labels
 

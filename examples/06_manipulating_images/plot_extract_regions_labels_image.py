@@ -13,15 +13,14 @@ instance in signal extraction), it is useful to assign a different
 label to each region. We end up with a new atlas that has more labels,
 but each one points to a single region.
 
-We use the Yeo atlas as an example for labeling regions,
-:func:`~nilearn.datasets.fetch_atlas_yeo_2011`
+.. admonition:: dataset
 
+    We use the :ref:`Yeo 2011 atlas <yeo_2011_atlas>`
+    as an example for labeling regions.
 """
-
 # %%
 # The original Yeo atlas
 # -----------------------
-
 # First we fetch the Yeo atlas
 
 from nilearn.datasets import fetch_atlas_yeo_2011
@@ -29,8 +28,11 @@ from nilearn.plotting import plot_roi, show
 
 atlas_yeo_2011 = fetch_atlas_yeo_2011()
 
+# %%
+print(atlas_yeo_2011.description.content.maps)
 atlas_yeo = atlas_yeo_2011.maps
 
+# %%
 # Let's now plot it
 plot_roi(
     atlas_yeo,
@@ -52,8 +54,8 @@ show()
 # Relabeling the atlas into separated regions
 # -------------------------------------------
 #
-# Now we use the connected_label_regions to break apart the networks
-# of the Yeo atlas into separated regions
+# Now we use the :func:`~nilearn.regions.connected_label_regions`
+# to break apart the networks of the Yeo atlas into separated regions.
 from nilearn.regions import connected_label_regions
 
 region_labels = connected_label_regions(atlas_yeo)
@@ -112,10 +114,10 @@ show()
 
 
 # %%
-# A consequence of using connect_diag=False is that we can get a lot of
+# A consequence of using ``connect_diag=False`` is that we can get a lot of
 # small regions, around 110 judging from the colorbar.
 #
-# Hence we suggest use connect_diag=True
+# Hence we suggest use ``connect_diag=True``.
 
 # %%
 # Parameter min_size

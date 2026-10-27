@@ -7,7 +7,6 @@ Order of tests from top to bottom:
 - classification
 - regression
 - multiclass
-
 """
 
 import collections
@@ -48,6 +47,7 @@ from sklearn.svm import SVR, LinearSVC
 from sklearn.utils._testing import ignore_warnings
 
 from nilearn._utils.versions import (
+    SKLEARN_GT_1_9,
     SKLEARN_GTE_1_7,
     compare_version,
 )
@@ -84,6 +84,10 @@ _CUSTOM_PARAM_GRID_WARNING = (
 )
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
+
+# TODO (sklearn >= 1.10)
+# simplify
+PARAM_CS = "alphas" if SKLEARN_GT_1_9 else "Cs"
 
 
 def _make_binary_classification_test_data(
@@ -209,13 +213,13 @@ def test_check_param_grid_regression(regressor, param, rng):
             LogisticRegressionCV(
                 l1_ratios=(1,), **kwarg_logistic_regression_cv
             ),
-            ["Cs"],
+            [PARAM_CS],
         ),
         (
             LogisticRegressionCV(
                 l1_ratios=(0,), **kwarg_logistic_regression_cv
             ),
-            ["Cs"],
+            [PARAM_CS],
         ),
         (RidgeClassifierCV(), ["alphas"]),
     ],
@@ -458,10 +462,13 @@ def test_parallel_fit(rand_x_y):
             assert a == b
 
 
+# TODO (sklearn >= 1.10)
+# fitted_param_name can be simplified as it will be "best_alpha"
+# for all parametrizations
 @pytest.mark.parametrize(
     "param_values",
     (
-        [0.001, 0.01, 0.1, 1, 10, 100, 1000],
+        [1, 10, 100, 1000],
         [[0.001, 0.01, 0.1, 1, 10, 100, 1000]],
     ),
 )
@@ -474,8 +481,8 @@ def test_parallel_fit(rand_x_y):
             LogisticRegressionCV(
                 l1_ratios=(0,), **kwarg_logistic_regression_cv
             ),
-            "Cs",
-            "best_C",
+            PARAM_CS,
+            "best_alpha" if SKLEARN_GT_1_9 else "best_C",
             True,
         ),
         (LassoCV(), "alphas", "best_alpha", False),
@@ -1369,14 +1376,22 @@ def _set_best_hyperparameters(
         sklearn_classifier = clone(sklearn_classifier).set_params(
             C=nilearn_decoder.cv_params_[klass]["C"][count]
         )
-    elif classifier_penalty in ["logistic_l1", "logistic_l2"]:
+    # TODO (sklearn >= 1.10)
+    # merge all conditions that apply to "logistic_l1", "logistic_l2",
+    # or "ridge_classifier"
+    elif not SKLEARN_GT_1_9 and classifier_penalty in [
+        "logistic_l1",
+        "logistic_l2",
+    ]:
         # this sets the list of Cs as coded within nilearn and
         # LogisticRegressionCV will select the best one using
         # cross-validation
         sklearn_classifier = clone(sklearn_classifier).set_params(
             Cs=nilearn_decoder.cv_params_[klass]["Cs"][count],
         )
-    elif classifier_penalty == "ridge_classifier":
+    elif classifier_penalty == "ridge_classifier" or (
+        SKLEARN_GT_1_9 and classifier_penalty in ["logistic_l1", "logistic_l2"]
+    ):
         # same as logistic regression
         sklearn_classifier = clone(sklearn_classifier).set_params(
             alphas=nilearn_decoder.cv_params_[klass]["alphas"][count]

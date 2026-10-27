@@ -27,6 +27,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
+from nilearn._utils.versions import sparray_context
 from nilearn.datasets._utils import (
     fetch_single_file,
     get_dataset_descr,
@@ -89,7 +90,6 @@ class _SpecialValue:
     Derived classes should override ``__eq__`` in order to create
     objects that can be used for comparisons to particular sets of
     values in filters.
-
     """
 
     def __eq__(self, other):
@@ -143,7 +143,6 @@ class IsNull(_SpecialValue):
     True
     >>> null == "a"
     False
-
     """
 
     def __eq__(self, other):
@@ -183,7 +182,6 @@ class NotNull(_SpecialValue):
     False
     >>> not_null == "a"
     True
-
     """
 
     def __eq__(self, other):
@@ -225,7 +223,6 @@ class NotEqual(_SpecialValue):
     False
     >>> not_0 == "0"
     True
-
     """
 
     def __init__(self, negated):
@@ -288,7 +285,6 @@ class GreaterOrEqual(_OrderComp):
     True
     >>> nonnegative == 0.1
     True
-
     """
 
     def _eq_impl(self, other):
@@ -332,7 +328,6 @@ class GreaterThan(_OrderComp):
     True
     >>> positive == -1.0
     False
-
     """
 
     def _eq_impl(self, other):
@@ -376,7 +371,6 @@ class LessOrEqual(_OrderComp):
     True
     >>> nonpositive == 1.0
     False
-
     """
 
     def _eq_impl(self, other):
@@ -420,7 +414,6 @@ class LessThan(_OrderComp):
     False
     >>> negative == 1.0
     False
-
     """
 
     def _eq_impl(self, other):
@@ -462,7 +455,6 @@ class IsIn(_SpecialValue):
     True
     >>> vowels == "b"
     False
-
     """
 
     def __init__(self, *accepted):
@@ -510,7 +502,6 @@ class NotIn(_SpecialValue):
     True
     >>> consonants == "a"
     False
-
     """
 
     def __init__(self, *rejected):
@@ -559,7 +550,6 @@ class Contains(_SpecialValue):
     True
     >>> "smiling face vs frowning face" == contains
     False
-
     """
 
     def __init__(self, *must_be_contained):
@@ -612,7 +602,6 @@ class NotContains(_SpecialValue):
     False
     >>> no_garbage == "good image"
     True
-
     """
 
     def __init__(self, *must_not_be_contained):
@@ -673,7 +662,6 @@ class Pattern(_SpecialValue):
     True
     >>> "ak05e" == poker
     False
-
     """
 
     def __init__(self, pattern, flags=0):
@@ -780,7 +768,6 @@ class ResultFilter:
     True
     >>> filt({"a": 0, "b": 0})
     False
-
     """
 
     def __init__(
@@ -806,7 +793,6 @@ class ResultFilter:
         bool
             ``True`` if `candidate` passes through the filter and ``False``
             otherwise.
-
         """
         for key, value in self.query_terms_.items():
             if value != candidate.get(key):
@@ -856,7 +842,6 @@ class ResultFilter:
         the previous requirements, a candidate must also verify
         additional_filt(candidate) in order to pass through the
         filter.
-
         """
         self.callable_filters_.append(callable_filter)
 
@@ -878,7 +863,6 @@ class _TemporaryDirectory:
     ----------
     temp_dir_ : :obj:`str` or None
         location of temporary directory or None if not created.
-
     """
 
     def __init__(self):
@@ -917,7 +901,6 @@ def _append_filters_to_query(query, filters):
     directly to that id,
     e.g. 'https://neurovault.org/api/collections/40', and the other
     filters are ignored.
-
     """
     if not filters:
         return query
@@ -960,7 +943,6 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
     ValueError
         If the response could not be decoded, was not json, or did not contain
         either 'id' (single result), or 'results' and 'count' (actual batch).
-
     """
     session = _requests_session()
     req = requests.Request(
@@ -1062,7 +1044,6 @@ def _scroll_server_results(
     None
         Once for each batch that could not be downloaded or decoded,
         to indicate a failure.
-
     """
     query = _append_filters_to_query(url, query_terms)
     if batch_size is None:
@@ -1125,7 +1106,6 @@ def _yield_from_url_list(url_list, timeout=_DEFAULT_TIME_OUT, verbose=3):
 
     None
         Once for each URL that resulted in an error, to signify failure.
-
     """
     for url in url_list:
         try:
@@ -1169,7 +1149,6 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
     See Also
     --------
     nilearn.datasets._utils.fetch_single_file
-
     """
     logger.log(
         f"Downloading file: {url}",
@@ -1233,7 +1212,6 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     See Also
     --------
     sklearn.feature_extraction.DictVectorizer
-
     """
     check_params(locals())
 
@@ -1265,7 +1243,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
         )
         return None, None
     vectorizer = DictVectorizer(**kwargs)
-    frequencies = vectorizer.fit_transform(words).toarray()
+    with sparray_context():
+        frequencies = vectorizer.fit_transform(words).toarray()
     vocabulary = np.asarray(vectorizer.feature_names_)
     logger.log(
         f"Computing word features done; vocabulary size: {vocabulary.size}",
@@ -1294,7 +1273,6 @@ def _remove_none_strings(metadata):
     metadata : dict
         Original metadata in which strings representing null values
         have been replaced by ``None``.
-
     """
     metadata = metadata.copy()
     for key, value in metadata.items():
@@ -1320,7 +1298,6 @@ def _write_metadata(metadata, file_name) -> None:
 
     file_name : :obj:`str` or pathlib.Path
         Path to the file in which to write the data.
-
     """
     metadata = {k: v for k, v in metadata.items() if "absolute" not in k}
 
@@ -1357,7 +1334,6 @@ def _add_absolute_paths(root_dir, metadata, force=True):
     -------
     metadata : dict
         The metadata enriched with absolute paths.
-
     """
     absolute_paths = {}
     for name, value in metadata.items():
@@ -1438,7 +1414,6 @@ def _download_collection(collection, download_params):
     -------
     collection : dict
         Collection metadata, with local path added to it.
-
     """
     if collection is None:
         return None
@@ -1479,7 +1454,6 @@ def _fetch_collection_for_image(image_info, download_params):
     -------
     collection : dict
         The collection metadata.
-
     """
     collection_id = image_info["collection_id"]
     collection_relative_path = f"collection_{collection_id}"
@@ -1521,7 +1495,6 @@ def _download_image_nii_file(image_info, collection, download_params):
 
     collection : dict
         Corresponding collection metadata with local paths added to it.
-
     """
     image_info = image_info.copy()
     image_id = image_info["id"]
@@ -1616,7 +1589,6 @@ def _download_image_terms(image_info, collection, download_params):
 
     collection : dict
         Corresponding collection metadata.
-
     """
     if not download_params["fetch_neurosynth_words"]:
         return image_info, collection
@@ -1678,7 +1650,6 @@ def _download_image(image_info, download_params):
     -------
     image_info : dict
         Image metadata with local paths added to it.
-
     """
     if image_info is None:
         return None
@@ -1719,7 +1690,6 @@ def _update_image(image_info, download_params):
     -------
     image_info : dict
         Image metadata.
-
     """
     if not download_params["write_ok"]:
         return image_info
@@ -1766,7 +1736,6 @@ def _scroll_local(download_params):
 
     collection : dict
         Metadata for the corresponding collection.
-
     """
     logger.log(
         "Reading local neurovault data.",
@@ -1835,7 +1804,6 @@ def _scroll_collection(collection, download_params):
     Notes
     -----
     ``image`` can be ``None`` to signify a failed download.
-
     """
     if collection is None:
         yield None
@@ -1913,7 +1881,6 @@ def _scroll_filtered(download_params):
     -----
     ``image``, ``collection`` can be ``None``, ``None`` to signify a
     failed download.
-
     """
     logger.log(
         "Reading server neurovault data.",
@@ -1971,7 +1938,6 @@ def _scroll_collection_ids(download_params):
     -----
     ``image``, ``collection`` can be ``None``, ``None`` to signify a
     failed download.
-
     """
     collection_urls = [
         urljoin(_NEUROVAULT_COLLECTIONS_URL, str(col_id))
@@ -2021,7 +1987,6 @@ def _scroll_image_ids(download_params):
     -----
     ``image``, ``collection`` can be ``None``, ``None`` to signify a
     failed download.
-
     """
     image_urls = [
         urljoin(_NEUROVAULT_IMAGES_URL, str(im_id))
@@ -2065,7 +2030,6 @@ def _scroll_explicit(download_params):
     -----
     ``image``, ``collection`` can be ``None``, ``None`` to signify a
     failed download.
-
     """
     download_params["wanted_collection_ids"] = set(
         download_params["wanted_collection_ids"]
@@ -2119,7 +2083,6 @@ def _scroll(download_params):
         - Or a max number of images has been specified by user and
           reached.
         - Or too many downloads have failed in a row.
-
     """
     scroll_modes = {"filtered": _scroll_filtered, "explicit": _scroll_explicit}
     if download_params["max_images"] == 0:
@@ -2189,7 +2152,6 @@ def _move_unknown_terms_to_local_filter(
     Some filters are available on the server and can be inserted into
     the URL query. The rest will have to be applied on metadata
     locally.
-
     """
     local_terms, server_terms = _split_terms(terms, available_on_server)
     local_filter = ResultFilter(query_terms=local_terms).AND(local_filter)
@@ -2211,7 +2173,6 @@ def basic_image_terms():
         - It is thresholded.
         - Its map type is one of "ROI/mask", "anatomical", or "parcellation".
         - Its image type is "atlas"
-
     """
     return {
         "not_mni": False,
@@ -2229,7 +2190,6 @@ def _move_col_id(im_terms, col_terms):
 
     This makes specifying the collection id as a keyword argument for
     ``fetch_neurovault`` efficient.
-
     """
     if "collection_id" not in im_terms:
         return im_terms, col_terms
@@ -2373,7 +2333,6 @@ def _prepare_download_params(download_params):
     whether we are downloading a set of collections and images
     explicitly specified by the user (by id), or we are downloading
     all the collections and images that match certain filters.
-
     """
     if (
         download_params["wanted_collection_ids"] is not None
@@ -2388,7 +2347,6 @@ def _result_list_to_bunch(result_list, download_params):
 
     If necessary, a vocabulary list and a matrix of vectorized tags are
     added.
-
     """
     if not result_list:
         images_meta, collections_meta = [], []
@@ -2691,7 +2649,6 @@ def fetch_neurovault(
         fetch_neurovault(
             max_images=None, mode="overwrite", modify_date=GreaterThan(newest)
         )
-
     """
     check_params(locals())
 
@@ -2854,7 +2811,6 @@ def fetch_neurovault_ids(
     References
     ----------
     .. footbibliography::
-
     """
     check_params(locals())
 
@@ -2900,16 +2856,15 @@ def fetch_neurovault_auditory_computation_task(
             - 'description', a short description
               of the :term:`Neurovault` dataset.
 
-    Notes
-    -----
-    The 'auditory_calculation_vs_baseline' contrast is used:
-    https://neurovault.org/images/32980/
-
     See Also
     --------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
 
+    Notes
+    -----
+    The 'auditory_calculation_vs_baseline' contrast is used:
+    https://neurovault.org/images/32980/
     """
     check_params(locals())
 

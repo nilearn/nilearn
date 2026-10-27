@@ -49,17 +49,16 @@ def compute_alpha_max(emp_covs, n_samples):
     Returns
     -------
     alpha_max : :obj:`float`
-        minimal value for the regularization parameter that gives a
+        Minimal value for the regularization parameter that gives a
         fully sparse matrix.
 
     alpha_min : :obj:`float`
-        minimal value for the regularization parameter that gives a fully
+        Minimal value for the regularization parameter that gives a fully
         dense matrix.
 
     References
     ----------
     .. footbibliography::
-
     """
     A = np.copy(emp_covs)
     n_samples = np.asarray(n_samples).copy()
@@ -86,7 +85,6 @@ def _update_submatrix(full, sub, sub_inv, p, h, v) -> None:
     and column.
 
     This computation is based on the Sherman-Woodbury-Morrison identity.
-
     """
     n = p - 1
     v[: n + 1] = full[: n + 1, n]
@@ -122,7 +120,6 @@ def _assert_submatrix(full: np.ndarray, sub: np.ndarray, n: int) -> None:
     by removing the p-th col and row in "full".
 
     Used only for debugging.
-
     """
     true_sub = np.empty_like(sub)
     true_sub[:n, :n] = full[:n, :n]
@@ -203,15 +200,14 @@ def group_sparse_covariance(
     Returns
     -------
     emp_covs : numpy.ndarray, shape (n_features, n_features, n_subjects)
-        empirical covariances matrices
+        Empirical covariances matrices.
 
     precisions : numpy.ndarray, shape (n_features, n_features, n_subjects)
-        estimated precision matrices
+        Estimated precision matrices.
 
     References
     ----------
     .. footbibliography::
-
     """
     check_params(locals())
 
@@ -248,7 +244,6 @@ def _group_sparse_covariance(
     """Implement an internal version of group_sparse_covariance.
 
     See its docstring for details.
-
     """
     if tol == -1:
         tol = None
@@ -589,7 +584,6 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
     References
     ----------
     .. footbibliography::
-
     """
 
     def __init__(
@@ -610,8 +604,8 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
         self.verbose = verbose
 
     @fill_doc
-    def fit(self, subjects, y=None) -> Self:
-        """Fits the group sparse precision model according \
+    def fit(self, subjects, y: None = None) -> Self:
+        """Fit the group sparse precision model according \
         to the given training data and parameters.
 
         Parameters
@@ -627,8 +621,7 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
         Returns
         -------
         self : GroupSparseCovariance instance
-            the object itself. Useful for chaining operations.
-
+            The object itself. Useful for chaining operations.
         """
         del y
         check_params(self.__dict__)
@@ -705,11 +698,10 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
     -------
     emp_covs : numpy.ndarray, \
         shape : (feature number, feature number, subject number)
-        empirical covariances.
+        Empirical covariances.
 
     n_samples : numpy.ndarray, shape: (subject number,)
-        number of samples for each subject. dtype is np.float64.
-
+        Number of samples for each subject. dtype is np.float64.
     """
     if not hasattr(subjects, "__iter__"):
         raise ValueError(
@@ -778,17 +770,18 @@ def group_sparse_scores(
     Returns
     -------
     log_lik : :obj:`float`
-        log-likelihood of precisions on the given covariances. This is the
-        opposite of the loss function, without the regularization term
+        Log-likelihood of precisions on the given covariances.
+        This is the opposite of the loss function,
+        without the regularization term.
 
     objective : :obj:`float`
-        value of objective function. This is the value minimized by
-        group_sparse_covariance()
+        Value of objective function.
+        This is the value minimized by ``group_sparse_covariance()``.
 
     duality_gap : :obj:`float`
-        duality gap upper bound. The returned bound is tight: it vanishes for
-        the optimal precision matrices
-
+        Duality gap upper bound.
+        The returned bound is tight:
+        it vanishes for the optimal precision matrices.
     """
     n_features, _, n_subjects = emp_covs.shape
 
@@ -913,13 +906,12 @@ def group_sparse_covariance_path(
     Returns
     -------
     precisions_list : :obj:`list` of numpy.ndarray
-        estimated precisions for each value of alpha provided. The length of
-        this list is the same as that of parameter "alphas".
+        Estimated precisions for each value of alpha provided.
+        The length of this list is the same as that of parameter "alphas".
 
     scores : :obj:`list` of float
-        for each estimated precision, score obtained on the test set. Output
-        only if test_subjs is not None.
-
+        For each estimated precision, score obtained on the test set.
+        Output only if test_subjs is not None.
     """
     check_params(locals())
 
@@ -968,7 +960,6 @@ class EarlyStopProbe:
     Stop optimizing as soon as the score on the test set starts decreasing.
     An instance of this class is supposed to be passed in the probe_function
     argument of group_sparse_covariance().
-
     """
 
     def __init__(self, test_subjs, verbose=0):
@@ -1081,7 +1072,6 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
     iteratively refined grid: first the cross-validated scores on a grid are
     computed, then a new refined grid is centered around the maximum, and so
     on.
-
     """
 
     def __init__(
@@ -1112,7 +1102,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         self.early_stopping = early_stopping
 
     @fill_doc
-    def fit(self, subjects, y=None) -> Self:
+    def fit(self, subjects, y: None = None) -> Self:
         """Compute cross-validated group-sparse precisions.
 
         Parameters
@@ -1128,8 +1118,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         Returns
         -------
         self : GroupSparseCovarianceCV
-            the object instance itself.
-
+            The object instance itself.
         """
         del y
         check_params(self.__dict__)
@@ -1191,6 +1180,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         # Copying the cv generators to use them n_refinements times.
         cv_ = zip(*cv, strict=False)
 
+        best_index = 0
         for i, (this_cv) in enumerate(itertools.tee(cv_, n_refinements)):
             # Compute the cross-validated loss on the current grid
             train_test_subjs = []

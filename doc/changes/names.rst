@@ -10,6 +10,8 @@
 
 .. _Aina Frau-Pascual: https://github.com/ainafp
 
+.. _Akaash P: https://github.com/theknuckle
+
 .. _Alex Rothberg: https://github.com/cancan101
 
 .. _Alexandre Abadie: https://github.com/aabadie
@@ -155,6 +157,8 @@
 
 .. _Idrissa Traore: https://github.com/badrinini
 
+.. _Ishaan Gupta: https://github.com/guptaishaan
+
 .. _Jake Vogel: https://github.com/illdopejake
 
 .. _Jan Margeta: https://github.com/jmargeta
@@ -172,6 +176,8 @@
 .. _Jean Kossaifi: https://jeankossaifi.com/
 
 .. _Jean-Rémi King: https://github.com/kingjr
+
+.. _Jeffrey Cooney: https://github.com/jdotc1
 
 .. _Jelle Roelof Dalenberg: https://github.com/jrdalenberg
 

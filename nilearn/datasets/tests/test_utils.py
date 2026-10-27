@@ -19,57 +19,59 @@ from nilearn.datasets.tests.conftest import Response
 
 datadir = _utils.PACKAGE_DIRECTORY / "data"
 
-DATASET_NAMES = {
-    "ABIDE_pcp",
-    "adhd",
-    "brainomics_localizer",
-    "development_fmri",
-    "dosenbach_2010",
-    "fiac",
-    "fsaverage3",
-    "fsaverage4",
-    "fsaverage5",
-    "fsaverage6",
-    "fsaverage",
-    "haxby2001",
-    "icbm152_2009",
-    "language_localizer_demo",
-    "localizer_first_level",
-    "Megatrawls",
-    "mixed_gambles",
-    "miyawaki2008",
-    "neurovault",
-    "nki_enhanced_surface",
-    "oasis1",
-    "power_2011",
-    "spm_auditory",
-    "spm_multimodal",
-}
+
+@pytest.mark.parametrize(
+    ("n_subjects", "expected"),
+    [
+        (None, (0, 1, 2, 3, 4, 5)),
+        (2, (0, 1)),
+        ([1, 3], (0, 2)),
+        ((1, 3), (0, 2)),
+    ],
+)
+def test_validate_subjects(n_subjects, expected):
+    """Check valid subject selections."""
+    assert _utils._validate_subjects(n_subjects, 6) == expected
 
 
-@pytest.mark.parametrize("name", DATASET_NAMES)
-def test_get_dataset_descr(name):
-    """Test function ``get_dataset_descr()``.
+def test_validate_subjects_above_maximum_uses_max():
+    """Use the maximum when a subject count exceeds it."""
+    with pytest.warns(UserWarning, match="Only 6 subjects are available"):
+        result = _utils._validate_subjects(
+            7,
+            max_subjects=6,
+            warning_message="Only 6 subjects are available.",
+        )
 
-    Not needed for atlas datasets as this is checked in
-    nilearn/datasets/tests/test_atlas.py
-    """
-    descr = _utils.get_dataset_descr(name)
-
-    assert isinstance(descr, str)
-    assert len(descr) > 0
+    assert result == (0, 1, 2, 3, 4, 5)
 
 
-def test_get_dataset_descr_warning():
-    """Tests that function ``get_dataset_descr()`` gives a warning \
-       when no description is available.
-    """
-    with pytest.warns(
-        UserWarning, match="Could not find dataset description."
-    ):
-        descr = _utils.get_dataset_descr("")
+@pytest.mark.parametrize("n_subjects", [[], (), [0], [7]])
+def test_validate_subjects_invalid_selection(n_subjects):
+    """Reject empty and out-of-range subject selections."""
+    with pytest.raises(ValueError):
+        _utils._validate_subjects(n_subjects, max_subjects=6)
 
-    assert descr == ""
+
+@pytest.mark.parametrize("n_subjects", [True, 1.0, "1", {1}])
+def test_validate_subjects_invalid_type(n_subjects):
+    """Reject unsupported subject selection types."""
+    with pytest.raises(TypeError, match="'n_subjects' must be of type"):
+        _utils._validate_subjects(n_subjects, max_subjects=6)
+
+
+@pytest.mark.parametrize("n_subjects", [["1"], [True]])
+def test_validate_subjects_invalid_subject_id_type(n_subjects):
+    """Reject non-integer subject IDs."""
+    with pytest.raises(TypeError, match="'subject id' must be of type"):
+        _utils._validate_subjects(n_subjects, max_subjects=6)
+
+
+@pytest.mark.parametrize("n_subjects", [0, -1])
+def test_validate_subjects_invalid_count(n_subjects):
+    """Reject non-positive subject counts."""
+    with pytest.raises(ValueError, match="must be greater than zero"):
+        _utils._validate_subjects(n_subjects, max_subjects=6)
 
 
 def test_get_dataset_dir(tmp_path):
@@ -185,7 +187,7 @@ def test_get_dataset_dir_symlink(tmp_path):
 
 
 def test_md5_sum_file(tmp_path):
-    """Tests nilearn.dataset._utils._md5_sum_file."""
+    """Test nilearn.dataset._utils._md5_sum_file."""
     # Create dummy temporary file
     f = tmp_path / "test"
     f.write_bytes(b"abcfeg")
@@ -194,7 +196,7 @@ def test_md5_sum_file(tmp_path):
 
 
 def test_read_md5_sum_file(tmp_path):
-    """Tests nilearn.dataset._utils.read_md5_sum_file."""
+    """Test nilearn.dataset._utils.read_md5_sum_file."""
     # Create dummy temporary file
     f = tmp_path / "test"
     f.write_bytes(
@@ -227,7 +229,7 @@ def dir2(tmp_path) -> Path:
 
 
 def test_tree(dir1, dir2, tmp_path):
-    """Tests nilearn.dataset._utils.tree."""
+    """Test nilearn.dataset._utils.tree."""
     dir11 = dir1 / "dir11"
     dir12 = dir1 / "dir12"
 
@@ -260,7 +262,7 @@ def test_tree(dir1, dir2, tmp_path):
 
 
 def test_tree_dictionary(dir1, dir2, tmp_path):
-    """Tests nilearn.dataset._utils.tree with dictionary return value."""
+    """Test nilearn.dataset._utils.tree with dictionary return value."""
     dir11 = dir1 / "dir11"
     dir12 = dir1 / "dir12"
 
@@ -290,7 +292,7 @@ def test_tree_dictionary(dir1, dir2, tmp_path):
 
 
 def test_movetree(dir1, dir2):
-    """Tests nilearn.dataset._utils.movetree."""
+    """Test nilearn.dataset._utils.movetree."""
     dir111 = dir1 / "dir11"
     dir112 = dir1 / "dir12"
     dir212 = dir2 / "dir12"
@@ -386,7 +388,7 @@ def test_filter_columns():
     "ext, mode", [("tar", "w"), ("tar.gz", "w:gz"), ("tgz", "w:gz")]
 )
 def test_uncompress_tar(tmp_path, ext, mode):
-    """Tests nilearn.dataset._utils.uncompress_file for tar files.
+    """Test nilearn.dataset._utils.uncompress_file for tar files.
 
     For each kind of compression, we create:
     - a compressed object (ztemp)
@@ -407,7 +409,7 @@ def test_uncompress_tar(tmp_path, ext, mode):
 
 
 def test_uncompress_zip(tmp_path):
-    """Tests nilearn.dataset._utils.uncompress_file for zip files.
+    """Test nilearn.dataset._utils.uncompress_file for zip files.
 
     For each kind of compression, we create:
     - a compressed object (ztemp)
@@ -427,7 +429,7 @@ def test_uncompress_zip(tmp_path):
 
 @pytest.mark.parametrize("ext", [".gz", ""])
 def test_uncompress_gzip(tmp_path, ext):
-    """Tests nilearn.dataset._utils.uncompress_file for gzip files.
+    """Test nilearn.dataset._utils.uncompress_file for gzip files.
 
     For each kind of compression, we create:
     - a compressed object (ztemp)
@@ -444,6 +446,18 @@ def test_uncompress_gzip(tmp_path, ext):
     _utils.uncompress_file(ztemp, verbose=0)
 
     assert (tmp_path / ftemp).exists()
+
+
+@pytest.mark.parametrize(
+    "target, expected",
+    [("data/file.txt", True), ("data-other/file.txt", False)],
+)
+def test_is_within_directory_path_components(tmp_path, target, expected):
+    """Check containment by directory components, not character prefixes."""
+    assert (
+        _utils._is_within_directory(tmp_path / "data", tmp_path / target)
+        is expected
+    )
 
 
 def test_safe_extract(tmp_path):
@@ -647,3 +661,55 @@ def test_naive_ftp_adapter():
         resp = sender.send(
             requests.Request("GET", "ftp://example.com").prepare()
         )
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("headers", [{}, {"Content-Length": "13"}])
+def test_chunk_read_rich(tmp_path, headers):
+    """Check download with a rich progress bar with known or unknown size."""
+    pytest.importorskip("rich")
+
+    resp = Response(b"dummy content", "http://foo")
+    resp.headers = headers
+
+    with (tmp_path / "foo.txt").open("wb") as f:
+        _utils._chunk_read_(resp, f, report_hook=True)
+
+    assert (tmp_path / "foo.txt").read_bytes() == b"dummy content"
+
+
+@pytest.mark.ai_generated
+def test_chunk_read_progress_stopped_if_start_fails(tmp_path, monkeypatch):
+    """Check the progress bar is stopped even if it fails to start.
+
+    Older versions of rich register the live display
+    before failing to render it.
+    If the progress bar is not stopped,
+    it remains the active live display of the rich console
+    and all subsequent downloads fail with a rich.errors.LiveError.
+    """
+    progress = pytest.importorskip("rich.progress")
+    original_start = progress.Progress.start
+    original_stop = progress.Progress.stop
+    stop_calls = []
+
+    def failing_start(self):
+        original_start(self)
+        raise TypeError("failed to render")
+
+    def recording_stop(self):
+        stop_calls.append(self)
+        original_stop(self)
+
+    monkeypatch.setattr(progress.Progress, "start", failing_start)
+    monkeypatch.setattr(progress.Progress, "stop", recording_stop)
+
+    resp = Response(b"dummy content", "http://foo")
+    resp.headers = {"Content-Length": "13"}
+    with (
+        (tmp_path / "foo.txt").open("wb") as f,
+        pytest.raises(TypeError, match="failed to render"),
+    ):
+        _utils._chunk_read_(resp, f, report_hook=True)
+
+    assert len(stop_calls) == 1

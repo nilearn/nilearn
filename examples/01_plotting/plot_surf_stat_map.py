@@ -25,8 +25,13 @@ to plot the resulting statistical map on the pial surface.
 
     See :ref:`plotting` for more details on plotting tools.
 
-See the :ref:`dataset description <nki_dataset>`
-for more information on the data used in this example.
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Destrieux atlas <destrieux_2009_atlas>`
+    - the :ref:`fsaverage template <fs_average_template>`
+    - the :ref:`NKI enhanced surface dataset <nki_dataset>`
 """
 
 # %%
@@ -58,7 +63,7 @@ destrieux = fetch_atlas_surf_destrieux()
 # Create a surface image instance
 # with the Destrieux parcellation
 destrieux_atlas = SurfaceImage(
-    mesh=fsaverage_meshes["pial"],
+    mesh=fsaverage_meshes.pial,
     data={
         "left": destrieux.map_left,
         "right": destrieux.map_right,
@@ -70,6 +75,8 @@ print(f"{fsaverage_meshes['pial'].parts['left']=}")
 
 # The fsaverage data contains SurfaceImage instances with meshes and data
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
+
+# %%
 print(f"{fsaverage_sulcal=}")
 print(f"{fsaverage_sulcal.mesh=}")
 print(f"{fsaverage_sulcal.data=}")

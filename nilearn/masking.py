@@ -89,7 +89,7 @@ def load_mask_img(
         Returns a :class:`numpy.ndarray` if Niimg-like object
         was passed as input
         or :obj:`~nilearn.surface.SurfaceImage`
-        if :obj:`~nilearn.surface.SurfaceImage` was passed as input
+        if :obj:`~nilearn.surface.SurfaceImage` was passed as input.
 
     mask_affine : None or (4,4) array-like
         Affine of the mask if Niimg-like object was passed as input,
@@ -101,8 +101,10 @@ def load_mask_img(
             f"Got {mask_img.__class__.__name__}."
         )
 
+    affine = None
     if isinstance(mask_img, NiimgLike):
         loaded_img = check_niimg_3d(mask_img)
+        affine = loaded_img.affine
         mask = safe_get_data(loaded_img, ensure_finite=True)
     else:
         mask_img.data._check_ndims(1)
@@ -133,7 +135,9 @@ def load_mask_img(
     mask = as_ndarray(mask, dtype=bool)
 
     if isinstance(mask_img, NiimgLike):
-        return mask, loaded_img.affine
+        if TYPE_CHECKING:
+            assert affine is not None
+        return mask, affine
 
     for hemi in mask_img.data.parts:
         mask_img.data.parts[hemi] = as_ndarray(
@@ -974,7 +978,7 @@ def apply_mask(
     -------
     run_series : :class:`numpy.ndarray`
         2D array of series with shape
-        (image number, :term:`voxel` / vertex number)
+        (image number, :term:`voxel` / vertex number).
 
     Notes
     -----
@@ -1121,8 +1125,8 @@ def _unmask_4d(X, mask, order="C"):
     Returns
     -------
     data : :class:`numpy.ndarray`
-        Unmasked data.
-        Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
+        Unmasked data with
+        shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0]).
     """
     if mask.dtype != bool:
         raise TypeError("mask must be a boolean array")

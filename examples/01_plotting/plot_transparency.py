@@ -59,9 +59,17 @@ is shown in the rest of this example.
     can facilitate quality control
     and improve reproducibility checks.
 
-"""
+.. admonition:: dataset
 
-# sphinx_gallery_thumbnail_number = 2
+    This example uses:
+
+    - the :ref:`Brainomics Localizer dataset <brainomics_maps>`
+    - the :ref:`SPM auditory dataset <spm_auditory_dataset>`
+    - the :ref:`ICBM 152 template <icbm_152_template>`
+    - a sample motor activation statistical map (`image 10426
+      <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
+      <neurovault_dataset>`)
+"""
 
 import matplotlib.pyplot as plt
 

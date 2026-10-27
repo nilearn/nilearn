@@ -19,7 +19,6 @@
     a comment should be added to disable this script flagging
     this as an error
 
-
   - find missing :obj:`` in doc string type
 
   - missing return annotation

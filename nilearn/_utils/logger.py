@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
-from nilearn._base import NilearnBaseEstimator
+from nilearn._base import PACKAGE_DIRECTORY, NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
 from nilearn.nilearn_typing import Verbose
 
@@ -81,7 +81,6 @@ def log(
     displayed to the user. If several matching objects exist in the call
     stack, the highest one is used (first call chronologically), because this
     is the one which is most likely to have been written in the user's script.
-
     """
     from nilearn._utils.helpers import is_notebook
 
@@ -92,11 +91,15 @@ def log(
 
     if verbose < msg_level:
         return
+
     if stack_level is None:
         stack_level = find_stack_level() - 2
     stack = inspect.stack()
+
     object_frame = None
     object_self = None
+    func_name = ""
+
     for f in reversed(stack):
         frame = f[0]
         current_self = frame.f_locals.get("self", None)
@@ -141,7 +144,8 @@ def compose_err_msg(msg: str, **kwargs) -> str:
     Returns
     -------
     updated_msg : :obj:`str`
-        msg, with "key: value" appended. Only string values are appended.
+        Input ``msg``, with "key: value" appended.
+        Only string values are appended.
 
     Examples
     --------
@@ -149,7 +153,6 @@ def compose_err_msg(msg: str, **kwargs) -> str:
         arg_str='filename.nii', arg_bool=True)
     'Error message with arguments...\\narg_str: filename.nii'
     >>>
-
     """
     updated_msg = msg
     for k, v in sorted(kwargs.items()):
@@ -167,10 +170,6 @@ def find_stack_level() -> int:
     Taken from the pandas codebase.
     https://github.com/pandas-dev/pandas/tree/main/pandas/util/_exceptions.py#L37
     """
-    import nilearn as nil
-
-    pkg_dir = Path(nil.__file__).parent
-
     # list of stack frames to skip
     skip_list = [
         Path("sklearn") / "utils" / "_set_output.py",
@@ -188,7 +187,7 @@ def find_stack_level() -> int:
 
             is_test_file = Path(filename).name.startswith("test_")
 
-            in_nilearn_code = filename.startswith(str(pkg_dir))
+            in_nilearn_code = filename.startswith(str(PACKAGE_DIRECTORY))
             skip = any(str(x) in filename for x in skip_list)
             if (not in_nilearn_code and not skip) or is_test_file:
                 break

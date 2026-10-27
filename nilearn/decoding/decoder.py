@@ -47,6 +47,7 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
+from nilearn._utils.versions import SKLEARN_GT_1_9
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import (
     SUPPORTED_ESTIMATORS,
@@ -100,7 +101,6 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     -------
     param_grid : dict of str to sequence, or sequence of such. Sensible default
     dict has size 1 for linear models.
-
     """
     if param_grid is None:
         param_grid = _default_param_grid(estimator, X, y)
@@ -184,7 +184,13 @@ def _default_param_grid(estimator, X, y):
         # in which case min_c is computed with sklearn.svm.l1_min_c(),
         # so for L2 penalty, param_grid["Cs"] is either 1e-3, ..., 1e4, and
         # for L1 penalty the values are obtained in a more data-driven way
-        param_grid["Cs"] = [np.geomspace(2e-3, 2e4, 8) * min_c]
+        tmp = np.geomspace(2e-3, 2e4, 8) * min_c
+        # TODO (sklearn >= 1.10)
+        # simplify
+        if SKLEARN_GT_1_9:
+            param_grid["alphas"] = [1 / tmp]
+        else:
+            param_grid["Cs"] = [tmp]
     elif isinstance(estimator, LassoCV):
         # the default is to generate 30 alphas based on the data
         # (alpha values can also be set with the 'alphas' parameter, in which
@@ -220,7 +226,7 @@ def _wrap_param_grid(param_grid, param_name):
     Returns
     -------
     dict of str to sequence, or sequence of such
-        The updated parameter grid
+        The updated parameter grid.
     """
     if param_grid is None:
         return param_grid
@@ -274,7 +280,7 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
     Returns
     -------
     dict of str to sequence, or sequence of such
-        The updated parameter grid
+        The updated parameter grid.
     """
     # ensure param_grid is a list so that we can loop over it
     input_is_dict = isinstance(param_grid, dict)
@@ -388,10 +394,12 @@ def _parallel_fit(
             if isinstance(estimator, (RidgeCV, RidgeClassifierCV, LassoCV)):
                 params["best_alpha"] = estimator.alpha_
             elif isinstance(estimator, LogisticRegressionCV):
-                if isinstance(estimator.C_, float):
+                if SKLEARN_GT_1_9:
+                    params["best_alpha"] = estimator.alpha_
+                elif isinstance(estimator.C_, float):
                     # TODO (sklearn >= 1.10)
                     # estimator.C_ is always a float
-                    # so we can get rif of the else part
+                    # so we can get rid of the else part
                     params["best_C"] = estimator.C_
                 else:
                     params["best_C"] = estimator.C_.item()
@@ -535,7 +543,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
     nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
-
     """
 
     # dummy_output_ starts as a dict of accumulated fold outputs
@@ -613,7 +620,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
             Must have exactly as many samples as the input images.
 
         %(groups)s
-
         """
         check_params(self.__dict__)
 
@@ -852,7 +858,6 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         -------
         score : :obj:`float`
             Prediction score.
-
         """
         check_is_fitted(self)
         X = self._prep_input_post_fit(X)
@@ -981,9 +986,9 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         Returns
         -------
         coefs : dict
-            Coefficients for each classification/regression problem
+            Coefficients for each classification/regression problem.
         intercepts : dict
-            Intercept for each classification/regression problem
+            Intercept for each classification/regression problem.
         """
         coefs = {}
         intercepts = {}
@@ -1155,7 +1160,6 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
     %(screening_percentile)s
 
     %(screening_n_features)s
-
 
     scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1345,7 +1349,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_n_features)s
 
-
     scoring : :obj:`str`, callable or None, default='r2'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
@@ -1356,7 +1359,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
-
 
     %(smoothing_fwhm)s
 
@@ -1581,15 +1583,15 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(base_decoder_fit_attributes)s
 
-    References
-    ----------
-    .. footbibliography::
-
     See Also
     --------
     nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
     nilearn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(
@@ -1776,16 +1778,15 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     n_classes_ : int
         number of classes
 
-    References
-    ----------
-    .. footbibliography::
-
     See Also
     --------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
     nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
 
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(

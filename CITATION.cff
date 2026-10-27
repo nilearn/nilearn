@@ -55,6 +55,9 @@ authors:
     family-names: Frau-Pascual
     website: https://github.com/ainafp
     orcid: https://orcid.org/0000-0001-6311-8426
+  - given-names: Akaash
+    family-names: P
+    website: https://github.com/theknuckle
   - given-names: Alex
     family-names: Rothberg
     website: https://github.com/cancan101
@@ -386,6 +389,9 @@ authors:
     family-names: Traore
     affiliation: IMT Atlantique, Brest, France
     website: https://github.com/badrinini
+  - given-names: Ishaan
+    family-names: Gupta
+    website: https://github.com/guptaishaan
   - given-names: Jake
     family-names: Vogel
     website: https://github.com/illdopejake
@@ -426,6 +432,9 @@ authors:
     family-names: King
     website: https://github.com/kingjr
     affiliation: Meta AI, CNRS, Paris
+  - given-names: Jeffrey
+    family-names: Cooney
+    website: https://github.com/jdotc1
   - given-names: Jelle Roelof
     family-names: Dalenberg
     website: https://github.com/jrdalenberg

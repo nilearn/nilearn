@@ -78,7 +78,12 @@ def pytest_configure(config):  # noqa: ARG001
 
 @pytest.fixture(autouse=True)
 def close_all() -> Generator[None, None, None]:
-    """Close all matplotlib figures."""
+    """Close all matplotlib figures.
+
+    Yields
+    ------
+    None
+    """
     yield
     if matplotlib is not None:
         import matplotlib.pyplot as plt
@@ -441,9 +446,8 @@ def generate_regions_ts(n_features, n_regions) -> np.ndarray:
     Returns
     -------
     regions : :obj:`numpy.ndarray`
-        Regions, represented as signals.
-        shape (n_features, n_regions)
-
+        Regions, represented as signals
+        with shape (n_features, n_regions).
     """
     rand_gen = _rng()
     window = "boxcar"
@@ -864,8 +868,8 @@ def matplotlib_pyplot() -> Generator[ModuleType, None, None]:
     skipped. Otherwise, we close the figures before and after running the
     functions.
 
-    Returns
-    -------
+    Yields
+    ------
     pyplot : module
         The ``matplotlib.pyplot`` module.
     """
@@ -881,8 +885,8 @@ def plotly() -> Generator[ModuleType, None, None]:
 
     If not, the tests will be skipped.
 
-    Returns
-    -------
+    Yields
+    ------
     plotly : module
         The ``plotly`` module.
     """

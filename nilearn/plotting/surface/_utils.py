@@ -105,7 +105,6 @@ def check_hemispheres(hemispheres):
 
     hemispheres : :obj:`list`
         Any combination of 'left' and 'right'.
-
     """
     invalid_hemis = [
         not _check_hemisphere_is_valid(hemi) for hemi in hemispheres
@@ -309,7 +308,6 @@ def check_surface_plotting_inputs(
           :obj:`numpy.ndarray`.
         - If ``hemi='both'``, returns :obj:`~nilearn.surface.InMemoryMesh`
     bg_map : :obj:`str` | :obj:`pathlib.Path` | :obj:`numpy.ndarray` | None
-
     """
     if surf_mesh is None and surf_map is None:
         raise TypeError(
@@ -391,7 +389,6 @@ def get_faces_on_edge(faces, parc_idx):
 
     parc_idx : :obj:`numpy.ndarray`, indices of the vertices of the region to
                be plotted
-
     """
     # count how many vertices belong to the given parcellation in each face
     verts_per_face = np.isin(faces, parc_idx).sum(axis=1)

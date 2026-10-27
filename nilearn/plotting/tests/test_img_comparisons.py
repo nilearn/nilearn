@@ -1,4 +1,4 @@
-"""Tests for nilearn.plotting.img_comparison."""
+"""Test for nilearn.plotting.img_comparison."""
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -32,7 +32,7 @@ def _mask() -> Nifti1Image:
     ],
 )
 def test_plot_img_comparison_masker(matplotlib_pyplot, img_3d_mni, masker):
-    """Tests for plot_img_comparison with masker or mask image."""
+    """Test for plot_img_comparison with masker or mask image."""
     plot_img_comparison(
         img_3d_mni,
         img_3d_mni,
@@ -43,7 +43,7 @@ def test_plot_img_comparison_masker(matplotlib_pyplot, img_3d_mni, masker):
 
 @pytest.mark.thread_unsafe
 def test_plot_img_comparison_file(matplotlib_pyplot, img_3d_mni, tmp_path):
-    """Tests plot_img_comparison with files."""
+    """Test plot_img_comparison with files."""
     img_3d_mni.to_filename(tmp_path / "img_compare.nii.gz")
     plot_img_comparison(
         tmp_path / "img_compare.nii.gz",
@@ -80,7 +80,7 @@ def test_plot_img_comparison_error(surf_img_1d, img_3d_mni):
 
 @pytest.mark.thread_unsafe
 def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
-    """Tests for plot_img_comparison."""
+    """Test for plot_img_comparison."""
     _, axes = plt.subplots(2, 1)
     axes = axes.ravel()
 
@@ -133,7 +133,7 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
 
 @pytest.mark.thread_unsafe
 def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
-    """Tests for plot_img_comparison no plot should return same result."""
+    """Test for plot_img_comparison no plot should return same result."""
     _, axes = plt.subplots(2, 1)
     axes = axes.ravel()
 

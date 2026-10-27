@@ -33,10 +33,10 @@ def generate_design_matrices_figures(
     Returns
     -------
     design_matrices_dict : Bunch
+        Bunch with the following attributes for each run ``i_run``:
 
-        design_matrices_dict[i_run].design_matrix
-        design_matrices_dict[i_run].correlation_matrix
-
+        - ``design_matrices_dict[i_run].design_matrix``
+        - ``design_matrices_dict[i_run].correlation_matrix``
     """
     if design_matrices_dict is None:
         design_matrices_dict = Bunch()
@@ -124,10 +124,7 @@ def generate_contrast_matrices_figures(
     Returns
     -------
     contrasts_dict : sklearn Bunch
-
-        contrasts_dict[contrast_name]
-
-
+        Bunch accessed with ``contrasts_dict[contrast_name]``.
     """
     if contrasts_dict is None:
         contrasts_dict = Bunch()
@@ -195,7 +192,6 @@ def resize_plot_inches(plot, width_change=0, height_change=0):
     -------
     plot : matplotlib.Figure() or matplotlib.Axes()
         The matplotlib Figure/Axes object after being resized.
-
     """
     if not isinstance(plot, (Figure)):
         orig_size = plot.figure.get_size_inches()

@@ -1,17 +1,19 @@
 """
-Voxel-Based Morphometry on OASIS dataset
-========================================
+Voxel-Based Morphometry: group level analysis
+=============================================
 
 This example uses voxel-based morphometry (:term:`VBM`) to study the
 relationship between aging, sex, and gray matter density.
 
-The data come from the `OASIS <https://sites.wustl.edu/oasisbrains/>`_ project.
-If you use it, you need to agree with the data usage agreement available
-on the website.
+.. admonition:: dataset
 
-It has been run through a standard :term:`VBM` pipeline
-(using SPM8 and NewSegment)
-to create :term:`VBM` maps, which we study here.
+    This example uses:
+
+    - the :ref:`ICBM 152 template <icbm_152_template>`
+    - the :ref:`OASIS VBM dataset <oasis_vbm>`
+      run through a standard :term:`VBM` pipeline
+      (using SPM8 and NewSegment)
+      to create :term:`VBM` maps, which we study here.
 
 VBM analysis of aging
 ---------------------
@@ -22,11 +24,6 @@ from the :term:`VBM` data.
 We use only 100 subjects from the OASIS dataset to limit the memory usage.
 
 Note that more power would be obtained from using a larger sample of subjects.
-
-.. seealso::
-
-    For more information
-    see the :ref:`dataset description <oasis_maps>`.
 """
 
 # %%

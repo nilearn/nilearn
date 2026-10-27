@@ -17,6 +17,11 @@ More specifically, this example will be divided into three sections:
    from the :term:`BIDS` dataset.
 3. Fitting a :term:`GLM` second-level model directly from
    the fitted :term:`GLM` first-level models.
+
+.. admonition:: dataset
+
+   This example uses the :ref:`language localizer demo dataset
+   <language_localizer_demo>`.
 """
 
 # %%
@@ -30,17 +35,14 @@ More specifically, this example will be divided into three sections:
 # respectively.
 # The derivatives folders include preprocessed :term:`fMRI`
 # files ``preproc.nii`` and their accompanying ``confounds.tsv`` files.
-#
-# For more information on this dataset, see
-# the :func:`~nilearn.datasets.fetch_language_localizer_demo_dataset`
-# description.
+# .
 #
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
 data = fetch_language_localizer_demo_dataset()
 
 # %%
-# We can verify the location of the dataset on disk.
+# The dataset is organized in BIDS-like fashion on disk at this location.
 print(data.data_dir)
 
 # %%

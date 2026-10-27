@@ -19,6 +19,14 @@ This shows:
 
     See the :ref:`dataset description <nki_dataset>`
     for more information on the data used in this example.
+
+.. admonition:: dataset
+
+   This example uses:
+
+   - the :ref:`Destrieux atlas <destrieux_2009_atlas>`
+   - the :ref:`fsaverage template <fs_average_template>`
+   - the :ref:`NKI enhanced surface dataset <nki_dataset>`
 """
 
 from nilearn._utils.helpers import check_matplotlib
@@ -131,10 +139,10 @@ destrieux = fetch_atlas_surf_destrieux()
 # Let's create a surface image
 # for this atlas.
 labels_img = SurfaceImage(
-    mesh=fsaverage["pial"],
+    mesh=fsaverage.pial,
     data={
-        "left": destrieux["map_left"],
-        "right": destrieux["map_right"],
+        "left": destrieux.map_left,
+        "right": destrieux.map_right,
     },
 )
 

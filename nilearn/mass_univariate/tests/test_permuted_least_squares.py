@@ -1,4 +1,4 @@
-"""Tests for the permuted_ols function."""
+"""Test for the permuted_ols function."""
 
 import warnings
 
@@ -895,7 +895,7 @@ def test_permuted_ols_no_covar_n_job_error(dummy_design):
 
 
 def test_permuted_ols_target_vars_error(dummy_design):
-    """Checks dimension of target_var."""
+    """Check dimension of target_var."""
     target_var, tested_var, *_ = dummy_design
 
     with pytest.raises(
@@ -929,8 +929,9 @@ def test_permuted_ols_boolean_tested_vars(dummy_design):
     assert output["t"].shape == (1, target_var.shape[1])
 
 
+@pytest.mark.ai_generated
 def test_permuted_ols_type_n_perm(dummy_design):
-    """Checks type n_perm."""
+    """Check type n_perm."""
     target_var, tested_var, *_ = dummy_design
 
     with pytest.raises(TypeError, match="'n_perm' must be of type"):

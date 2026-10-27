@@ -16,14 +16,17 @@ numpy array, corresponding to the data inside the mask.
     :ref:`for a similar example using cortical surface input data
     <sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
 
+.. admonition:: dataset
+
+    This example uses the :ref:`development fMRI dataset
+    <development_dataset>`.
 """
 
 # %%
 # Getting the data
 # ----------------
 #
-# We will work with the first subject
-# of the brain development :term:`fMRI` data set.
+# We will work with the first subject of dataset.
 # dataset.func is a list of filenames.
 # We select the 1st (0-based) subject by indexing with [0]).
 from nilearn.datasets import fetch_development_fmri

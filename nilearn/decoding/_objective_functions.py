@@ -23,7 +23,6 @@ def spectral_norm_squared(X):
     -------
     lipschitz_constant : :obj:`float`
       The square of the spectral norm of X.
-
     """
     # On big matrices like those that we have in neuroimaging, svdvals
     # is faster than a power iteration (even when using arpack's)
@@ -37,7 +36,6 @@ def logistic_loss_lipschitz_constant(X):
     .. code-block::
 
         w -> sum_i log(1+exp(-y_i*(x_i*w + v)))
-
     """
     # N.B: we handle intercept!
     X = np.hstack((X, np.ones((X.shape[0], 1))))
@@ -77,7 +75,6 @@ def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
 
     gradient : ndarray, shape (n_features,)
         Gradient of energy (returned if `compute_grad` is set).
-
     """
     if not compute_energy and not compute_grad:
         raise RuntimeError(
@@ -137,7 +134,6 @@ def divergence_id(grad, l1_ratio=0.5):
     Raises
     ------
     RuntimeError
-
     """
     if not (0.0 <= l1_ratio <= 1.0):
         raise RuntimeError(
@@ -183,7 +179,6 @@ def gradient_id(img, l1_ratio=0.5):
     Raises
     ------
     RuntimeError
-
     """
     if not (0.0 <= l1_ratio <= 1.0):
         raise RuntimeError(
