@@ -1307,11 +1307,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
             if hasattr(estimator, "dtype"):
                 estimator.dtype = dtype
 
-            if isinstance(estimator, NiftiSpheresMasker):
-                # NiftiSpheresMasker needs mask_img to run inverse_transform
-                X, _ = generate_data_to_fit(estimator)
-                mask_img = new_img_like(X, np.ones(X.shape[:3]))
-                estimator.mask_img = mask_img
+            set_mask_if_nifti_spheres(estimator)
 
             with warnings.catch_warnings(record=True) as warning_list:
                 warnings.simplefilter("always")
