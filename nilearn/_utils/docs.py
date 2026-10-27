@@ -175,7 +175,8 @@ logistic = "Logistic regression"
 rc = "Ridge classifier"
 dc = "Dummy classifier with stratified strategy"
 
-
+# TODO (sklearn >= 1.10)
+# update the sections below for logistic and logistic_l1
 docdict["classifier_options"] = f"""
 
     - ``"svc"``: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
@@ -204,6 +205,9 @@ docdict["classifier_options"] = f"""
 
         logistic = LogisticRegressionCV(l1_ratios=(0,), solver="liblinear")
 
+        # with sklearn >= 1.10
+        logistic = LogisticRegressionCV(l1_ratios=(0,), solver="newton-cd")
+
     - ``"logistic_l1"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
         with L1 penalty.
@@ -211,6 +215,9 @@ docdict["classifier_options"] = f"""
     .. code-block:: python
 
         logistic_l1 = LogisticRegressionCV(l1_ratios=(1,), solver="liblinear")
+
+        # with sklearn >= 1.10
+        logistic_l1 = LogisticRegressionCV(l1_ratios=(1,), solver="newton-cd")
 
     - ``"logistic_l2"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
