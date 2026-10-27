@@ -59,10 +59,19 @@ from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import intersect_masks
 from nilearn.nilearn_typing import (
     HrfModel,
+    MemoryLevel,
+    MemoryLike,
     NiimgLike,
+    NJobs,
+    NonNullScalar,
     SingleConfound,
+    SmoothingFwhm,
+    Standardize,
     TableLike,
+    TargetAffine,
+    TargetShape,
     Tr,
+    Verbose,
 )
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
@@ -383,7 +392,7 @@ class FirstLevelModel(BaseGLM):
             This parameter is ignored by fit() if design matrices
             are passed at fit time.
 
-    min_onset : :obj:`float`, default=-24
+    min_onset : :obj:`float`, default=-24.0
         This parameter specifies the minimal onset relative to the design
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
@@ -505,34 +514,54 @@ class FirstLevelModel(BaseGLM):
         as it is set to ``None`` when ``signal_scaling`` is not False.
     """
 
+    drift_model: Literal["polynomial", "cosine", None]
+    drift_order: int
+    high_pass: float
+    hrf_model: HrfModel
+    target_affine: TargetAffine
+    target_shape: TargetShape
+    smoothing_fwhm: SmoothingFwhm
+    memory: MemoryLike
+    memory_level: MemoryLevel
+    min_onset: float
+    minimize_memory: bool
+    noise_model: Literal["ar1", "ols"]
+    n_jobs: NJobs
+    reports: bool
+    slice_time_ref: NonNullScalar
+    standardize: Standardize
+    subject_label: str | None
+    t_r: Tr
+    verbose: Verbose
+
     def __str__(self):
         return "First Level Model"
 
     def __init__(
         self,
-        t_r=None,
-        slice_time_ref=0.0,
+        t_r: Tr = None,
+        slice_time_ref: NonNullScalar = 0.0,
         hrf_model: HrfModel = "glover",
-        drift_model="cosine",
-        high_pass=0.01,
-        drift_order=1,
+        drift_model: Literal["polynomial", "cosine", None] = "cosine",
+        high_pass: float = 0.01,
+        drift_order: int = 1,
         fir_delays=None,
-        min_onset=-24,
+        min_onset: float = -24.0,
         mask_img=None,
-        target_affine=None,
-        target_shape=None,
-        smoothing_fwhm=None,
-        memory=None,
-        memory_level=1,
-        standardize=None,
+        target_affine: TargetAffine = None,
+        target_shape: TargetShape = None,
+        smoothing_fwhm: SmoothingFwhm = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 1,
+        standardize: Standardize = None,
         signal_scaling=0,
-        noise_model="ar1",
-        verbose=0,
-        n_jobs=1,
-        minimize_memory=True,
-        subject_label=None,
+        noise_model: Literal["ar1", "ols"] = "ar1",
+        verbose: Verbose = 0,
+        n_jobs: NJobs = 1,
+        minimize_memory: bool = True,
+        subject_label: str | None = None,
         random_state=None,
-        reports=True,
+        reports: bool = True,
     ):
         # design matrix parameters
         self.t_r = t_r
@@ -1040,7 +1069,7 @@ class FirstLevelModel(BaseGLM):
         # currently the values in reports_data is used in other places and
         # tests fail if only populated when reports is True.
 
-        self._reporting_data = {
+        self._reporting_data: dict[str, Any] = {
             "trial_types": [],
             "noise_model": self.noise_model,
             "hrf_model": "finite impulse response"
@@ -1495,10 +1524,8 @@ def _check_repetition_time(t_r) -> None:
         raise ValueError(f"'t_r' must be positive. Got {t_r} instead.")
 
 
-def _check_slice_time_ref(slice_time_ref) -> None:
+def _check_slice_time_ref(slice_time_ref: Any) -> None:
     """Check that slice_time_ref is a number between 0 and 1."""
-    if slice_time_ref is None:
-        return
     check_is_of_allowed_type(
         slice_time_ref, (float, int, np.floating, np.integer), "slice_time_ref"
     )
@@ -1516,25 +1543,25 @@ def first_level_from_bids(
     sub_labels=None,
     exclude_subjects=None,
     img_filters=None,
-    t_r=None,
-    slice_time_ref=None,
+    t_r: Tr = None,
+    slice_time_ref: NonNullScalar | None = None,
     hrf_model: HrfModel = "glover",
-    drift_model: Literal["polynomial", "cosine", None] = "cosine",
-    high_pass=0.01,
-    drift_order=1,
+    drift_model: Literal["cosine", "polynomial", None] = "cosine",
+    high_pass: float = 0.01,
+    drift_order: int = 1,
     fir_delays=None,
-    min_onset=-24,
+    min_onset: float = -24.0,
     mask_img=None,
-    target_affine=None,
-    target_shape=None,
-    smoothing_fwhm=None,
-    memory=None,
-    memory_level=1,
-    standardize=None,
+    target_affine: TargetAffine = None,
+    target_shape: TargetShape = None,
+    smoothing_fwhm: SmoothingFwhm = None,
+    memory: MemoryLike = None,
+    memory_level: MemoryLevel = 1,
+    standardize: Standardize = None,
     signal_scaling=0,
-    noise_model="ar1",
-    verbose=0,
-    n_jobs=1,
+    noise_model: Literal["ar1", "ols"] = "ar1",
+    verbose: Verbose = 0,
+    n_jobs: NJobs = 1,
     minimize_memory=True,
     derivatives_folder="derivatives",
     **kwargs,
@@ -1908,12 +1935,9 @@ def first_level_from_bids(
             )
         inferred_slice_time_ref = 0.0
 
-    if slice_time_ref is None and inferred_slice_time_ref is not None:
+    if slice_time_ref is None:
         slice_time_ref = inferred_slice_time_ref
-    if (
-        slice_time_ref is not None
-        and slice_time_ref != inferred_slice_time_ref
-    ):
+    elif slice_time_ref != inferred_slice_time_ref:
         warn(
             f"'slice_time_ref' provided ({slice_time_ref}) is different "
             f"from the value found in the BIDS dataset "
@@ -2318,7 +2342,7 @@ def _get_masks_files(
     space_label: str,
     img_filters: list[tuple[str, str]],
     imgs: list[str],
-    verbose: int,
+    verbose: Verbose,
 ) -> list[str]:
     """Get mask images for a given subject, task, space and filters.
 
