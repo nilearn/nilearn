@@ -188,6 +188,7 @@ def set_mask_if_nifti_spheres(estimator, X):
         estimator.mask_img = mask_img
     return estimator
 
+
 def fit_estimator(
     estimator: NilearnBaseEstimator, X=None, y=None
 ) -> NilearnBaseEstimator:
