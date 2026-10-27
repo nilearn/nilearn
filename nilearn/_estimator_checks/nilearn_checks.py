@@ -1292,6 +1292,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
         estimator_orig
     ):
         set_mask_if_nifti_spheres(estimator)
+        fit_estimator(estimator)
 
         signal = _rng().random((10, estimator.n_elements_)).astype(input_dtype)
         if isinstance(estimator, _BaseDecomposition):
