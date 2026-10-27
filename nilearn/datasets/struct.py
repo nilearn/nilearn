@@ -72,7 +72,7 @@ def fetch_icbm152_2009(  # numpydoc ignore=RT05
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch:
+) -> Bunch[str, Any]:
     """Download and load the ICBM152 template (dated 2009).
 
     For more information
@@ -634,7 +634,7 @@ def fetch_oasis_vbm(  # numpydoc ignore=RT05
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch:
+) -> Bunch[str, Any]:
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
     For more information
