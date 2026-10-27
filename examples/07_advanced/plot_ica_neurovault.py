@@ -23,7 +23,7 @@ statistical maps.
    This example uses:
 
    - data from :ref:`Neurovault <neurovault_dataset>`
-   - the :ref:`ICBM 152 template <icbm_152_template>`
+   - the :ref:`ICBM 152 template <icbm152_2009>`
 """
 # %%
 # Get image and associated term data
