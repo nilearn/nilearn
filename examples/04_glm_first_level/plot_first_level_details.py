@@ -20,7 +20,7 @@ and only then run this tutorial example.
 
     This example uses:
 
-    - the :ref:`ICBM 152 template <icbm_152_template>`
+    - the :ref:`ICBM 152 template <icbm152_2009>`
     - the :ref:`localizer first level dataset <localizer_first_level>`
 """
 
