@@ -1251,7 +1251,9 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
 
     input_dtype np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    for estimator, input_dtype, _, _ in _dtype_case_generator(estimator_orig):
+    for estimator, input_dtype, _, _ in _dtype_case_generator(
+        estimator_orig, with_memory=True
+    ):
         X, y = _generate_fit_data_with_dtype(estimator, input_dtype)
         set_mask_if_nifti_spheres(estimator, X)
 
