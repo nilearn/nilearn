@@ -37,7 +37,7 @@ import warnings
 from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory, mkdtemp
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
@@ -992,7 +992,7 @@ def _check_equal_imglike(input1, input2):
     if isinstance(input2, np.ndarray):
         assert_allclose_dense_sparse(input1, input2)
     elif isinstance(input2, SurfaceImage):
-        assert_surface_image_equal(cast(SurfaceImage, input1), input2)
+        assert_surface_image_equal(input1, input2)
     elif isinstance(input2, Nifti1Image):
         check_imgs_equal(input1, input2)
 
