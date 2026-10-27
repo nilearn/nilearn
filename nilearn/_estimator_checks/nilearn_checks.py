@@ -1306,8 +1306,6 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
             output_img = output_img[0]
 
         target_dtype = get_expected_dtype(input_dtype, dtype)
-        if target_dtype is None:
-            target_dtype = input_dtype
 
         warning_present = (
             "data has been converted to int32" in str(x.message)
