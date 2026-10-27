@@ -1288,111 +1288,91 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
     we must handle deal with the fact that nibabel won't create
     images with np.int64
     """
-    dtype_list: list[Any] = [None]
-    if hasattr(estimator_orig, "dtype"):
-        dtype_list = [
-            np.float32,
-            "float64",
-            np.int32,
-            np.int64,
-            "i4",
-            "auto",
-            None,
-        ]
-
-    for input_dtype in [np.float32, "float64", np.int64, np.int32, "i4"]:
-        for dtype in dtype_list:
-            estimator = clone(estimator_orig)
-
-            if hasattr(estimator, "dtype"):
-                estimator.dtype = dtype
-
-            set_mask_if_nifti_spheres(estimator)
-
-            with warnings.catch_warnings(record=True) as warning_list:
-                warnings.simplefilter("always")
-                estimator = fit_estimator(estimator)
-                # no data conversion should happen during fitting
-                assert not any(
-                    "data has been converted to int32" in str(x.message)
-                    for x in warning_list
-                )
-
-            signal = (
-                _rng().random((10, estimator.n_elements_)).astype(input_dtype)
-            )
-            if isinstance(estimator, _BaseDecomposition):
-                signal = [signal]
-
-            with warnings.catch_warnings(record=True) as warning_list:
-                warnings.simplefilter("always")
-                output_img = estimator.inverse_transform(signal)
-
-            if isinstance(estimator, _BaseDecomposition) and isinstance(
-                output_img, list
-            ):
-                output_img = output_img[0]
-
-            target_dtype = get_expected_dtype(input_dtype, dtype)
-            if target_dtype is None:
-                target_dtype = input_dtype
-
-            warning_present = (
+    for estimator, input_dtype, dtype, _ in _dtype_case_generator(
+        estimator_orig
+    ):
+        with warnings.catch_warnings(record=True) as warning_list:
+            warnings.simplefilter("always")
+            estimator = fit_estimator(estimator)
+            # no data conversion should happen during fitting
+            assert not any(
                 "data has been converted to int32" in str(x.message)
                 for x in warning_list
             )
-            if isinstance(output_img, Nifti1Image) and dtype == np.int64:
-                assert any(warning_present)
-            elif isinstance(
-                estimator,
-                (NiftiMapsMasker, NiftiSpheresMasker, _BaseDecomposition),
-            ):
-                # These estimators route inverse_transform through
-                # signals_to_img_maps which uses np.dot and produces float64
-                # output, so nibabel never sees int64 data directly.
-                # A warning only fires when dtype=None causes int64 to be
-                # stored in the NIfTI header.
-                if input_dtype == np.int64 and dtype is None:
-                    assert any(warning_present)
-            elif (
-                isinstance(output_img, Nifti1Image) and input_dtype == np.int64
-            ):
-                # Other maskers call unmask() directly with the int64 signal,
-                # so nibabel warns on every int64 input regardless of dtype.
-                assert any(warning_present)
-            else:
-                assert not any(warning_present)
 
-            output_dtype = None
-            try:
-                if isinstance(output_img, Nifti1Image):
-                    output_dtype = (
-                        f"img type={img_data_dtype(output_img)}, "
-                        f"dataobj type={output_img.get_data_dtype()}"
+        set_mask_if_nifti_spheres(estimator)
+
+        signal = _rng().random((10, estimator.n_elements_)).astype(input_dtype)
+        if isinstance(estimator, _BaseDecomposition):
+            signal = [signal]
+
+        with warnings.catch_warnings(record=True) as warning_list:
+            warnings.simplefilter("always")
+            output_img = estimator.inverse_transform(signal)
+
+        if isinstance(estimator, _BaseDecomposition) and isinstance(
+            output_img, list
+        ):
+            output_img = output_img[0]
+
+        target_dtype = get_expected_dtype(input_dtype, dtype)
+        if target_dtype is None:
+            target_dtype = input_dtype
+
+        warning_present = (
+            "data has been converted to int32" in str(x.message)
+            for x in warning_list
+        )
+        if isinstance(output_img, Nifti1Image) and dtype == np.int64:
+            assert any(warning_present)
+        elif isinstance(
+            estimator,
+            (NiftiMapsMasker, NiftiSpheresMasker, _BaseDecomposition),
+        ):
+            # These estimators route inverse_transform through
+            # signals_to_img_maps which uses np.dot and produces float64
+            # output, so nibabel never sees int64 data directly.
+            # A warning only fires when dtype=None causes int64 to be
+            # stored in the NIfTI header.
+            if input_dtype == np.int64 and dtype is None:
+                assert any(warning_present)
+        elif isinstance(output_img, Nifti1Image) and input_dtype == np.int64:
+            # Other maskers call unmask() directly with the int64 signal,
+            # so nibabel warns on every int64 input regardless of dtype.
+            assert any(warning_present)
+        else:
+            assert not any(warning_present)
+
+        output_dtype = None
+        try:
+            if isinstance(output_img, Nifti1Image):
+                output_dtype = (
+                    f"img type={img_data_dtype(output_img)}, "
+                    f"dataobj type={output_img.get_data_dtype()}"
+                )
+                if target_dtype != np.int64:
+                    # ensure both image and dataobj have consistent type
+                    assert (
+                        img_data_dtype(output_img)
+                        == output_img.get_data_dtype()
+                        == target_dtype
                     )
-                    if target_dtype != np.int64:
-                        # ensure both image and dataobj have consistent type
-                        assert (
-                            img_data_dtype(output_img)
-                            == output_img.get_data_dtype()
-                            == target_dtype
-                        )
-                    else:
-                        # except when int64
-                        # in this case nibabel coerce the image
-                        # but not the object
-                        # to int32
-                        assert img_data_dtype(output_img) == "int32"
-                        assert output_img.get_data_dtype() == target_dtype
                 else:
-                    output_dtype = output_img.data._dtype
-                    assert output_dtype == target_dtype
-            except AssertionError as e:
-                raise TypeError(
-                    "'inverse_transform' should have returned "
-                    f"an image of type '{target_dtype}'. "
-                    f"Got '{output_dtype}' instead."
-                ) from e
+                    # except when int64
+                    # in this case nibabel coerce the image
+                    # but not the object
+                    # to int32
+                    assert img_data_dtype(output_img) == "int32"
+                    assert output_img.get_data_dtype() == target_dtype
+            else:
+                output_dtype = output_img.data._dtype
+                assert output_dtype == target_dtype
+        except AssertionError as e:
+            raise TypeError(
+                "'inverse_transform' should have returned "
+                f"an image of type '{target_dtype}'. "
+                f"Got '{output_dtype}' instead."
+            ) from e
 
 
 @skip_if_not(
