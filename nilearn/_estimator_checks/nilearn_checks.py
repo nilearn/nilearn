@@ -72,6 +72,7 @@ from nilearn._estimator_checks.utils import (
     fit_estimator,
     generate_data_to_fit,
     generate_inverse_transform_signal,
+    get_expected_dtype,
     run_method,
     set_mask_if_nifti_spheres,
     skip_if,
@@ -86,7 +87,6 @@ from nilearn._utils.helpers import (
 )
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.testing import is_ci, write_imgs_to_path
 from nilearn.conftest import (
     _affine_eye,
@@ -1211,7 +1211,7 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
         if dtype is None:
             continue
 
-        target_dtype = get_target_dtype(input_dtype, dtype)
+        target_dtype = get_expected_dtype(input_dtype, dtype)
 
         if not isinstance(results, list):
             results = [results]
@@ -1327,7 +1327,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
             ):
                 output_img = output_img[0]
 
-            target_dtype = get_target_dtype(np.dtype(input_dtype), dtype)  # type: ignore[call-overload]
+            target_dtype = get_expected_dtype(input_dtype, dtype)
             if target_dtype is None:
                 target_dtype = input_dtype
 
