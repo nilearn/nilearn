@@ -13,6 +13,7 @@ from sklearn.utils._testing import set_random_state
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.helpers import is_gil_enabled
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn.conftest import (
     _affine_eye,
     _make_surface_img,
@@ -60,6 +61,14 @@ def requires_y(estimator) -> bool:
     """Check if estimator expects target as input."""
     tags = estimator.__sklearn_tags__()
     return getattr(tags.target_tags, "required", True)
+
+
+def get_expected_dtype(dtype, target_dtype):
+    """Check possible target dtype, if None return ``dtype`` specified."""
+    target_dtype = get_target_dtype(np.dtype(dtype), target_dtype)
+    if target_dtype is None:
+        target_dtype = dtype
+    return target_dtype
 
 
 def run_method(estimator, method, X, y):
