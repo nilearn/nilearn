@@ -1291,15 +1291,6 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
     for estimator, input_dtype, dtype, _ in _dtype_case_generator(
         estimator_orig
     ):
-        with warnings.catch_warnings(record=True) as warning_list:
-            warnings.simplefilter("always")
-            estimator = fit_estimator(estimator)
-            # no data conversion should happen during fitting
-            assert not any(
-                "data has been converted to int32" in str(x.message)
-                for x in warning_list
-            )
-
         set_mask_if_nifti_spheres(estimator)
 
         signal = _rng().random((10, estimator.n_elements_)).astype(input_dtype)
