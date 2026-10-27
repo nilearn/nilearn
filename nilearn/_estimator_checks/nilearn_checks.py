@@ -1096,7 +1096,7 @@ def check_img_estimator_dtype_bool(estimator_orig) -> None:
     X, y = generate_data_to_fit(estimator)
     estimator = set_mask_if_nifti_spheres(estimator, X)
 
-    fit_estimator(estimator, X, y)
+    estimator = fit_estimator(estimator, X, y)
 
     signal = estimator.transform(X)
     if isinstance(signal, list):
