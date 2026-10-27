@@ -1004,9 +1004,9 @@ def check_img_estimator_pickle(estimator) -> None:
     Adapted from sklearn's check_estimators_pickle
     """
     X, y = generate_data_to_fit(estimator)
-    set_mask_if_nifti_spheres(estimator, X)
+    estimator = set_mask_if_nifti_spheres(estimator, X)
 
-    fit_estimator(estimator, X, y)
+    estimator = fit_estimator(estimator, X, y)
 
     pickled_estimator = pickle.dumps(estimator)
     unpickled_estimator = pickle.loads(pickled_estimator)
@@ -1043,7 +1043,7 @@ def check_img_estimator_pipeline_consistency(estimator) -> None:
     Substitute for sklearn check_pipeline_consistency.
     """
     X, y = generate_data_to_fit(estimator)
-    set_mask_if_nifti_spheres(estimator, X)
+    estimator = set_mask_if_nifti_spheres(estimator, X)
 
     pipeline = make_pipeline(estimator)
 
@@ -1094,7 +1094,7 @@ def check_img_estimator_dtype_bool(estimator_orig) -> None:
     estimator = clone(estimator_orig)
 
     X, y = generate_data_to_fit(estimator)
-    set_mask_if_nifti_spheres(estimator, X)
+    estimator = set_mask_if_nifti_spheres(estimator, X)
 
     fit_estimator(estimator, X, y)
 

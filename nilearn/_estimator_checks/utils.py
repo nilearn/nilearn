@@ -186,7 +186,7 @@ def set_mask_if_nifti_spheres(estimator, X):
         # NiftiSpheresMasker needs mask_img to run inverse_transform
         mask_img = new_img_like(X, np.ones(X.shape[:3]))
         estimator.mask_img = mask_img
-
+    return estimator
 
 def fit_estimator(
     estimator: NilearnBaseEstimator, X=None, y=None
