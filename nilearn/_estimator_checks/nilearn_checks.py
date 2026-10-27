@@ -1195,11 +1195,12 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
 
     input_dtype np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    for estimator, X, y, dtype, input_dtype, memory in _dtype_case_generator(
-        estimator_orig
+    for estimator, input_dtype, dtype, memory in _dtype_case_generator(
+        estimator_orig, with_memory=True
     ):
-        estimator = fit_estimator(estimator, X, y)
-        result = estimator.transform(X)
+        X, y = _generate_fit_data_with_dtype(estimator, input_dtype)
+        fit_estimator(estimator, X, y)
+        results = estimator.transform(X)
 
         # When ``dtype`` (self.dtype) is None,
         # no explicit dtype was requested:
@@ -1211,30 +1212,25 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
             continue
 
         target_dtype = get_target_dtype(input_dtype, dtype)
-        if target_dtype is None:
-            target_dtype = input_dtype
 
-        if not isinstance(result, list):
-            result = [result]
+        if not isinstance(results, list):
+            results = [results]
 
-        for s in result:
-            output_dtype = s.dtype
-            try:
-                assert output_dtype == target_dtype
-            except AssertionError as e:
-                raise TypeError(
-                    "'transform' should have returned "
-                    f"an array of type '{target_dtype}'. "
-                    f"Got '{output_dtype}' instead."
-                ) from e
+        for result in results:
+            output_dtype = result.dtype
+            assert output_dtype == target_dtype, (
+                "'transform' should have returned "
+                f"an array of type '{target_dtype}'. "
+                f"Got '{output_dtype}' instead."
+            )
 
         # when caching
         # check transform results are the same
         if memory is not None:
-            result_2 = estimator.transform(X)
-            if not isinstance(result_2, list):
-                result_2 = [result_2]
-            for s1, s2 in zip(result, result_2, strict=False):
+            results_2 = estimator.transform(X)
+            if not isinstance(results_2, list):
+                results_2 = [results_2]
+            for s1, s2 in zip(results, results_2, strict=False):
                 assert s1.dtype == s2.dtype
                 assert_array_equal(s1, s2)
 
