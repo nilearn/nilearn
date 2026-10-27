@@ -1128,7 +1128,10 @@ def _generate_fit_data_with_dtype(estimator, input_dtype):
     return X, y
 
 
-def _dtype_case_generator(estimator_orig):
+def _dtype_case_generator(estimator_orig, with_memory=False):
+    """Generate combinations of test cases for dtype, input_dtype and memory
+    with a cloned estimator.
+    """
     dtype_list: list[Any] = [
         np.float32,
         "float64",
@@ -1145,23 +1148,22 @@ def _dtype_case_generator(estimator_orig):
         np.dtype(np.int32),
         np.dtype("i4"),
     ]
+
     memory_list: list[Any] = [None]
-    if hasattr(estimator_orig, "memory"):
-        memory_list = [None, Path(mkdtemp())]
+    if hasattr(estimator_orig, "memory") and with_memory:
+        memory_list.append(Path(mkdtemp()))
 
     for input_dtype in input_np_dtypes:
         for dtype in dtype_list:
             for memory in memory_list:
                 estimator = clone(estimator_orig)
                 estimator.dtype = dtype
+                estimator.memory = memory
 
-                if hasattr(estimator, "memory"):
-                    estimator.memory = memory
-                    if memory is not None:
-                        estimator.memory_level = 1
+                if memory is not None:
+                    estimator.memory_level = 1
 
-                X, y = _generate_fit_data_with_dtype(estimator, input_dtype)
-                yield estimator, X, y, dtype, input_dtype, memory
+                yield estimator, input_dtype, dtype, memory
 
 
 @skip_if(
