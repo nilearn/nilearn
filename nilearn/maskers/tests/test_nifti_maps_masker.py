@@ -525,7 +525,7 @@ def test_overlap(maps_img_fn, allow_overlap, img_fmri):
 
 @pytest.mark.parametrize("with_mask", [False, True])
 def test_maps_emptied_by_resampling_are_dropped(affine_eye, with_mask):
-    """Maps emptied by resampling at fit time are dropped.
+    """Check maps emptied by resampling at fit time are dropped.
 
     This should happen whether a mask is used or not.
     """
