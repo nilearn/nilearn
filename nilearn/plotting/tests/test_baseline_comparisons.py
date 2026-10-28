@@ -51,6 +51,12 @@ from nilearn.plotting.displays import OrthoSlicer
 from nilearn.plotting.image.utils import MNI152TEMPLATE
 from nilearn.surface import load_surf_data
 
+# tests return figures for pytest-mpl,
+# which pytest warns about when run without --mpl
+pytestmark = pytest.mark.filterwarnings(
+    "ignore::pytest.PytestReturnNotNoneWarning"
+)
+
 PLOTTING_FUNCS_3D = (
     plot_img,
     plot_anat,
