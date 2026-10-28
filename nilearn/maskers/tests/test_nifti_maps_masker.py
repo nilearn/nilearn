@@ -320,6 +320,7 @@ def test_with_nans_and_infs_in_data(length, n_regions, affine_eye):
     check_signal_and_inverse_transform(masker, signals, expected_length=length)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [NiftiMapsMasker, MultiNiftiMapsMasker])
 def test_resampling_to_mask(
     estimator,
