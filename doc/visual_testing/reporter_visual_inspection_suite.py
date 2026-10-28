@@ -80,7 +80,7 @@ def report_flm_adhd_dmn(build_type):
     pcc_coords = (0, -53, 26)
 
     seed_masker = NiftiSpheresMasker(
-        [pcc_coords],
+        pcc_coords,
         radius=10,
         detrend=True,
         standardize="zscore_sample",
