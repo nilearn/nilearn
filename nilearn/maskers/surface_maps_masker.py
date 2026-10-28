@@ -37,7 +37,6 @@ from nilearn.nilearn_typing import (
     LowPass,
     MemoryLevel,
     MemoryLike,
-    ReportEngine,
     Signals,
     SingleConfound,
     SmoothingFwhm,
@@ -456,12 +455,10 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             region_signals, imgs, return_1D
         )
 
-    def _check_engine(self, allowed: list[ReportEngine] | None = None) -> None:
-        _ = allowed
-        super()._check_engine(allowed=[DEFAULT_ENGINE, "plotly"])
-
-    def _run_report_checks(self, **kwargs):
-        super()._run_report_checks(**kwargs)
+    def _run_report_checks(self, allowed_engines=None, **kwargs):
+        if allowed_engines is None:
+            allowed_engines = [DEFAULT_ENGINE, "plotly"]
+        super()._run_report_checks(allowed_engines=allowed_engines, **kwargs)
 
         if self._has_report_data():
             displayed_maps = kwargs.get("displayed_maps", 10)

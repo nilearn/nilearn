@@ -250,8 +250,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self._reset_report()
 
-    def _run_report_checks(self, **kwargs):
-        super()._run_report_checks(**kwargs)
+    def _run_report_checks(self, allowed_engines=None, **kwargs):
+        super()._run_report_checks(allowed_engines=allowed_engines, **kwargs)
 
         if self._has_report_data():
             displayed_maps = kwargs.get("displayed_maps", 10)

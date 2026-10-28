@@ -250,7 +250,7 @@ class ReportMixin:
             )
             self._report_content["engine"] = DEFAULT_ENGINE
 
-    def _run_report_checks(self, **kwargs):
+    def _run_report_checks(self, allowed_engines=None, **kwargs):
         """Run standard checks before report is generated.
 
         Checks if:
@@ -261,7 +261,7 @@ class ReportMixin:
         - matplotlib is installed
         """
         _ = kwargs
-        self._check_engine()
+        self._check_engine(allowed_engines)
 
         if self.reports is False:
             self._append_report_warning(

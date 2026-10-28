@@ -41,7 +41,6 @@ from nilearn.nilearn_typing import (
     MemoryLevel,
     MemoryLike,
     NiimgLike,
-    ReportEngine,
     SingleConfound,
     SmoothingFwhm,
     Standardize,
@@ -401,12 +400,10 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self._reset_report()
 
-    def _check_engine(self, allowed: list[ReportEngine] | None = None) -> None:
-        _ = allowed
-        super()._check_engine(allowed=[DEFAULT_ENGINE, "brainsprite"])
-
-    def _run_report_checks(self, **kwargs):
-        super()._run_report_checks(**kwargs)
+    def _run_report_checks(self, allowed_engines=None, **kwargs):
+        if allowed_engines is None:
+            allowed_engines = [DEFAULT_ENGINE, "brainsprite"]
+        super()._run_report_checks(allowed_engines=allowed_engines, **kwargs)
 
         if self._has_report_data():
             img = self._reporting_data["images"]

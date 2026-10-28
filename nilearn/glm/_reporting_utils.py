@@ -84,8 +84,8 @@ class GLMReportMixin(ReportMixin):
         )
         report_content["is_notebook"] = is_notebook()
 
-    def _run_report_checks(self, **kwargs):
-        super()._run_report_checks(**kwargs)
+    def _run_report_checks(self, allowed_engines=None, **kwargs):
+        super()._run_report_checks(allowed_engines=allowed_engines, **kwargs)
         height_control = kwargs.get("height_control", "fpr")
         cluster_threshold = kwargs.get("cluster_threshold", 0)
         min_distance = kwargs.get("min_distance", 8.0)
