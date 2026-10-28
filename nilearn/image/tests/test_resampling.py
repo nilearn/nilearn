@@ -399,7 +399,6 @@ def test_resampling_error_checks(tmp_path, force_resample, data, affine_eye):
 
 @pytest.mark.parametrize("force_resample", [False, True])
 @pytest.mark.parametrize("target_shape", [None, (3, 2, 5)])
-@pytest.mark.ai_generated
 def test_resampling_copy_has_no_shared_memory(
     target_shape, force_resample, data, affine_eye
 ):
