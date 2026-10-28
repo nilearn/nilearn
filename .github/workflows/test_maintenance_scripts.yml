@@ -12,6 +12,7 @@ on:
         paths:
         -   maint_tools/**/*
         -   build_tools/**/*
+        -   asv_benchmarks/check_dependencies_in_sync.py
         -   asv_benchmarks/asv.conf.json
         -   pyproject.toml
         -   .github/workflows/test_maintenance_scripts.yml
@@ -21,6 +22,7 @@ on:
         paths:
         -   maint_tools/**/*
         -   build_tools/**/*
+        -   asv_benchmarks/check_dependencies_in_sync.py
         -   asv_benchmarks/asv.conf.json
         -   pyproject.toml
         -   .github/workflows/test_maintenance_scripts.yml
