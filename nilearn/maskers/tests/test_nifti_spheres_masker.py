@@ -125,11 +125,42 @@ def test_anisotropic_sphere_extraction(rng, affine_eye):
     assert_array_equal(s[:, 0], data[1, 0, 1])
 
 
-def test_errors():
+@pytest.mark.parametrize(
+    "seeds, match",
+    [
+        ([1, 2], "Seed #0 is not a valid triplet"),
+        ([(1, 2)], "Seed #0 is of length 2 instead of 3"),
+        (1, "Given seed list is of type"),
+        ([], "Got an empty list of seeds"),
+        ((), "Got an empty list of seeds"),
+    ],
+)
+def test_errors(seeds, match):
     """Check seed input."""
-    masker = NiftiSpheresMasker(([1, 2]), radius=0.2)
-    with pytest.raises(ValueError, match=r"Seeds must be a list .+"):
+    masker = NiftiSpheresMasker(seeds, radius=0.2)
+    with pytest.raises(
+        ValueError, match=rf"(?s)Seeds must be a triplet.+{match}"
+    ):
         masker.fit()
+
+
+@pytest.mark.parametrize(
+    "seed, feature_name",
+    [
+        ((1, 1, 1), "(1, 1, 1)"),
+        ([1, 1, 1], "(1, 1, 1)"),
+        (np.array([1, 1, 1]), "(1, 1, 1)"),
+        ((1.0, 1.0, 1.0), "(1.0, 1.0, 1.0)"),
+    ],
+)
+def test_single_seed(seed, feature_name, img_3d_rand_eye):
+    """Check that a single triplet behaves like a list with one triplet."""
+    masker = NiftiSpheresMasker(seed)
+    signals = masker.fit_transform(img_3d_rand_eye)
+
+    assert masker.seeds_ == [[1, 1, 1]]
+    assert signals.shape == (5, 1)
+    assert masker.get_feature_names_out() == [feature_name]
 
 
 def test_overlap(rng, affine_eye):

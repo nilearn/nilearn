@@ -4,6 +4,7 @@ Mask nifti images by spherical volumes for seed-region analyses
 """
 
 import contextlib
+import numbers
 import warnings
 from collections.abc import Sequence
 from typing import Any, ClassVar
@@ -257,10 +258,14 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     Parameters
     ----------
-    seeds : :obj:`list` of triplet of coordinates in native space or None, \
-          default=None
-        Seed definitions. List of coordinates of the seeds in the same space
-        as the images (typically MNI or TAL).
+    seeds : :obj:`tuple` or :obj:`list` of :obj:`tuple`, or None, \
+            default=None
+        Seed definitions. Triplet or list of triplets of coordinates
+        of the seeds in the same space as the images (typically MNI or TAL).
+
+        .. nilearn_versionchanged:: 0.15.0
+
+            A single triplet of coordinates can be passed.
 
     radius : :obj:`float` | None, default=None
         Indicates, in millimeters, the radius for the sphere around the seed.
@@ -341,7 +346,10 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     # memory and memory_level are used by CacheMixin.
     def __init__(
         self,
-        seeds: Sequence[Sequence[float]] | np.ndarray | None = None,
+        seeds: Sequence[float]
+        | Sequence[Sequence[float]]
+        | np.ndarray
+        | None = None,
         radius: float | None = None,
         mask_img: NiimgLike | None = None,
         allow_overlap: bool = False,
@@ -527,8 +535,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     def _fit(self, imgs):
         error = (
-            "Seeds must be a list of triplets of coordinates in "
-            "native space.\n"
+            "Seeds must be a triplet of coordinates "
+            "or a list of triplets of coordinates in native space.\n"
         )
 
         if imgs is not None:
@@ -553,9 +561,18 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 f"{error}Given seed list is of type: {type(self.seeds)}"
             )
 
+        seeds = list(self.seeds)
+        # Allow a single triplet of coordinates to be passed
+        if len(seeds) == 3 and all(
+            isinstance(x, numbers.Number) for x in seeds
+        ):
+            seeds = [seeds]
+        if len(seeds) == 0:
+            raise ValueError(f"{error}Got an empty list of seeds.")
+
         self.seeds_ = []
         # Check seeds and convert them to lists if needed
-        for i, seed in enumerate(self.seeds):
+        for i, seed in enumerate(seeds):
             # Check the type first
             if not hasattr(seed, "__len__"):
                 raise ValueError(
@@ -709,7 +726,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         radius_suffix = ""
         if self.radius is not None:
             radius_suffix = f"; r={np.round(self.radius, decimals=1)}mm"
-        seeds = np.round(np.asarray(self.seeds), decimals=1)
+        check_is_fitted(self)
+        seeds = np.round(np.asarray(self.seeds_), decimals=1)
         return [str(tuple(x)) + radius_suffix for x in seeds.tolist()]
 
     @fill_doc
