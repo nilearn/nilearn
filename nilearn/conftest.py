@@ -115,7 +115,9 @@ def pytest_collection_modifyitems(items):
     ]
 
     for item in items:
-        if is_windows_platform() and item.originalname in flaky_tests:
+        if not isinstance(item, pytest.Function):
+            continue
+        if not is_windows_platform() and item.originalname in flaky_tests:
             item.add_marker(pytest.mark.flaky(reruns=5, reruns_delay=2))
 
 
