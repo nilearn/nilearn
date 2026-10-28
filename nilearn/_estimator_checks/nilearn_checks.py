@@ -1132,15 +1132,18 @@ def _dtype_case_generator(estimator_orig, with_memory=False):
     """Generate combinations of test cases for dtype, input_dtype and memory
     with a cloned estimator.
     """
-    dtype_list: list[Any] = [
-        np.float32,
-        "float64",
-        np.int32,
-        np.int64,
-        "i4",
-        "auto",
-        None,
-    ]
+    dtype_list: list[Any] = [None]
+    if hasattr(estimator_orig, "dtype"):
+        dtype_list.extend(
+            [
+                np.float32,
+                "float64",
+                np.int32,
+                np.int64,
+                "i4",
+                "auto",
+            ]
+        )
 
     input_np_dtypes = [
         np.dtype(np.float32),
@@ -1157,7 +1160,9 @@ def _dtype_case_generator(estimator_orig, with_memory=False):
         for dtype in dtype_list:
             for memory in memory_list:
                 estimator = clone(estimator_orig)
-                estimator.dtype = dtype
+
+                if hasattr(estimator_orig, "dtype"):
+                    estimator.dtype = dtype
 
                 if memory is not None:
                     estimator.memory = memory
