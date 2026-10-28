@@ -1230,9 +1230,9 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
             results_2 = estimator.transform(X)
             if not isinstance(results_2, list):
                 results_2 = [results_2]
-            for s1, s2 in zip(results, results_2, strict=False):
-                assert s1.dtype == s2.dtype
-                assert_array_equal(s1, s2)
+            for result_1, result_2 in zip(results, results_2, strict=False):
+                assert result_1.dtype == result_2.dtype
+                assert_array_equal(result_1, result_2)
 
 
 @skip_if_not(
