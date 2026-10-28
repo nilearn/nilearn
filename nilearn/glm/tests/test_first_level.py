@@ -46,6 +46,7 @@ from nilearn.maskers import (
     NiftiLabelsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceLabelsMasker,
     SurfaceMasker,
 )
 from nilearn.masking import intersect_masks
@@ -1730,7 +1731,7 @@ def test_plot_predicted_signal_and_residuals_no_matplotlib(fitted_model):
     """Return only DataFrame with a warning if matplotlib is not installed."""
     with pytest.warns(ImportWarning, match="Matplotlib is not installed"):
         result, fig = fitted_model.plot_predicted_signal_and_residuals(
-            coords=1
+            coords=(1, 1, 1)
         )
 
     assert all(isinstance(x, pd.DataFrame) for x in result)
@@ -1761,7 +1762,7 @@ def test_plot_predicted_signal_and_residuals_multiple_coords(fitted_model):
 
 
 def test_plot_predicted_signal_and_residuals_mask_img(
-    fitted_model, surface_glm_data
+    fitted_model, surface_glm_data, surf_label_img
 ):
     """Test passing mask img to rely on a label masker.
 
@@ -1778,12 +1779,10 @@ def test_plot_predicted_signal_and_residuals_mask_img(
     ]
 
     img, des = surface_glm_data(5)
-    model = FirstLevelModel()
+    model = FirstLevelModel(minimize_memory=False)
     model.fit(img, design_matrices=des)
 
-    df, _ = fitted_model.plot_predicted_signal_and_residuals(
-        mask=fitted_model.mask_img_
-    )
+    df, _ = model.plot_predicted_signal_and_residuals(mask=surf_label_img)
 
     assert all(isinstance(x, pd.DataFrame) for x in df)
     assert df[0].columns.to_list() == [
@@ -1825,3 +1824,34 @@ def test_plot_predicted_signal_and_residuals_errors(fitted_model):
 
     with pytest.raises(TypeError, match="'mask' must be of type"):
         fitted_model.plot_predicted_signal_and_residuals(mask=1)
+
+
+def test_plot_predicted_signal_and_residuals_surface_errors(
+    fitted_model, surface_glm_data
+):
+    """Raise errors for inputs that do not match the type of data fitted."""
+    img, des = surface_glm_data(5)
+    surface_model = FirstLevelModel(minimize_memory=False)
+    surface_model.fit(img, design_matrices=des)
+
+    with pytest.raises(TypeError, match="'coords' cannot be used"):
+        surface_model.plot_predicted_signal_and_residuals(coords=(1, 1, 1))
+
+    for mask in [
+        fitted_model.mask_img_,
+        NiftiSpheresMasker([(1, 1, 1)]),
+        NiftiLabelsMasker(fitted_model.mask_img_),
+    ]:
+        with pytest.raises(
+            TypeError, match="Mask and input images must be of compatible"
+        ):
+            surface_model.plot_predicted_signal_and_residuals(mask=mask)
+
+    for mask in [
+        surface_model.mask_img_,
+        SurfaceLabelsMasker(surface_model.mask_img_),
+    ]:
+        with pytest.raises(
+            TypeError, match="Mask and input images must be of compatible"
+        ):
+            fitted_model.plot_predicted_signal_and_residuals(mask=mask)
