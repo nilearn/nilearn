@@ -449,9 +449,10 @@ def test_resampling_warning_s_form(data, affine_eye, force_resample):
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_resampling_warning_binary_image(affine_eye, rng, force_resample):
-    # Resampling a binary image with continuous or
-    # linear interpolation should raise a warning.
-    data_binary = rng.integers(4, size=(1, 4, 4), dtype="int32")
+    """Warn when resampling binary images with continuous \
+    or linear interpolation.
+    """
+    data_binary = rng.integers(4, size=(1, 4, 4)).astype("float32")
     data_binary[data_binary > 0] = 1
 
     assert sorted(np.unique(data_binary)) == [0, 1]
@@ -512,10 +513,16 @@ def test_resample_img_copied_header(img_4d_mni_tr2, force_resample):
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_4d_affine_bounding_box_error(affine_eye, force_resample):
+    """Check that resampling a small image into a bigger one \
+    with a 4x4 or 3x3 target affine keeps all the data.
+    """
     bigger_data = np.zeros([10, 10, 10])
     bigger_img = Nifti1Image(bigger_data, affine_eye)
 
-    small_data = np.ones([4, 4, 4])
+    # use 2 to avoid having an image of 1s and 0s
+    # that would count as binary
+    # and throw warnings.
+    small_data = np.full([4, 4, 4], 2.0)
     small_data_4D_affine = affine_eye
     small_data_4D_affine[:3, -1] = np.array([5, 4, 5])
     small_img = Nifti1Image(small_data, small_data_4D_affine)
@@ -595,7 +602,10 @@ def test_3x3_affine_bbox(affine_eye, force_resample):
     scipy < 0.18 and scipy >= 0.18, which is an interaction between
     offset and a diagonal affine
     """
-    image = np.ones((20, 30))
+    # use 2 to avoid having an image of 1s and 0s
+    # that would count as binary
+    # and throw warnings.
+    image = np.full((20, 30), 2.0)
     source_affine = affine_eye
     # Give the affine an offset
     source_affine[:2, 3] = np.array([96, 64])
@@ -736,9 +746,10 @@ def test_resampling_nan(affine_eye, core_shape, force_resample):
     )
     # Introduce a nan
     core_data[2, 2:4, 1] = np.nan
-    full_data_shape = np.array(core_shape) + 2
-    full_data = np.zeros(full_data_shape)
-    full_data[tuple(slice(1, 1 + s) for s in core_shape)] = core_data
+    # only pad spatial dimensions:
+    # all-zeros volumes would trigger warnings about binary images
+    pad_width = [(1, 1)] * 3 + [(0, 0)] * (len(core_shape) - 3)
+    full_data = np.pad(core_data, pad_width)
 
     source_img = Nifti1Image(full_data, affine_eye)
 
@@ -748,9 +759,17 @@ def test_resampling_nan(affine_eye, core_shape, force_resample):
 
     # check 3x3 transformation matrix
     target_affine = np.eye(3)[axis_permutation]
-    resampled_img = resample_img(
-        source_img, target_affine=target_affine, force_resample=force_resample
-    )
+    if force_resample:
+        expected_warning = (RuntimeWarning, "NaNs or infinite values")
+    else:
+        # cropping finds no values above threshold because of the NaNs
+        expected_warning = (UserWarning, "No values above")
+    with pytest.warns(expected_warning[0], match=expected_warning[1]):
+        resampled_img = resample_img(
+            source_img,
+            target_affine=target_affine,
+            force_resample=force_resample,
+        )
 
     resampled_data = get_data(resampled_img)
     if full_data.ndim == 4:
@@ -876,12 +895,16 @@ def test_resample_identify_affine_int_translation(
 
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_resample_clip(affine_eye, force_resample):
-    # Resample and image and get larger and smaller
-    # value than in the original. Use clip to get rid of these images
+    """Check that clip keeps resampled values within the original range.
 
+    Resampling can create values larger and smaller than in the original.
+    """
     shape = (6, 3, 6)
     data = np.zeros(shape=shape)
-    data[1:-2, 1:-1, 1:-2] = 1
+    # use 2 to avoid having an image of 1s and 0s
+    # that would count as binary
+    # and throw warnings.
+    data[1:-2, 1:-1, 1:-2] = 2
 
     source_affine = np.diag((2, 2, 2, 1))
     source_img = Nifti1Image(data, source_affine)
@@ -1172,11 +1195,20 @@ def test_resample_img_segmentation_fault(force_resample):
     ],
 )
 def test_resampling_with_int_types_no_crash(affine_eye, dtype, force_resample):
-    data = np.zeros((2, 2, 2))
+    """Check that images of int, uint and float types can be resampled."""
+    data = np.full((2, 2, 2), 2)
     img = Nifti1Image(data.astype(dtype), affine_eye)
-    resample_img(
-        img, target_affine=2.0 * affine_eye, force_resample=force_resample
-    )
+    if np.dtype(dtype).kind == "i":
+        with pytest.warns(UserWarning, match="Casting data from"):
+            resample_img(
+                img,
+                target_affine=2.0 * affine_eye,
+                force_resample=force_resample,
+            )
+    else:
+        resample_img(
+            img, target_affine=2.0 * affine_eye, force_resample=force_resample
+        )
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
@@ -1184,15 +1216,21 @@ def test_resampling_with_int_types_no_crash(affine_eye, dtype, force_resample):
 def test_resampling_with_int64_types_no_crash(
     affine_eye, dtype, force_resample
 ):
-    data = np.zeros((2, 2, 2))
+    """Check that images of 64-bit int types can be resampled."""
+    data = np.full((2, 2, 2), 2)
     # Passing dtype or header is required when using int64
     # https://nipy.org/nibabel/changelog.html#api-changes-and-deprecations
     hdr = Nifti1Header()
     hdr.set_data_dtype(dtype)
     img = Nifti1Image(data.astype(dtype), affine_eye, header=hdr)
-    resample_img(
-        img, target_affine=2.0 * affine_eye, force_resample=force_resample
-    )
+    if np.dtype(dtype).kind == "i":
+        expected_warning = "Casting data from"
+    else:
+        expected_warning = "contains 64-bit ints"
+    with pytest.warns(UserWarning, match=expected_warning):
+        resample_img(
+            img, target_affine=2.0 * affine_eye, force_resample=force_resample
+        )
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
