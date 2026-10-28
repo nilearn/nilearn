@@ -446,6 +446,7 @@ def _write_freesurfer_geometry(filename, mesh):
     "suffix", [".pial", ".inflated", ".white", ".orig", "sphere"]
 )
 def test_load_surf_mesh_file_freesurfer(suffix, tmp_path, in_memory_mesh):
+    """Load freesurfer mesh files with different suffixes."""
     filename_fs_mesh = tmp_path / f"tmp{suffix}"
     _write_freesurfer_geometry(filename_fs_mesh, in_memory_mesh)
 
@@ -474,6 +475,7 @@ def test_load_surf_mesh_file_error(suffix, tmp_path, in_memory_mesh):
 
 @pytest.mark.ai_generated
 def test_load_surf_mesh_file_glob(tmp_path, in_memory_mesh):
+    """Load mesh files from glob patterns."""
     fname1 = tmp_path / "tmp1.pial"
     _write_freesurfer_geometry(fname1, in_memory_mesh)
 
