@@ -10,7 +10,6 @@ from nilearn._estimator_checks.nilearn_check_generator import (
     nilearn_check_estimator,
 )
 from nilearn._utils.data_gen import generate_maps
-from nilearn._utils.helpers import is_windows_platform
 from nilearn.conftest import (
     _affine_eye,
     _img_3d_mni,
@@ -189,7 +188,6 @@ def test_check_estimator_count():
 
 
 @pytest.mark.slow
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize(
     "estimator, name, check",
     nilearn_check_estimator(estimators=_estimators_to_test()),
