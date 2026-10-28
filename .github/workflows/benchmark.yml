@@ -570,7 +570,7 @@ jobs:
         -   name: Sync asv.conf.json with pyproject.toml
             id: sync
             continue-on-error: true
-            run: python asv_benchmarks/check_dependencies_in_sync.py --fix
+            run: python maint_tools/check_dependencies_in_sync.py --fix
 
         -   name: Create Pull Request
             uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
