@@ -58,7 +58,8 @@ def fake_subjects_fmri_data(n_subjects, shape=SHAPE):
     return fmri_data, mask
 
 
-def surf_imgs_with_noise(surf_img, n_subjects, rng):
+@pytest.fixture
+def surf_imgs_with_noise(surf_img_1d, n_subjects, rng):
     """Return a list of surface images (one per subject) with added noise.
 
     Using the same image for all subjects gives zero variance
@@ -66,10 +67,10 @@ def surf_imgs_with_noise(surf_img, n_subjects, rng):
     """
     return [
         new_img_like(
-            surf_img,
+            surf_img_1d,
             {
                 hemi: data + rng.standard_normal(data.shape)
-                for hemi, data in surf_img.data.parts.items()
+                for hemi, data in surf_img_1d.data.parts.items()
             },
         )
         for _ in range(n_subjects)

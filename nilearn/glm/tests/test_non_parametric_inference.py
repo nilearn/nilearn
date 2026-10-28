@@ -20,7 +20,6 @@ from nilearn.glm.tests.conftest import (
     SHAPE,
     fake_fmri_data,
     fake_subjects_fmri_data,
-    surf_imgs_with_noise,
 )
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
@@ -413,14 +412,12 @@ def test_contrast_computation_errors(rng, n_subjects):
 
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("two_sided_test", [True, False])
-def test_with_surface_images(surf_img_1d, two_sided_test, n_subjects, rng):
+def test_with_surface_images(two_sided_test, n_subjects, surf_imgs_with_noise):
     """Smoke test non_parametric_inference on list of 1D surfaces."""
-    second_level_input = surf_imgs_with_noise(surf_img_1d, n_subjects, rng)
-
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
     non_parametric_inference(
-        second_level_input=second_level_input,
+        second_level_input=surf_imgs_with_noise,
         design_matrix=design_matrix,
         n_perm=N_PERM,
         two_sided_test=two_sided_test,
@@ -456,14 +453,12 @@ def test_with_surface_images_2d_mask(surf_img_2d, surf_mask_1d, n_subjects):
     )
 
 
-def test_with_surface_images_smoothing(surf_img_1d, n_subjects, rng):
+def test_with_surface_images_smoothing(surf_imgs_with_noise, n_subjects):
     """Throw warnings for non implemented features for surface."""
-    second_level_input = surf_imgs_with_noise(surf_img_1d, n_subjects, rng)
-
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
     non_parametric_inference(
-        second_level_input=second_level_input,
+        second_level_input=surf_imgs_with_noise,
         design_matrix=design_matrix,
         n_perm=N_PERM,
         smoothing_fwhm=6,
@@ -472,10 +467,10 @@ def test_with_surface_images_smoothing(surf_img_1d, n_subjects, rng):
 
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("kwargs", [{"tfce": True}, {"threshold": 0.001}])
-def test_with_surface_images_warnings(surf_img_1d, n_subjects, kwargs, rng):
+def test_with_surface_images_warnings(
+    surf_imgs_with_noise, n_subjects, kwargs
+):
     """Throw warnings for non implemented features for surface."""
-    second_level_input = surf_imgs_with_noise(surf_img_1d, n_subjects, rng)
-
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
     with pytest.warns(
@@ -483,7 +478,7 @@ def test_with_surface_images_warnings(surf_img_1d, n_subjects, kwargs, rng):
         match="Cluster level inference not yet implemented for surface data.",
     ):
         non_parametric_inference(
-            second_level_input=second_level_input,
+            second_level_input=surf_imgs_with_noise,
             design_matrix=design_matrix,
             n_perm=N_PERM,
             **kwargs,
