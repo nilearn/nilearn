@@ -153,10 +153,14 @@ def test_errors(seeds, match):
         ((1.0, 1.0, 1.0), "(1.0, 1.0, 1.0)"),
     ],
 )
-def test_single_seed(seed, feature_name, img_3d_rand_eye):
+def test_single_seed(seed, feature_name, affine_eye, rng):
     """Check that a single triplet behaves like a list with one triplet."""
     masker = NiftiSpheresMasker(seed)
-    signals = masker.fit_transform(img_3d_rand_eye)
+
+    data = rng.random((3, 3, 3, 5))
+    img = Nifti1Image(data, affine_eye)
+
+    signals = masker.fit_transform(img)
 
     assert masker.seeds_ == [[1, 1, 1]]
     assert signals.shape == (5, 1)
