@@ -5,6 +5,7 @@ import pytest
 
 from nilearn._utils.data_gen import generate_fake_fmri_data_and_design
 from nilearn.conftest import _shape_3d_default
+from nilearn.image import new_img_like
 
 SHAPE = (*_shape_3d_default(), 1)
 
@@ -44,3 +45,32 @@ def fake_fmri_data(shape=SHAPE):
     shapes = (shape,)
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
     return fmri_data[0], mask
+
+
+def fake_subjects_fmri_data(n_subjects, shape=SHAPE):
+    """Return a list of distinct fMRI images (one per subject) and a mask.
+
+    Using the same image for all subjects gives zero variance
+    across subjects and leads to degenerate statistics.
+    """
+    shapes = [shape] * n_subjects
+    mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
+    return fmri_data, mask
+
+
+def surf_imgs_with_noise(surf_img, n_subjects, rng):
+    """Return a list of surface images (one per subject) with added noise.
+
+    Using the same image for all subjects gives zero variance
+    across subjects and leads to degenerate statistics.
+    """
+    return [
+        new_img_like(
+            surf_img,
+            {
+                hemi: data + rng.standard_normal(data.shape)
+                for hemi, data in surf_img.data.parts.items()
+            },
+        )
+        for _ in range(n_subjects)
+    ]
