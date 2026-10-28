@@ -1238,7 +1238,6 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
 
 @skip_if_not(
     (lambda e: accepts_image(e), "Estimator does not accept image."),
-    (lambda e: hasattr(e, "dtype"), "'dtype' attribute is not implemented."),
 )
 def check_img_estimator_dtypes(estimator_orig) -> None:
     """Check estimator can fit and run several methods \
