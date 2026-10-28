@@ -1094,12 +1094,11 @@ def _fetch_surf_fsaverage(
     dataset_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
     opts = {"uncompress": True}
 
+    zenodo = "https://zenodo.org/api/records"
+
     url = {
-        "fsaverage3": (
-            "https://zenodo.org/api/records/23242166/files/"
-            "fsaverage3.tar.gz/content"
-        ),
-        "fsaverage4": "https://osf.io/gkqd5/download",
+        "fsaverage3": f"{zenodo}/23242166/files/fsaverage3.tar.gz/content",
+        "fsaverage4": f"{zenodo}/23696293/files/fsaverage4.tar.gz/content",
         "fsaverage6": "https://osf.io/jzxyr/download",
         "fsaverage": "https://osf.io/svf8k/download",  # fsaverage7
     }[dataset_name]
