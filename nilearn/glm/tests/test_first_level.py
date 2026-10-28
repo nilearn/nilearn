@@ -1722,7 +1722,6 @@ def test_generate_report_threshold_unused(threshold):
         )
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="This test is run only if matplotlib is not installed.",
@@ -1731,7 +1730,7 @@ def test_plot_predicted_signal_and_residuals_no_matplotlib(fitted_model):
     """Return only DataFrame with a warning if matplotlib is not installed."""
     with pytest.warns(ImportWarning, match="Matplotlib is not installed"):
         result, fig = fitted_model.plot_predicted_signal_and_residuals(
-            coords=1
+            coords=(1, 1, 1)
         )
 
     assert all(isinstance(x, pd.DataFrame) for x in result)
