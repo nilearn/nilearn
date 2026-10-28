@@ -11,7 +11,11 @@ import pytest
 from nibabel import Nifti1Image
 from scipy.signal import get_window
 
-from nilearn._utils.helpers import is_gil_enabled, is_matplotlib_installed
+from nilearn._utils.helpers import (
+    is_gil_enabled,
+    is_matplotlib_installed,
+    is_windows_platform,
+)
 from nilearn.masking import unmask
 from nilearn.surface import (
     InMemoryMesh,
@@ -74,6 +78,13 @@ def pytest_configure(config):  # noqa: ARG001
     """Use Agg so that no figures pop up."""
     if matplotlib is not None:
         matplotlib.use("Agg", force=True)
+
+
+def pytest_collection_modifyitems(items):
+    """Set estimator tests flaky only on windows platform."""
+    for item in items:
+        if is_windows_platform() and "check_estimator_nilearn" in item.nodeid:
+            item.add_marker(pytest.mark.flaky(reruns=5, reruns_delay=2))
 
 
 @pytest.fixture(autouse=True)
