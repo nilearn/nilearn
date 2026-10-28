@@ -7,7 +7,7 @@ import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Self, overload
+from typing import Any, Self, overload
 
 import numpy as np
 import pandas as pd
@@ -337,25 +337,20 @@ class _BaseMasker(
 ):
     """Base class for NiftiMaskers."""
 
-    # Parameters shared by all maskers declared only for type checkers:
-    # with TYPE_CHECKING keeps them out of the class __annotations__,
-    # so they are not listed as undocumented members in the API docs.
-    if TYPE_CHECKING:
-        clean_args: dict[str, Any] | None
-        detrend: Detrend
-        dtype: DType
-        high_pass: HighPass
-        high_variance_confounds: bool
-        low_pass: LowPass
-        memory: MemoryLike
-        memory_level: MemoryLevel
-        smoothing_fwhm: SmoothingFwhm
-        reports: bool
-        standardize: Standardize
-        standardize_confounds: StandardizeConfounds
-        t_r: Tr
-        verbose: Verbose
-
+    clean_args: dict[str, Any] | None
+    detrend: Detrend
+    dtype: DType
+    high_pass: HighPass
+    high_variance_confounds: bool
+    low_pass: LowPass
+    memory: MemoryLike
+    memory_level: MemoryLevel
+    smoothing_fwhm: SmoothingFwhm
+    reports: bool
+    standardize: Standardize
+    standardize_confounds: StandardizeConfounds
+    t_r: Tr
+    verbose: Verbose
     _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
 
     @property
@@ -402,9 +397,7 @@ class _BaseMasker(
 class BaseMasker(_BaseMasker):
     """Base class for NiftiMaskers."""
 
-    if TYPE_CHECKING:
-        mask_img: NiimgLike | None
-
+    mask_img: NiimgLike | None
     _template_name = "body_masker.jinja"
 
     @fill_doc
@@ -788,10 +781,8 @@ class BaseMasker(_BaseMasker):
 class _BaseSurfaceMasker(_BaseMasker):
     """Class from which all surface maskers should inherit."""
 
-    if TYPE_CHECKING:
-        mask_img: SurfaceImage | None
-        cmap: ColormapLike
-
+    mask_img: SurfaceImage | None
+    cmap: ColormapLike
     _template_name = "body_surface_masker.jinja"
 
     def __sklearn_tags__(self):

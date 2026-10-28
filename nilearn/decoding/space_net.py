@@ -657,7 +657,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
     %(spacenet_fit_attributes)s
     """
 
-    SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
+    _SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
 
     def __init__(
         self,
@@ -745,7 +745,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
                 f"Got {self.screening_percentile:g}."
             )
         check_parameter_in_allowed(
-            self.penalty, self.SUPPORTED_PENALTIES, "penalty"
+            self.penalty, self._SUPPORTED_PENALTIES, "penalty"
         )
         if self.__sklearn_tags__().estimator_type == "classifier":
             self._validate_loss(self.loss)
@@ -1109,7 +1109,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
     nilearn.decoding.SpaceNetRegressor: Graph-Net and TV-L1 priors/penalties
     """
 
-    SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
+    _SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
 
     def __init__(
         self,
@@ -1167,7 +1167,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     def _validate_loss(self, value) -> None:
         if value is not None:
-            check_parameter_in_allowed(value, self.SUPPORTED_LOSSES, "loss")
+            check_parameter_in_allowed(value, self._SUPPORTED_LOSSES, "loss")
 
     def _check_params(self):
         super()._check_params()

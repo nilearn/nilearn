@@ -375,7 +375,7 @@ class Parcellations(_MultiPCA):
       giving the matrix.
     """
 
-    VALID_METHODS: ClassVar[tuple[str, ...]] = (
+    _VALID_METHODS: ClassVar[tuple[str, ...]] = (
         "kmeans",
         "ward",
         "complete",
@@ -457,7 +457,7 @@ class Parcellations(_MultiPCA):
             Note that, this attribute is returned only for selected methods
             such as 'ward', 'complete', 'average'.
         """
-        valid_methods = self.VALID_METHODS
+        valid_methods = self._VALID_METHODS
         if self.method is None:
             raise ValueError(
                 "Parcellation method is specified as None. "

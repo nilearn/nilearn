@@ -4,11 +4,11 @@
         "desc": "Coordinates of the 160 regions in :term:`MNI` space with x, y, z coordinates."
     },
     "networks": {
-        "type": "np.ndarray",
+        "type": "pd.Series",
         "desc": "Names of the corresponding network for each region."
     },
     "labels": {
-        "type": "np.ndarray",
+        "type": "list[str]",
         "desc": "Names of the regions."
     }
 }

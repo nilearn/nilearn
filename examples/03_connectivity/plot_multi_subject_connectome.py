@@ -7,6 +7,11 @@ using the group sparse inverse covariance estimate.
 
 This example is a toy example as running it on more subjects will
 require a longer run time.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`MSDL atlas <msdl_atlas>` to extract data
+    from the :ref:`development fMRI dataset <development_dataset>`.
 """
 
 # %%

@@ -10,6 +10,13 @@ from a 4D functional image,
 where each row in the plot is the time-series for a given voxel.
 
 This figure was originally developed in :footcite:t:`Power2017`.
+
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`ADHD dataset <adhd_dataset>`
+    - the :ref:`ICBM 152 template <icbm152_2009>`
 """
 
 # %%
