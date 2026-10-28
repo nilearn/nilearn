@@ -1178,10 +1178,6 @@ def _dtype_case_generator(estimator_orig, with_memory=False):
         lambda e: hasattr(e, "transform"),
         "'transform' attribute is not implemented.",
     ),
-    (
-        lambda e: hasattr(e, "dtype"),
-        "'dtype' attribute is not implemented.",
-    ),
 )
 def check_img_estimator_dtypes_transform(estimator_orig) -> None:
     """Check estimator can fit and run for transform \
