@@ -95,7 +95,6 @@ def pytest_collection_modifyitems(items):
         "test_glm_random_state",
         # maskers
         "test_small_radius",
-        "test_load_uniform_ball_cloud",
         # regions
         "test_fit_on_single_nifti_image",
         "test_no_warnings",
