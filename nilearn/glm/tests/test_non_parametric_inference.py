@@ -16,7 +16,12 @@ from nilearn._utils.data_gen import (
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import non_parametric_inference
-from nilearn.glm.tests.conftest import SHAPE, fake_fmri_data
+from nilearn.glm.tests.conftest import (
+    SHAPE,
+    fake_fmri_data,
+    fake_subjects_fmri_data,
+    surf_imgs_with_noise,
+)
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.reporting import get_clusters_table
@@ -27,17 +32,19 @@ N_PERM = 5
 def test_with_flm_objects(shape_3d_default):
     """See https://github.com/nilearn/nilearn/issues/3579 ."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[(*shape_3d_default, 15)]
+        shapes=[(*shape_3d_default, 15)] * 2
     )
 
     masker = NiftiMasker(mask)
     masker.fit()
-    single_run_model = FirstLevelModel(mask_img=masker).fit(
-        fmri_data[0], design_matrices=design_matrices[0]
-    )
-    single_run_model.compute_contrast("x")
-
-    second_level_input = [single_run_model, single_run_model]
+    # use different data for each model
+    # to have some variance across "subjects"
+    second_level_input = [
+        FirstLevelModel(mask_img=masker).fit(
+            img, design_matrices=design_matrices[0]
+        )
+        for img in fmri_data
+    ]
 
     design_matrix = pd.DataFrame(
         [1] * len(second_level_input), columns=["intercept"]
@@ -54,18 +61,17 @@ def test_with_flm_objects(shape_3d_default):
 def test_with_paths(tmp_path, n_subjects):
     """Ensure non_parametric_inference can work with paths."""
     mask_file, fmri_files, _ = write_fake_fmri_data_and_design(
-        (SHAPE,), file_path=tmp_path
+        [SHAPE] * n_subjects, file_path=tmp_path
     )
-    fmri_files = fmri_files[0]
+    map_name = "effect"
     df_input = pd.DataFrame(
         {
             "subject_label": [f"sub-{i}" for i in range(n_subjects)],
-            "effects_map_path": [fmri_files] * n_subjects,
-            "map_name": [fmri_files] * n_subjects,
+            "effects_map_path": fmri_files,
+            "map_name": [map_name] * n_subjects,
         }
     )
-    func_img = load(fmri_files)
-    Y = [func_img] * n_subjects
+    Y = [load(f) for f in fmri_files]
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     c1 = np.eye(len(X.columns))[0]
     neg_log_pvals_imgs = [
@@ -73,7 +79,7 @@ def test_with_paths(tmp_path, n_subjects):
             second_level_input,
             design_matrix=X,
             second_level_contrast=c1,
-            first_level_contrast=fmri_files,
+            first_level_contrast=map_name,
             mask=mask_file,
             n_perm=N_PERM,
             verbose=1,
@@ -93,8 +99,7 @@ def test_with_paths(tmp_path, n_subjects):
 
 def test_warning(n_subjects):
     """Test warning smoothing_fwhm override."""
-    func_img, mask = fake_fmri_data()
-    Y = [func_img] * n_subjects
+    Y, mask = fake_subjects_fmri_data(n_subjects)
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     c1 = np.eye(len(X.columns))[0]
 
@@ -172,9 +177,7 @@ def test_fmri_inputs_errors(
 
 def test_permutation_computation(n_subjects):
     """Test non_parametric_inference."""
-    func_img, mask = fake_fmri_data()
-
-    Y = [func_img] * n_subjects
+    Y, mask = fake_subjects_fmri_data(n_subjects)
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
 
     neg_log_pvals_img = non_parametric_inference(
@@ -210,9 +213,7 @@ def test_tfce(n_subjects):
 
 def test_cluster_level(n_subjects):
     """Test non-parametric inference with cluster-level inference."""
-    func_img, mask = fake_fmri_data()
-
-    Y = [func_img] * n_subjects
+    Y, mask = fake_subjects_fmri_data(n_subjects)
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
 
     out = non_parametric_inference(
@@ -234,10 +235,13 @@ def test_cluster_level(n_subjects):
     assert get_data(out["logp_max_t"]).shape == SHAPE[:3]
 
 
-def test_cluster_level_with_covariates(shape_3d_default, rng, n_subjects):
+def test_cluster_level_with_covariates(shape_3d_default, rng):
     """Test non-parametric inference with cluster-level inference in \
     the context of covariates.
     """
+    # need more subjects than regressors
+    # to have residual degrees of freedom
+    n_subjects = 5
     shapes = ((*shape_3d_default, 1),)
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
 
@@ -321,9 +325,7 @@ def test_contrast_computation(second_level_contrast, n_subjects):
     """Smoke test for contrast computation with \
         different second_level_contrast.
     """
-    func_img, mask = fake_fmri_data()
-
-    Y = [func_img] * n_subjects
+    Y, mask = fake_subjects_fmri_data(n_subjects)
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
 
     non_parametric_inference(
@@ -339,16 +341,19 @@ def test_contrast_computation(second_level_contrast, n_subjects):
 @pytest.mark.parametrize(
     "second_level_contrast", [[1, 0], "r1", "r1-r2", [-1, 1]]
 )
-def test_contrast_formula(second_level_contrast, rng, n_subjects):
+def test_contrast_formula(second_level_contrast, rng):
     """Smoke test using a formula as second_level_contrast."""
-    func_img, _ = fake_fmri_data()
-    Y = [func_img] * n_subjects
+    # need more subjects than regressors
+    # to have residual degrees of freedom
+    n_subjects = 5
+    Y, mask = fake_subjects_fmri_data(n_subjects)
     X = pd.DataFrame(rng.uniform(size=(n_subjects, 2)), columns=["r1", "r2"])
 
     non_parametric_inference(
         second_level_input=Y,
         design_matrix=X,
         second_level_contrast=second_level_contrast,
+        mask=mask,
     )
 
 
@@ -408,9 +413,9 @@ def test_contrast_computation_errors(rng, n_subjects):
 
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("two_sided_test", [True, False])
-def test_with_surface_images(surf_img_1d, two_sided_test, n_subjects):
+def test_with_surface_images(surf_img_1d, two_sided_test, n_subjects, rng):
     """Smoke test non_parametric_inference on list of 1D surfaces."""
-    second_level_input = [surf_img_1d for _ in range(n_subjects)]
+    second_level_input = surf_imgs_with_noise(surf_img_1d, n_subjects, rng)
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
@@ -451,9 +456,9 @@ def test_with_surface_images_2d_mask(surf_img_2d, surf_mask_1d, n_subjects):
     )
 
 
-def test_with_surface_images_smoothing(surf_img_1d, n_subjects):
+def test_with_surface_images_smoothing(surf_img_1d, n_subjects, rng):
     """Throw warnings for non implemented features for surface."""
-    second_level_input = [surf_img_1d for _ in range(n_subjects)]
+    second_level_input = surf_imgs_with_noise(surf_img_1d, n_subjects, rng)
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
@@ -467,9 +472,9 @@ def test_with_surface_images_smoothing(surf_img_1d, n_subjects):
 
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("kwargs", [{"tfce": True}, {"threshold": 0.001}])
-def test_with_surface_images_warnings(surf_img_1d, n_subjects, kwargs):
+def test_with_surface_images_warnings(surf_img_1d, n_subjects, kwargs, rng):
     """Throw warnings for non implemented features for surface."""
-    second_level_input = [surf_img_1d for _ in range(n_subjects)]
+    second_level_input = surf_imgs_with_noise(surf_img_1d, n_subjects, rng)
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
