@@ -1158,9 +1158,9 @@ def _dtype_case_generator(estimator_orig, with_memory=False):
             for memory in memory_list:
                 estimator = clone(estimator_orig)
                 estimator.dtype = dtype
-                estimator.memory = memory
 
                 if memory is not None:
+                    estimator.memory = memory
                     estimator.memory_level = 1
 
                 yield estimator, input_dtype, dtype, memory
