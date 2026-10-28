@@ -81,7 +81,10 @@ def pytest_configure(config):  # noqa: ARG001
 
 
 def pytest_collection_modifyitems(items):
-    """Set estimator tests flaky only on windows platform."""
+    """Set estimator tests flaky only on windows platform.
+
+    https://docs.pytest.org/en/stable/example/markers.html#automatically-adding-markers-based-on-test-names
+    """
     flaky_tests = [
         # _estimator_checks
         "test_check_estimator_nilearn",
@@ -110,8 +113,9 @@ def pytest_collection_modifyitems(items):
         # surface
         "test_load_uniform_ball_cloud",
     ]
+
     for item in items:
-        if is_windows_platform() and item.nodeid in flaky_tests:
+        if is_windows_platform() and item.originalname in flaky_tests:
             item.add_marker(pytest.mark.flaky(reruns=5, reruns_delay=2))
 
 
