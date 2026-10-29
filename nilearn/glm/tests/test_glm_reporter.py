@@ -549,7 +549,8 @@ def test_carousel_several_runs(
     # change name of design matrix columns and use contrast expression
     # to have different plots for each run
     rk = 6
-    shapes = ((7, 7, 7, 5), (7, 7, 7, 10), (7, 7, 7, 15))
+    # use more scans than regressors in each run
+    shapes = ((7, 7, 7, 10), (7, 7, 7, 15), (7, 7, 7, 20))
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
     )
