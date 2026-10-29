@@ -153,7 +153,8 @@ def _load_custom_anat(
         if black_bg == "auto":
             # Guess if the background is rather black or light based on
             # the values of voxels near the border
-            background = np.median(get_border_data(data, 2))
+            # the mask of masked arrays is ignored by np.median anyway
+            background = np.median(np.ma.getdata(get_border_data(data, 2)))
             black_bg = bool(background <= 0.5 * (vmin + vmax))
 
     return anat_img, black_bg, vmin, vmax

@@ -51,6 +51,12 @@ from nilearn.plotting.displays import OrthoSlicer
 from nilearn.plotting.image.utils import MNI152TEMPLATE
 from nilearn.surface import load_surf_data
 
+# tests return figures for pytest-mpl,
+# which pytest warns about when run without --mpl
+pytestmark = pytest.mark.filterwarnings(
+    "ignore::pytest.PytestReturnNotNoneWarning"
+)
+
 PLOTTING_FUNCS_3D = (
     plot_img,
     plot_anat,
@@ -169,6 +175,9 @@ def test_plot_functions_colorbar_ticks(plot_func, img_3d_mni):
     )
 
 
+@pytest.mark.filterwarnings(
+    "ignore:vmin is negative but plot_abs is True:UserWarning"
+)
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("vmin", [-1, 1])
@@ -216,6 +225,11 @@ def test_add_contours(levels, colors):
     return display
 
 
+@pytest.mark.filterwarnings(
+    "ignore:.*detected in parameters:UserWarning",
+    # single level case: matplotlib normalizes with vmin == vmax
+    "ignore:invalid value encountered in divide:RuntimeWarning",
+)
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize(
     "kwargs",
@@ -496,6 +510,9 @@ def test_plot_surf_colorbar_no_overlapping_ticks():
 @pytest.mark.parametrize("bg_on_data", [True, False])
 @pytest.mark.parametrize("symmetric_cmap", [True, False])
 @pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.filterwarnings(
+    "ignore:'symmetric_cmap' is not implemented:UserWarning"
+)
 @pytest.mark.parametrize("title", [None, "Foo"])
 def test_plot_img_on_surf(bg_on_data, symmetric_cmap, colorbar, title):
     """Test plot_img_on_surf with various display options."""
@@ -806,6 +823,7 @@ def test_plot_with_transparency_range(fn, transparency_range):
 IMG_COMPARISON_FUNCS = (plot_img_comparison, plot_bland_altman)
 
 
+@pytest.mark.filterwarnings("ignore:imgs are being resampled:UserWarning")
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
 def test_img_comparison_default(
@@ -817,6 +835,7 @@ def test_img_comparison_default(
     return plt.gcf()
 
 
+@pytest.mark.filterwarnings("ignore:imgs are being resampled:UserWarning")
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])
