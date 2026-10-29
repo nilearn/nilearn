@@ -155,6 +155,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         "number_of_maps": 0,
     }
     _template_name = "body_surface_maps_masker.jinja"
+    _allowed_engines = (DEFAULT_ENGINE, "plotly")
 
     def __init__(
         self,
@@ -455,10 +456,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             region_signals, imgs, return_1D
         )
 
-    def _run_report_checks(self, allowed_engines=None, **kwargs):
-        if allowed_engines is None:
-            allowed_engines = [DEFAULT_ENGINE, "plotly"]
-        super()._run_report_checks(allowed_engines=allowed_engines, **kwargs)
+    def _run_report_checks(self, **kwargs):
+
+        super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
             displayed_maps = kwargs.get("displayed_maps", 10)

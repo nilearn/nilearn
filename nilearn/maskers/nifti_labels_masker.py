@@ -224,7 +224,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
     }
     _template_name = "body_nifti_labels_masker.jinja"
 
-    # memory and memory_level are used by _utils.CacheMixin.
+    _allowed_engines = (DEFAULT_ENGINE, "brainsprite")
 
     def __init__(
         self,
@@ -338,10 +338,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return masked_atlas, removed_region_ids, removed_region_names, display
 
-    def _run_report_checks(self, allowed_engines=None, **kwargs):
-        if allowed_engines is None:
-            allowed_engines = [DEFAULT_ENGINE, "brainsprite"]
-        super()._run_report_checks(allowed_engines=allowed_engines, **kwargs)
+    def _run_report_checks(self, **kwargs):
+
+        super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
             img = self._reporting_data["images"]

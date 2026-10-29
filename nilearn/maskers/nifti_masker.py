@@ -351,6 +351,8 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         ),
     }
 
+    _allowed_engines = (DEFAULT_ENGINE, "brainsprite")
+
     def __init__(
         self,
         mask_img: NiimgLike | None = None,
@@ -400,10 +402,9 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self._reset_report()
 
-    def _run_report_checks(self, allowed_engines=None, **kwargs):
-        if allowed_engines is None:
-            allowed_engines = [DEFAULT_ENGINE, "brainsprite"]
-        super()._run_report_checks(allowed_engines=allowed_engines, **kwargs)
+    def _run_report_checks(self, **kwargs):
+
+        super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
             img = self._reporting_data["images"]

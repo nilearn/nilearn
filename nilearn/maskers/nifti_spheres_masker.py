@@ -390,8 +390,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self._reset_report()
 
-    def _run_report_checks(self, allowed_engines=None, **kwargs):
-        super()._run_report_checks(allowed_engines=allowed_engines, **kwargs)
+    def _run_report_checks(self, **kwargs):
+        super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
             displayed_spheres = kwargs.get("displayed_spheres", 10)

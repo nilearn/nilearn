@@ -98,6 +98,8 @@ class ReportMixin:
         "warning_messages": [],
     }
 
+    _allowed_engines: tuple[ReportEngine, ...] = (DEFAULT_ENGINE,)
+
     # report body template name for the estimator
     _template_name: str = ""
     # inheriting estimator should have _estimator_type
@@ -229,7 +231,7 @@ class ReportMixin:
             datetime.now().replace(microsecond=0).isoformat()
         )
 
-    def _check_engine(self, allowed: list[ReportEngine] | None = None) -> None:
+    def _check_engine(self) -> None:
         """Check that the report engine is supported by this estimator.
 
         Fall back to the default engine with a warning if it is not.
@@ -237,12 +239,10 @@ class ReportMixin:
         Estimators supporting other engines should override this method
         to pass the list of engines they support.
         """
-        if allowed is None:
-            allowed = [DEFAULT_ENGINE]
         engine = self._report_content["engine"]
-        if engine not in allowed:
+        if engine not in self._allowed_engines:
             warnings.warn(
-                f"'engine' must be one of {allowed} "
+                f"'engine' must be one of {self._allowed_engines} "
                 f"for {self.__class__.__name__}. "
                 f"Got {engine!r} instead. "
                 f"Falling back to {DEFAULT_ENGINE!r}.",
@@ -250,7 +250,7 @@ class ReportMixin:
             )
             self._report_content["engine"] = DEFAULT_ENGINE
 
-    def _run_report_checks(self, allowed_engines=None, **kwargs):
+    def _run_report_checks(self, **kwargs):
         """Run standard checks before report is generated.
 
         Checks if:
@@ -261,7 +261,7 @@ class ReportMixin:
         - matplotlib is installed
         """
         _ = kwargs
-        self._check_engine(allowed_engines)
+        self._check_engine()
 
         if self.reports is False:
             self._append_report_warning(
