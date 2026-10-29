@@ -346,7 +346,6 @@ class _BaseMasker(
     memory: MemoryLike
     memory_level: MemoryLevel
     smoothing_fwhm: SmoothingFwhm
-    reports: bool
     standardize: Standardize
     standardize_confounds: StandardizeConfounds
     t_r: Tr

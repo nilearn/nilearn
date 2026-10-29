@@ -99,6 +99,7 @@ class ReportMixin:
     }
 
     _allowed_engines: tuple[ReportEngine, ...] = (DEFAULT_ENGINE,)
+    report: bool = True
 
     # report body template name for the estimator
     _template_name: str = ""
