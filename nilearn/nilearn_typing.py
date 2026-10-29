@@ -110,6 +110,10 @@ MaskStrategy: TypeAlias = Literal[
 MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
 MemoryLevel: TypeAlias = Integer
 NJobs: TypeAlias = Integer
+# 'ols' or 'arN' where N is a positive integer (e.g. 'ar1', 'ar3').
+# This pattern cannot be expressed with Literal,
+# so validation happens at run time.
+NoiseModel: TypeAlias = str
 NPerm: TypeAlias = Integer
 NSubject: TypeAlias = int | list[int] | tuple[int, ...] | None
 NiimgLike: TypeAlias = Nifti1Image | str | pathlib.Path
