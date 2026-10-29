@@ -2718,8 +2718,10 @@ class PhonyNiimage(spatialimages.SpatialImage):
     def __init__(self):
         self.data = np.ones((9, 9, 9, 9))
         self.my_affine = np.ones((4, 4))
+        self._data_cache = self.data
+        self._dataobj = self.data
 
-    def get_data(self):
+    def get_data(self, caching="fill"):  # noqa: ARG002
         """Return data."""
         return self.data
 
@@ -2732,15 +2734,8 @@ class PhonyNiimage(spatialimages.SpatialImage):
         """Return shape."""
         return self.data.shape
 
-    @property
-    def _data_cache(self):
-        return self.data
 
-    @property
-    def _dataobj(self):
-        return self.data
-
-
+@pytest.mark.ai_generated
 def test_check_niimg_4d_phony_image():
     """Test a Niimg-like object that does not hold a shape attribute."""
     phony_img = PhonyNiimage()

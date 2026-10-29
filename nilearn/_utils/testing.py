@@ -38,7 +38,11 @@ except ImportError:
 
         return dummy_func
 
-    memory_usage = memory_used = None  # type: ignore[assignment]
+    def memory_used(func, *args, **kwargs):  # noqa: ARG001
+        """Raise an error as memory_profiler is not installed."""
+        raise ImportError("memory_profiler is required to measure memory.")
+
+    memory_usage = None  # type: ignore[assignment]
 
 
 def is_64bit() -> bool:

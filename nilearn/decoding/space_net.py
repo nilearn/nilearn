@@ -838,11 +838,13 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
             else list(self.l1_ratios)
         )
 
-        alphas = self.alphas
-        if alphas is not None and not isinstance(
-            alphas, collections.abc.Iterable
-        ):
-            alphas = [alphas]
+        alphas: list[float] | None = None
+        if self.alphas is not None:
+            alphas = (
+                [self.alphas]
+                if not isinstance(self.alphas, collections.abc.Iterable)
+                else list(self.alphas)
+            )
 
         loss = self._return_loss_value()
 

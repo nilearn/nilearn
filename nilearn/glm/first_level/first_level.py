@@ -228,6 +228,8 @@ def run_glm(
     # Create the model
     ols_result = OLSModel(X).fit(Y)
 
+    results: dict[str | float, RegressionResults]
+
     if noise_model[:2] == "ar":
         err_msg = (
             "AR order must be a positive integer specified as arN, "
@@ -267,7 +269,6 @@ def run_glm(
             labels = np.array([cluster_labels[i] for i in kmeans.labels_])
 
         unique_labels = np.unique(labels)
-        results = {}
 
         # Fit the AR model according to current AR(N) estimates
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
@@ -726,10 +727,14 @@ class FirstLevelModel(BaseGLM):
         elif step == "running":
             msg = "Performing GLM computation."
         elif step == "run_done":
+            if time_in_second is None:  # pragma: no cover
+                raise TypeError(f"'time_in_second' cannot be None for {step=}")
             msg = f"GLM took {int(time_in_second)} seconds."
         elif step == "masking":
             msg = "Performing mask computation."
         elif step == "masking_done":
+            if time_in_second is None:  # pragma: no cover
+                raise TypeError(f"'time_in_second' cannot be None for {step=}")
             msg = f"Masking took {int(time_in_second)} seconds."
         elif step == "done":
             msg = (

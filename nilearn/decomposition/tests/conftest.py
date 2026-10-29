@@ -137,6 +137,9 @@ def _decomposition_img(
 ) -> SurfaceImage | Nifti1Image:
     """Return a single image for decomposition."""
     if data_type == "surface":
+        if mesh is None:  # pragma: no cover
+            raise TypeError(f"'mesh' cannot be None for {data_type=}.")
+
         data = {
             "left": rng.standard_normal(
                 size=(
@@ -156,6 +159,9 @@ def _decomposition_img(
             data["right"][2:4, :] += 10
 
         return SurfaceImage(mesh=mesh, data=data)
+
+    if shape is None:  # pragma: no cover
+        raise TypeError(f"'shape' cannot be None for {data_type=}.")
 
     shape = (*shape, N_SAMPLES)
     this_img = rng.normal(size=shape)

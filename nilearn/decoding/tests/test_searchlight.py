@@ -44,6 +44,18 @@ def test_error_searchlight_no_mask():
         sl.fit(data_img, y=cond)
 
 
+def test_error_searchlight_no_mask_nor_process_mask():
+    """Check error when neither mask_img nor process_mask_img is given."""
+    sl = searchlight.SearchLight()
+
+    data_img, cond, _ = _make_searchlight_test_data(frames=30)
+    with pytest.raises(
+        TypeError,
+        match="At least one of 'mask_img' or 'process_mask_img'",
+    ):
+        sl.fit(data_img, y=cond)
+
+
 def test_searchlight_small_radius():
     """Check that only one pixel is selected with a small radius."""
     frames = 30
