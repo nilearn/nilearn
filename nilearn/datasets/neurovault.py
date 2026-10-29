@@ -19,7 +19,6 @@ from urllib.parse import urlencode, urljoin
 import numpy as np
 import requests
 from sklearn.feature_extraction import DictVectorizer
-from sklearn.utils import Bunch
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
@@ -35,7 +34,7 @@ from nilearn.datasets._utils import (
     logger,
 )
 from nilearn.image import resample_img
-from nilearn.nilearn_typing import DataDir, Verbose
+from nilearn.nilearn_typing import Bunch, DataDir, Verbose
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")

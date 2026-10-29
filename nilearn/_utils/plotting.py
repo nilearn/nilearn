@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
-from sklearn.utils import Bunch
 
+from nilearn.nilearn_typing import Bunch
 from nilearn.plotting import (
     plot_contrast_matrix,
     plot_design_matrix,

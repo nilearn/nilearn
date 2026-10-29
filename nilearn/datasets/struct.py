@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 from nibabel import Nifti1Image
 from scipy.ndimage import binary_closing
-from sklearn.utils import Bunch
 
 from nilearn._utils.docs import Description, fill_doc
 from nilearn._utils.logger import find_stack_level
@@ -29,6 +28,7 @@ from nilearn.datasets._utils import (
 from nilearn.image import check_niimg, get_data, new_img_like, resampling
 from nilearn.nilearn_typing import (
     AvailableMeshes,
+    Bunch,
     DataDir,
     NSubject,
     Resolution,
@@ -72,7 +72,7 @@ def fetch_icbm152_2009(  # numpydoc ignore=RT05
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch:
+) -> Bunch[str, Any]:
     """Download and load the ICBM152 template (dated 2009).
 
     For more information
@@ -634,7 +634,7 @@ def fetch_oasis_vbm(  # numpydoc ignore=RT05
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch:
+) -> Bunch[str, Any]:
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
     For more information
