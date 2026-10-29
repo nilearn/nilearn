@@ -238,8 +238,6 @@ linkcheck_allowed_redirects = {
     r"http://humanconnectome.org/.*": r"https://store.humanconnectome.org/.*",
     # Issue redirect to PR
     r"https://github.com/nilearn/nilearn/issues/.*": r"https://github.com/nilearn/nilearn/pull/.*",
-    # OSF downloads
-    r"https://osf.io/.*/download": r"https://files.osf.io/.*",
     # doi redirect
     "https://doi.org/": r"https://.*",
 }
