@@ -7,6 +7,7 @@ import joblib
 import numpy as np
 import pytest
 from nibabel import Nifti1Header, Nifti1Image, load
+from numpy.testing import assert_almost_equal, assert_equal
 
 from nilearn._utils.niimg import (
     _get_data,
@@ -16,10 +17,13 @@ from nilearn._utils.niimg import (
     is_binary_niimg,
     load_niimg,
     repr_niimgs,
+    trim_maps,
 )
 from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data, new_img_like
+
+N_REGIONS = 8
 
 
 @pytest.fixture
@@ -402,3 +406,88 @@ def test_is_binary_niimg(img_binary, accept_non_finite, expected):
         is_binary_niimg(img_binary, accept_non_finite=accept_non_finite)
         == expected
     )
+
+
+def test_trim_maps_all_regions(shape_3d_default):
+    """Use mask intersecting all regions."""
+    maps_data = np.zeros((*shape_3d_default, N_REGIONS), dtype=np.float32)
+    h0, h1, h2 = (s // 2 for s in shape_3d_default)
+    maps_data[:h0, :h1, :h2, 0] = 1
+    maps_data[:h0, :h1, h2:, 1] = 1.1
+    maps_data[:h0, h1:, :h2, 2] = 1
+    maps_data[:h0, h1:, h2:, 3] = 0.5
+    maps_data[h0:, :h1, :h2, 4] = 1
+    maps_data[h0:, :h1, h2:, 5] = 1.4
+    maps_data[h0:, h1:, :h2, 6] = 1
+    maps_data[h0:, h1:, h2:, 7] = 1
+
+    mask_data = np.zeros(shape_3d_default, dtype=np.int8)
+    mask_data[1:-1, 1:-1, 1:-1] = 1
+
+    maps_i, maps_i_mask, maps_i_indices = trim_maps(maps_data, mask_data)
+
+    assert maps_i.flags["F_CONTIGUOUS"]
+    assert len(maps_i_indices) == maps_i.shape[-1]
+    assert maps_i.shape == maps_data.shape
+
+    maps_i_correct = maps_data.copy()
+    maps_i_correct[np.logical_not(mask_data), :] = 0
+    assert_almost_equal(maps_i_correct, maps_i)
+
+    assert_equal(mask_data, maps_i_mask)
+    assert_equal(np.asarray(list(range(8))), maps_i_indices)
+
+
+def test_trim_maps_half_regions(shape_3d_default):
+    """Use mask intersecting half of the regions."""
+    # maps
+    maps_data = np.zeros((*shape_3d_default, N_REGIONS), dtype=np.float32)
+    h0, h1, h2 = (s // 2 for s in shape_3d_default)
+    maps_data[:h0, :h1, :h2, 0] = 1
+    maps_data[:h0, :h1, h2:, 1] = 1.1
+    maps_data[:h0, h1:, :h2, 2] = 1
+    maps_data[:h0, h1:, h2:, 3] = 0.5
+    maps_data[h0:, :h1, :h2, 4] = 1
+    maps_data[h0:, :h1, h2:, 5] = 1.4
+    maps_data[h0:, h1:, :h2, 6] = 1
+    maps_data[h0:, h1:, h2:, 7] = 1
+    maps_data[1, 1, 1, 0] = 0  # remove one point inside mask
+
+    mask_data = np.zeros(shape_3d_default, dtype=np.int8)
+    mask_data[1:2, 1:-1, 1:-1] = 1
+
+    maps_i, maps_i_mask, maps_i_indices = trim_maps(maps_data, mask_data)
+
+    assert maps_i.flags["F_CONTIGUOUS"]
+    assert len(maps_i_indices) == maps_i.shape[-1]
+    assert maps_i.shape == ((*maps_data.shape[:3], 4))
+
+    maps_i_correct = maps_data[..., :4].copy()
+    maps_i_correct[np.logical_not(mask_data), :] = 0
+    assert_almost_equal(maps_i_correct, maps_i)
+
+    mask_data[1, 1, 1] = 0  # for test to succeed
+    assert_equal(mask_data, maps_i_mask)
+
+    mask_data[1, 1, 1] = 1  # reset, just in case.
+    assert_equal(np.asarray(list(range(4))), maps_i_indices)
+
+
+@pytest.mark.parametrize("weight", [3.0, -3.0])
+def test_trim_maps_support_covers_negative_weights(shape_3d_default, weight):
+    """A kept map must contribute its voxels to the support, whatever its sign.
+
+    Which maps are kept is decided with abs(), so a negative-weighted map
+    survives the trim. The support must agree, otherwise the map is declared
+    present while covering no voxel at all.
+    """
+    maps_data = np.zeros((*shape_3d_default, 2), dtype=np.float32)
+    maps_data[0, 0, 0, 0] = weight
+    maps_data[1, 1, 1, 1] = 5.0
+
+    mask_data = np.ones(shape_3d_default, dtype=np.int8)
+
+    _, maps_i_mask, maps_i_indices = trim_maps(maps_data, mask_data)
+
+    assert len(maps_i_indices) == 2
+    assert maps_i_mask.sum() == 2

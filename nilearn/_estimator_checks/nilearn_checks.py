@@ -2241,18 +2241,24 @@ def check_masker_mask_img(estimator_orig) -> None:
     non_binary_mask_img: Nifti1Image | SurfaceImage
     input_img: Nifti1Image | SurfaceImage
     if accepts_volume(estimator_orig):
-        # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
+        # TODO
+        # Small image with shape=(7, 8, 9) would fail with NiftiLabelsMasker
+        # or RegionExtractor
         # giving mask_img_that mask all the data : do not know why!!!
-        mask_data = np.zeros(_shape_3d_large(), dtype="int8")
+        shape = (
+            _shape_3d_large()
+            if isinstance(estimator_orig, (NiftiLabelsMasker, RegionExtractor))
+            else _shape_3d_default()
+        )
+
+        mask_data = np.zeros(shape, dtype="int8")
         mask_data[2:-2, 2:-2, 2:-2] = 1
         binary_mask_img = Nifti1Image(mask_data, _affine_eye())
 
-        input_img = Nifti1Image(
-            _rng().random(_shape_3d_large()), _affine_eye()
-        )
+        input_img = Nifti1Image(_rng().random(shape), _affine_eye())
 
         non_binary_mask_img = Nifti1Image(
-            _rng().random((*_shape_3d_large(), 2)), _affine_eye()
+            _rng().random((*shape, 2)), _affine_eye()
         )
 
     else:
