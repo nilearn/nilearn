@@ -9,7 +9,7 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_bold_img,
 )
-from nilearn._utils.helpers import is_gil_enabled, is_matplotlib_installed
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.datasets import load_fsaverage
 from nilearn.glm.first_level import FirstLevelModel
@@ -311,7 +311,6 @@ def test_generate_report_warning_glass_cut_coords(flm, contrasts):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 # TODO (nilearn >= 0.15) add None to height_control parametrization
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni"])
 def test_slm_reporting_method(slm, height_control):
@@ -328,7 +327,6 @@ def test_slm_reporting_method(slm, height_control):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_slm_with_flm_as_inputs(flm, contrasts):
     """Test second level reporting when inputs are first level models."""
     model = SecondLevelModel()
@@ -351,7 +349,6 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
     """Test second level reporting when input is a dataframe."""
     file_path = write_fake_bold_img(
