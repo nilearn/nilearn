@@ -293,6 +293,7 @@ def test_with_nans_and_infs_in_data(length, n_regions, affine_eye):
     assert np.all(np.isfinite(signals))
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [NiftiMapsMasker, MultiNiftiMapsMasker])
 def test_resampling_to_mask(
     estimator,

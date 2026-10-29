@@ -37,7 +37,7 @@ import warnings
 from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory, mkdtemp
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
@@ -71,7 +71,9 @@ from nilearn._estimator_checks.utils import (
     clone,
     fit_estimator,
     generate_data_to_fit,
+    generate_inverse_transform_signal,
     run_method,
+    set_mask_if_nifti_spheres,
     skip_if,
     skip_if_not,
     xfail_if_not_gil,
@@ -986,6 +988,15 @@ def check_img_estimator_dict_unchanged(estimator) -> None:
             raise e
 
 
+def _check_equal_imglike(input1, input2):
+    if isinstance(input2, np.ndarray):
+        assert_allclose_dense_sparse(input1, input2)
+    elif isinstance(input2, SurfaceImage):
+        assert_surface_image_equal(input1, input2)
+    elif isinstance(input2, Nifti1Image):
+        check_imgs_equal(input1, input2)
+
+
 @xfail_if_not_gil(classes=[SearchLight])
 def check_img_estimator_pickle(estimator) -> None:
     """Test that we can pickle all estimators.
@@ -993,68 +1004,36 @@ def check_img_estimator_pickle(estimator) -> None:
     Adapted from sklearn's check_estimators_pickle
     """
     X, y = generate_data_to_fit(estimator)
+    estimator = set_mask_if_nifti_spheres(estimator, X)
 
-    if isinstance(estimator, NiftiSpheresMasker):
-        # NiftiSpheresMasker needs mask_img to run inverse_transform
-        mask_img = new_img_like(X, np.ones(X.shape[:3]))
-        estimator.mask_img = mask_img
+    estimator = fit_estimator(estimator, X, y)
 
-    fitted_estimator = fit_estimator(estimator)
-
-    pickled_estimator = pickle.dumps(fitted_estimator)
+    pickled_estimator = pickle.dumps(estimator)
     unpickled_estimator = pickle.loads(pickled_estimator)
 
-    result = {}
-
-    check_methods = ["transform"]
-
-    input_data: list[Any | tuple[Any, Any]] = []
-
-    input_data = [X] if isinstance(estimator, SearchLight) else [[X]]
-
-    for method in ["predict", "decision_function"]:
-        check_methods.append(method)
-        input_data.append(X)
-
-    check_methods.append("score")
-    input_data.append((X, y))
+    methods = {
+        "transform": X if isinstance(estimator, SearchLight) else [X],
+        "score": X,
+        "predict": X,
+        "decision_function": X,
+    }
 
     # TODO - As NiftiMapsMasker changes estimator at transform, inverse
-    # transform might not work
+    # transform might not work for estimators that have maps_masker
+    # This can be changed after NiftiMapsMasker is fixed
     if hasattr(estimator, "inverse_transform") and (
         hasattr(estimator, "maps_masker")
     ):
-        check_methods.append("inverse_transform")
-        signal = _rng().random((1, fitted_estimator.n_elements_))
-        if isinstance(estimator, _BaseDecomposition):
-            signal = [signal]
-        input_data.append(signal)
+        signal = generate_inverse_transform_signal(estimator, 1)
+        methods["inverse_transform"] = signal
 
-    for method, input in zip(check_methods, input_data, strict=False):
-        if hasattr(estimator, method):
-            result["input"] = input
-            if method == "score":
-                result[method] = getattr(estimator, method)(*input)
-            else:
-                result[method] = getattr(estimator, method)(input)
-
-    for method, input in zip(check_methods, input_data, strict=False):
-        if method not in result:
+    for method, X in methods.items():
+        if not hasattr(estimator, method):
             continue
 
-        if method == "score":
-            unpickled_result = getattr(unpickled_estimator, method)(*input)
-        else:
-            unpickled_result = getattr(unpickled_estimator, method)(input)
-
-        if isinstance(unpickled_result, np.ndarray):
-            assert_allclose_dense_sparse(result[method], unpickled_result)
-        elif isinstance(unpickled_result, SurfaceImage):
-            assert_surface_image_equal(
-                cast(SurfaceImage, result[method]), unpickled_result
-            )
-        elif isinstance(unpickled_result, Nifti1Image):
-            check_imgs_equal(result[method], unpickled_result)
+        result = run_method(estimator, method, X, y)
+        unpickled_result = run_method(unpickled_estimator, method, X, y)
+        _check_equal_imglike(result, unpickled_result)
 
 
 @xfail_if_not_gil(classes=[SearchLight])
@@ -1064,11 +1043,7 @@ def check_img_estimator_pipeline_consistency(estimator) -> None:
     Substitute for sklearn check_pipeline_consistency.
     """
     X, y = generate_data_to_fit(estimator)
-
-    if isinstance(estimator, NiftiSpheresMasker):
-        # NiftiSpheresMasker needs mask_img to run inverse_transform
-        mask_img = new_img_like(X, np.ones(X.shape[:3]))
-        estimator.mask_img = mask_img
+    estimator = set_mask_if_nifti_spheres(estimator, X)
 
     pipeline = make_pipeline(estimator)
 
@@ -1093,19 +1068,14 @@ def check_img_estimator_pipeline_consistency(estimator) -> None:
         else:
             pipeline.fit(X)
 
-    funcs = ["score", "transform"]
+    for method in ["score", "transform"]:
+        if not hasattr(estimator, method):
+            continue
 
-    for func_name in funcs:
-        func = getattr(estimator, func_name, None)
-        if func is not None:
-            func_pipeline = getattr(pipeline, func_name)
-            if func_name == "transform":
-                result = func(X)
-                result_pipe = func_pipeline(X)
-            else:
-                result = func(X, y)
-                result_pipe = func_pipeline(X, y)
-            assert_allclose_dense_sparse(result, result_pipe)
+        result = run_method(estimator, method, X, y)
+        result_pipe = run_method(pipeline, method, X, y)
+
+        assert_allclose_dense_sparse(result, result_pipe)
 
 
 def check_img_estimator_dtype_bool(estimator_orig) -> None:
@@ -1123,14 +1093,10 @@ def check_img_estimator_dtype_bool(estimator_orig) -> None:
 
     estimator = clone(estimator_orig)
 
-    X, _ = generate_data_to_fit(estimator)
+    X, y = generate_data_to_fit(estimator)
+    estimator = set_mask_if_nifti_spheres(estimator, X)
 
-    if isinstance(estimator, NiftiSpheresMasker):
-        # NiftiSpheresMasker needs mask_img to run inverse_transform
-        mask_img = new_img_like(X, np.ones(X.shape[:3]))
-        estimator.mask_img = mask_img
-
-    estimator = fit_estimator(estimator)
+    estimator = fit_estimator(estimator, X, y)
 
     signal = estimator.transform(X)
     if isinstance(signal, list):
@@ -1393,14 +1359,13 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
             else:
                 assert not any(warning_present)
 
-            output_dtype = output_img.data._dtype
-            if isinstance(output_img, Nifti1Image):
-                output_dtype = (
-                    f"img type={img_data_dtype(output_img)}, "
-                    f"dataobj type={output_img.get_data_dtype()}"
-                )
+            output_dtype = None
             try:
                 if isinstance(output_img, Nifti1Image):
+                    output_dtype = (
+                        f"img type={img_data_dtype(output_img)}, "
+                        f"dataobj type={output_img.get_data_dtype()}"
+                    )
                     if target_dtype != np.int64:
                         # ensure both image and dataobj have consistent type
                         assert (
@@ -1416,6 +1381,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
                         assert img_data_dtype(output_img) == "int32"
                         assert output_img.get_data_dtype() == target_dtype
                 else:
+                    output_dtype = output_img.data._dtype
                     assert output_dtype == target_dtype
             except AssertionError as e:
                 raise TypeError(
