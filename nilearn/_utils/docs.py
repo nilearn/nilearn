@@ -2070,6 +2070,8 @@ def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
     # import some packages that are needed
     # for the eval below
     # to turn string into an actual type
+    import pathlib  # noqa : F401
+
     import nibabel  # noqa : F401
     import numpy as np  # noqa : F401
 

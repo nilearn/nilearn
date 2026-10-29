@@ -924,11 +924,7 @@ def _is_vertex_order_equal(mesh1_coords, mesh2_coords, check_len=None):
         return False
 
 
-def _sanitize_vertices_order(
-    bunch: Bunch,
-    mesh: str,
-    data_dir,
-) -> None:
+def _sanitize_vertices_order(bunch: Bunch, mesh: str, data_dir) -> None:
     """Check first vertices have roughly same coordinates \
        as that of fs5 otherwise we resort them.
 
@@ -953,7 +949,7 @@ def _sanitize_vertices_order(
         _resort_vertices(bunch, bunch_fs5, data_dir)
 
 
-def _resort_vertices(bunch, bunch_fsaverage5, data_dir):
+def _resort_vertices(bunch, bunch_fsaverage5, data_dir) -> None:
     """Reorder vertices of each mesh in fsaverage bunch according to vertex
     order of fsaverage5.
     """
@@ -1128,7 +1124,7 @@ def _fetch_surf_fsaverage(
     )
 
     result = {
-        attribute: dataset_dir / f"{attribute}.gii.gz"
+        attribute: str(dataset_dir / f"{attribute}.gii.gz")
         for attribute in dataset_attributes
     }
     result["description"] = Description.from_registry("fsaverage")

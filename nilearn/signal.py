@@ -201,7 +201,7 @@ def row_sum_of_squares(signals, n_batches=20):
     return var
 
 
-def _detrend(signals, inplace=False, type="linear", n_batches=10):
+def _detrend(signals, inplace: bool = False, type="linear", n_batches=10):
     """Detrend columns of input array.
 
     Signals are supposed to be columns of `signals`.

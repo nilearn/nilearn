@@ -1566,6 +1566,7 @@ def fetch_coords_dosenbach_2010(  # numpydoc ignore=RT05
         "networks": out_csv["network"],
         "description": Description.from_registry("dosenbach_2010_atlas"),
         "template": "MNI",
+        "atlas_type": "deterministic",
     }
     return Bunch(**params)
 

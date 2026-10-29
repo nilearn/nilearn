@@ -20,7 +20,7 @@ as described in :footcite:t:`Chen2011`.
     This example uses:
 
     - the :ref:`Haxby dataset <haxby_dataset>`
-    - the :ref:`fsaverage template <fs_average_template>`
+    - the :ref:`fsaverage template <fsaverage>`
 """
 
 # %%
