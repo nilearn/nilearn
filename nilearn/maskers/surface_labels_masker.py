@@ -20,7 +20,10 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import mean_img
-from nilearn.maskers._mixin import _LabelMaskerMixin
+from nilearn.maskers._mixin import (
+    _LabelMaskerMixin,
+    _MaskerReportDefaults,
+)
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.nilearn_typing import (
     ColormapLike,
@@ -178,7 +181,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
     memory_ : joblib memory cache
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": (
             "This report shows the input surface image overlaid "
             "with the outlines of the mask. "

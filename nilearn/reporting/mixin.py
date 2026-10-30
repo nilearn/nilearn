@@ -7,7 +7,7 @@ import uuid
 import warnings
 from copy import deepcopy
 from datetime import datetime
-from typing import Any, ClassVar
+from typing import Any, ClassVar, TypedDict
 
 import pandas as pd
 
@@ -15,6 +15,7 @@ from nilearn._assets import get_template
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.versions import SKLEARN_GTE_1_7, __short_version__
+from nilearn.nilearn_typing import ReportEngine
 from nilearn.reporting._utils import (
     dataframe_to_html,
 )
@@ -25,6 +26,28 @@ from nilearn.reporting.html_report import (
     assemble_report,
 )
 from nilearn.reporting.utils import figure_to_svg_base64
+
+DEFAULT_ENGINE: ReportEngine = "matplotlib"
+
+
+class _ReportDefaults(TypedDict, total=False):
+    """Type of the default content of reports.
+
+    Classes inheriting from ReportMixin that add new keys
+    to their ``_REPORT_DEFAULTS``
+    should define a subclass of this TypedDict.
+    """
+
+    unique_id: str
+    title: str
+    page_title: str
+    engine: ReportEngine
+    has_plotting_engine: bool
+    docstring: str
+    parameters: str
+    date: str
+    version: str
+    warning_messages: list[str]
 
 
 class ReportMixin:
@@ -62,11 +85,11 @@ class ReportMixin:
     should should define ``_template_name`` and ``_estimator_type`` attributes.
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[_ReportDefaults] = {
         "unique_id": "",
         "title": "",
         "page_title": "",
-        "engine": "matplotlib",
+        "engine": DEFAULT_ENGINE,
         "has_plotting_engine": False,
         "docstring": "",
         "parameters": "",
@@ -74,6 +97,9 @@ class ReportMixin:
         "version": __short_version__,
         "warning_messages": [],
     }
+
+    _allowed_engines: tuple[ReportEngine, ...] = (DEFAULT_ENGINE,)
+    report: bool = True
 
     # report body template name for the estimator
     _template_name: str = ""
@@ -165,7 +191,9 @@ class ReportMixin:
                     category=UserWarning,
                 )
 
-    def _set_report_basics(self, engine, title):
+    def _set_report_basics(
+        self, engine: ReportEngine, title: str | None
+    ) -> None:
         """Populate `_report_content` with values that will be used in report
         body template.
 
@@ -204,16 +232,38 @@ class ReportMixin:
             datetime.now().replace(microsecond=0).isoformat()
         )
 
+    def _check_engine(self) -> None:
+        """Check that the report engine is supported by this estimator.
+
+        Fall back to the default engine with a warning if it is not.
+
+        Estimators supporting other engines should override this method
+        to pass the list of engines they support.
+        """
+        engine = self._report_content["engine"]
+        if engine not in self._allowed_engines:
+            warnings.warn(
+                f"'engine' must be one of {self._allowed_engines} "
+                f"for {self.__class__.__name__}. "
+                f"Got {engine!r} instead. "
+                f"Falling back to {DEFAULT_ENGINE!r}.",
+                stacklevel=find_stack_level(),
+            )
+            self._report_content["engine"] = DEFAULT_ENGINE
+
     def _run_report_checks(self, **kwargs):
         """Run standard checks before report is generated.
 
         Checks if:
+        - the report engine is supported
         - reporting is enabled
         - model is fitted
         - reporting was enabled at the time of fit
         - matplotlib is installed
         """
         _ = kwargs
+        self._check_engine()
+
         if self.reports is False:
             self._append_report_warning(
                 "\nReport generation not enabled!\nNo visual outputs created."
@@ -356,7 +406,10 @@ class ReportMixin:
 
     @abc.abstractmethod
     def generate_report(
-        self, engine="matplotlib", title: str | None = None, **kwargs
+        self,
+        engine: ReportEngine = DEFAULT_ENGINE,
+        title: str | None = None,
+        **kwargs,
     ) -> HTMLReport:
         """Generate an HTML report for this object.
 
@@ -369,8 +422,10 @@ class ReportMixin:
 
         Parameters
         ----------
-        engine : :obj:`str`, default="matplotlib"
+        engine : {"matplotlib", "brainsprite", "plotly"}, default="matplotlib"
             Choice of engine to generate plots.
+            If the engine is not supported by the estimator,
+            a warning is thrown and ``"matplotlib"`` is used instead.
 
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.

@@ -29,6 +29,7 @@ from nilearn.image.image import (
     safe_get_data,
 )
 from nilearn.image.resampling import coord_transform
+from nilearn.maskers._mixin import _MaskerReportDefaults
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -334,7 +335,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     nilearn.maskers.NiftiMasker
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": (
             "This report shows the regions defined "
             "by the spheres of the masker."

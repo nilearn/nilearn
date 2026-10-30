@@ -532,7 +532,6 @@ class FirstLevelModel(BaseGLM):
     minimize_memory: bool
     noise_model: NoiseModel
     n_jobs: NJobs
-    reports: bool
     slice_time_ref: NonNullScalar
     standardize: Standardize
     subject_label: str | None

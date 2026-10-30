@@ -16,6 +16,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import sanitize_verbose
 from nilearn.image import check_niimg, crop_img, load_img, resample_img
 from nilearn.image.image import check_same_fov
+from nilearn.maskers._mixin import _MaskerReportDefaults
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -49,6 +50,7 @@ from nilearn.nilearn_typing import (
     Tr,
     Verbose,
 )
+from nilearn.reporting.mixin import DEFAULT_ENGINE
 
 
 class _ExtractionFunctor:
@@ -340,7 +342,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     nilearn.signal.clean
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": (
             "This report shows the input Nifti image overlaid "
             "with the outlines of the mask. "
@@ -348,6 +350,8 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "between the mask and the input image. "
         ),
     }
+
+    _allowed_engines = (DEFAULT_ENGINE, "brainsprite")
 
     def __init__(
         self,
@@ -399,6 +403,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._reset_report()
 
     def _run_report_checks(self, **kwargs):
+
         super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
