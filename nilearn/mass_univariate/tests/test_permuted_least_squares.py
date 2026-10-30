@@ -823,6 +823,10 @@ def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
         permuted_ols(tested_var, target_var, n_perm=1, masker=masker, n_jobs=2)
 
 
+# normalizing the all-zeros voxel divides 0 by 0
+@pytest.mark.filterwarnings(
+    "ignore:invalid value encountered in divide:RuntimeWarning"
+)
 def test_permuted_ols_no_covar_warning(rng):
     """Ensure that a warning is raised when a given voxel has all zeros."""
     target_var, tested_var, *_ = _create_design(

@@ -2154,16 +2154,21 @@ def binarize_img(
     """
     check_params(locals())
 
+    thresholded_img = threshold_img(
+        img,
+        threshold,
+        mask_img=mask_img,
+        two_sided=two_sided,
+        copy_header=copy_header,
+    )
+    # surface images have no header to copy
+    copy_header_from = (
+        None if isinstance(thresholded_img, SurfaceImage) else "img"
+    )
     return math_img(
         "img.astype(bool).astype('int8')",
-        img=threshold_img(
-            img,
-            threshold,
-            mask_img=mask_img,
-            two_sided=two_sided,
-            copy_header=copy_header,
-        ),
-        copy_header_from="img",
+        img=thresholded_img,
+        copy_header_from=copy_header_from,
     )
 
 

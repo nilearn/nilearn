@@ -29,6 +29,12 @@ from nilearn.glm.second_level import SecondLevelModel
 from nilearn.glm.tests._testing import block_paradigm
 from nilearn.glm.thresholding import threshold_stats_img
 
+# tests return figures for pytest-mpl,
+# which pytest warns about when run without --mpl
+pytestmark = pytest.mark.filterwarnings(
+    "ignore::pytest.PytestReturnNotNoneWarning"
+)
+
 pytest.importorskip(
     "matplotlib",
     reason="Matplotlib is not installed; required to run the tests!",

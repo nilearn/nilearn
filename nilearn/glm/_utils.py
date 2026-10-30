@@ -168,7 +168,10 @@ def full_rank(X, cmax=1e15):
     """
     U, s, V = spl.svd(X, full_matrices=False)
     smax, smin = s.max(), s.min()
-    cond = smax / smin
+    # smin == 0 gives an infinite condition number:
+    # this is handled by the warning below
+    with np.errstate(divide="ignore"):
+        cond = smax / smin
     if cond < cmax:
         return X, cond
 
@@ -199,7 +202,9 @@ def positive_reciprocal(X):
        1/X where X > 0, 0 otherwise.
     """
     X = np.asarray(X)
-    return np.where(X <= 0, 0, 1.0 / X)
+    # 1 / X is computed everywhere, but only kept where X > 0
+    with np.errstate(divide="ignore"):
+        return np.where(X <= 0, 0, 1.0 / X)
 
 
 def pad_contrast(con_val, theta, stat_type):
