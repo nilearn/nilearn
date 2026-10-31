@@ -163,9 +163,10 @@ def test_get_masker_params():
 
 def test_inverse_transform_non_finite_error():
     """Check that inverse_transform raises ValueError on non-finite values."""
-    import pytest
     import numpy as np
+    import pytest
     from nibabel import Nifti1Image
+
     from nilearn.maskers import NiftiLabelsMasker
 
     labels_data = np.zeros((3, 3, 3), dtype=np.int32)

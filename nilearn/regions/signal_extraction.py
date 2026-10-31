@@ -464,6 +464,7 @@ def signals_to_img_labels(
 
     return new_img_like(labels_img, data, labels_img.affine)
 
+
 @fill_doc
 def img_to_signals_maps(
     imgs, maps_img, mask_img=None

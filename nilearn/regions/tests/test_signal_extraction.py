@@ -757,11 +757,13 @@ def test_img_to_signals_labels_parallel_extraction(fmri_img, labeled_regions):
     np.testing.assert_almost_equal(labels_signals, expected_labels_signals)
     assert np.allclose(labels_labels, expected_labels_labels)
 
+
 def test_signals_to_img_non_finite_warnings():
     """Check that low-level functions emit warnings on non-finite inputs."""
-    import pytest
     import numpy as np
+    import pytest
     from nibabel import Nifti1Image
+
     from nilearn.regions import signals_to_img_labels, signals_to_img_maps
 
     # Setup dummy label image with explicit int32 dtype to avoid nibabel int64 warnings/errors
