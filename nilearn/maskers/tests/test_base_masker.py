@@ -160,16 +160,26 @@ def test_get_masker_params():
 
 
 def test_inverse_transform_non_finite_error():
-    """Check that inverse_transform raises ValueError on non-finite inputs."""
+    """Check that inverse_transform raises ValueError on non-finite values."""
     import pytest
     import numpy as np
-    from nilearn.maskers import NiftiMasker
+    from nibabel import Nifti1Image
+    from nilearn.maskers import NiftiLabelsMasker
 
-    masker = NiftiMasker()
-    masker.n_elements_ = 5
+    labels_data = np.zeros((3, 3, 3), dtype=np.int32)
+    labels_data[0, 0, 0] = 1
+    labels_img = Nifti1Image(labels_data, np.eye(4))
 
-    with pytest.raises(ValueError, match="contains non-finite values"):
-        masker._check_array(np.array([1.0, np.nan, 3.0, 4.0, 5.0]))
+    masker = NiftiLabelsMasker(labels_img=labels_img)
+    img = Nifti1Image(np.ones((3, 3, 3, 1), dtype=np.float32), np.eye(4))
+    masker.fit(img)
 
-    with pytest.raises(ValueError, match="contains non-finite values"):
-        masker._check_array(np.array([1.0, np.inf, 3.0, 4.0, 5.0]))
+    # Test with NaN inputs
+    signals_nan = np.array([[np.nan]])
+    with pytest.raises(ValueError, match="non-finite values"):
+        masker.inverse_transform(signals_nan)
+
+    # Test with Inf inputs
+    signals_inf = np.array([[np.inf]])
+    with pytest.raises(ValueError, match="non-finite values"):
+        masker.inverse_transform(signals_inf)

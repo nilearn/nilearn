@@ -433,7 +433,6 @@ def signals_to_img_labels(
 
     signals = np.asarray(signals)
 
-
     if not np.all(np.isfinite(signals)):
         warnings.warn(
             "Input signals contain non-finite values (NaN or infinity). "
@@ -445,7 +444,7 @@ def signals_to_img_labels(
     # nditer is not available in numpy 1.3: using multiple loops.
     # Using these loops still gives a much faster code (6x) than this one:
     # for n, label in enumerate(labels):
-    #     data[labels_data == label, :] = signals[:, n]
+    # data[labels_data == label, :] = signals[:, n]
     if signals.ndim == 2:
         target_shape = (*target_shape, signals.shape[0])
 
