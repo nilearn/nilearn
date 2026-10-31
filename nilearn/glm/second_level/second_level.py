@@ -24,6 +24,7 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
     check_parameter_in_allowed,
     check_params,
 )
@@ -48,7 +49,17 @@ from nilearn.image.image import (
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.mass_univariate import permuted_ols
-from nilearn.nilearn_typing import NiimgLike
+from nilearn.nilearn_typing import (
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    NJobs,
+    SmoothingFwhm,
+    TableLike,
+    TargetAffine,
+    TargetShape,
+    Verbose,
+)
 from nilearn.surface.surface import (
     SurfaceImage,
 )
@@ -75,7 +86,10 @@ def _check_second_level_input(
     "df_object", "pd_series", "nii_object", "surf_img_object", "flm_object"
 ]:
     """Check second_level_input type."""
-    _check_design_matrix(design_matrix)
+    if design_matrix is not None:
+        check_is_of_allowed_type(
+            design_matrix, (str, Path, pd.DataFrame), "design_matrix"
+        )
 
     input_type = _check_input_type(second_level_input)
     _check_input_as_type(
@@ -177,7 +191,6 @@ def _check_input_as_first_level_model(
     - for volumetric analysis
         - must all have the same affine / shape
           (checking all against those of the first model)
-
     """
     ref_affine = None
     ref_shape = None
@@ -332,18 +345,6 @@ def _check_first_level_contrast(
             " then first_level_contrast is mandatory. "
             "It corresponds to the second_level_contrast argument "
             "of the compute_contrast method of FirstLevelModel."
-        )
-
-
-def _check_design_matrix(design_matrix) -> None:
-    """Check design_matrix type."""
-    if design_matrix is not None and not isinstance(
-        design_matrix, (str, Path, pd.DataFrame)
-    ):
-        raise TypeError(
-            "'design_matrix' must be a "
-            "str, pathlib.Path or a pandas.DataFrame.\n"
-            f"Got {design_matrix.__class__.__name__}"
         )
 
 
@@ -588,21 +589,31 @@ class SecondLevelModel(BaseGLM):
         Input used to fit the GLM.
     """
 
+    memory: MemoryLike
+    memory_level: MemoryLevel
+    minimize_memory: bool
+    n_jobs: NJobs
+    reports: bool
+    smoothing_fwhm: SmoothingFwhm
+    target_affine: TargetAffine
+    target_shape: TargetShape
+    verbose: Verbose
+
     def __str__(self):
         return "Second Level Model"
 
     def __init__(
         self,
         mask_img=None,
-        target_affine=None,
-        target_shape=None,
-        smoothing_fwhm=None,
-        memory=None,
-        memory_level=1,
-        verbose=0,
-        n_jobs=1,
-        minimize_memory=True,
-        reports=True,
+        target_affine: TargetAffine = None,
+        target_shape: TargetShape = None,
+        smoothing_fwhm: SmoothingFwhm = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
+        n_jobs: NJobs = 1,
+        minimize_memory: bool = True,
+        reports: bool = True,
     ):
         self.mask_img = mask_img
         self.target_affine = target_affine
@@ -619,7 +630,16 @@ class SecondLevelModel(BaseGLM):
 
     @fill_doc
     def fit(
-        self, second_level_input, confounds=None, design_matrix=None
+        self,
+        second_level_input: list[FirstLevelModel]
+        | pd.DataFrame
+        | pd.Series
+        | NiimgLike
+        | list[NiimgLike]
+        | SurfaceImage
+        | list[SurfaceImage],
+        confounds: pd.DataFrame | None = None,
+        design_matrix: TableLike | None = None,
     ) -> Self:
         """Fit the second-level :term:`GLM`.
 
@@ -634,7 +654,6 @@ class SecondLevelModel(BaseGLM):
         %(second_level_confounds)s
 
         %(second_level_design_matrix)s
-
         """
         check_params(self.__dict__)
         self.second_level_input_ = None
@@ -765,7 +784,6 @@ class SecondLevelModel(BaseGLM):
             If ``output_type == 'all'``,
             then the output is a dictionary of images,
             keyed by the type of image.
-
         """
         check_is_fitted(self)
 
@@ -877,7 +895,6 @@ class SecondLevelModel(BaseGLM):
         See Also
         --------
         nilearn.glm.second_level.SecondLevelModel.compute_contrast
-
         """
         return {
             contrast_name: self.compute_contrast(
@@ -919,7 +936,6 @@ class SecondLevelModel(BaseGLM):
         -------
         output : :obj:`list`
             A list of Nifti1Image(s).
-
         """
         check_is_fitted(self)
         # check if valid attribute is being accessed.
@@ -966,9 +982,15 @@ class SecondLevelModel(BaseGLM):
 
 @overload
 def non_parametric_inference(
-    second_level_input,
-    confounds=...,
-    design_matrix=...,
+    second_level_input: list[FirstLevelModel]
+    | pd.DataFrame
+    | pd.Series
+    | NiimgLike
+    | list[NiimgLike]
+    | SurfaceImage
+    | list[SurfaceImage],
+    confounds: pd.DataFrame | None = ...,
+    design_matrix: TableLike | None = ...,
     second_level_contrast=...,
     first_level_contrast=...,
     mask=...,
@@ -986,9 +1008,15 @@ def non_parametric_inference(
 
 @overload
 def non_parametric_inference(
-    second_level_input,
-    confounds=...,
-    design_matrix=...,
+    second_level_input: list[FirstLevelModel]
+    | pd.DataFrame
+    | pd.Series
+    | NiimgLike
+    | list[NiimgLike]
+    | SurfaceImage
+    | list[SurfaceImage],
+    confounds: pd.DataFrame | None = ...,
+    design_matrix: TableLike | None = ...,
     second_level_contrast=...,
     first_level_contrast=...,
     mask=...,
@@ -1005,10 +1033,16 @@ def non_parametric_inference(
 
 
 @fill_doc
-def non_parametric_inference(
-    second_level_input,
-    confounds=None,
-    design_matrix=None,
+def non_parametric_inference(  # numpydoc ignore=RT05
+    second_level_input: list[FirstLevelModel]
+    | pd.DataFrame
+    | pd.Series
+    | NiimgLike
+    | list[NiimgLike]
+    | SurfaceImage
+    | list[SurfaceImage],
+    confounds: pd.DataFrame | None = None,
+    design_matrix: TableLike | None = None,
     second_level_contrast=None,
     first_level_contrast=None,
     mask=None,
@@ -1172,11 +1206,21 @@ def non_parametric_inference(
     check_params(locals())
     _check_second_level_input(second_level_input, design_matrix)
     _check_confounds(confounds)
-    design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     if isinstance(second_level_input, pd.DataFrame):
         second_level_input = _sort_input_dataframe(second_level_input)
-    sample_map, _ = _process_second_level_input(second_level_input)
+    sample_map, subjects_label = _process_second_level_input(
+        second_level_input
+    )
+
+    if design_matrix is None:
+        design_matrix = make_second_level_design_matrix(
+            subjects_label, confounds
+        )
+    else:
+        design_matrix = check_and_load_tables(design_matrix, "design_matrix")[
+            0
+        ]
 
     if (isinstance(sample_map, SurfaceImage)) and (tfce or threshold):
         tfce = False

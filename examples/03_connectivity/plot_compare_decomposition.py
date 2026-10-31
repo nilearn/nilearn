@@ -21,6 +21,11 @@ thresholding algorithm controlling for specificity and sensitivity with
 an explicit model of the signal.
 
 The reference paper is :footcite:t:`Varoquaux2010c`.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`development fMRI dataset
+    <development_dataset>`.
 """
 
 # %%
@@ -42,10 +47,6 @@ print(f"First functional nifti image (4D) is at: {rest_dataset.func[0]}")
 # as this leads to slightly faster and more reproducible results.
 # However, the images need to be in :term:`MNI` template space.
 
-import warnings
-
-from sklearn.exceptions import ConvergenceWarning
-
 from nilearn.decomposition import CanICA
 
 canica = CanICA(
@@ -57,11 +58,7 @@ canica = CanICA(
     mask_strategy="whole-brain-template",
     n_jobs=2,
 )
-with warnings.catch_warnings():
-    # silence warnings about ICA not converging
-    # Consider increasing tolerance or the maximum number of iterations.
-    warnings.filterwarnings(action="ignore", category=ConvergenceWarning)
-    canica.fit(func_filenames)
+canica.fit(func_filenames)
 
 
 # %%

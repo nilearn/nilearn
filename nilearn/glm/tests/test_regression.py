@@ -65,7 +65,9 @@ def test_predicted_r_square(X, Y):
     Yshort = Y.copy()[:10]
 
     model = OLSModel(design=Xshort)
-    results = model.fit(Yshort)
+    # no residual degrees of freedom left
+    with pytest.warns(RuntimeWarning, match="divide by zero"):
+        results = model.fit(Yshort)
 
     assert_almost_equal(results.residuals.sum(), 0)
     assert_array_almost_equal(results.predicted, Yshort)

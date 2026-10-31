@@ -34,7 +34,7 @@ You can either:
   This is the way to do it when using this script in continuous integration.
 
 USAGE
------
+.....
 
 .. code-block:: bash
 

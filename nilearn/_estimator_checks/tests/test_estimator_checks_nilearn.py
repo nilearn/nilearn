@@ -6,8 +6,11 @@ import pytest
 from nibabel import Nifti1Image
 from sklearn.covariance import EmpiricalCovariance
 
+from nilearn._estimator_checks.nilearn_check_generator import (
+    nilearn_check_estimator,
+)
 from nilearn._utils.data_gen import generate_maps
-from nilearn._utils.estimator_checks import nilearn_check_estimator
+from nilearn._utils.helpers import is_windows_platform
 from nilearn.conftest import (
     _affine_eye,
     _img_3d_mni,
@@ -66,37 +69,30 @@ CONNECTOME = [
     GroupSparseCovarianceCV(),
 ]
 
-
 DECODING = [
     Decoder(
         screening_percentile=100,
         estimator_args={"random_state": RANDOM_STATE},
     ),
-    DecoderRegressor(screening_percentile=100),
     FREMClassifier(
         screening_percentile=100,
         estimator_args={"random_state": RANDOM_STATE},
     ),
+    SpaceNetClassifier(),
+    DecoderRegressor(screening_percentile=100),
     FREMRegressor(screening_percentile=100),
+    SpaceNetRegressor(),
     SearchLight(
         mask_img=Nifti1Image(
             np.ones((5, 5, 5), dtype=bool).astype("uint8"), np.eye(4)
         ),
         estimator_args={"random_state": RANDOM_STATE},
     ),
-    SpaceNetClassifier(),
-    SpaceNetRegressor(),
 ]
 
-DECOMPOSITION = [
-    DictLearning(random_state=RANDOM_STATE),
-    CanICA(random_state=RANDOM_STATE),
-]
+DECOMPOSITION = [DictLearning(), CanICA()]
 
-GLM = [
-    FirstLevelModel(random_state=RANDOM_STATE),
-    SecondLevelModel(),
-]
+GLM = [FirstLevelModel(), SecondLevelModel()]
 
 MASKERS = [
     NiftiMasker(),
@@ -111,21 +107,20 @@ MASKERS = [
     MultiNiftiMapsMasker(_img_maps(n_regions=2)),
     MultiNiftiMapsMasker(_img_maps(n_regions=1)),
     MultiNiftiMasker(),
-    MultiSurfaceLabelsMasker(sklearn_surf_label_img()),
-    MultiSurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
-    MultiSurfaceMapsMasker(_surf_maps_img()),
-    MultiSurfaceMapsMasker(_surf_maps_img(n_regions=1)),
-    MultiSurfaceMasker(),
     SurfaceMasker(),
     SurfaceLabelsMasker(sklearn_surf_label_img()),
     SurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
     SurfaceMapsMasker(_surf_maps_img()),
     SurfaceMapsMasker(_surf_maps_img(n_regions=1)),
+    MultiSurfaceLabelsMasker(sklearn_surf_label_img()),
+    MultiSurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
+    MultiSurfaceMapsMasker(_surf_maps_img()),
+    MultiSurfaceMapsMasker(_surf_maps_img(n_regions=1)),
+    MultiSurfaceMasker(),
 ]
 
-
 REGIONS = [
-    HierarchicalKMeans(n_clusters=2, random_state=RANDOM_STATE),
+    HierarchicalKMeans(n_clusters=2),
     RegionExtractor(
         maps_img=generate_maps(
             shape=_shape_3d_large(),
@@ -135,9 +130,9 @@ REGIONS = [
         )[0]
     ),
     ReNA(mask_img=_img_3d_mni(), n_clusters=2),
-    Parcellations(method="kmeans", n_parcels=5, random_state=RANDOM_STATE),
-    Parcellations(method="ward", n_parcels=5, random_state=RANDOM_STATE),
-    Parcellations(method="rena", n_parcels=5, random_state=RANDOM_STATE),
+    Parcellations(method="kmeans", n_parcels=5),
+    Parcellations(method="ward", n_parcels=5),
+    Parcellations(method="rena", n_parcels=5),
 ]
 
 
@@ -146,7 +141,7 @@ ESTIMATORS_TO_CHECK = (
 )
 
 
-def _estimators():
+def _estimators_to_test():
     """Create list of estimators to be used for nilearn checks.
 
     Nilearn estimator checks should be run only for the estimators whose
@@ -194,10 +189,10 @@ def test_check_estimator_count():
 
 
 @pytest.mark.slow
-@pytest.mark.flaky(reruns=1, reruns_delay=2)
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize(
     "estimator, name, check",
-    nilearn_check_estimator(estimators=_estimators()),
+    nilearn_check_estimator(estimators=_estimators_to_test()),
 )
 def test_check_estimator_nilearn(estimator, name, check):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""

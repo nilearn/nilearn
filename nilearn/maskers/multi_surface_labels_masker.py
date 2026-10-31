@@ -1,13 +1,30 @@
 """Extract data from multiple 2D surface objects."""
 
-from typing import Self
+from typing import Any, Self
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.surface_labels_masker import SurfaceLabelsMasker
-from nilearn.surface.surface import check_surf_img
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    NJobs,
+    ReductionStrategy,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    TableLike,
+    Tr,
+    Verbose,
+)
+from nilearn.surface.surface import SurfaceImage, check_surf_img
 
 
 @fill_doc
@@ -122,33 +139,32 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         (for example across timepoints) is finite value different from 0.
 
     memory_ : joblib memory cache
-
     """
 
     def __init__(
         self,
-        labels_img=None,
-        labels=None,
-        lut=None,
-        background_label=0,
-        mask_img=None,
-        smoothing_fwhm=None,
-        standardize=None,
-        standardize_confounds=True,
-        detrend=False,
-        high_variance_confounds=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
-        memory=None,
-        memory_level=1,
-        n_jobs=1,
-        verbose=0,
-        strategy="mean",
-        reports=True,
-        cmap=DEFAULT_SEQUENTIAL_CMAP,
-        clean_args=None,
+        labels_img: SurfaceImage | None = None,
+        labels: list[str] | None = None,
+        lut: TableLike | None = None,
+        background_label: int | float = 0,
+        mask_img: SurfaceImage | None = None,
+        smoothing_fwhm: SmoothingFwhm = None,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        detrend: Detrend = False,
+        high_variance_confounds: bool = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 1,
+        n_jobs: NJobs = 1,
+        verbose: Verbose = 0,
+        strategy: ReductionStrategy = "mean",
+        reports: bool = True,
+        cmap: ColormapLike = DEFAULT_SEQUENTIAL_CMAP,
+        clean_args: dict[str, Any] | None = None,
     ):
         super().__init__(
             labels_img=labels_img,
@@ -176,7 +192,7 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         self.n_jobs = n_jobs
 
     @fill_doc
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y: None = None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters

@@ -37,6 +37,7 @@ on:
         -   tox.ini
         -   pyproject.toml
         -   .github/workflows/test_with_tox.yml
+        -   maint_tools/templates
     pull_request:
         branches:
         -   '*'
@@ -45,6 +46,7 @@ on:
         -   tox.ini
         -   pyproject.toml
         -   .github/workflows/test_with_tox.yml
+        -   maint_tools/templates
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -111,6 +113,11 @@ jobs:
                     py: '3.11'
                     os: macos-latest
                     env: plot_min
+                # make sure everything is fine with latest dependencies without plotting
+                -   description: latest dependencies - no plotting
+                    py: '3.14'
+                    os: macos-latest
+                    env: latest
                 # plotly images saved on different OS can generate slightly
                 # different baseline images. As baseline images are generated
                 # on a linux machine, ubuntu-latest is used
@@ -128,7 +135,7 @@ jobs:
                 persist-credentials: false
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+            uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
         -   name: Setup python
             uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -224,7 +231,7 @@ jobs:
                 persist-credentials: false
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+            uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
         -   name: Setup python
             uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -299,7 +306,7 @@ jobs:
                 persist-credentials: false
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+            uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
         -   name: Setup python
             uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0

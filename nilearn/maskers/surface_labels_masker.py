@@ -22,6 +22,24 @@ from nilearn._utils.param_validation import (
 from nilearn.image import mean_img
 from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    ReductionStrategy,
+    Signals,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    TableLike,
+    Tr,
+    Verbose,
+)
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -158,7 +176,6 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         (for example across timepoints) is finite value different from 0.
 
     memory_ : joblib memory cache
-
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
@@ -174,27 +191,27 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
     def __init__(
         self,
-        labels_img=None,
-        labels=None,
-        lut=None,
-        background_label=0,
-        mask_img=None,
-        smoothing_fwhm=None,
-        standardize=None,
-        standardize_confounds=True,
-        detrend=False,
-        high_variance_confounds=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
-        memory=None,
-        memory_level=1,
-        verbose=0,
-        strategy="mean",
-        reports=True,
-        cmap=DEFAULT_SEQUENTIAL_CMAP,
-        clean_args=None,
+        labels_img: SurfaceImage | None = None,
+        labels: list[str] | None = None,
+        lut: TableLike | None = None,
+        background_label: int | float = 0,
+        mask_img: SurfaceImage | None = None,
+        smoothing_fwhm: SmoothingFwhm = None,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        detrend: Detrend = False,
+        high_variance_confounds: bool = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
+        strategy: ReductionStrategy = "mean",
+        reports: bool = True,
+        cmap: ColormapLike = DEFAULT_SEQUENTIAL_CMAP,
+        clean_args: dict[str, Any] | None = None,
     ):
         self.labels_img = labels_img
         self.labels = labels
@@ -221,7 +238,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self._reset_report()
 
     @fill_doc
-    def fit(self, imgs=None, y=None) -> Self:
+    def fit(self, imgs=None, y: None = None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -372,7 +389,12 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         return hasattr(self, "lut_") and hasattr(self, "mask_img_")
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from surface object.
 
         Parameters
@@ -453,7 +475,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, signals) -> SurfaceImage:
+    def inverse_transform(self, signals: Signals) -> SurfaceImage:
         """Transform extracted signal back to surface image.
 
         Parameters

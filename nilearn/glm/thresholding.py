@@ -95,7 +95,6 @@ def _true_positive_fraction(z_vals, hommel_value, alpha):
     -------
     threshold : :obj:`float`
         Estimated true positive fraction in the set of values.
-
     """
     z_vals_ = -np.sort(-z_vals)
     p_vals = norm.sf(z_vals_)
@@ -130,7 +129,6 @@ def fdr_threshold(z_vals, alpha) -> float:
     >>> z_vals = np.array([4.0, 3.5, 2.8, 2.5, 1.9, 1.2])
     >>> float(np.round(fdr_threshold(z_vals, alpha=0.05), 2))
     1.9
-
     """
     if alpha < 0 or alpha > 1:
         raise ValueError(
@@ -206,7 +204,6 @@ def cluster_level_inference(
     References
     ----------
     .. footbibliography::
-
     """
     original_threshold = threshold
     if not isinstance(threshold, list):
@@ -460,16 +457,16 @@ def threshold_stats_img(
     threshold : :obj:`float` or :class:`numpy.floating`
         The voxel-level threshold used actually.
 
-    Notes
-    -----
-    If the input image is not z-scaled (i.e. some z-transformed statistic)
-    the computed threshold is not rigorous and likely meaningless
-
     See Also
     --------
     nilearn.image.threshold_img :
         Apply an explicit voxel-level (and optionally cluster-level) threshold
         without correction.
+
+    Notes
+    -----
+    If the input image is not z-scaled (i.e. some z-transformed statistic)
+    the computed threshold is not rigorous and likely meaningless
 
     Examples
     --------
@@ -492,7 +489,6 @@ def threshold_stats_img(
     array([[[0. , 0. , 0. ],
         [1.5, 3. , 0. ],
         [0. , 2.2, 0. ]]])
-
     """
     if height_control is None:
         if threshold is None:

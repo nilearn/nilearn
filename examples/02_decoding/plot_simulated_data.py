@@ -23,12 +23,7 @@ model with a random design matrix **X**:
   and smooth them as in Gaussian fields.
 
 * **e** is random normal noise.
-
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
 
 from time import time
 
@@ -252,10 +247,3 @@ show()
 # slow.
 
 # from sklearn.feature_selection import RFE
-
-
-# %%
-# References
-# ----------
-#
-# .. footbibliography::

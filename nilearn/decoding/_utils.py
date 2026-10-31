@@ -24,7 +24,7 @@ from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
-from nilearn._utils.versions import SKLEARN_GTE_1_8
+from nilearn._utils.versions import SKLEARN_GT_1_9, SKLEARN_GTE_1_8
 from nilearn.exceptions import MaskWarning
 from nilearn.image import get_data
 from nilearn.surface.surface import SurfaceImage
@@ -78,7 +78,9 @@ SUPPORTED_ESTIMATORS: dict[
             "estimator": LogisticRegressionCV,
             "params": {
                 "l1_ratios": (1,),
-                "solver": "liblinear",
+                # TODO (sklearn >= 1.10)
+                # simplify
+                "solver": "newton-cd" if SKLEARN_GT_1_9 else "liblinear",
                 **kwarg_logistic_regression_cv,
             },
             "extra_params": {},
@@ -87,7 +89,7 @@ SUPPORTED_ESTIMATORS: dict[
             "estimator": LogisticRegressionCV,
             "params": {
                 "l1_ratios": (0,),
-                "solver": "liblinear",
+                "solver": "newton-cd" if SKLEARN_GT_1_9 else "liblinear",
                 **kwarg_logistic_regression_cv,
             },
             "extra_params": {},
@@ -96,7 +98,7 @@ SUPPORTED_ESTIMATORS: dict[
             "estimator": LogisticRegressionCV,
             "params": {
                 "l1_ratios": (0,),
-                "solver": "liblinear",
+                "solver": "newton-cd" if SKLEARN_GT_1_9 else "liblinear",
                 **kwarg_logistic_regression_cv,
             },
             "extra_params": {},
@@ -155,7 +157,6 @@ def _get_mask_extent(mask_img):
     mask_extent : :obj:`float`
         The computed volume in mm^3 (if mask_img is a Nifti1Image) or the
         number of vertices (if mask_img is a SurfaceImage).
-
     """
     if not hasattr(mask_img, "affine"):
         # sum number of True values in both hemispheres
@@ -187,7 +188,6 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
     -------
     screening_percentile : :obj:`float` in the interval [0, 100]
         Percentile value for ANOVA univariate feature selection.
-
     """
     original_screening_percentile = screening_percentile
     # correct screening_percentile according to the volume of the data mask
@@ -292,7 +292,6 @@ def check_feature_screening(
     -------
     selector : SelectPercentile instance
        Used to perform the :term:`ANOVA` univariate feature selection.
-
     """
     f_test = f_classif if is_classification else f_regression
 

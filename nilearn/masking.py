@@ -2,7 +2,7 @@
 
 import numbers
 import warnings
-from typing import Literal, get_args, overload
+from typing import TYPE_CHECKING, Literal, get_args, overload
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -89,7 +89,7 @@ def load_mask_img(
         Returns a :class:`numpy.ndarray` if Niimg-like object
         was passed as input
         or :obj:`~nilearn.surface.SurfaceImage`
-        if :obj:`~nilearn.surface.SurfaceImage` was passed as input
+        if :obj:`~nilearn.surface.SurfaceImage` was passed as input.
 
     mask_affine : None or (4,4) array-like
         Affine of the mask if Niimg-like object was passed as input,
@@ -101,8 +101,10 @@ def load_mask_img(
             f"Got {mask_img.__class__.__name__}."
         )
 
+    affine = None
     if isinstance(mask_img, NiimgLike):
         loaded_img = check_niimg_3d(mask_img)
+        affine = loaded_img.affine
         mask = safe_get_data(loaded_img, ensure_finite=True)
     else:
         mask_img.data._check_ndims(1)
@@ -133,7 +135,9 @@ def load_mask_img(
     mask = as_ndarray(mask, dtype=bool)
 
     if isinstance(mask_img, NiimgLike):
-        return mask, loaded_img.affine
+        if TYPE_CHECKING:
+            assert affine is not None
+        return mask, affine
 
     for hemi in mask_img.data.parts:
         mask_img.data.parts[hemi] = as_ndarray(
@@ -188,7 +192,9 @@ def extrapolate_out_mask(data, mask, iterations=1):
 # Utilities to compute masks
 #
 @fill_doc
-def intersect_masks(mask_imgs, threshold=0.5, connected=True) -> Nifti1Image:
+def intersect_masks(
+    mask_imgs: list[NiimgLike], threshold: float = 0.5, connected: bool = True
+) -> Nifti1Image:
     """Compute intersection of several masks.
 
     Given a list of input mask images, generate the output image which
@@ -267,17 +273,17 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True) -> Nifti1Image:
             f"Got: {', '.join(mask_types)}."
         )
 
-    grp_mask = None
+    grp_mask: np.ndarray | None = None
 
     # load all masks once
-    mask_imgs = [check_niimg_3d(x) for x in mask_imgs]
+    loaded_images: list[Nifti1Image] = [check_niimg_3d(x) for x in mask_imgs]
 
     kwargs = {"raise_error": True}
     check_same_fov(*mask_imgs, **kwargs)
 
-    _, ref_affine = load_mask_img(mask_imgs[0], allow_empty=True)
+    _, ref_affine = load_mask_img(loaded_images[0], allow_empty=True)
 
-    for this_mask in mask_imgs:
+    for this_mask in loaded_images:
         mask, _ = load_mask_img(this_mask, allow_empty=True)
 
         if grp_mask is None:
@@ -290,6 +296,8 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True) -> Nifti1Image:
             # XXX should the masks be coerced to int before addition?
             grp_mask += mask
 
+    if TYPE_CHECKING:
+        assert isinstance(grp_mask, np.ndarray)
     grp_mask = grp_mask > (threshold * len(list(mask_imgs)))
 
     if np.any(grp_mask > 0) and connected:
@@ -970,7 +978,7 @@ def apply_mask(
     -------
     run_series : :class:`numpy.ndarray`
         2D array of series with shape
-        (image number, :term:`voxel` / vertex number)
+        (image number, :term:`voxel` / vertex number).
 
     Notes
     -----
@@ -1117,8 +1125,8 @@ def _unmask_4d(X, mask, order="C"):
     Returns
     -------
     data : :class:`numpy.ndarray`
-        Unmasked data.
-        Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
+        Unmasked data with
+        shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0]).
     """
     if mask.dtype != bool:
         raise TypeError("mask must be a boolean array")

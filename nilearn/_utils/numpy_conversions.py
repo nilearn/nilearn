@@ -95,7 +95,7 @@ def as_ndarray(
         return np.asarray(arr, dtype=dtype, order=order)
 
 
-def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
+def csv_to_array(csv_path, delimiters=" \t,;", **kwargs) -> np.ndarray:
     """Read a CSV file by trying to guess its delimiter.
 
     Parameters

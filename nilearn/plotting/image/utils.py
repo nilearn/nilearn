@@ -153,7 +153,8 @@ def _load_custom_anat(
         if black_bg == "auto":
             # Guess if the background is rather black or light based on
             # the values of voxels near the border
-            background = np.median(get_border_data(data, 2))
+            # the mask of masked arrays is ignored by np.median anyway
+            background = np.median(np.ma.getdata(get_border_data(data, 2)))
             black_bg = bool(background <= 0.5 * (vmin + vmax))
 
     return anat_img, black_bg, vmin, vmax
@@ -192,6 +193,7 @@ def _apply_dimming(
             f"You provided dim={dim} in {dim.__class__.__name__}."
         )
 
+    orig_vmin = vmin
     vmean = 0.5 * (vmin + vmax)
     ptp = 0.5 * (vmax - vmin)
 
@@ -203,6 +205,8 @@ def _apply_dimming(
         if not isinstance(dim, numbers.Number):
             dim = 0.6
         vmin = 0.5 * (2 - dim) * vmean - (1 + dim) * ptp
+        if orig_vmin >= 0:
+            vmin = max(orig_vmin, vmin)
 
     return vmin, vmax
 

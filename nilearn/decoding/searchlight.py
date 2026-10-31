@@ -131,7 +131,7 @@ def search_light(
     Returns
     -------
     scores : array-like of shape (number of rows in A)
-        search_light scores
+        Searchlight scores.
     """
     check_params(locals())
 
@@ -166,7 +166,6 @@ class GroupIterator:
     n_features : :obj:`int`
         Total number of features
     %(n_jobs)s
-
     """
 
     def __init__(self, n_features, n_jobs=1):
@@ -239,7 +238,7 @@ def _group_iter_search_light(
     Returns
     -------
     par_scores : numpy.ndarray
-        score for each voxel. dtype: float64.
+        Score for each voxel. dtype: float64.
     """
     par_scores = np.zeros(len(list_rows))
     t0 = time.time()

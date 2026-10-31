@@ -11,8 +11,18 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 
 # sourcery skip: merge-dict-assign
 
+import importlib
+import json
+import re
 import sys
+import types
+import typing
 from collections.abc import Callable
+
+import pandas as pd
+from sklearn.utils import Bunch
+
+from nilearn._base import PACKAGE_DIRECTORY, documentation_url
 
 ##############################################################################
 #
@@ -165,7 +175,8 @@ logistic = "Logistic regression"
 rc = "Ridge classifier"
 dc = "Dummy classifier with stratified strategy"
 
-
+# TODO (sklearn >= 1.10)
+# update the sections below for logistic and logistic_l1
 docdict["classifier_options"] = f"""
 
     - ``"svc"``: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
@@ -194,6 +205,9 @@ docdict["classifier_options"] = f"""
 
         logistic = LogisticRegressionCV(l1_ratios=(0,), solver="liblinear")
 
+        # with sklearn >= 1.10
+        logistic = LogisticRegressionCV(l1_ratios=(0,), solver="newton-cd")
+
     - ``"logistic_l1"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
         with L1 penalty.
@@ -201,6 +215,9 @@ docdict["classifier_options"] = f"""
     .. code-block:: python
 
         logistic_l1 = LogisticRegressionCV(l1_ratios=(1,), solver="liblinear")
+
+        # with sklearn >= 1.10
+        logistic_l1 = LogisticRegressionCV(l1_ratios=(1,), solver="newton-cd")
 
     - ``"logistic_l2"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -265,7 +282,7 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
     or a matplotlib colormap object,
     or a BIDS compliant
     `look-up table <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
-    passed as a pandas dataframe or a path to a tsv or csv file.
+    passed as a pandas dataframe or a path to a TSV or CSV file.
     If the look up table does not contain a ``color`` column,
     then the default colormap of this function will be used.
 
@@ -295,19 +312,39 @@ connected : :obj:`bool`, optional
 # confounds
 docdict["confounds"] = """
 confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
-            :class:`pandas.DataFrame` \
-            or :obj:`list` of confounds timeseries, default=None
+            :class:`pandas.DataFrame`, None,  \
+            or :obj:`list` or :obj:`tuple` of :class:`numpy.ndarray`, \
+            :obj:`str`, :class:`pathlib.Path`, :class:`pandas.DataFrame`, \
+            default=None
     This parameter is passed to :func:`nilearn.signal.clean`.
     Please see the related documentation for details.
-    shape: (number of scans, number of confounds)
+
+    Array must have shape must be (instant number, confound number),
+    or just (instant number,).
+
+    If a or :class:`pathlib.Path`
+    :obj:`str` is provided, it is assumed to be the name of a csv file
+    containing signals as columns, with an optional one-line header.
+
+    If a list is provided, all confounds are removed from the input
+    signal, as if all were in the same array.
+
+    For dataframes, each column corresponds to a confound variable
+    to be included in the regression model of the respective image.
+    The number of rows must match the number of volumes in the
+    respective image.
 """
+
 docdict["confounds_multi"] = """
-confounds : :obj:`list` of confounds, default=None
-    List of confounds (arrays, dataframes,
-    str or path of files loadable into an array).
+confounds : confounds, or :obj:`list` or :obj:`tuple` of confounds, \
+            default=None
+    Confounds (arrays, dataframes,
+    str or path of files loadable into an array or dataframe)
+    or list or tuples of confounds.
     As confounds are passed to :func:`nilearn.signal.clean`,
     please see the related documentation for details about accepted types.
     Must be of same length than imgs.
+
 """
 
 # copy_header
@@ -841,6 +878,23 @@ n_perm : :obj:`int`, default=10000
     Number of permutations to perform.
     Permutations are costly but the more are performed, the more precision
     one gets in the p-values estimation.
+"""
+
+# n_subjects
+docdict["n_subjects"] = """
+n_subjects : :obj:`int`, :obj:`list` or :obj:`tuple` of :obj:`int`, or None
+    Number of subjects to load, or their one-based indices.
+    If ``None`` is given, all available subjects are loaded.
+    An empty list or tuple is not allowed.
+"""
+
+# noise_model
+docdict["noise_model"] = """
+noise_model : {'ar(N)', 'ols'}, default='ar1'
+    The temporal variance model.
+    To specify the order of an autoregressive model
+    place the order after the characters ``ar``,
+    for example to specify a third order model use ``ar3``.
 """
 
 # opening
@@ -1430,9 +1484,11 @@ y : None
 #
 
 # atlas_type
-docdict["atlas_type"] = """'atlas_type' : :obj:`str`
+atlas_type = """
         Type of atlas.
         See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
+docdict["atlas_type"] = f"""'atlas_type' : :obj:`str`
+        {atlas_type}"""
 
 docdict["base_decomposition_fit_attributes"] = """
 Attributes
@@ -1746,8 +1802,9 @@ docdict[
         """
 
 # atlas labels
-docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
-        List of the names of the regions."""
+labels = "List of the names of the regions."
+docdict["labels"] = f"""'labels' : :obj:`list` of :obj:`str`
+        {labels}"""
 
 # mask_img_ for most nifti maskers
 docdict[
@@ -1761,11 +1818,15 @@ docdict[
         (for example across timepoints) is finite value different from 0."""
 
 # look up table
-docdict["lut"] = """lut : :obj:`pandas.DataFrame`
+lut = """
         Act as a look up table (lut)
         with at least columns 'index' and 'name'.
         Formatted according to 'dseg.tsv' format from
-        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_.
+"""
+docdict["lut"] = f"""lut : :obj:`pandas.DataFrame`
+{lut}
+       """
 
 
 signals_transform = """signals : :obj:`numpy.ndarray`, \
@@ -1798,9 +1859,11 @@ docdict["signals_transform_surface"] = signals_transform.format(1, 2, 1, 2)
 # signals returned Multi Nifti maskers by transform, fit_transform...
 docdict[
     "signals_transform_multi_nifti"
-] = """signals : :obj:`list` of :obj:`numpy.ndarray` or :obj:`numpy.ndarray`
+] = """signals : :obj:`numpy.ndarray`, :obj:`pandas.DataFrame`, \
+          polars.DataFrame, or :obj:`list` of :obj:`numpy.ndarray`, \
+          :obj:`pandas.DataFrame` or polars.DataFrame
         Signal for each :term:`voxel`.
-        Output shape for :
+        Output shape for arrays:
 
         - 3D images: (number of elements,) array
         - 4D images: (number of scans, number of elements) array
@@ -1822,9 +1885,9 @@ docdict[
 
 
 # template
-docdict["template"] = """'template' : :obj:`str`
-        The standardized space of analysis
-        in which the atlas results are provided.
+template = "The standardized space of analysis in which the data is provided."
+docdict["template"] = f"""'template' : :obj:`str`
+        {template}
         When known it should be a valid template name
         taken from the spaces described in
         `the BIDS specification <https://bids-specification.readthedocs.io/en/latest/appendices/coordinate-systems.html#image-based-coordinate-systems>`_."""
@@ -1875,7 +1938,6 @@ def _indentcount_lines(lines):
     1
     >>> _indentcount_lines(["    "])
     0
-
     """
     indentno = sys.maxsize
     for line in lines:
@@ -1899,7 +1961,6 @@ def fill_doc(f: Callable) -> Callable:
     -------
     f : callable
         The function, potentially with an updated `__doc__`.
-
     """
     docstring = f.__doc__
     if not docstring:
@@ -1929,3 +1990,347 @@ def fill_doc(f: Callable) -> Callable:
             "Did you forget to escape a character with an extra '%'"
         ) from exp
     return f
+
+
+# Structured descriptions of what dataset fetchers return.
+#
+# The content of this registry is used:
+#
+# - by the fetchers, to build the ``description`` they return,
+# - by the dataset description pages (``nilearn/datasets/description/*.rst``)
+#   via the ``nilearn_dataset_content`` and ``nilearn_dataset_license``
+#   directives:
+#   rendered by a sphinx extension at doc build time
+#   (see ``doc/sphinxext/dataset_descriptions.py``)
+#   and by :func:`render_description_directives` at runtime.
+# - to fill the "return" section of the doc strings of the fetchers
+#
+# It must therefore not require downloading any data.
+
+
+DATASET_DESCRIPTIONS: dict[str, Bunch] = {
+    "aal_atlas": Bunch(
+        content=Bunch(
+            lut=Bunch(type=pd.DataFrame, desc=lut),
+        )
+    ),
+    "allen_2011_atlas": Bunch(license="unknown"),
+    "basc_multiscale_2015_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="Creative Commons -- Attribution Non-commercial",
+    ),
+    "craddock_2012_atlas": Bunch(
+        license="Creative Commons Attribution Non-commercial Share Alike."
+    ),
+    "destrieux_2009_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+    ),
+    "difumo_atlas": Bunch(
+        license="usage is unrestricted for non-commercial research purposes.",
+    ),
+    "dosenbach_2010_atlas": Bunch(),
+    "fiac": Bunch(),
+    "fsaverage": Bunch(),
+    "fsaverage_polymesh": Bunch(),
+    "harvard_oxford_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
+    ),
+    "icbm152_2009": Bunch(),
+    "juelich_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="See https://fsl.fmrib.ox.ac.uk/fsl/docs/license.html",
+    ),
+    "language_localizer_demo": Bunch(license="ODC-BY-SA"),
+    "localizer_first_level": Bunch(
+        content=Bunch(template=Bunch(type=str, desc=template))
+    ),
+    "msdl_atlas": Bunch(
+        license="usage is unrestricted for non-commercial research purposes."
+    ),
+    "oasis_vbm": Bunch(
+        license="Provided under an open access data use agreement (DUA)."
+    ),
+    "pauli_2017_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="UCC-By Attribution 4.0 International",
+    ),
+    "power_2011_atlas": Bunch(),
+    "spm_multimodal": Bunch(),
+    "seitzman_2018_atlas": Bunch(),
+    "schaefer_2018_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+    ),
+    "smith_2009_atlas": Bunch(),
+    "surf_destrieux_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+    ),
+    "talairach_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+    ),
+    "yeo_2011_atlas": Bunch(
+        content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+        license="MIT",
+    ),
+}
+
+
+def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
+    # import some packages that are needed
+    # for the eval below
+    # to turn string into an actual type
+    import pathlib  # noqa : F401
+
+    import nibabel  # noqa : F401
+    import numpy as np  # noqa : F401
+
+    json_file_path = PACKAGE_DIRECTORY / "datasets" / "description" / json_file
+
+    if not json_file_path.exists():
+        return content
+
+    with (PACKAGE_DIRECTORY / "datasets" / "description" / json_file).open(
+        "rb"
+    ) as f:
+        metadata = json.load(f)
+
+    for key, value in metadata.items():
+        if key in content:
+            raise ValueError(
+                f"Cannot add {key} from {json_file} "
+                "to dataset description: key already present."
+            )
+        content[key] = Bunch(**value)
+        # nilearn types cannot be imported here (circular import):
+        # keep them as strings, they are resolved lazily when needed.
+        if not content[key].type.startswith("nilearn."):
+            content[key].type = eval(content[key].type)
+
+    return content
+
+
+# update the content of DATASET_DESCRIPTIONS from the dataset json
+for k in DATASET_DESCRIPTIONS:
+    if "content" not in DATASET_DESCRIPTIONS[k]:
+        DATASET_DESCRIPTIONS[k]["content"] = Bunch()
+
+    if "license" not in DATASET_DESCRIPTIONS[k]:
+        DATASET_DESCRIPTIONS[k]["license"] = "unknown"
+
+    DATASET_DESCRIPTIONS[k]["content"] = _fill_content_from_json(
+        DATASET_DESCRIPTIONS[k]["content"], f"{k}.json"
+    )
+
+    # All atlases have an "atlas_type" and "template"
+    if "atlas" in k:
+        DATASET_DESCRIPTIONS[k]["content"]["atlas_type"] = Bunch(
+            type=str, desc=atlas_type
+        )
+        DATASET_DESCRIPTIONS[k]["content"]["template"] = Bunch(
+            type=str, desc=template
+        )
+
+
+def content_to_rst(name: str, indent="") -> str:
+    """Render the content of the dataset ``name`` as a sorted list.
+
+    Parameters
+    ----------
+    name : str
+        key to use in DATASET_DESCRIPTIONS
+
+    indent : str
+        indent value to use to indent list
+        (useful for proper rendering in HTML)
+    """
+    content = dict(sorted(DATASET_DESCRIPTIONS[name].content.items()))
+    tmp = []
+    for key, value in content.items():
+        sanitized_value = "".join(value.desc.split("\n"))
+        sanitized_value = re.sub(" +", " ", sanitized_value)
+        tmp.append(
+            f"\n{indent}- ``{key}``: "
+            f"{type_to_rst(value.type)}. {sanitized_value}"
+        )
+
+    return "".join(tmp)
+
+
+def type_to_rst(type_) -> str:
+    """Render a type (or type hint) as restructured text."""
+    if isinstance(type_, str):
+        return f":class:`{type_}`" if type_.startswith("nilearn.") else type_
+    if type_ is None or type_ is type(None):
+        return "``None``"
+
+    origin = typing.get_origin(type_)
+    if origin is None:
+        module = type_.__module__
+        if module == "builtins":
+            return f":obj:`{type_.__qualname__}`"
+        # pandas documents its classes at the top level
+        # (e.g. pandas.DataFrame and not pandas.core.frame.DataFrame)
+        if module.split(".")[0] == "pandas":
+            module = "pandas"
+        return f":class:`{module}.{type_.__qualname__}`"
+
+    args = typing.get_args(type_)
+    if origin in (typing.Union, types.UnionType):
+        return " or ".join(type_to_rst(x) for x in args)
+    if not args:
+        return type_to_rst(origin)
+    if len(args) == 1:
+        return f"{type_to_rst(origin)} of {type_to_rst(args[0])}"
+    inner = ", ".join(type_to_rst(x) for x in args)
+    return f"{type_to_rst(origin)} of ({inner})"
+
+
+for k in DATASET_DESCRIPTIONS:
+    docdict[f"{k}_content"] = content_to_rst(k, indent="    ")
+
+
+_DIRECTIVE_REGEX = re.compile(
+    r"^\.\. nilearn_dataset_(?P<kind>content|license):: *(?P<name>\S+) *\r?$",
+    flags=re.MULTILINE,
+)
+
+
+def license_to_rst(name: str) -> str:
+    """Render the license of the dataset ``name``."""
+    return DATASET_DESCRIPTIONS[name].license or "unknown"
+
+
+_RENDERERS = {"content": content_to_rst, "license": license_to_rst}
+
+
+def render_description_directives(rst: str) -> str:
+    """Replace nilearn_dataset_* directives by their rendered content."""
+    return _DIRECTIVE_REGEX.sub(
+        lambda m: _RENDERERS[m["kind"]](m["name"]), rst
+    )
+
+
+def _matches_type(value, type_) -> bool:
+    """Check if value matches a type (or type hint).
+
+    Nilearn types given as dotted strings (e.g. 'nilearn.surface.PolyMesh')
+    are imported before checking.
+    Other types given as strings cannot be checked
+    and are considered a match.
+    """
+    if isinstance(type_, str):
+        if not type_.startswith("nilearn."):
+            return True
+        module, name = type_.rsplit(".", 1)
+        type_ = getattr(importlib.import_module(module), name)
+    if type_ is None or type_ is type(None):
+        return value is None
+
+    origin = typing.get_origin(type_)
+    if origin is None:
+        return isinstance(value, type_)
+
+    args = typing.get_args(type_)
+    if origin in (typing.Union, types.UnionType):
+        return any(_matches_type(value, x) for x in args)
+    if not isinstance(value, origin):
+        return False
+    return not args or _container_items_match(value, origin, args)
+
+
+def _container_items_match(value, origin, args) -> bool:
+    """Check that the items of a container match the type arguments."""
+    if issubclass(origin, tuple):
+        if len(args) == 2 and args[1] is Ellipsis:
+            return all(_matches_type(x, args[0]) for x in value)
+        return len(value) == len(args) and all(
+            _matches_type(x, t) for x, t in zip(value, args, strict=True)
+        )
+    if issubclass(origin, dict):
+        key_type, value_type = args
+        return all(
+            _matches_type(k, key_type) and _matches_type(v, value_type)
+            for k, v in value.items()
+        )
+    # other containers: list, set...
+    return all(_matches_type(x, args[0]) for x in value)
+
+
+def check_content_types(data, content) -> list[str]:
+    """Check that data returned by a fetcher matches its described content
+    and that all data is described.
+
+    Parameters
+    ----------
+    data : :obj:`sklearn.utils.Bunch`
+        Data returned by a fetcher.
+
+    content : :obj:`sklearn.utils.Bunch`
+        Content of the description of the data:
+        see ``DATASET_DESCRIPTIONS``.
+
+    Returns
+    -------
+    :obj:`list` of :obj:`str`
+        Description of each mismatch. Empty if everything matches.
+    """
+    errors = []
+    for key, value in content.items():
+        if key not in data and key != "lut":
+            # look up table (lut) is missing FOR NOW
+            # for some probabilistic atlases (juelich and harvard_oxford)
+            # but present for their deterministic version
+            # so we skip this check for lut for now
+            errors.append(f"'{key}' is described but missing from the data")
+
+        if key in data and not _matches_type(data[key], value.type):
+            errors.append(
+                f"'{key}' expected type '{value.type}', "
+                f"got '{type(data[key]).__name__}'"
+            )
+
+    for key in data:
+        if key == "description":
+            continue
+        if key not in content:
+            errors.append(
+                f"'{key}' is present in data but not described in content"
+            )
+
+    return errors
+
+
+class Description(Bunch):
+    """Class to help inject content description in fetcher docstrings."""
+
+    def __init__(
+        self,
+        documentation: str,
+        content: Bunch,
+        license: str | None,
+    ):
+
+        super().__init__(
+            documentation=documentation,
+            content=content,
+            license=license,
+        )
+
+    @classmethod
+    def from_registry(cls, name: str):
+        """Build the description of dataset ``name`` from the registry.
+
+        See ``nilearn.datasets._descriptions.DATASET_DESCRIPTIONS``.
+        """
+        assert (
+            PACKAGE_DIRECTORY / "datasets" / "description" / f"{name}.rst"
+        ).exists()
+
+        entry = DATASET_DESCRIPTIONS[name]
+        return cls(
+            documentation=(
+                f"{documentation_url()}/modules/description/{name}.html"
+            ),
+            content=entry.content,
+            license=entry.license,
+        )

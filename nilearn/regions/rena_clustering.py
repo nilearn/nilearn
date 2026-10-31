@@ -11,11 +11,11 @@ from typing import Self
 
 import numpy as np
 from nibabel import Nifti1Image
-from scipy.sparse import coo_matrix, csgraph, dia_matrix
+from scipy.sparse import coo_array, csgraph, dia_array
 from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.utils.validation import check_is_fitted, validate_data
 
-from nilearn._base import NilearnBaseEstimator
+from nilearn._base import PACKAGE_DIRECTORY, NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.docs import fill_doc
@@ -33,10 +33,6 @@ def _compute_weights(X, mask_img):
 
     i.e. weights = (weight_deep, weights_right, weight_down).
 
-    Notes
-    -----
-    Here we assume a square lattice (no diagonal connections).
-
     Parameters
     ----------
     X : ndarray, shape = [n_samples, n_features]
@@ -51,6 +47,9 @@ def _compute_weights(X, mask_img):
         Weights corresponding to all edges in the mask.
         shape: (n_edges,).
 
+    Notes
+    -----
+    Here we assume a square lattice (no diagonal connections).
     """
     n_samples, _ = X.shape
 
@@ -88,7 +87,6 @@ def _make_3d_edges(vertices, is_mask):
         Edges corresponding to the image or mask.
         shape: (1, n_edges) if_mask,
                (2, n_edges) otherwise.
-
     """
     if is_mask:
         edges_deep = np.logical_and(
@@ -128,12 +126,11 @@ def _make_edges_and_weights(X, mask_img):
     Returns
     -------
     edges : ndarray
-        Array containing [edges_deep, edges_right, edges_down]
+        Array containing [edges_deep, edges_right, edges_down].
 
     weights : ndarray
         Weights corresponding to all edges in the mask.
         shape: (n_edges,).
-
     """
     mask = get_data(mask_img)
     shape = mask.shape
@@ -181,7 +178,6 @@ def _compute_weights_surface(X, mask, edges):
     weights : ndarray
         Weights corresponding to all edges.
         shape: (n_edges,).
-
     """
     n_samples, _ = X.shape
     shape = mask.shape
@@ -215,7 +211,6 @@ def _circular_pairwise(iterable):
     Returns
     -------
     output : iterable
-
     """
     a, b = itertools.tee(iterable)
     return itertools.zip_longest(a, b, fillvalue=next(b, None))
@@ -239,7 +234,6 @@ def make_edges_surface(faces, mask):
 
     edges_masked : ndarray
         Edges corresponding to the mask with shape: (1, n_edges).
-
     """
     mesh_edges = {
         tuple(sorted(pair))
@@ -267,12 +261,11 @@ def _make_edges_and_weights_surface(X, mask_img):
     Returns
     -------
     edges : dict[str, np.array]
-        Array containing edges of mesh
+        Array containing edges of mesh.
 
     weights : dict[str, np.array]
         Weights corresponding to all edges in the mask.
         shape: (n_edges,).
-
     """
     weights = {}
     edges = {}
@@ -327,22 +320,21 @@ def _weighted_connectivity_graph(X, mask_img):
     -------
     connectivity : a CSR matrix
         Sparse matrix representation of the weighted adjacency graph.
-
     """
     n_features = X.shape[1]
 
     if isinstance(mask_img, SurfaceImage):
         edges, weight = _make_edges_and_weights_surface(X, mask_img)
-        connectivity = coo_matrix((n_features, n_features))
+        connectivity = coo_array((n_features, n_features))
         for part in mask_img.mesh.parts:
-            conn_temp = coo_matrix(
+            conn_temp = coo_array(
                 (weight[part], edges[part]), (n_features, n_features)
             ).tocsr()
             connectivity += conn_temp
     else:
         edges, weight = _make_edges_and_weights(X, mask_img)
 
-        connectivity = coo_matrix(
+        connectivity = coo_array(
             (weight, edges), (n_features, n_features)
         ).tocsr()
 
@@ -365,22 +357,21 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     Returns
     -------
     nn_connectivity : a sparse matrix in COOrdinate format.
-
     """
     n_features = connectivity.shape[0]
 
-    connectivity_ = coo_matrix(
+    connectivity_ = coo_array(
         (1.0 / connectivity.data, connectivity.nonzero()),
         (n_features, n_features),
     ).tocsr()
 
     # maximum on the axis = 0
-    max_connectivity = connectivity_.max(axis=0).toarray()[0]
-    inv_max = dia_matrix(
+    max_connectivity = connectivity_.max(axis=0).toarray().ravel()
+    inv_max = dia_array(
         (1.0 / max_connectivity, 0), shape=(n_features, n_features)
     )
 
-    connectivity_ = inv_max * connectivity_
+    connectivity_ = inv_max @ connectivity_
 
     # Dealing with eccentricities, there are probably many nearest neighbors
     edge_mask = connectivity_.data > 1 - threshold
@@ -392,7 +383,7 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     weight = np.ones_like(j_idx)
     edges = np.array([i_idx, j_idx])
 
-    nn_connectivity = coo_matrix((weight, edges), (n_features, n_features))
+    nn_connectivity = coo_array((weight, edges), (n_features, n_features))
 
     return nn_connectivity
 
@@ -429,27 +420,26 @@ def _reduce_data_and_connectivity(
 
     reduced_X : ndarray
         Data reduced with agglomerated signal for each cluster.
-
     """
     n_features = len(labels)
 
-    incidence = coo_matrix(
+    incidence = coo_array(
         (np.ones(n_features), (labels, np.arange(n_features))),
         shape=(n_components, n_features),
         dtype=np.float32,
     ).tocsc()
 
-    inv_sum_col = dia_matrix(
+    inv_sum_col = dia_array(
         (np.array(1.0 / incidence.sum(axis=1)).squeeze(), 0),
         shape=(n_components, n_components),
     )
 
-    incidence = inv_sum_col * incidence
+    incidence = inv_sum_col @ incidence
 
-    reduced_X = (incidence * X.T).T
-    reduced_connectivity = (incidence * connectivity) * incidence.T
+    reduced_X = (incidence @ X.T).T
+    reduced_connectivity = (incidence @ connectivity) @ incidence.T
 
-    reduced_connectivity = reduced_connectivity - dia_matrix(
+    reduced_connectivity = reduced_connectivity - dia_array(
         (reduced_connectivity.diagonal(), 0),
         shape=(reduced_connectivity.shape),
     )
@@ -492,7 +482,6 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
 
     labels : :class:`numpy.ndarray`, shape = [n_features]
         It contains the clusters assignation.
-
     """
     # Nearest neighbor connectivity
     nn_connectivity = _nn_connectivity(connectivity, threshold)
@@ -514,7 +503,7 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
         weight = np.ones(2 * n_edges)
         edges = np.hstack([edges[:, edge_mask], edges[::-1, edge_mask]])
 
-        nn_connectivity = coo_matrix((weight, edges), (n_features, n_features))
+        nn_connectivity = coo_array((weight, edges), (n_features, n_features))
 
     # Clustering step: getting the connected components of the nn matrix
     n_components, labels = csgraph.connected_components(nn_connectivity)
@@ -561,12 +550,11 @@ def recursive_neighbor_agglomeration(
         Number of clusters.
 
     labels : :class:`numpy.ndarray`
-        Cluster assignation. shape = [n_features]
+        Cluster assignation. shape = [n_features].
 
     References
     ----------
     .. footbibliography::
-
     """
     check_params(locals())
 
@@ -647,7 +635,6 @@ class ReNA(
     References
     ----------
     .. footbibliography::
-
     """
 
     def __init__(
@@ -685,15 +672,11 @@ class ReNA(
 
         Only works in during sklearn checks during tests.
         """
-        import nilearn as nil
-
-        pkg_dir = Path(nil.__file__).parent
-
         frame = inspect.currentframe()
         while frame:
             filename = inspect.getfile(frame)
             is_test_file = Path(filename).name.startswith("test_")
-            in_nilearn_code = filename.startswith(str(pkg_dir))
+            in_nilearn_code = filename.startswith(str(PACKAGE_DIRECTORY))
             if is_test_file:
                 break
             frame = frame.f_back
@@ -705,7 +688,7 @@ class ReNA(
             )
 
     @fill_doc
-    def fit(self, X, y=None) -> Self:
+    def fit(self, X, y: None = None) -> Self:
         """Compute clustering of the data.
 
         Parameters
@@ -718,7 +701,6 @@ class ReNA(
         Returns
         -------
         self : `ReNA` object
-
         """
         del y
         check_params(self.__dict__)
@@ -793,11 +775,7 @@ class ReNA(
         return hasattr(self, "labels_")
 
     @fill_doc
-    def transform(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-    ):
+    def transform(self, X, y: None = None):
         """Apply clustering, reduce the dimensionality of the data.
 
         Parameters
@@ -811,8 +789,8 @@ class ReNA(
         -------
         X_red : :class:`numpy.ndarray`, shape = [n_samples, n_clusters]
             Data reduced with agglomerated signal for each cluster.
-
         """
+        del y
         check_is_fitted(self)
 
         X = validate_data(self, X, reset=False)
@@ -843,7 +821,6 @@ class ReNA(
         -------
         X_inv : :class:`numpy.ndarray`, shape = [n_samples, n_features]
             Data reduced expanded to the original feature space.
-
         """
         check_is_fitted(self)
 

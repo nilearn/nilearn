@@ -7,6 +7,7 @@ or as weights in one image per region (maps).
 
 import warnings
 from functools import partial
+from typing import Literal
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -42,7 +43,6 @@ def _check_shape_compatibility(img1, img2, dim=None) -> None:
 
     dim : :obj:`int`, default=None
         Integer slices a mask for a specific dimension.
-
     """
     if dim is None:
         img2 = check_niimg_3d(img2)
@@ -64,7 +64,6 @@ def _check_affine_equality(img1: Nifti1Image, img2: Nifti1Image) -> None:
     img2 : Niimg-like object
         See :ref:`extracting_data`.
         Contains map or mask.
-
     """
     if (
         img1.affine.shape != img2.affine.shape
@@ -97,7 +96,6 @@ def _check_shape_and_affine_compatibility(img1, img2=None, dim=None):
     -------
     non_empty : :obj:`bool`,
         Is only true for non-empty img.
-
     """
     if img2 is None:
         return False
@@ -147,7 +145,6 @@ def _get_labels_data(
     dim : :obj:`int`, default=None
         Integer slices mask for a specific dimension.
 
-
     Returns
     -------
     labels : :obj:`list` or :obj:`tuple`
@@ -157,13 +154,12 @@ def _get_labels_data(
     labels_data : numpy.ndarray
         Extracted data for each region within the mask.
         Data outside the mask are assigned to the background
-        label to restrict signal extraction
+        label to restrict signal extraction.
 
     See Also
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_labels
-
     """
     _check_shape_and_affine_compatibility(target_img, labels_img)
 
@@ -257,7 +253,7 @@ def img_to_signals_labels(
         Signals extracted from each region. One output signal is the mean
         of all input signals in a given region. If some regions are entirely
         outside the mask, the corresponding signal is zero.
-        Shape is: (scan number, number of regions)
+        Shape is: (scan number, number of regions).
 
     labels : :obj:`list` or :obj:`tuple`
         Corresponding labels for each signal. signal[:, n] was extracted from
@@ -309,7 +305,6 @@ def img_to_signals_labels(
     ... )
     >>> maximum_signals
     array([[0.3, 1.9, 2. ]])
-
     """
     check_params(locals())
 
@@ -345,7 +340,11 @@ def img_to_signals_labels(
 
 
 def signals_to_img_labels(
-    signals, labels_img, mask_img=None, background_label=0, order="F"
+    signals,
+    labels_img,
+    mask_img=None,
+    background_label=0,
+    order: Literal["C", "F"] = "F",
 ) -> Nifti1Image:
     """Create image from region signals defined as labels.
 
@@ -423,7 +422,6 @@ def signals_to_img_labels(
              [ 0.7504512 , -1.30217951]],
             [[ 0.7504512 , -1.30217951],
              [ 0.7504512 , -1.30217951]]]])
-
     """
     labels_img = check_niimg_3d(labels_img)
 
@@ -434,6 +432,7 @@ def signals_to_img_labels(
     signals = np.asarray(signals)
 
 
+
     if not np.all(np.isfinite(signals)):
         warnings.warn(
             "Input signals contain non-finite values (NaN or infinity). "
@@ -442,6 +441,10 @@ def signals_to_img_labels(
         )
 
     target_shape = labels_img.shape[:3]
+
+    target_shape: tuple[int, ...] = labels_img.shape[:3]
+    # TODO use nditer
+ main
     # nditer is not available in numpy 1.3: using multiple loops.
     # Using these loops still gives a much faster code (6x) than this one:
     # for n, label in enumerate(labels):
@@ -449,7 +452,7 @@ def signals_to_img_labels(
     if signals.ndim == 2:
         target_shape = (*target_shape, signals.shape[0])
 
-    data = np.zeros(target_shape, dtype=signals.dtype, order=order)
+    data = np.zeros(target_shape, dtype=signals.dtype, order=order)  # type: ignore[no-matching-overload]
     labels_dict = {label: n for n, label in enumerate(labels)}
     # optimized for "data" in F order.
     for k in range(labels_data.shape[2]):
@@ -493,11 +496,11 @@ def img_to_signals_maps(
     -------
     region_signals : :class:`numpy.ndarray`
         Signals extracted from each region.
-        Shape is: (scans number, number of regions intersecting mask)
+        Shape is: (scans number, number of regions intersecting mask).
 
     maps : :obj:`list` of :obj:`int`
-        maps_img[..., labels[n]] is the region that has been used to extract
-        signal region_signals[:, n].
+        The region ``maps_img[..., labels[n]]`` has been used to extract
+        signal ``region_signals[:, n]``.
 
     See Also
     --------
@@ -505,7 +508,6 @@ def img_to_signals_maps(
     nilearn.regions.signals_to_img_maps
     nilearn.maskers.NiftiMapsMasker : Signal extraction on probabilistic
         maps e.g. ICA
-
     """
     maps_img = check_niimg_4d(maps_img)
     imgs = check_niimg_4d(imgs)
@@ -590,7 +592,6 @@ def signals_to_img_maps(
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
     nilearn.maskers.NiftiMapsMasker
-
     """
     region_signals = np.asarray(region_signals)
     if not np.all(np.isfinite(region_signals)):
@@ -662,7 +663,6 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
     indices : :class:`numpy.ndarray`
         Indices of regions that have an non-empty intersection with the
         given mask. len(indices) == trimmed_maps.shape[-1].
-
     """
     maps = maps.copy()
     sums = abs(maps[as_ndarray(mask, dtype=bool), :]).sum(axis=0)

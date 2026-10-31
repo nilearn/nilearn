@@ -92,7 +92,6 @@ def test_mask_img_masks_all_maps_error(
         we cannot know for sure if the mask will include any label
       - When data is passed at fit time
         we can raise an error
-
     """
     mask = np.zeros(shape_3d_default)
     mask[-1][-1][-1] = 1
@@ -294,6 +293,7 @@ def test_with_nans_and_infs_in_data(length, n_regions, affine_eye):
     assert np.all(np.isfinite(signals))
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [NiftiMapsMasker, MultiNiftiMapsMasker])
 def test_resampling_to_mask(
     estimator,

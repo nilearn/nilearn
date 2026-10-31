@@ -6,6 +6,12 @@ Here we show some of the colormaps that ship with Nilearn
 (some adapted from the HCP connectome workbench color maps).
 
 This example show also some of the pros and cons of some of those maps.
+
+.. admonition:: dataset
+
+    This example uses a sample motor activation statistical map (`image 10426
+    <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
+    <neurovault_dataset>`).
 """
 
 import matplotlib.pyplot as plt
