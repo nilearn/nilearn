@@ -2432,7 +2432,7 @@ def clean_img(
     # (len == n_scans), and signal.clean converts a boolean mask to indices
     # internally, so reading the untouched kwarg's shape undercounts how
     # many volumes were actually scrubbed whenever it was passed as boolean.
-    sample_shape = imgs_.shape[:3] + (data.shape[0],)
+    sample_shape = (*imgs_.shape[:3], data.shape[0])
     return new_img_like(imgs_, data.T.reshape(sample_shape))
 
 
