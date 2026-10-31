@@ -2083,6 +2083,27 @@ def test_clean_img_sample_mask(img_4d_rand_eye, shape_4d_default):
     assert img.shape == (*shape_4d_default[:3], length - 1)
 
 
+def test_clean_img_sample_mask_boolean(img_4d_rand_eye, shape_4d_default):
+    """Check a boolean sample_mask is handled the same as an equivalent
+    index array.
+
+    signal.clean documents both forms (an index array of kept volumes, or a
+    boolean array over all volumes) as valid for sample_mask. clean_img must
+    reshape its output the same way regardless of which form was passed.
+    """
+    length = shape_4d_default[3]
+    confounds = _basic_confounds(length)
+    # exclude the last time point, expressed as a boolean mask instead of
+    # an index array
+    sample_mask = np.ones(length, dtype=bool)
+    sample_mask[-1] = False
+
+    img = clean_img(
+        img_4d_rand_eye, confounds=confounds, clean__sample_mask=sample_mask
+    )
+    assert img.shape == (*shape_4d_default[:3], length - 1)
+
+
 def test_clean_img_sample_mask_mask_img(shape_3d_default):
     """Check sample_mask and mask_img can be correctly used together."""
     length = 10
