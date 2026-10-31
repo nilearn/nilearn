@@ -756,3 +756,28 @@ def test_img_to_signals_labels_parallel_extraction(fmri_img, labeled_regions):
     )
     np.testing.assert_almost_equal(labels_signals, expected_labels_signals)
     assert np.allclose(labels_labels, expected_labels_labels)
+
+def test_signals_to_img_non_finite_warnings():
+    """Check that low-level functions emit warnings on non-finite inputs."""
+    import pytest
+    import numpy as np
+    from nibabel import Nifti1Image
+    from nilearn.regions import signals_to_img_labels, signals_to_img_maps
+
+    # Setup dummy label image with 1 region
+    labels_data = np.zeros((3, 3, 3), dtype=int)
+    labels_data[0, 0, 0] = 1
+    labels_img = Nifti1Image(labels_data, np.eye(4))
+
+    # Test signals_to_img_labels warning
+    with pytest.warns(UserWarning, match="Input signals contain non-finite values"):
+        signals_to_img_labels(np.array([np.nan]), labels_img)
+
+    # Setup dummy map image with 1 map
+    maps_data = np.zeros((3, 3, 3, 1), dtype=float)
+    maps_data[0, 0, 0, 0] = 1.0
+    maps_img = Nifti1Image(maps_data, np.eye(4))
+
+    # Test signals_to_img_maps warning
+    with pytest.warns(UserWarning, match="Input region_signals contain non-finite values"):
+        signals_to_img_maps(np.array([[np.nan]]), maps_img)

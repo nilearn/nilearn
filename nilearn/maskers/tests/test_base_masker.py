@@ -157,3 +157,19 @@ def test_get_masker_params():
         "target_affine": None,
         "target_shape": None,
     }
+
+
+def test_inverse_transform_non_finite_error():
+    """Check that inverse_transform raises ValueError on non-finite inputs."""
+    import pytest
+    import numpy as np
+    from nilearn.maskers import NiftiMasker
+
+    masker = NiftiMasker()
+    masker.n_elements_ = 5
+
+    with pytest.raises(ValueError, match="contains non-finite values"):
+        masker._check_array(np.array([1.0, np.nan, 3.0, 4.0, 5.0]))
+
+    with pytest.raises(ValueError, match="contains non-finite values"):
+        masker._check_array(np.array([1.0, np.inf, 3.0, 4.0, 5.0]))
