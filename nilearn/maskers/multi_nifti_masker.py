@@ -5,6 +5,7 @@ on multi subject MRI data.
 import collections.abc
 import inspect
 import warnings
+from typing import Any
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -30,6 +31,26 @@ from nilearn.masking import (
     compute_multi_background_mask,
     compute_multi_epi_mask,
     load_mask_img,
+)
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MaskStrategy,
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    NJobs,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    TargetAffine,
+    TargetShape,
+    Tr,
+    Verbose,
 )
 
 
@@ -176,33 +197,32 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
     nilearn.masking.compute_epi_mask: mask computation
     nilearn.masking.apply_mask: mask application on image
     nilearn.signal.clean: confounds removal and general filtering of signals
-
     """
 
     def __init__(
         self,
-        mask_img=None,
-        runs=None,
-        smoothing_fwhm=None,
-        standardize=None,
-        standardize_confounds=True,
-        detrend=False,
-        high_variance_confounds=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        target_affine=None,
-        target_shape=None,
-        mask_strategy="background",
-        mask_args=None,
-        dtype=None,
-        memory=None,
-        memory_level=0,
-        n_jobs=1,
-        verbose=0,
-        reports=True,
-        cmap="gray",
-        clean_args=None,
+        mask_img: NiimgLike | None = None,
+        runs: np.ndarray | None = None,
+        smoothing_fwhm: SmoothingFwhm = None,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        detrend: Detrend = False,
+        high_variance_confounds: bool = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        target_affine: TargetAffine = None,
+        target_shape: TargetShape = None,
+        mask_strategy: MaskStrategy = "background",
+        mask_args: dict[str, Any] | None = None,
+        dtype: DType = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 0,
+        n_jobs: NJobs = 1,
+        verbose: Verbose = 0,
+        reports: bool = True,
+        cmap: ColormapLike = "gray",
+        clean_args: dict[str, Any] | None = None,
     ):
         super().__init__(
             # Mask is provided or computed
@@ -357,7 +377,11 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
 
     @fill_doc
     def transform_imgs(
-        self, imgs_list, confounds=None, sample_mask=None, copy=True, n_jobs=1
+        self,
+        imgs_list,
+        confounds: list[SingleConfound | None] | None = None,
+        sample_mask=None,
+        copy: bool = True,
     ):
         """Prepare multi subject data in parallel.
 
@@ -376,12 +400,9 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             If True, guarantees that output array has no memory in common with
             input array.
 
-        %(n_jobs)s
-
         Returns
         -------
         %(signals_transform_imgs_multi_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -416,7 +437,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             ],
             shelve=self._shelving,
         )
-        data = Parallel(n_jobs=n_jobs)(
+        data = Parallel(n_jobs=self.n_jobs)(
             delayed(func)(
                 imgs,
                 self.mask_img_,

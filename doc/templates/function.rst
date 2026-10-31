@@ -5,8 +5,7 @@
    :ref:`user guide <user_guide>` for the big picture.
 
 
-{{ fullname }}
-{{ underline }}
+{{ objname | escape | underline }}
 
 .. currentmodule:: {{ module }}
 

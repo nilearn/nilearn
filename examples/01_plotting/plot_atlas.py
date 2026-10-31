@@ -6,8 +6,15 @@ Plot the regions of reference atlases.
 
 Check the :ref:`list of atlases <listing_deterministic_atlases>`
 to know which ones are shipped with Nilearn.
-"""
 
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Harvard-Oxford atlas <harvard_oxford_atlas>`
+    - the :ref:`Juelich atlas <juelich_atlas>`
+    - the :ref:`Yeo 2011 atlas <yeo_2011_atlas>`
+"""
 # %%
 # Retrieving the atlas data
 # -------------------------
@@ -15,12 +22,17 @@ to know which ones are shipped with Nilearn.
 from nilearn import datasets
 
 dataset_ho = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
-atlas_ho_filename = dataset_ho.filename
-print(f"Atlas ROIs are located at: {atlas_ho_filename}")
 
+# %%
+print(dataset_ho.description.content.maps)
+atlas_ho_filename = dataset_ho.maps
+
+# %%
 dataset_ju = datasets.fetch_atlas_juelich("maxprob-thr0-1mm")
-atlas_ju_filename = dataset_ju.filename
-print(f"Atlas ROIs are located at: {atlas_ju_filename}")
+
+# %%
+print(dataset_ju.description.content.maps)
+atlas_ju_filename = dataset_ju.maps
 
 # %%
 # Visualizing the Harvard-Oxford atlas
@@ -81,6 +93,8 @@ show()
 # that comes with a predefined colormap.
 dataset_yeo = datasets.fetch_atlas_yeo_2011(n_networks=17)
 
+# %%
+print(dataset_yeo.description.content.lut)
 print(dataset_yeo.lut)
 
 # %%

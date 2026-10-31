@@ -43,11 +43,11 @@ def check_events(events: pd.DataFrame) -> pd.DataFrame:
         Defaults to np.repeat('dummy', len(onsets)).
 
     onset : array of shape (n_events,), dtype='f'
-        Per-event onset time (in seconds)
+        Per-event onset time (in seconds).
 
     duration : array of shape (n_events,), dtype='f'
         Per-event duration, (in seconds)
-        defaults to zeros(n_events) when no duration is provided
+        defaults to zeros(n_events) when no duration is provided.
 
     modulation : array of shape (n_events,), dtype='f'
         Per-event modulation, (in seconds)
@@ -80,7 +80,6 @@ def check_events(events: pd.DataFrame) -> pd.DataFrame:
                 - ``'trial_type'``
                 - ``'onset'``
                 - ``'duration'``
-
     """
     check_is_of_allowed_type(events, (pd.DataFrame,), "events")
 

@@ -30,7 +30,6 @@ def _get_neurovault_data():
     These two dataframes are like a fake neurovault database and the
     `_neurovault` function, used to simulate responses from the neurovault
     API, uses this data.
-
     """
     if getattr(_get_neurovault_data, "data", None) is not None:
         return _get_neurovault_data.data
@@ -105,7 +104,6 @@ def _parse_query(query):
     for example
     "collection=23&someoption&format=json"
       -> {"collection": "23", "someoption": None, "format": "json"}
-
     """
     parts = [p.split("=") for p in query.split("&")]
     result = {}
@@ -128,7 +126,6 @@ def _neurovault_collections(parts, query):
     returns a dictionary of API results
 
     See the neurovault API docs for details: https://neurovault.org/api-docs
-
     """
     if parts:
         return _neurovault_one_collection(parts)
@@ -148,7 +145,6 @@ def _neurovault_one_collection(parts):
     returns a dictionary of API results
 
     See the neurovault API docs for details: https://neurovault.org/api-docs
-
     """
     col_id = int(parts[0])
     collections, images = _get_neurovault_data()
@@ -176,7 +172,6 @@ def _neurovault_images(parts, query):
     returns a dictionary of API results
 
     See the neurovault API docs for details: https://neurovault.org/api-docs
-
     """
     if parts:
         return _neurovault_one_image(parts[0])
@@ -192,7 +187,6 @@ def _neurovault_one_image(img_id):
     returns a dictionary of API results
 
     See the neurovault API docs for details: https://neurovault.org/api-docs
-
     """
     img_id = int(img_id)
     _, images = _get_neurovault_data()
@@ -209,10 +203,10 @@ def _neurovault_file(parts, query):  # noqa: ARG001
 class _NumpyJsonEncoder(json.JSONEncoder):
     """A json encoder that can handle numpy objects."""
 
-    def default(self, obj):
-        if hasattr(obj, "tolist"):
-            return obj.tolist()
-        return json.JSONEncoder.default(self, obj)
+    def default(self, o):
+        if hasattr(o, "tolist"):
+            return o.tolist()
+        return json.JSONEncoder.default(self, o)
 
 
 def _neurovault(match, request):  # noqa: ARG001
@@ -223,7 +217,6 @@ def _neurovault(match, request):  # noqa: ARG001
 
     See the neurovault API docs for details on the queries and corresponding
     responses: https://neurovault.org/api-docs
-
     """
     handlers = {
         "media": {"images": _neurovault_file},

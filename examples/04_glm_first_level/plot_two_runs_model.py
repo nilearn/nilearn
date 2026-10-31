@@ -18,20 +18,11 @@ that contain the same experimental conditions.
 The model directly returns a fixed effect
 of the statistics across the two runs.
 
-.. seealso::
+.. admonition:: dataset
 
-    See the :ref:`dataset description <fiac_dataset>`
+    See the :ref:`dataset description <fiac>`
     for more information on the data used in this example.
 """
-
-# %%
-# Create an output ``results`` in the current working directory.
-from pathlib import Path
-
-output_dir = Path.cwd() / "results" / "plot_two_runs_model"
-output_dir.mkdir(exist_ok=True, parents=True)
-print(f"Output will be saved to: {output_dir}")
-
 
 # %%
 # Set up the GLM
@@ -41,12 +32,14 @@ print(f"Output will be saved to: {output_dir}")
 from nilearn.datasets.func import fetch_fiac_first_level
 
 data = fetch_fiac_first_level()
-fmri_imgs = [data["func1"], data["func2"]]
+print(data.description.content.func1)
+print(data.description.content.func2)
 
 # %%
 # Create a mean image for plotting purpose.
 from nilearn.image import mean_img
 
+fmri_imgs = [data["func1"], data["func2"]]
 mean_img_ = mean_img(fmri_imgs[0])
 
 # %%
@@ -240,10 +233,6 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print(f"  Contrast {index + 1:02g} out of {len(contrasts)}: {contrast_id}")
     # Estimate the contasts.
     z_map = fmri_glm.compute_contrast(contrast_val, output_type="z_score")
-
-    # Write the resulting stat images to file.
-    z_image_path = output_dir / f"{contrast_id}_z_map.nii.gz"
-    z_map.to_filename(z_image_path)
 
 # %%
 # Generating a report

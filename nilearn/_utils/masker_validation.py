@@ -15,11 +15,13 @@ def check_compatibility_mask_and_images(mask_img: Any, run_imgs: Any) -> None:
     """Check that mask type and image types are compatible.
 
     Images to fit should be a Niimg-Like
-    if the mask is a NiftiImage, NiftiMasker or a path.
+    if the mask is a NiftiImage, a path or a volume masker
+    (for example NiftiMasker or NiftiLabelsMasker).
     Similarly, only SurfaceImages can be fitted
-    with a SurfaceImage or a SurfaceMasker as mask.
+    with a SurfaceImage or a surface masker
+    (for example SurfaceMasker or SurfaceLabelsMasker) as mask.
     """
-    from nilearn.maskers import NiftiMasker, SurfaceMasker
+    from nilearn.maskers.base_masker import BaseMasker, _BaseSurfaceMasker
 
     if mask_img is None:
         return None
@@ -33,8 +35,8 @@ def check_compatibility_mask_and_images(mask_img: Any, run_imgs: Any) -> None:
         f"and images of type: {[type(x) for x in run_imgs]}"
     )
 
-    volumetric_type = (*get_args(NiimgLike), NiftiMasker)
-    surface_type = (SurfaceImage, SurfaceMasker)
+    volumetric_type = (*get_args(NiimgLike), BaseMasker)
+    surface_type = (SurfaceImage, _BaseSurfaceMasker)
     all_allowed_types = (*volumetric_type, *surface_type)
 
     check_is_of_allowed_type(mask_img, all_allowed_types, "mask")

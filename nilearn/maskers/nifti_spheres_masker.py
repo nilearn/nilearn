@@ -4,7 +4,9 @@ Mask nifti images by spherical volumes for seed-region analyses
 """
 
 import contextlib
+import numbers
 import warnings
+from collections.abc import Sequence
 from typing import Any, ClassVar
 
 import numpy as np
@@ -18,6 +20,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
+from nilearn._utils.versions import sparray_context
 from nilearn.datasets import load_mni152_template
 from nilearn.image import load_img, resample_img
 from nilearn.image.image import (
@@ -35,6 +38,22 @@ from nilearn.maskers.base_masker import (
     sanitize_displayed_maps,
 )
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
+from nilearn.nilearn_typing import (
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    Signals,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 
 
 def apply_mask_and_get_affinity(
@@ -71,13 +90,12 @@ def apply_mask_and_get_affinity(
     Returns
     -------
     X : numpy.ndarray
-        Signal for each brain voxel in the (masked) niimgs.
-        shape: (number of scans, number of voxels)
+        Signal for each brain voxel in the (masked) niimgs
+        with shape: (number of scans, number of voxels).
 
     A : scipy.sparse.lil_matrix
-        Contains the boolean indices for each sphere.
-        shape: (number of seeds, number of voxels)
-
+        Contains the boolean indices for each sphere
+        with shape: (number of seeds, number of voxels).
     """
     seeds = list(seeds)
 
@@ -134,8 +152,10 @@ def apply_mask_and_get_affinity(
     mask_coords = np.asarray(mask_coords).T
 
     clf = neighbors.NearestNeighbors(radius=radius)
-    A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
-    A = A.tolil()
+    with sparray_context():
+        A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
+    # older sklearn versions return a sparse matrix
+    A = sparse.lil_array(A)
     for i, nearest in enumerate(nearests):
         if nearest is None:
             continue
@@ -186,7 +206,6 @@ def _iter_signals_from_spheres(
     mask_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
-
     """
     X, A = apply_mask_and_get_affinity(
         seeds, niimg, radius, allow_overlap, mask_img=mask_img
@@ -239,10 +258,14 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     Parameters
     ----------
-    seeds : :obj:`list` of triplet of coordinates in native space or None, \
-          default=None
-        Seed definitions. List of coordinates of the seeds in the same space
-        as the images (typically MNI or TAL).
+    seeds : :obj:`tuple` or :obj:`list` of :obj:`tuple`, or None, \
+            default=None
+        Seed definitions. Triplet or list of triplets of coordinates
+        of the seeds in the same space as the images (typically MNI or TAL).
+
+        .. nilearn_versionchanged:: 0.15.0
+
+            A single triplet of coordinates can be passed.
 
     radius : :obj:`float` | None, default=None
         Indicates, in millimeters, the radius for the sphere around the seed.
@@ -309,7 +332,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     See Also
     --------
     nilearn.maskers.NiftiMasker
-
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
@@ -324,24 +346,27 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     # memory and memory_level are used by CacheMixin.
     def __init__(
         self,
-        seeds=None,
-        radius=None,
-        mask_img=None,
-        allow_overlap=False,
-        smoothing_fwhm=None,
-        standardize=None,
-        standardize_confounds=True,
-        high_variance_confounds=False,
-        detrend=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
-        memory=None,
-        memory_level=1,
-        verbose=0,
-        reports=True,
-        clean_args=None,
+        seeds: Sequence[float]
+        | Sequence[Sequence[float]]
+        | np.ndarray
+        | None = None,
+        radius: float | None = None,
+        mask_img: NiimgLike | None = None,
+        allow_overlap: bool = False,
+        smoothing_fwhm: SmoothingFwhm = None,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        high_variance_confounds: bool = False,
+        detrend: Detrend = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
+        reports: bool = True,
+        clean_args: dict[str, Any] | None = None,
     ):
         self.seeds = seeds
         self.mask_img = mask_img
@@ -394,6 +419,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             tmp = [0]
             tmp.extend((np.asarray(spheres_to_be_displayed) + 1).tolist())
             self._report_content["displayed_maps"] = tmp
+
+            spheres_names = self.get_feature_names_out()
+            self._report_content["name_maps"] = [""] + [
+                f"Sphere {i + 1}<br>{spheres_names[i]}"
+                for i in spheres_to_be_displayed
+            ]
 
             img = self._reporting_data["images"]
             if img is None:
@@ -504,8 +535,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     def _fit(self, imgs):
         error = (
-            "Seeds must be a list of triplets of coordinates in "
-            "native space.\n"
+            "Seeds must be a triplet of coordinates "
+            "or a list of triplets of coordinates in native space.\n"
         )
 
         if imgs is not None:
@@ -530,9 +561,18 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 f"{error}Given seed list is of type: {type(self.seeds)}"
             )
 
+        seeds = list(self.seeds)
+        # Allow a single triplet of coordinates to be passed
+        if len(seeds) == 3 and all(
+            isinstance(x, numbers.Number) for x in seeds
+        ):
+            seeds = [seeds]
+        if len(seeds) == 0:
+            raise ValueError(f"{error}Got an empty list of seeds.")
+
         self.seeds_ = []
         # Check seeds and convert them to lists if needed
-        for i, seed in enumerate(self.seeds):
+        for i, seed in enumerate(seeds):
             # Check the type first
             if not hasattr(seed, "__len__"):
                 raise ValueError(
@@ -566,7 +606,13 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return self
 
     @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+    def fit_transform(
+        self,
+        imgs,
+        y: None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ) -> Signals:
         """Prepare and perform signal extraction.
 
         Parameters
@@ -586,7 +632,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         del y
         return self.fit(imgs).transform(
@@ -597,7 +642,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return hasattr(self, "seeds_") and hasattr(self, "n_elements_")
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -615,7 +665,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -677,11 +726,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         radius_suffix = ""
         if self.radius is not None:
             radius_suffix = f"; r={np.round(self.radius, decimals=1)}mm"
-        seeds = np.round(np.asarray(self.seeds), decimals=1)
+        check_is_fitted(self)
+        seeds = np.round(np.asarray(self.seeds_), decimals=1)
         return [str(tuple(x)) + radius_suffix for x in seeds.tolist()]
 
     @fill_doc
-    def inverse_transform(self, region_signals) -> Nifti1Image:
+    def inverse_transform(self, region_signals: Signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from spheres signals.
 
         Any mask given at initialization is taken into account. Throws an error
@@ -694,7 +744,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(img_inv_transform_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -718,9 +767,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if self.allow_overlap:
             n_adjacent_spheres = np.asarray(adjacency.sum(axis=0)).ravel()
             scale = 1 / np.maximum(1, n_adjacent_spheres)
-            adjacency = adjacency.dot(sparse.diags(scale))
+            adjacency = adjacency @ sparse.diags_array(scale)
 
-        img = adjacency.T.dot(region_signals.T).T
+        img = (adjacency.T @ region_signals.T).T
 
         img = unmask(img, self.mask_img_)
 

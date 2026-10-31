@@ -135,7 +135,7 @@ class ReportMixin:
         Returns
         -------
         list of str
-            the list of warnings, empty list if there are no warnings
+            The list of warnings, empty list if there are no warnings.
         """
         return sorted(set(self._report_content["warning_messages"]))
 
@@ -235,12 +235,12 @@ class ReportMixin:
 
     def _dataframe_to_html(
         self,
-        df_cvrt,
+        df_cvrt: pd.DataFrame,
         precision: int = 2,
         header: bool = True,
         index: bool = False,
         sparsify: bool = False,
-    ):
+    ) -> str:
         """Create html content from the specified dataframe content."""
         return dataframe_to_html(
             df_cvrt,
@@ -252,16 +252,19 @@ class ReportMixin:
 
     def _dict_to_html(
         self,
-        dict_cvrt,
+        dict_cvrt: dict | pd.DataFrame,
         precision: int = 2,
         header: bool = True,
         index: bool = False,
         sparsify: bool = False,
-    ):
+    ) -> str:
         """Create html content from the specified dictionary content. The
         dictionary is expected to be key value pairs without depth.
         """
-        df_cvrt = pd.DataFrame.from_dict(dict_cvrt)
+        if not isinstance(dict_cvrt, pd.DataFrame):
+            df_cvrt = pd.DataFrame.from_dict(dict_cvrt)
+        else:
+            df_cvrt = dict_cvrt
         return self._dataframe_to_html(
             df_cvrt,
             precision=precision,
@@ -298,7 +301,6 @@ class ReportMixin:
         -------
         embed : :obj:`str`
             Binary image string.
-
         """
         if display is None:  # no image to display
             return None

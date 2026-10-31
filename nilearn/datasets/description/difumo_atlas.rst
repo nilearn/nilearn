@@ -1,0 +1,48 @@
+.. _difumo_atlas:
+
+DiFuMo atlas
+============
+
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_difumo`.
+
+Notes
+-----
+We provide Dictionaries of Functional Modes “DiFuMo” (:footcite:t:`Dadi2020`)
+that can serve as atlases to extract functional signals,
+for example to serve as IDPs, with different dimensionalities (64, 128, 256, 512, and 1024).
+These modes are optimized to represent well raw :term:`BOLD` timeseries,
+over a with range of experimental conditions.
+
+* All atlases are available in .nii.gz format and sampled to :term:`MNI` space
+
+Additionally, we provide meaningful names for these modes,
+based on their anatomical location, to facilitate reporting of results.
+
+* Anatomical names are available for each resolution as pandas dataframe
+
+Direct download links from OSF:
+
+    - 64: https://osf.io/pqu9r/download
+    - 128: https://osf.io/wjvd5/download
+    - 256: https://osf.io/3vrct/download
+    - 512: https://osf.io/9b76y/download
+    - 1024: https://osf.io/34792/download
+
+For more information about this dataset's structure:
+https://inria.hal.science/hal-02904869
+
+See also :footcite:t:`Poldrack2013` and :footcite:t:`Mensch2018`.
+
+Content
+-------
+.. nilearn_dataset_content:: difumo_atlas
+
+References
+----------
+.. footbibliography::
+
+License
+-------
+.. nilearn_dataset_license:: difumo_atlas

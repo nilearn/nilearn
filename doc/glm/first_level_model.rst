@@ -151,10 +151,10 @@ Time series-based
 The time series of a seed region can also be used as the predictor for a first level model. This approach would help
 identify brain areas co-activating with the seed region. The time series is extracted using
 :class:`nilearn.maskers.NiftiSpheresMasker`. For instance, if the seed region is the posterior
-cingulate cortex with coordinate [pcc_coords]::
+cingulate cortex with coordinates ``pcc_coords``::
 
   from nilearn.maskers import NiftiSpheresMasker
-  seed_masker = NiftiSpheresMasker([pcc_coords], radius=10)
+  seed_masker = NiftiSpheresMasker(pcc_coords, radius=10)
   seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
 
 The seed_time_series is then passed into the design matrix using the add_reg argument mentioned in the note

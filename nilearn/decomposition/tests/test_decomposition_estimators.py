@@ -1,5 +1,7 @@
 """Common test for multi_pca, dict_learning, canica."""
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal, assert_raises
@@ -74,7 +76,16 @@ def test_fit_errors(
     ):
         est.fit(decomposition_images, confounds=confounds)
 
+    # test mismatch len confounds and input to fit with path
+    confounds = Path("foo")
+    with pytest.raises(
+        ValueError,
+        match=r"Number of confounds .* must match number of images .*",
+    ):
+        est.fit(decomposition_images, confounds=confounds)
 
+
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_masker_attributes_with_fit_mask(
@@ -117,6 +128,7 @@ def test_masker_attributes_with_fit_masker(
     check_decomposition_estimator(est, data_type)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform_confounds(
@@ -187,7 +199,11 @@ def test_with_confounds(
         AssertionError, assert_array_equal, components, components_clean
     )
 
+    # smoke test of score with confounds
+    est.score(decomposition_images, confounds=confounds)
 
+
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 @pytest.mark.parametrize("single_subject", [True, False])
@@ -231,6 +247,7 @@ def test_transform(
     est.inverse_transform(signals)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform_errors(
@@ -290,6 +307,7 @@ def test_pass_masker_arg_to_estimator(
     check_decomposition_estimator(est, data_type)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_single_subject_score(canica_img, data_type, estimator):

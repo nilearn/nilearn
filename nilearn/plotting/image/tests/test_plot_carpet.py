@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearn.plotting.plot_carpet`."""
+"""Test for :func:`nilearn.plotting.plot_carpet`."""
 
 # ruff: noqa: ARG001
 

@@ -68,6 +68,7 @@ warnings.filterwarnings(
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     "changelog_anchors",
+    "dataset_descriptions",
     "gh_substitutions",
     "myst_parser",
     "numpydoc",
@@ -94,7 +95,6 @@ autodoc_typehints = "none"
 autodoc_default_options = {
     "imported-members": True,
     "inherited-members": True,
-    "undoc-members": True,
     "member-order": "bysource",
 }
 
@@ -248,6 +248,9 @@ linkcheck_ignore = [
     # ignore nilearn github issues mostly for the sake of speed
     # given that there many of those in our changelog
     r"https://github.com/nilearn/nilearn/issues.*",
+    r"https://github.com/nilearn/nilearn/XXXX",
+    r"https://hal\.science/.*",
+    r"https://inria\.hal\.science/.*",
     # those are needed because figures
     # cannot take sphinx gallery reference as target
     r"../auto_examples/.*html",
@@ -314,6 +317,11 @@ html_css_files = [
     f"{font_awesome}solid.min.css",
     f"{font_awesome}brands.min.css",
 ]
+
+# Privacy-friendly page view analytics with GoatCounter
+# (https://nilearn.goatcounter.com).
+# Only active on https://nilearn.github.io (see themes/goatcounter.js).
+html_js_files = ["goatcounter.js"]
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths

@@ -51,20 +51,26 @@ from nilearn.plotting.displays import OrthoSlicer
 from nilearn.plotting.image.utils import MNI152TEMPLATE
 from nilearn.surface import load_surf_data
 
-PLOTTING_FUNCS_3D = {
+# tests return figures for pytest-mpl,
+# which pytest warns about when run without --mpl
+pytestmark = pytest.mark.filterwarnings(
+    "ignore::pytest.PytestReturnNotNoneWarning"
+)
+
+PLOTTING_FUNCS_3D = (
     plot_img,
     plot_anat,
     plot_stat_map,
     plot_roi,
     plot_epi,
     plot_glass_brain,
-}
+)
 
-SURFACE_FUNCS = {
+SURFACE_FUNCS = (
     plot_surf,
     plot_surf_stat_map,
     plot_surf_roi,
-}
+)
 
 
 @pytest.mark.mpl_image_compare
@@ -169,6 +175,9 @@ def test_plot_functions_colorbar_ticks(plot_func, img_3d_mni):
     )
 
 
+@pytest.mark.filterwarnings(
+    "ignore:vmin is negative but plot_abs is True:UserWarning"
+)
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("vmin", [-1, 1])
@@ -216,6 +225,11 @@ def test_add_contours(levels, colors):
     return display
 
 
+@pytest.mark.filterwarnings(
+    "ignore:.*detected in parameters:UserWarning",
+    # single level case: matplotlib normalizes with vmin == vmax
+    "ignore:invalid value encountered in divide:RuntimeWarning",
+)
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize(
     "kwargs",
@@ -240,7 +254,7 @@ def test_add_contours(levels, colors):
     ],
 )
 def test_add_contours_filled(mni152_template_res_2, kwargs):
-    """Tests for add_contours with filled = true."""
+    """Test for add_contours with filled = true."""
     display = OrthoSlicer(cut_coords=(0, 0, 0))
     display.add_contours(mni152_template_res_2, filled=True, **kwargs)
     return display
@@ -261,7 +275,7 @@ def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("anat_img", [False, MNI152TEMPLATE])
 def test_plot_anat_mni(anat_img):
-    """Tests for plot_anat with MNI template."""
+    """Test for plot_anat with MNI template."""
     return plot_anat(anat_img=anat_img)
 
 
@@ -496,6 +510,9 @@ def test_plot_surf_colorbar_no_overlapping_ticks():
 @pytest.mark.parametrize("bg_on_data", [True, False])
 @pytest.mark.parametrize("symmetric_cmap", [True, False])
 @pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.filterwarnings(
+    "ignore:'symmetric_cmap' is not implemented:UserWarning"
+)
 @pytest.mark.parametrize("title", [None, "Foo"])
 def test_plot_img_on_surf(bg_on_data, symmetric_cmap, colorbar, title):
     """Test plot_img_on_surf with various display options."""
@@ -803,9 +820,10 @@ def test_plot_with_transparency_range(fn, transparency_range):
     )
 
 
-IMG_COMPARISON_FUNCS = {plot_img_comparison, plot_bland_altman}
+IMG_COMPARISON_FUNCS = (plot_img_comparison, plot_bland_altman)
 
 
+@pytest.mark.filterwarnings("ignore:imgs are being resampled:UserWarning")
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
 def test_img_comparison_default(
@@ -817,6 +835,7 @@ def test_img_comparison_default(
     return plt.gcf()
 
 
+@pytest.mark.filterwarnings("ignore:imgs are being resampled:UserWarning")
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])

@@ -48,8 +48,10 @@ Other contributors
 
 Some other past or present contributors are:
 
+* `Achintya Singh`_
 * `Ahmad Chamma`_: Inria, Saclay, France
 * `Aina Frau-Pascual`_
+* `Akaash P`_
 * `Alex Rothberg`_: Free Agency, New York, USA
 * `Alexandre Abadie`_: Inria, Paris
 * `Alexandre Abraham`_: Bazemont, Île-de-France, France
@@ -123,6 +125,7 @@ Some other past or present contributors are:
 * `Hugo Delhaye`_: SIMEXP, Université de Montréal, Montréal, Canada
 * `Ian Abenes`_
 * `Idrissa Traore`_: IMT Atlantique, Brest, France
+* `Ishaan Gupta`_
 * `Jake Vogel`_: Department of Clinical Sciences, SciLifeLab, Lund University, Lund, Sweden
 * `Jan Margeta`_: KardioMe, Nova Dubnica, Slovakia
 * `Jaques Grobler`_: Anyline GmbH, Vienna, Austria
@@ -132,6 +135,7 @@ Some other past or present contributors are:
 * `Javier Rasero`_: School of Data Science, University of Virginia, Viginia, USA
 * `Jean Kossaifi`_: Imperial College London, London, UK
 * `Jean-Rémi King`_: Meta AI, CNRS, Paris
+* `Jeffrey Cooney`_
 * `Jelle Roelof Dalenberg`_: University Medical Center Groningen, Groningen, The Netherlands
 * `Jeremy Lefort-Besnard`_: Inria Rennes, France
 * `Jerome Dockes`_: Probabl

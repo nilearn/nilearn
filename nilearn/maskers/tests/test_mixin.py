@@ -2,7 +2,6 @@ import pytest
 from nibabel import Nifti1Image
 from sklearn import clone
 
-from nilearn._utils.helpers import is_gil_enabled
 from nilearn.conftest import _img_3d_rand, _make_surface_img
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -48,7 +47,6 @@ def masker(
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize(
     "masker, img_func, kwargs",
     [
@@ -136,7 +134,6 @@ def test_masker_reporting_true(masker, img_func, kwargs):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
 @pytest.mark.parametrize(
     "masker, img_func",
     [
