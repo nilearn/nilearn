@@ -663,6 +663,13 @@ class BaseMasker(_BaseMasker):
             signals = signals.to_numpy().squeeze()
 
         signals = np.atleast_1d(signals)
+        if not np.all(np.isfinite(signals)):
+            raise ValueError(
+                "Input to 'inverse_transform' contains non-finite values (NaN or infinity). "
+                "Please handle or impute these non-finite values before passing them to 'inverse_transform'."
+            )
+
+
 
         if sklearn_check:
             signals = check_array(
