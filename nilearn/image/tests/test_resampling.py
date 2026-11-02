@@ -732,9 +732,20 @@ def test_resampling_result_axis_permutation(
     assert_array_almost_equal(resampled_data, expected_data)
 
 
-@pytest.mark.parametrize("force_resample", [False, True])
+@pytest.mark.parametrize(
+    "force_resample, expected_warning",
+    [
+        (
+            False,
+            (UserWarning, "No values above"),
+        ),  # cropping finds no values above threshold because of the NaNs
+        (True, (RuntimeWarning, "NaNs or infinite values")),
+    ],
+)
 @pytest.mark.parametrize("core_shape", [(3, 5, 4), (3, 5, 4, 2)])
-def test_resampling_nan(affine_eye, core_shape, force_resample):
+def test_resampling_nan(
+    affine_eye, core_shape, force_resample, expected_warning
+):
     """Test that when the data has NaNs they do not propagate to the \
     whole image.
     """
@@ -758,11 +769,6 @@ def test_resampling_nan(affine_eye, core_shape, force_resample):
 
     # check 3x3 transformation matrix
     target_affine = np.eye(3)[axis_permutation]
-    if force_resample:
-        expected_warning = (RuntimeWarning, "NaNs or infinite values")
-    else:
-        # cropping finds no values above threshold because of the NaNs
-        expected_warning = (UserWarning, "No values above")
     with pytest.warns(expected_warning[0], match=expected_warning[1]):
         resampled_img = resample_img(
             source_img,
