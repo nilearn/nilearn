@@ -636,7 +636,7 @@ def test_clean_frequencies():
     assert cleaned_signal.max() > 0.1
 
     cleaned_signal = clean(
-        sx, standardize=standardize, high_pass=0.2, low_pass=None, t_r=t_r
+        sx, standardize=standardize, high_pass=0.19, low_pass=None, t_r=t_r
     )
     assert cleaned_signal.max() < 0.01
 
@@ -660,7 +660,7 @@ def test_clean_leaves_input_untouched():
     standardize = None
 
     _ = clean(
-        sx, standardize=standardize, detrend=False, low_pass=0.2, t_r=t_r
+        sx, standardize=standardize, detrend=False, low_pass=0.18, t_r=t_r
     )
 
     assert array_equal(sx_orig, sx)
@@ -1462,7 +1462,8 @@ def test_clean_zscore(rng):
     assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
 
 
-def test_clean_sample_mask():
+@pytest.mark.parametrize("filter", ["butterworth", "cosine", False])
+def test_clean_sample_mask(filter):
     """Test sample_mask related feature."""
     signals, _, confounds = generate_signals(
         n_features=11, n_confounds=5, length=40
@@ -1475,13 +1476,23 @@ def test_clean_sample_mask():
     sample_mask_binary = np.full(signals.shape[0], True)
     sample_mask_binary[scrub_index] = False
 
-    scrub_clean = clean(signals, confounds=confounds, sample_mask=sample_mask)
+    scrub_clean = clean(
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask,
+        filter=filter,
+        high_pass=0.18,
+    )
 
     assert scrub_clean.shape[0] == sample_mask.shape[0]
 
     # test the binary mask
     scrub_clean_bin = clean(
-        signals, confounds=confounds, sample_mask=sample_mask_binary
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask_binary,
+        filter=filter,
+        high_pass=0.18,
     )
     assert_equal(scrub_clean_bin, scrub_clean)
 
