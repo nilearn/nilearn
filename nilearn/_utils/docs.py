@@ -888,6 +888,15 @@ n_subjects : :obj:`int`, :obj:`list` or :obj:`tuple` of :obj:`int`, or None
     An empty list or tuple is not allowed.
 """
 
+# noise_model
+docdict["noise_model"] = """
+noise_model : {'ar(N)', 'ols'}, default='ar1'
+    The temporal variance model.
+    To specify the order of an autoregressive model
+    place the order after the characters ``ar``,
+    for example to specify a third order model use ``ar3``.
+"""
+
 # opening
 docdict["opening"] = """
 opening : :obj:`bool` or :obj:`int`, optional

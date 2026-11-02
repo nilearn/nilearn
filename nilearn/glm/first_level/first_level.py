@@ -63,6 +63,7 @@ from nilearn.nilearn_typing import (
     MemoryLike,
     NiimgLike,
     NJobs,
+    NoiseModel,
     NonNullScalar,
     SingleConfound,
     SmoothingFwhm,
@@ -164,7 +165,13 @@ def _yule_walker(x, order):
 
 @fill_doc
 def run_glm(
-    Y, X, noise_model="ar1", bins=100, n_jobs=1, verbose=0, random_state=None
+    Y: np.ndarray,
+    X: np.ndarray,
+    noise_model: NoiseModel = "ar1",
+    bins: int = 100,
+    n_jobs: NJobs = 1,
+    verbose: Verbose = 0,
+    random_state=None,
 ) -> tuple[np.ndarray, dict[str | float, RegressionResults]]:
     """:term:`GLM` fit for an :term:`fMRI` data matrix.
 
@@ -176,11 +183,7 @@ def run_glm(
     X : array of shape (n_time_points, n_regressors)
         The design matrix.
 
-    noise_model : {'ar(N)', 'ols'}, default='ar1'
-        The temporal variance model.
-        To specify the order of an autoregressive model place the
-        order after the characters `ar`, for example to specify a third order
-        model use `ar3`.
+    %(noise_model)s
 
     bins : :obj:`int`, default=100
         Maximum number of discrete bins for the AR coef histogram.
@@ -227,6 +230,9 @@ def run_glm(
 
     # Create the model
     ols_result = OLSModel(X).fit(Y)
+
+    labels: np.ndarray
+    results: dict[str | float, RegressionResults]
 
     if noise_model[:2] == "ar":
         err_msg = (
@@ -443,8 +449,7 @@ class FirstLevelModel(BaseGLM):
         Incompatible with standardize (``standardize=None`` is enforced when
         ``signal_scaling`` is not False).
 
-    noise_model : {'ar1', 'ols'}, default='ar1'
-        The temporal variance model.
+    %(noise_model)s
 
     %(verbose0)s
         If 0, prints nothing
@@ -525,7 +530,7 @@ class FirstLevelModel(BaseGLM):
     memory_level: MemoryLevel
     min_onset: float
     minimize_memory: bool
-    noise_model: Literal["ar1", "ols"]
+    noise_model: NoiseModel
     n_jobs: NJobs
     reports: bool
     slice_time_ref: NonNullScalar
@@ -555,7 +560,7 @@ class FirstLevelModel(BaseGLM):
         memory_level: MemoryLevel = 1,
         standardize: Standardize = None,
         signal_scaling=0,
-        noise_model: Literal["ar1", "ols"] = "ar1",
+        noise_model: NoiseModel = "ar1",
         verbose: Verbose = 0,
         n_jobs: NJobs = 1,
         minimize_memory: bool = True,
@@ -1559,7 +1564,7 @@ def first_level_from_bids(
     memory_level: MemoryLevel = 1,
     standardize: Standardize = None,
     signal_scaling=0,
-    noise_model: Literal["ar1", "ols"] = "ar1",
+    noise_model: NoiseModel = "ar1",
     verbose: Verbose = 0,
     n_jobs: NJobs = 1,
     minimize_memory=True,
