@@ -1351,7 +1351,7 @@ class FirstLevelModel(BaseGLM):
 
         If mask_img == False, include all voxels / vertices in GLM.
         If mask_img is not a masker,
-          we compute an implicit mask based on all the runs.
+        we compute an implicit mask based on all the runs.
         If mask_img is a masker we just check it has been fitted.
 
         Parameters
