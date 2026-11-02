@@ -33,23 +33,29 @@ from nilearn.nilearn_typing import (
 from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
 
+# The protocols below are only used for static type checking.
+#
+# The mixin classes of this module are not maskers themselves:
+# they are combined with a masker class
+# (e.g. ``class MultiNiftiMasker(_MultiMixin, NiftiMasker)``)
+# and their methods rely on attributes and methods
+# provided by that masker class.
+# A type checker only sees the mixin itself
+# and would therefore report those as missing.
+# Annotating ``self`` with one of these protocols
+# tells the type checker what the mixin expects
+# from the class it is combined with.
 
-class _MultiMasker(Protocol):
-    n_jobs: NJobs
+
+class _Masker(Protocol):
+    """Attributes and methods of maskers that mixins rely on."""
+
     memory_level: MemoryLevel
     high_variance_confounds: bool
 
     def _cache(self, func, func_memory_level=1, shelve=False): ...
 
-    def _prepare_confounds(self, imgs_list, confounds): ...
-
-    def _prepare_sample_mask(self, imgs_list, sample_mask): ...
-
     def fit(self, imgs=None, y: None = None) -> Self: ...
-
-    def transform(
-        self, imgs, confounds=None, sample_mask=None
-    ) -> Signals | list[Signals]: ...
 
     def transform_single_imgs(
         self,
@@ -57,6 +63,29 @@ class _MultiMasker(Protocol):
         confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
     ): ...
+
+
+class _MultiMasker(_Masker, Protocol):
+    """Additional attributes and methods specific to multi maskers.
+
+    Methods defined in ``_MultiMixin`` and called via ``self``
+    must also be listed here,
+    because once ``self`` is annotated with this protocol
+    the type checker only knows about the members of the protocol.
+
+    ``transform`` is only declared here and not in ``_Masker``
+    because multi maskers can return a list of signals.
+    """
+
+    n_jobs: NJobs
+
+    def _prepare_confounds(self, imgs_list, confounds): ...
+
+    def _prepare_sample_mask(self, imgs_list, sample_mask): ...
+
+    def transform(
+        self, imgs, confounds=None, sample_mask=None
+    ) -> Signals | list[Signals]: ...
 
     def transform_imgs(
         self,
