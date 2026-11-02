@@ -15,7 +15,6 @@ from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
 from nilearn._utils.data_gen import create_fake_bids_dataset
-from nilearn._utils.helpers import is_gil_enabled
 from nilearn.datasets import fetch_development_fmri, func
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
@@ -479,8 +478,6 @@ def test_fetch_localizer_button_task(tmp_path, localizer_mocker, capsys):  # noq
     )
 
 
-@pytest.mark.thread_unsafe
-@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize("quality_checked", [False, True])
 def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked, capsys):
     n_subjects = 800
@@ -813,7 +810,6 @@ def test_fetch_development_fmri_functional(tmp_path):
     assert len(confounds) == 8
 
 
-@pytest.mark.ai_generated
 def test_fetch_development_fmri(tmp_path, request_mocker, capsys):
     """Test for fetch_development_fmri."""
     mock_participants = _mock_participants_data()
@@ -905,7 +901,6 @@ def test_fetch_development_fmri_phenotype(request_mocker):
     assert all(x == "child" for x in data.phenotypic["Child_Adult"])
 
 
-@pytest.mark.ai_generated
 def test_fetch_development_fmri_invalid_n_subjects():
     max_subjects = 155
     n_subjects = _validate_subjects(n_subjects=None, max_subjects=max_subjects)
