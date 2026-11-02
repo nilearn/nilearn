@@ -835,9 +835,11 @@ def clean(
                 **butterworth_kwargs,
             )
 
-        # apply sample_mask to remove censored volumes after signal filtering
-        # for non filter_type != "butterworth"
-        # this was already  in done _handle_scrubbed_volumes
+        # Butterworth: censored volumes were interpolated
+        # in _handle_scrubbed_volumes so filtering could run on a regularly
+        # sampled signal; remove them now that filtering is done.
+        # For other filter types, censoring already happened
+        # in _handle_scrubbed_volumes.
         if sample_mask is not None:
             signals, confounds = _censor_signals(
                 signals, confounds, sample_mask

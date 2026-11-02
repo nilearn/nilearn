@@ -914,7 +914,6 @@ def _confound_as(kind: str, block: np.ndarray, filename: Path):
     return block
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("container", [list, tuple])
 @pytest.mark.parametrize(
     "kinds",
@@ -955,7 +954,6 @@ def test_clean_confounds_collection(signals, tmp_path, container, kinds):
     assert_almost_equal(result, expected)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("as_str", [True, False])
 @pytest.mark.parametrize("in_list", [True, False])
 def test_clean_confounds_single_column_file(
@@ -1462,9 +1460,12 @@ def test_clean_zscore(rng):
     assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
 
 
-@pytest.mark.parametrize("filter", ["butterworth", "cosine", False])
-def test_clean_sample_mask(filter):
-    """Test sample_mask related feature."""
+@pytest.mark.parametrize("filter_type", ["butterworth", "cosine", False])
+def test_clean_sample_mask(filter_type):
+    """Test sample_mask related feature.
+
+    Setting high_pass to some specific values to avoid warnings.
+    """
     signals, _, confounds = generate_signals(
         n_features=11, n_confounds=5, length=40
     )
@@ -1480,8 +1481,8 @@ def test_clean_sample_mask(filter):
         signals,
         confounds=confounds,
         sample_mask=sample_mask,
-        filter=filter,
-        high_pass=0.18,
+        filter=filter_type,
+        high_pass=0.05 if filter_type else None,
     )
 
     assert scrub_clean.shape[0] == sample_mask.shape[0]
@@ -1491,8 +1492,8 @@ def test_clean_sample_mask(filter):
         signals,
         confounds=confounds,
         sample_mask=sample_mask_binary,
-        filter=filter,
-        high_pass=0.18,
+        filter=filter_type,
+        high_pass=0.05 if filter_type else None,
     )
     assert_equal(scrub_clean_bin, scrub_clean)
 
