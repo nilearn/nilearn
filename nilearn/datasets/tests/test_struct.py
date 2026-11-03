@@ -8,7 +8,6 @@ import pytest
 from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
-from nilearn._utils.helpers import is_windows_platform
 from nilearn.datasets.struct import (
     _apply_mesh_mapping,
     _get_mesh_mapping,
@@ -73,7 +72,6 @@ def _make_oasis_data(dartel=True):
     return dict_to_archive(data)
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_fetch_oasis_vbm(tmp_path, request_mocker, capsys):
     """Test fetching OASIS VBM dataset with dartel version."""
     request_mocker.url_mapping["*archive_dartel.tgz*"] = _make_oasis_data()
