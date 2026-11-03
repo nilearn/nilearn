@@ -27,10 +27,16 @@ from nilearn.nilearn_typing import (
     MemoryLevel,
     NiimgLike,
     NJobs,
+    ReportEngine,
     Signals,
     SingleConfound,
 )
-from nilearn.reporting.mixin import HTMLReport, ReportMixin
+from nilearn.reporting.mixin import (
+    DEFAULT_ENGINE,
+    HTMLReport,
+    ReportMixin,
+    _ReportDefaults,
+)
 from nilearn.surface.surface import SurfaceImage
 
 # The protocols below are only used for static type checking.
@@ -459,6 +465,19 @@ class _LabelMaskerMixin:
         )
 
 
+class _MaskerReportDefaults(_ReportDefaults, total=False):
+    """Type of the default content of masker reports."""
+
+    description: str
+    summary: dict[str, Any] | pd.DataFrame
+    coverage: str | float
+    n_elements: int
+    displayed_maps: list[int]
+    number_of_maps: int
+    number_of_regions: int | None
+    n_vertices: dict[str, int]
+
+
 @fill_doc
 class MaskerReportMixin(ReportMixin):
     """A mixin class that adapts ``ReportMixin`` to masker classes for
@@ -476,7 +495,7 @@ class MaskerReportMixin(ReportMixin):
         - displayed_maps :
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": "",
         "summary": {},
         "coverage": "",
@@ -491,7 +510,9 @@ class MaskerReportMixin(ReportMixin):
             MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
 
-    def _set_report_basics(self, engine, title):
+    def _set_report_basics(
+        self, engine: ReportEngine, title: str | None
+    ) -> None:
         """Set masker specific report attributes."""
         super()._set_report_basics(engine, title)
         report_content = self._report_content
@@ -540,7 +561,10 @@ class MaskerReportMixin(ReportMixin):
 
     @fill_doc
     def generate_report(
-        self, engine="matplotlib", title: str | None = None, **kwargs
+        self,
+        engine: ReportEngine = DEFAULT_ENGINE,
+        title: str | None = None,
+        **kwargs,
     ) -> HTMLReport:
         """Generate an HTML report for this masker.
 
@@ -553,7 +577,7 @@ class MaskerReportMixin(ReportMixin):
 
         Parameters
         ----------
-        engine : :obj:`str`, default="matplotlib"
+        engine : {"matplotlib", "brainsprite", "plotly"}, default="matplotlib"
             Choice of engine to display report figures.
 
             All maskers support ``"matplotlib"`` as engine.
@@ -563,13 +587,14 @@ class MaskerReportMixin(ReportMixin):
             - ``"brainsprite"`` :
 
               NiftiMasker, MultiNiftiMasker, NiftiLabelsMasker,
-              MultiNiftiLabelsMasker:
+              MultiNiftiLabelsMasker
 
             - ``"plotly"``:
 
-              SurfaceMasker, MultiSurfaceMasker, SurfaceLabelsMasker,
-              MultiSurfaceLabelsMasker, SurfaceMapsMasker,
-              MultiSurfaceMapsMasker:
+              SurfaceMapsMasker, MultiSurfaceMapsMasker
+
+            If the engine is not supported by the masker,
+            a warning is thrown and ``"matplotlib"`` is used instead.
 
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.

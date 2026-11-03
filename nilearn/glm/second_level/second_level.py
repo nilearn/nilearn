@@ -593,7 +593,6 @@ class SecondLevelModel(BaseGLM):
     memory_level: MemoryLevel
     minimize_memory: bool
     n_jobs: NJobs
-    reports: bool
     smoothing_fwhm: SmoothingFwhm
     target_affine: TargetAffine
     target_shape: TargetShape
