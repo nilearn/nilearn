@@ -17,6 +17,9 @@ from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn.glm._reporting_utils import (
     GLMReportMixin,
@@ -670,25 +673,32 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
 
         Parameters
         ----------
-        coords : :obj:`tuple` or :obj:`list` of :obj:`tuple` of coordinates, \
-                or None, default = None
-            Coordinates of the voxel(s) or region center(s).
-            Ignored if ``masker`` is provided.
+        coords : :obj:`tuple` or :obj:`list` of :obj:`tuple`, or None, \
+                default = None
+            Triplet or list of triplets of coordinates
+            in the same space as the images (typically MNI or TAL),
+            used as seeds of a :class:`~nilearn.maskers.NiftiSpheresMasker`.
+            Only for models fitted on volume data.
+            Ignored if ``mask`` is provided.
 
         mask : A Niimg-like, :class:`~nilearn.surface.SurfaceImage`, \
-               class:`~maskers.NiftiSpheresMasker`,  \
-               class:`~maskers.NiftiLabelsMasker`,  \
-               class:`~maskers.SurfaceLabelsMasker`,  \
+               :class:`~nilearn.maskers.NiftiSpheresMasker`,  \
+               :class:`~nilearn.maskers.NiftiLabelsMasker`,  \
+               :class:`~nilearn.maskers.SurfaceLabelsMasker`,  \
                or None, default = None
             If a SurfaceImage is passed, it will be used
             to instantiate a SurfaceLabelsMasker.
             If a Niimglike is passed, it will be used
             to instantiate a NiftiLabelsMasker.
+            Must be a SurfaceImage or a SurfaceLabelsMasker
+            for models fitted on surface data,
+            and one of the other types for models fitted on volume data.
             If None, a NiftiSpheresMasker
             centered on ``coords`` with radius ``radius`` is created.
 
         radius : :obj:`float`, default = 3.0
-            Radius of the sphere if ``masker`` is None.
+            Radius, in millimeters, of the sphere around each seed.
+            Ignored if ``mask`` is provided.
 
         Returns
         -------
@@ -722,12 +732,22 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             )
             coords = None
 
+        y_pred = self.predicted_
+        resid = self.residuals_
+        if not isinstance(y_pred, (Nifti1Image, SurfaceImage)):
+            y_pred = y_pred[0]
+            resid = resid[0]
+
         if mask is None:
             if coords is None:
                 raise ValueError("Either 'mask' or 'coords' must be provided.")
-            # Allow a single coordinate tuple to be passed
-            if isinstance(coords[0], (int, float)):
-                coords = [coords]
+            if not self._is_volume_glm():
+                raise TypeError(
+                    "The model was fitted on surface data: "
+                    "'coords' cannot be used. "
+                    "Use 'mask' with a SurfaceImage "
+                    "or a SurfaceLabelsMasker instead."
+                )
             masker = NiftiSpheresMasker(seeds=coords, radius=radius)
         else:
             check_is_of_allowed_type(
@@ -741,32 +761,17 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
                 ),
                 "mask",
             )
+            check_compatibility_mask_and_images(mask, y_pred)
             if isinstance(mask, NiimgLike):
-                if isinstance(self.mask_img_, SurfaceImage):
-                    raise TypeError(
-                        "The model was fitted with with surface data: "
-                        "'mask' must be a SurfaceImage."
-                    )
                 masker = NiftiLabelsMasker(mask)
             elif isinstance(mask, SurfaceImage):
-                if isinstance(self.mask_img_, Nifti1Image):
-                    raise TypeError(
-                        "The model was fitted with with volume data: "
-                        "'mask' must be a NiimgLike."
-                    )
                 masker = SurfaceLabelsMasker(mask)
             else:
                 masker = mask
         if not masker.__sklearn_is_fitted__():
             masker.fit()
 
-        # Get observed, predicted, and residual time series
-        # and extract time series for the observed, predicted, and residuals
-        y_pred = self.predicted_
-        resid = self.residuals_
-        if not isinstance(y_pred, (Nifti1Image, SurfaceImage)):
-            y_pred = y_pred[0]
-            resid = resid[0]
+        # Extract time series for the observed, predicted, and residuals
         predicted = masker.transform(y_pred)
         residuals = masker.transform(resid)
         observed = predicted + residuals
@@ -796,25 +801,32 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
 
         Parameters
         ----------
-        coords : :obj:`tuple` or :obj:`list` of :obj:`tuple` of coordinates, \
-                or None, default = None
-            Coordinates of the voxel(s) or region center(s).
-            Ignored if ``masker`` is provided.
+        coords : :obj:`tuple` or :obj:`list` of :obj:`tuple`, or None, \
+                default = None
+            Triplet or list of triplets of coordinates
+            in the same space as the images (typically MNI or TAL),
+            used as seeds of a :class:`~nilearn.maskers.NiftiSpheresMasker`.
+            Only for models fitted on volume data.
+            Ignored if ``mask`` is provided.
 
         mask : A Niimg-like, :class:`~nilearn.surface.SurfaceImage`, \
-               class:`~maskers.NiftiSpheresMasker`,  \
-               class:`~maskers.NiftiLabelsMasker`,  \
-               class:`~maskers.SurfaceLabelsMasker`,  \
+               :class:`~nilearn.maskers.NiftiSpheresMasker`,  \
+               :class:`~nilearn.maskers.NiftiLabelsMasker`,  \
+               :class:`~nilearn.maskers.SurfaceLabelsMasker`,  \
                or None, default = None
             If a SurfaceImage is passed, it will be used
             to instantiate a SurfaceLabelsMasker.
             If a Niimglike is passed, it will be used
             to instantiate a NiftiLabelsMasker.
+            Must be a SurfaceImage or a SurfaceLabelsMasker
+            for models fitted on surface data,
+            and one of the other types for models fitted on volume data.
             If None, a NiftiSpheresMasker
             centered on ``coords`` with radius ``radius`` is created.
 
         radius : :obj:`float`, default = 3.0
-            Radius of the sphere if ``masker`` is None.
+            Radius, in millimeters, of the sphere around each seed.
+            Ignored if ``mask`` is provided.
 
         figsize : :obj:`tuple`, default = (10, 8)
             Size of the figure.

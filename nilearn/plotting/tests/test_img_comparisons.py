@@ -6,9 +6,14 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn.conftest import _affine_mni, _img_mask_mni, _make_surface_mask
+from nilearn.conftest import _affine_mni, _make_surface_mask
 from nilearn.image import iter_img
-from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.maskers import (
+    NiftiLabelsMasker,
+    NiftiMasker,
+    NiftiSpheresMasker,
+    SurfaceMasker,
+)
 from nilearn.plotting import plot_bland_altman, plot_img_comparison
 
 # ruff: noqa: ARG001
@@ -27,8 +32,8 @@ def _mask() -> Nifti1Image:
     [
         None,
         _mask(),
-        NiftiMasker(mask_img=_img_mask_mni()),
-        NiftiMasker(mask_img=_img_mask_mni()).fit(),
+        NiftiMasker(mask_img=_mask()),
+        NiftiMasker(mask_img=_mask()).fit(),
     ],
 )
 def test_plot_img_comparison_masker(matplotlib_pyplot, img_3d_mni, masker):
@@ -100,15 +105,17 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
 
     masker = NiftiMasker(mask_img).fit()
 
-    correlations = plot_img_comparison(
-        target_images,
-        query_images,
-        masker,
-        axes=axes,
-        src_label="query",
-        output_dir=tmp_path,
-        colorbar=False,
-    )
+    # target and query images have different shapes
+    with pytest.warns(UserWarning, match="imgs are being resampled"):
+        correlations = plot_img_comparison(
+            target_images,
+            query_images,
+            masker,
+            axes=axes,
+            src_label="query",
+            output_dir=tmp_path,
+            colorbar=False,
+        )
 
     assert len(correlations) == len(query_images)
     assert correlations[0] == pytest.approx(1.0)
@@ -168,8 +175,8 @@ def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     [
         None,
         _mask(),
-        NiftiMasker(mask_img=_img_mask_mni()),
-        NiftiMasker(mask_img=_img_mask_mni()).fit(),
+        NiftiMasker(mask_img=_mask()),
+        NiftiMasker(mask_img=_mask()).fit(),
     ],
 )
 def test_plot_bland_altman(
@@ -246,6 +253,15 @@ def test_plot_bland_altman_errors(
 
     with pytest.raises(TypeError, match=r"with all values different from 0."):
         plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[0, 1, -2, 0])
+
+
+@pytest.mark.parametrize(
+    "masker", [NiftiLabelsMasker(), NiftiSpheresMasker([(1, 1, 1)]), 1]
+)
+def test_plot_bland_altman_masker_type_error(img_3d_rand_eye, masker):
+    """Check error for masker types that are not supported."""
+    with pytest.raises(TypeError, match="'masker' must be of type"):
+        plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, masker=masker)
 
 
 def test_plot_bland_altman_incompatible_errors(

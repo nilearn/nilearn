@@ -78,6 +78,8 @@ Enhancements
 
 - :bdg-secondary:`Maint` Refactor ``math_img`` and ``new_img_like`` to reduce complexity (:gh:`6676` by `Akaash P`_)
 
+- :bdg-success:`API` The ``seeds`` parameter of :class:`~maskers.NiftiSpheresMasker` now also accepts a single triplet of coordinates, for example ``NiftiSpheresMasker(seeds=(0, -52, 18))`` (:gh:`6700` by `Rémi Gau`_).
+
 Changes
 -------
 
