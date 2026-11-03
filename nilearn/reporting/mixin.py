@@ -221,8 +221,7 @@ class ReportMixin:
         report_content["page_title"] = report_content["title"]
 
         report_content["has_plotting_engine"] = is_matplotlib_installed()
-        report_content["engine"] = engine
-        self._validate_engine()
+        report_content["engine"] = self._validate_engine(engine)
 
         # TODO clean up docstring from RST formatting
         report_content["docstring"] = (
@@ -236,7 +235,7 @@ class ReportMixin:
             datetime.now().replace(microsecond=0).isoformat()
         )
 
-    def _validate_engine(self) -> None:
+    def _validate_engine(self, engine) -> ReportEngine:
         """Check that the report engine is supported by this estimator.
 
         Fall back to the default engine with a warning if it is not.
@@ -244,7 +243,6 @@ class ReportMixin:
         Estimators supporting other engines should override this method
         to pass the list of engines they support.
         """
-        engine = self._report_content["engine"]
         if engine not in self._allowed_engines:
             warnings.warn(
                 f"'engine' must be one of {self._allowed_engines} "
@@ -253,7 +251,8 @@ class ReportMixin:
                 f"Falling back to {DEFAULT_ENGINE!r}.",
                 stacklevel=find_stack_level(),
             )
-            self._report_content["engine"] = DEFAULT_ENGINE
+            engine = DEFAULT_ENGINE
+        return engine
 
     def _run_report_checks(self, **kwargs):
         """Run standard checks before report is generated.
