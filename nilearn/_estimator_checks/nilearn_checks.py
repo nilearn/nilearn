@@ -73,6 +73,7 @@ from nilearn._estimator_checks.utils import (
     generate_data_to_fit,
     generate_inverse_transform_signal,
     get_expected_dtype,
+    requires_y,
     run_method,
     set_mask_if_nifti_spheres,
     skip_if,
@@ -1511,6 +1512,7 @@ def check_img_estimator_clean_dtype(estimator_orig) -> None:
         _check_clean_dtype_output(result)
 
 
+@skip_if_not(lambda e: accepts_image(e) and requires_y(e))
 def check_img_estimator_requires_y_none(estimator) -> None:
     """Check estimator with requires_y=True fails gracefully for y=None.
 
@@ -1526,6 +1528,7 @@ def check_img_estimator_requires_y_none(estimator) -> None:
             raise ve
 
 
+@skip_if_not(lambda e: accepts_image(e) and requires_y(e))
 def check_inputs_length(estimator) -> None:
     """Raise error when X and y have inconsistent numbers of samples."""
     iris = load_iris()
