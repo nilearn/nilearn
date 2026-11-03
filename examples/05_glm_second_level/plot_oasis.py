@@ -176,6 +176,7 @@ report = second_level_model.generate_report(
     plot_type="glass",
     alpha=0.05,
     height_control=None,
+    engine="brainsprite",
 )
 
 # %%

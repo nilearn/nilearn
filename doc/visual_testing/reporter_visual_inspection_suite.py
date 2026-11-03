@@ -207,7 +207,7 @@ def _make_design_matrix_for_bids_feature(data_dir, subject):
     return design_matrix
 
 
-def report_flm_bids_features(build_type):
+def report_flm_bids_features(build_type, engine="matplolib"):
     if build_type == "partial":
         _generate_dummy_html(filenames=["flm_bids_features.html"])
         return None
@@ -221,9 +221,10 @@ def report_flm_bids_features(build_type):
         title=title,
         cluster_threshold=3,
         plot_type="glass",
+        engine=engine,
     )
 
-    verbose_save(report, "flm_bids_features.html", (1200, 6000))
+    verbose_save(report, f"flm_bids_features-{engine}.html", (1200, 6000))
 
     return report
 
@@ -691,6 +692,7 @@ def main(args=sys.argv):
 
     report_flm_adhd_dmn(build_type)
     report_flm_bids_features(build_type)
+    report_flm_bids_features(build_type, engine="brainsprite")
     report_flm_fiac(build_type)
     report_slm_oasis(build_type)
     report_surface_flm(build_type)
