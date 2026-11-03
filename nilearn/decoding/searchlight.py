@@ -490,11 +490,14 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             check_niimg_3d(self.process_mask_img)
 
         process_mask_img = self.process_mask_img or self.mask_img_
+        if process_mask_img is None:
+            raise TypeError(
+                "At least one of 'mask_img' or 'process_mask_img' "
+                "must be provided."
+            )
 
         # Compute world coordinates of the seeds
-        process_mask, process_mask_affine = load_mask_img(
-            process_mask_img  # type: ignore[arg-type]
-        )
+        process_mask, process_mask_affine = load_mask_img(process_mask_img)
 
         self.process_mask_ = process_mask
 
