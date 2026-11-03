@@ -6,7 +6,7 @@ import warnings
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, ClassVar, get_args
+from typing import Any, ClassVar, Protocol, Self, get_args
 
 import numpy as np
 import pandas as pd
@@ -23,9 +23,76 @@ from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import check_n_confounds_match_n_images
 from nilearn.image import high_variance_confounds
 from nilearn.image.image import get_indices_from_image, iter_check_niimg
-from nilearn.nilearn_typing import NiimgLike, NJobs, Signals, SingleConfound
+from nilearn.nilearn_typing import (
+    MemoryLevel,
+    NiimgLike,
+    NJobs,
+    Signals,
+    SingleConfound,
+)
 from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
+
+# The protocols below are only used for static type checking.
+#
+# The mixin classes of this module are not maskers themselves:
+# they are combined with a masker class
+# (e.g. ``class MultiNiftiMasker(_MultiMixin, NiftiMasker)``)
+# and their methods rely on attributes and methods
+# provided by that masker class.
+# A type checker only sees the mixin itself
+# and would therefore report those as missing.
+# Annotating ``self`` with one of these protocols
+# tells the type checker what the mixin expects
+# from the class it is combined with.
+
+
+class _Masker(Protocol):
+    """Attributes and methods of maskers that mixins rely on."""
+
+    memory_level: MemoryLevel
+    high_variance_confounds: bool
+
+    def _cache(self, func, func_memory_level=1, shelve=False): ...
+
+    def fit(self, imgs=None, y: None = None) -> Self: ...
+
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ): ...
+
+
+class _MultiMasker(_Masker, Protocol):
+    """Additional attributes and methods specific to multi maskers.
+
+    Methods defined in ``_MultiMixin`` and called via ``self``
+    must also be listed here,
+    because once ``self`` is annotated with this protocol
+    the type checker only knows about the members of the protocol.
+
+    ``transform`` is only declared here and not in ``_Masker``
+    because multi maskers can return a list of signals.
+    """
+
+    n_jobs: NJobs
+
+    def _prepare_confounds(self, imgs_list, confounds): ...
+
+    def _prepare_sample_mask(self, imgs_list, sample_mask): ...
+
+    def transform(
+        self, imgs, confounds=None, sample_mask=None
+    ) -> Signals | list[Signals]: ...
+
+    def transform_imgs(
+        self,
+        imgs_list,
+        confounds: list[SingleConfound | None] | None = None,
+        sample_mask=None,
+    ) -> Signals | list[Signals]: ...
 
 
 @fill_doc
@@ -33,10 +100,11 @@ class _MultiMixin:
     """Mixin class to add common MultiMasker functionalities."""
 
     n_jobs: NJobs
+    high_variance_confounds: bool
 
     @fill_doc
     def fit_transform(
-        self,
+        self: _MultiMasker,
         imgs,
         y: None = None,
         confounds: SingleConfound | list[SingleConfound | None] | None = None,
@@ -84,7 +152,7 @@ class _MultiMixin:
 
     @fill_doc
     def transform_imgs(
-        self,
+        self: _MultiMasker,
         imgs_list,
         confounds: list[SingleConfound | None] | None = None,
         sample_mask=None,
@@ -118,7 +186,7 @@ class _MultiMixin:
             memory_level=self.memory_level,
         )
 
-        confounds = self._prepare_confounds(imgs_list, confounds)
+        prepared_confounds = self._prepare_confounds(imgs_list, confounds)
 
         sample_mask = self._prepare_sample_mask(imgs_list, sample_mask)
 
@@ -129,14 +197,14 @@ class _MultiMixin:
         region_signals = Parallel(n_jobs=self.n_jobs)(
             delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sms)
             for imgs, cfs, sms in zip(
-                niimg_iter, confounds, sample_mask, strict=False
+                niimg_iter, prepared_confounds, sample_mask, strict=False
             )
         )
         return region_signals
 
     @fill_doc
     def transform(
-        self,
+        self: _MultiMasker,
         imgs,
         confounds: SingleConfound | list[SingleConfound | None] | None = None,
         sample_mask=None,
@@ -174,7 +242,7 @@ class _MultiMixin:
                 confounds = confounds[0]
             if isinstance(sample_mask, list):
                 sample_mask = sample_mask[0]
-            return super().transform(
+            return super().transform(  # type: ignore[missing-attribute]
                 imgs, confounds=confounds, sample_mask=sample_mask
             )
 
@@ -187,7 +255,7 @@ class _MultiMixin:
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
-    def _prepare_confounds(self, imgs_list, confounds):
+    def _prepare_confounds(self: _MultiMasker, imgs_list, confounds):
         """Check and prepare confounds."""
         if confounds is None:
             confounds = list(itertools.repeat(None, len(imgs_list)))
@@ -218,7 +286,7 @@ class _MultiMixin:
 
         return confounds
 
-    def _prepare_sample_mask(self, imgs_list, sample_mask):
+    def _prepare_sample_mask(self: _MultiMasker, imgs_list, sample_mask):
         """Check and prepare sample_mask."""
         if sample_mask is None:
             sample_mask = itertools.repeat(None, len(imgs_list))
@@ -578,6 +646,6 @@ class MaskerReportMixin(ReportMixin):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _get_summary_html(self):
+    def _get_summary_html(self, summary):
         """Convert summary part of the report content to html and return."""
         raise NotImplementedError()
