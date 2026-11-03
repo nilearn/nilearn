@@ -24,14 +24,10 @@ from nilearn._utils.param_validation import check_n_confounds_match_n_images
 from nilearn.image import high_variance_confounds
 from nilearn.image.image import get_indices_from_image, iter_check_niimg
 from nilearn.nilearn_typing import (
-    NiimgLike,
-    NJobs,
-    ReportEngine,
-    Signals,
-    SingleConfound,
     MemoryLevel,
     NiimgLike,
     NJobs,
+    ReportEngine,
     Signals,
     SingleConfound,
 )
@@ -41,7 +37,6 @@ from nilearn.reporting.mixin import (
     ReportMixin,
     _ReportDefaults,
 )
-from nilearn.reporting.mixin import HTMLReport, ReportMixin
 from nilearn.surface.surface import SurfaceImage
 
 # The protocols below are only used for static type checking.
