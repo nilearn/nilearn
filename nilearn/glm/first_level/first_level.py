@@ -1410,16 +1410,21 @@ class FirstLevelModel(BaseGLM):
                 and self.masker_ is None
             )
         ):
-            # compute implicit mask based on all runs
             masker = check_embedded_masker(
                 self, ignore=["high_pass"], masker_type=masker_type
             )
             masker.memory_level = self.memory_level
             if masker_type == "multi_nii":
                 masker.mask_strategy = "epi"
+
+            # Compute implicit mask based on all runs.
+            #
+            # We ignore warning in case the masker
+            # was initialized in check_embedded_masker
+            # with a mask image (obtained from the FLM):
+            # the user has no control over this warning,
+            # so it would just add noise.
             with catch_warnings():
-                # ignore warning in case the masker
-                # was initialized with a mask image
                 filterwarnings(
                     "ignore",
                     message=r".*Generation of a mask.*",
