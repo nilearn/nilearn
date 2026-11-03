@@ -219,9 +219,10 @@ class ReportMixin:
             title if title is not None else self.__class__.__name__
         )
         report_content["page_title"] = report_content["title"]
-        report_content["engine"] = engine
 
         report_content["has_plotting_engine"] = is_matplotlib_installed()
+        report_content["engine"] = engine
+        self._validate_engine()
 
         # TODO clean up docstring from RST formatting
         report_content["docstring"] = (
@@ -234,8 +235,6 @@ class ReportMixin:
         report_content["date"] = (
             datetime.now().replace(microsecond=0).isoformat()
         )
-
-        self._validate_engine()
 
     def _validate_engine(self) -> None:
         """Check that the report engine is supported by this estimator.
