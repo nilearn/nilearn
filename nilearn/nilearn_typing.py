@@ -18,7 +18,7 @@ To expand the functionality of check_params you need to:
 
 import pathlib
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Literal, TypeAlias
+from typing import TYPE_CHECKING, Literal, TypeAlias, TypeVar
 
 import numpy as np
 import pandas as pd
@@ -30,6 +30,22 @@ from numpy.typing import DTypeLike
 if TYPE_CHECKING:
     import polars as pl
     from matplotlib.colors import Colormap
+
+_KT = TypeVar("_KT")
+_VT = TypeVar("_VT")
+
+if TYPE_CHECKING:
+
+    class TypedBunch(dict[_KT, _VT]):
+        """Typed stand-in for sklearn.utils.Bunch."""
+
+        def __getattr__(self, key: str) -> _VT: ...
+        def __setattr__(self, key: str, value: _VT) -> None: ...
+
+else:
+    # to avoid TypedBunch existing at runtime
+    # with empty __getattr__/__setattr__
+    TypedBunch = dict
 
 Integer: TypeAlias = int | np.integer
 Float: TypeAlias = float | np.floating

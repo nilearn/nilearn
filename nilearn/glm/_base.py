@@ -37,7 +37,7 @@ from nilearn.maskers import (
     SurfaceLabelsMasker,
     SurfaceMasker,
 )
-from nilearn.nilearn_typing import NiimgLike
+from nilearn.nilearn_typing import NiimgLike, TypedBunch
 from nilearn.surface import SurfaceImage
 from nilearn.utils.tags import InputTags
 
@@ -1026,7 +1026,7 @@ def _generate_design_matrices_dict(
     design_matrices,
     generate_bids_name: bool,
     entities_to_include: list[str],
-) -> dict[int, dict[str, str]]:
+) -> dict[int, TypedBunch[str, str]]:
     """Return dictionary with filenames for design_matrices figures / tables.
 
     design_matrices_dict[i_run][key] = filename
@@ -1035,7 +1035,7 @@ def _generate_design_matrices_dict(
     if generate_bids_name:
         fields["prefix"] = None  # type: ignore[assignment]
 
-    design_matrices_dict = Bunch()
+    design_matrices_dict = {}
 
     for i_run, _ in enumerate(design_matrices):
         if _is_flm_with_single_run(model):
@@ -1071,7 +1071,7 @@ def _generate_contrasts_dict(
     generate_bids_name: bool,
     entities,
     entities_to_include: list[str],
-) -> dict[int, dict[str, str]]:
+) -> dict[int, TypedBunch[str, str]]:
     """Return dictionary with filenames for contrast matrices figures.
 
     contrasts_dict[i_run][contrast_name] = filename
@@ -1085,7 +1085,7 @@ def _generate_contrasts_dict(
     if generate_bids_name:
         fields["prefix"] = ""
 
-    contrasts_dict = Bunch()
+    contrasts_dict = {}
 
     for i_run, _ in enumerate(design_matrices):
         if _is_flm_with_single_run(model):
