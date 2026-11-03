@@ -13,16 +13,16 @@ extract objects using a function
 .. admonition:: dataset
 
     We use localizer t-statistic maps from
-    :func:`~nilearn.datasets.fetch_neurovault_auditory_computation_task`
+    :func:`~nilearn.datasets.fetch_neurovault_ids`
     as input images.
 """
 
 # %%
 # Fetching t-statistic image of localizer contrasts by loading from datasets
 # utilities
-from nilearn.datasets import fetch_neurovault_auditory_computation_task
+from nilearn.datasets import fetch_neurovault_ids
 
-localizer = fetch_neurovault_auditory_computation_task(timeout=30.0)
+localizer = fetch_neurovault_ids(image_ids=[32980], timeout=30.0)
 tmap_filename = localizer.images[0]
 
 # %%

@@ -3286,7 +3286,6 @@ def load_sample_motor_activation_image() -> str:
     --------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
-    nilearn.datasets.fetch_neurovault_auditory_computation_task
 
     Notes
     -----

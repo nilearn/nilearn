@@ -2868,6 +2868,18 @@ def fetch_neurovault_auditory_computation_task(
     """
     check_params(locals())
 
+    # TODO (nilearn >= 0.17.0) remove the function
+    warnings.warn(
+        category=FutureWarning,
+        message=(
+            "'fetch_neurovault_auditory_computation_task' is deprecated "
+            "and will be removed in Nilearn 0.17.0.\n"
+            "Use 'fetch_neurovault_auditory_computation_task' with"
+            "'image_ids=[32980]'."
+        ),
+        stacklevel=find_stack_level(),
+    )
+
     data = fetch_neurovault_ids(
         image_ids=[32980], data_dir=data_dir, verbose=verbose, timeout=timeout
     )
