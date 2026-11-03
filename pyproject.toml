@@ -365,12 +365,15 @@ redundant-condition = "error"
 # We do not run doctests systematically with "--doctest-modules".
 # This is because some doctests outside of nilearn.plotting require matplotlib
 # and would lead to import errors when run without the plotting dependencies.
-addopts = "-ra --strict-config --strict-markers --showlocals --capture=no -v --template=maint_tools/templates/index.html"
+addopts = "-ra --strict-config --strict-markers --showlocals --capture=no -v --template-dir=maint_tools/templates --template=index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 # see https://docs.pytest.org/en/stable/how-to/capture-warnings.html#controlling-warnings
 filterwarnings = [
     # ignoring warnings about using a non-interactive plotting backend
-    'ignore:.*you are using the.*:UserWarning'
+    'ignore:.*you are using the.*:UserWarning',
+    # ignoring warnings from pytest-reporter-html1 when rendering docstrings
+    # with docutils>=0.22 in the HTML test report
+    'ignore:Argument "writer_name" will be removed:PendingDeprecationWarning'
 ]
 junit_family = "xunit2"
 log_cli_level = "INFO"
