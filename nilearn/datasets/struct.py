@@ -33,7 +33,7 @@ from nilearn.nilearn_typing import (
     NSubject,
     Resolution,
     Resume,
-    SKBunch,
+    TypedBunch,
     Url,
     Verbose,
 )
@@ -73,7 +73,7 @@ def fetch_icbm152_2009(  # numpydoc ignore=RT05
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> SKBunch[str, Any]:
+) -> TypedBunch[str, Any]:
     """Download and load the ICBM152 template (dated 2009).
 
     For more information
@@ -635,7 +635,7 @@ def fetch_oasis_vbm(  # numpydoc ignore=RT05
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> SKBunch[str, Any]:
+) -> TypedBunch[str, Any]:
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
     For more information
@@ -847,7 +847,7 @@ def fetch_oasis_vbm(  # numpydoc ignore=RT05
 def fetch_surf_fsaverage(  # numpydoc ignore=RT05
     mesh: AvailableMeshes = "fsaverage5",
     data_dir: DataDir = None,
-) -> SKBunch[str, Any]:
+) -> TypedBunch[str, Any]:
     """Download a Freesurfer fsaverage surface.
 
     For more information
@@ -1048,7 +1048,7 @@ def _apply_mesh_mapping(mapping, fs_coords, fs_faces):
     return fs_coords_updated, faces_updated
 
 
-def _fetch_surf_fsaverage5() -> SKBunch[str, str]:
+def _fetch_surf_fsaverage5() -> TypedBunch[str, str]:
     """Ship fsaverage5 surfaces and sulcal information with Nilearn.
 
     The source of the data is coming from nitrc based on this PR #1016.
@@ -1080,7 +1080,7 @@ def _fetch_surf_fsaverage5() -> SKBunch[str, str]:
 
 def _fetch_surf_fsaverage(
     dataset_name, data_dir: DataDir = None
-) -> SKBunch[str, str]:
+) -> TypedBunch[str, str]:
     """Ship fsaverage{3,4,6,7} meshes.
 
     These meshes can be used for visualization purposes, but also to run
@@ -1137,7 +1137,7 @@ def _fetch_surf_fsaverage(
 def load_fsaverage(  # numpydoc ignore=RT05
     mesh: AvailableMeshes = "fsaverage5",
     data_dir: DataDir = None,
-) -> SKBunch[str, PolyMesh]:
+) -> TypedBunch[str, PolyMesh]:
     """Load fsaverage for both hemispheres as PolyMesh objects.
 
     .. nilearn_versionadded:: 0.11.0

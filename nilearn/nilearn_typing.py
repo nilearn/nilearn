@@ -34,13 +34,18 @@ if TYPE_CHECKING:
 _KT = TypeVar("_KT")
 _VT = TypeVar("_VT")
 
+if TYPE_CHECKING:
 
-class SKBunch(dict[_KT, _VT]):
-    """Typed stand-in for sklearn.utils.Bunch."""
+    class TypedBunch(dict[_KT, _VT]):
+        """Typed stand-in for sklearn.utils.Bunch."""
 
-    def __getattr__(self, key: str) -> _VT: ...
-    def __setattr__(self, key: str, value: _VT) -> None: ...
+        def __getattr__(self, key: str) -> _VT: ...
+        def __setattr__(self, key: str, value: _VT) -> None: ...
 
+else:
+    # to avoid TypedBunch existing at runtime
+    # with empty __getattr__/__setattr__
+    TypedBunch = dict
 
 Integer: TypeAlias = int | np.integer
 Float: TypeAlias = float | np.floating

@@ -23,7 +23,7 @@ import pandas as pd
 from sklearn.utils import Bunch
 
 from nilearn._base import PACKAGE_DIRECTORY, documentation_url
-from nilearn.nilearn_typing import SKBunch
+from nilearn.nilearn_typing import TypedBunch
 
 ##############################################################################
 #
@@ -2000,7 +2000,7 @@ def fill_doc(f: Callable) -> Callable:
 # It must therefore not require downloading any data.
 
 
-DATASET_DESCRIPTIONS: dict[str, SKBunch] = {
+DATASET_DESCRIPTIONS: dict[str, TypedBunch] = {
     "aal_atlas": Bunch(
         content=Bunch(
             lut=Bunch(type=pd.DataFrame, desc=lut),
@@ -2067,7 +2067,7 @@ DATASET_DESCRIPTIONS: dict[str, SKBunch] = {
 }
 
 
-def _fill_content_from_json(content: Bunch, json_file: str) -> SKBunch:
+def _fill_content_from_json(content: TypedBunch, json_file: str) -> TypedBunch:
     # import some packages that are needed
     # for the eval below
     # to turn string into an actual type

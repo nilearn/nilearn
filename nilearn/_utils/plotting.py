@@ -1,4 +1,5 @@
 import warnings
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -6,7 +7,7 @@ from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from sklearn.utils import Bunch
 
-from nilearn.nilearn_typing import SKBunch
+from nilearn.nilearn_typing import TypedBunch
 from nilearn.plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
@@ -17,7 +18,7 @@ from nilearn.reporting.utils import figure_to_png_base64
 
 def generate_design_matrices_figures(
     design_matrices, design_matrices_dict=None, output=None
-) -> SKBunch:
+) -> TypedBunch[Any, Any]:
     """Generate plot for design matrices and their correlation matrices.
 
     After generating the figure it can either :
@@ -108,7 +109,7 @@ def generate_design_matrices_figures(
 
 def generate_contrast_matrices_figures(
     design_matrices, contrasts=None, contrasts_dict=None, output=None
-) -> SKBunch:
+) -> TypedBunch[Any, Any]:
     """Generate plot for contrasts matrices.
 
     After generating the figure it can either :
