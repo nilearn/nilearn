@@ -23,6 +23,7 @@ from nilearn.nilearn_typing import (
     HeightControl,
     ReportEngine,
 )
+from nilearn.nilearn_typing import ClusterThreshold, HeightControl, TypedBunch
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
@@ -446,7 +447,7 @@ def sanitize_generate_report_input(
     return threshold, cut_coords, first_level_contrast, warning_messages
 
 
-def turn_into_full_path(bunch, dir: Path) -> str | Bunch:
+def turn_into_full_path(bunch, dir: Path) -> str | TypedBunch[Any, Any]:
     """Recursively turns str values of a dict into path.
 
     Used to turn relative paths into full paths.

@@ -33,6 +33,7 @@ from nilearn.nilearn_typing import (
     NSubject,
     Resolution,
     Resume,
+    TypedBunch,
     Url,
     Verbose,
 )
@@ -72,7 +73,7 @@ def fetch_icbm152_2009(  # numpydoc ignore=RT05
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch:
+) -> TypedBunch[str, Any]:
     """Download and load the ICBM152 template (dated 2009).
 
     For more information
@@ -92,7 +93,7 @@ def fetch_icbm152_2009(  # numpydoc ignore=RT05
 
     Returns
     -------
-    data : :obj:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         %(icbm152_2009_content)s
@@ -634,7 +635,7 @@ def fetch_oasis_vbm(  # numpydoc ignore=RT05
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch:
+) -> TypedBunch[str, Any]:
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
     For more information
@@ -665,7 +666,7 @@ def fetch_oasis_vbm(  # numpydoc ignore=RT05
 
     Returns
     -------
-    data : Bunch
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         %(oasis_vbm_content)s
@@ -846,7 +847,7 @@ def fetch_oasis_vbm(  # numpydoc ignore=RT05
 def fetch_surf_fsaverage(  # numpydoc ignore=RT05
     mesh: AvailableMeshes = "fsaverage5",
     data_dir: DataDir = None,
-) -> Bunch[str, Any]:
+) -> TypedBunch[str, Any]:
     """Download a Freesurfer fsaverage surface.
 
     For more information
@@ -873,7 +874,7 @@ def fetch_surf_fsaverage(  # numpydoc ignore=RT05
 
     Returns
     -------
-    data : :obj:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         %(fsaverage_content)s
@@ -1047,7 +1048,7 @@ def _apply_mesh_mapping(mapping, fs_coords, fs_faces):
     return fs_coords_updated, faces_updated
 
 
-def _fetch_surf_fsaverage5() -> Bunch[str, str]:
+def _fetch_surf_fsaverage5() -> TypedBunch[str, str]:
     """Ship fsaverage5 surfaces and sulcal information with Nilearn.
 
     The source of the data is coming from nitrc based on this PR #1016.
@@ -1079,7 +1080,7 @@ def _fetch_surf_fsaverage5() -> Bunch[str, str]:
 
 def _fetch_surf_fsaverage(
     dataset_name, data_dir: DataDir = None
-) -> Bunch[str, str]:
+) -> TypedBunch[str, str]:
     """Ship fsaverage{3,4,6,7} meshes.
 
     These meshes can be used for visualization purposes, but also to run
@@ -1136,7 +1137,7 @@ def _fetch_surf_fsaverage(
 def load_fsaverage(  # numpydoc ignore=RT05
     mesh: AvailableMeshes = "fsaverage5",
     data_dir: DataDir = None,
-) -> Bunch[str, PolyMesh]:
+) -> TypedBunch[str, PolyMesh]:
     """Load fsaverage for both hemispheres as PolyMesh objects.
 
     .. nilearn_versionadded:: 0.11.0
@@ -1152,7 +1153,7 @@ def load_fsaverage(  # numpydoc ignore=RT05
 
     Returns
     -------
-    data : :obj:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         %(fsaverage_polymesh_content)s
