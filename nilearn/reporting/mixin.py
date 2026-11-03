@@ -235,9 +235,9 @@ class ReportMixin:
             datetime.now().replace(microsecond=0).isoformat()
         )
 
-        self._check_engine()
+        self._validate_engine()
 
-    def _check_engine(self) -> None:
+    def _validate_engine(self) -> None:
         """Check that the report engine is supported by this estimator.
 
         Fall back to the default engine with a warning if it is not.
