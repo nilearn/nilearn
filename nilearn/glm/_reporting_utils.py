@@ -22,8 +22,8 @@ from nilearn.nilearn_typing import (
     ClusterThreshold,
     HeightControl,
     ReportEngine,
+    TypedBunch,
 )
-from nilearn.nilearn_typing import ClusterThreshold, HeightControl, TypedBunch
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
