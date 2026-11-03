@@ -122,6 +122,20 @@ def test_glm_override_masker_param(shape_4d_default):
         )
 
 
+def test_glm_mask_img_false_forwards_masker_params(shape_4d_default):
+    """Check FLM parameters are passed to the masker when mask_img=False."""
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )
+    flm = FirstLevelModel(mask_img=False, smoothing_fwhm=4).fit(
+        fmri_data[0], design_matrices=design_matrices[0]
+    )
+
+    assert flm.mask_img is False
+    assert flm.masker_.smoothing_fwhm == 4
+    _check_flm_post_fit(flm, fmri_data[0])
+
+
 def test_glm_fit_valid_mask_img(shape_4d_default):
     """Run fit on FLM with different valid masks."""
     rk = 3
