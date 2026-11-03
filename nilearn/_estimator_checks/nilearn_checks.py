@@ -1164,12 +1164,9 @@ def _dtype_case_generator(estimator_orig, with_memory=False):
                 if hasattr(estimator_orig, "dtype"):
                     estimator.dtype = dtype
 
-                if hasattr(estimator_orig, "memory"):
+                if memory is not None:
+                    estimator.memory_level = 1
                     estimator.memory = memory
-
-                    if memory is not None:
-                        estimator.memory_level = 1
-
                 yield estimator, input_dtype, dtype, memory
 
 
