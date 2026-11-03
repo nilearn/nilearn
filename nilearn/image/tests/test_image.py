@@ -4,6 +4,7 @@ import platform
 import re
 import warnings
 from collections.abc import Generator, Iterable
+from contextlib import nullcontext
 from pathlib import Path
 
 import joblib
@@ -353,10 +354,12 @@ def test_smooth_array_nan_do_not_propagate():
 def test_smooth_array_same_result_with_fwhm_none_or_zero(
     smooth_array_data,
 ):
+    """Test output equal when fwhm=None and fwhm=0."""
     affine = AFFINE_TO_TEST[2]
 
     out_fwhm_none = smooth_array(smooth_array_data, affine, fwhm=None)
-    out_fwhm_zero = smooth_array(smooth_array_data, affine, fwhm=0.0)
+    with pytest.warns(UserWarning, match="Setting it to None"):
+        out_fwhm_zero = smooth_array(smooth_array_data, affine, fwhm=0.0)
 
     assert_array_equal(out_fwhm_none, out_fwhm_zero)
 
@@ -448,7 +451,8 @@ def test_smooth_img_scalar_array(affine_eye, fwhm):
 def test_smooth_img_fwhm_0_or_none(img_3d_mni):
     """Test output equal when fwhm=None and fwhm=0."""
     out_fwhm_none = smooth_img(img_3d_mni, fwhm=None)
-    out_fwhm_zero = smooth_img(img_3d_mni, fwhm=0.0)
+    with pytest.warns(UserWarning, match="Setting it to None"):
+        out_fwhm_zero = smooth_img(img_3d_mni, fwhm=0.0)
 
     assert_array_equal(get_data(out_fwhm_none), get_data(out_fwhm_zero))
 
@@ -1368,7 +1372,12 @@ def test_threshold_surf_img_1d(surf_img_1d, threshold, expected_n_non_zero):
     For left hemisphere: 1 < values < 10
     For right hemisphere: 10 < values < 50
     """
-    thr_img = threshold_img(surf_img_1d, threshold=threshold)
+    with (
+        pytest.warns(UserWarning, match="must not exceed")
+        if threshold == 50
+        else nullcontext()
+    ):
+        thr_img = threshold_img(surf_img_1d, threshold=threshold)
     for hemi in thr_img.data.parts:
         data = thr_img.data.parts[hemi]
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
@@ -1394,9 +1403,14 @@ def test_threshold_surf_img_1d_with_mask(
     For left hemisphere: 1 <= values < 10
     For right hemisphere: 10 <= values < 50
     """
-    thr_img = threshold_img(
-        surf_img_1d, threshold=threshold, mask_img=surf_mask_1d
-    )
+    with (
+        pytest.warns(UserWarning, match="must not exceed")
+        if threshold == 50
+        else nullcontext()
+    ):
+        thr_img = threshold_img(
+            surf_img_1d, threshold=threshold, mask_img=surf_mask_1d
+        )
     for hemi in thr_img.data.parts:
         data = thr_img.data.parts[hemi]
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
@@ -1430,9 +1444,14 @@ def test_threshold_surf_img_1d_negative_values(
     """
     surf_img_1d.data.parts["left"] *= -10
 
-    thr_img = threshold_img(
-        surf_img_1d, threshold=threshold, two_sided=two_sided
-    )
+    with (
+        pytest.warns(UserWarning, match="must not exceed")
+        if threshold == 50
+        else nullcontext()
+    ):
+        thr_img = threshold_img(
+            surf_img_1d, threshold=threshold, two_sided=two_sided
+        )
     for hemi in thr_img.data.parts:
         data = thr_img.data.parts[hemi]
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
@@ -1473,12 +1492,17 @@ def test_threshold_img_with_mask(
     temp_mask[13:19, 0:4, 6:] = 0
     mask_img = Nifti1Image(temp_mask, affine_eye)
 
-    thr_img = threshold_img(
-        img=stat_img_test_data,
-        mask_img=mask_img,
-        threshold=threshold,
-        two_sided=two_sided,
-    )
+    with (
+        pytest.warns(UserWarning, match="must not exceed")
+        if threshold == 4.1
+        else nullcontext()
+    ):
+        thr_img = threshold_img(
+            img=stat_img_test_data,
+            mask_img=mask_img,
+            threshold=threshold,
+            two_sided=two_sided,
+        )
 
     img_data = thr_img.get_fdata()
     assert len(img_data[np.nonzero(img_data)]) == expected
@@ -1557,7 +1581,8 @@ def test_threshold_img_copy_volume(img_4d_ones_eye):
     """Test the behavior of threshold_img's copy parameter."""
     threshold = 1.1
     # Check that copy does not mutate. It returns modified copy.
-    thr_img = threshold_img(img_4d_ones_eye, threshold)
+    with pytest.warns(UserWarning, match="must not exceed"):
+        thr_img = threshold_img(img_4d_ones_eye, threshold)
 
     # Original img_ones should have all ones.
     assert_array_equal(get_data(img_4d_ones_eye), np.ones(_shape_4d_default()))
@@ -1567,7 +1592,8 @@ def test_threshold_img_copy_volume(img_4d_ones_eye):
     # Check that not copying does mutate.
     img_to_mutate = img_4d_ones_eye
 
-    thr_img = threshold_img(img_to_mutate, threshold, copy=False)
+    with pytest.warns(UserWarning, match="must not exceed"):
+        thr_img = threshold_img(img_to_mutate, threshold, copy=False)
 
     # Check that original mutates
     assert_array_equal(get_data(img_to_mutate), np.zeros(_shape_4d_default()))
@@ -1584,7 +1610,8 @@ def test_isnan_threshold_img_data(affine_eye, shape_3d_default):
 
     maps_img = Nifti1Image(data, affine_eye)
 
-    threshold_img(maps_img, threshold=0.8)
+    with pytest.warns(UserWarning, match="Non-finite values detected"):
+        threshold_img(maps_img, threshold=0.8)
 
 
 @pytest.mark.thread_unsafe
@@ -1864,6 +1891,7 @@ def test_clean_img_error(
 
 
 def test_clean_img(affine_eye, shape_3d_default, rng):
+    """Check clean_img matches signal.clean and handles edge cases."""
     data = rng.standard_normal(size=(10, 10, 10, 100)) + 0.5
     data_flat = data.T.reshape(100, -1)
     data_img = Nifti1Image(data, affine_eye)
@@ -1877,6 +1905,13 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
 
     assert_almost_equal(get_data(data_img_).T.reshape(100, -1), data_flat_)
 
+    # test_clean_img_passing_nifti2image
+    data_img_nifti2 = Nifti2Image(data, affine_eye)
+
+    clean_img(
+        data_img_nifti2, detrend=True, standardize=None, low_pass=0.1, t_r=1.0
+    )
+
     # if NANs
     data[:, 9, 9] = np.nan
     # if infinity
@@ -1886,13 +1921,6 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     clean_im = clean_img(nan_img, ensure_finite=True)
 
     assert np.any(np.isfinite(get_data(clean_im)))
-
-    # test_clean_img_passing_nifti2image
-    data_img_nifti2 = Nifti2Image(data, affine_eye)
-
-    clean_img(
-        data_img_nifti2, detrend=True, standardize=None, low_pass=0.1, t_r=1.0
-    )
 
     # if mask_img
     img, mask_img = generate_fake_fmri(shape=shape_3d_default, length=10)
@@ -2057,7 +2085,6 @@ def test_new_img_like_mgh_image(affine_eye, shape_3d_default):
 
 
 @pytest.mark.parametrize("image", [MGHImage, AnalyzeImage])
-@pytest.mark.ai_generated
 def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
     """Check defaulting boolean input data to np.uint8 dtype is valid \
        forencoding with nibabel image classes MGHImage and AnalyzeImage.
@@ -2142,23 +2169,26 @@ def test_concat_niimgs_errors(affine_eye, shape_3d_default):
 
 
 def test_concat_niimgs(affine_eye, tmp_path):
+    """Concatenate images with different shapes, affines and inputs."""
     # create images different in affine and 3D/4D shape
     shape = (10, 11, 12)
-    img1 = Nifti1Image(np.ones(shape), affine_eye)
+    # use non-binary data to avoid warnings when resampling
+    img1 = Nifti1Image(np.full(shape, 2.0), affine_eye)
     img2 = Nifti1Image(np.zeros(shape), affine_eye)
 
     shape2 = (12, 11, 10)
-    img1b = Nifti1Image(np.ones(shape2), affine_eye)
+    img1b = Nifti1Image(np.full(shape2, 2.0), affine_eye)
 
     shape3 = (11, 22, 33)
-    img1c = Nifti1Image(np.ones(shape3), affine_eye)
+    img1c = Nifti1Image(np.full(shape3, 2.0), affine_eye)
 
     # check basic concatenation with equal shape/affine
     # verbose for coverage
     concatenated = concat_imgs((img1, img2, img1), verbose=1)
 
     # smoke-test auto_resample
-    concatenated = concat_imgs((img1, img1b, img1c), auto_resample=True)
+    with pytest.warns(UserWarning, match="Affine is different"):
+        concatenated = concat_imgs((img1, img1b, img1c), auto_resample=True)
     assert concatenated.shape == (*img1.shape, 3)
 
     # test list of 4D niimgs as input
@@ -2457,7 +2487,6 @@ def img_in_home_folder(
 
 @pytest.mark.single_process
 @pytest.mark.thread_unsafe
-@pytest.mark.single_process
 @pytest.mark.parametrize(
     "filename", ["~/test.nii", r"~/test.nii", Path("~/test.nii")]
 )

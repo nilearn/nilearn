@@ -419,14 +419,35 @@ def test_load_surf_mesh_file_gii_error(tmp_path, in_memory_mesh):
         load_surf_mesh(filename_gii_mesh_no_face)
 
 
+def _write_freesurfer_geometry(filename, mesh):
+    """Write a freesurfer mesh with volume info.
+
+    Avoids nibabel warnings about missing volume information
+    when the mesh is loaded back.
+    """
+    volume_info = {
+        "head": np.array([2, 0, 20], dtype=np.int32),
+        "valid": "1  # volume info valid",
+        "filename": "vol.nii",
+        "volume": np.array([256, 256, 256]),
+        "voxelsize": np.array([1.0, 1.0, 1.0]),
+        "xras": np.array([-1.0, 0.0, 0.0]),
+        "yras": np.array([0.0, 0.0, -1.0]),
+        "zras": np.array([0.0, 1.0, 0.0]),
+        "cras": np.array([0.0, 0.0, 0.0]),
+    }
+    freesurfer.write_geometry(
+        filename, mesh.coordinates, mesh.faces, volume_info=volume_info
+    )
+
+
 @pytest.mark.parametrize(
     "suffix", [".pial", ".inflated", ".white", ".orig", "sphere"]
 )
 def test_load_surf_mesh_file_freesurfer(suffix, tmp_path, in_memory_mesh):
+    """Load freesurfer mesh files with different suffixes."""
     filename_fs_mesh = tmp_path / f"tmp{suffix}"
-    freesurfer.write_geometry(
-        filename_fs_mesh, in_memory_mesh.coordinates, in_memory_mesh.faces
-    )
+    _write_freesurfer_geometry(filename_fs_mesh, in_memory_mesh)
 
     assert hasattr(load_surf_mesh(filename_fs_mesh), "coordinates")
     assert hasattr(load_surf_mesh(filename_fs_mesh), "faces")
@@ -452,15 +473,12 @@ def test_load_surf_mesh_file_error(suffix, tmp_path, in_memory_mesh):
 
 
 def test_load_surf_mesh_file_glob(tmp_path, in_memory_mesh):
+    """Load mesh files from glob patterns."""
     fname1 = tmp_path / "tmp1.pial"
-    freesurfer.write_geometry(
-        fname1, in_memory_mesh.coordinates, in_memory_mesh.faces
-    )
+    _write_freesurfer_geometry(fname1, in_memory_mesh)
 
     fname2 = tmp_path / "tmp2.pial"
-    freesurfer.write_geometry(
-        fname2, in_memory_mesh.coordinates, in_memory_mesh.faces
-    )
+    _write_freesurfer_geometry(fname2, in_memory_mesh)
 
     with pytest.raises(ValueError, match="More than one file matching path"):
         load_surf_mesh(tmp_path / "*.pial")
@@ -1217,11 +1235,11 @@ def test_save_dtype(surf_img_1d, tmp_path, dtype):
 
 
 @pytest.mark.thread_unsafe
-def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
+def test_load_from_volume_3d_nifti(img_3d_rand_eye, surf_mesh, tmp_path):
     """Instantiate surface image with 3D Niftiimage object or file for data."""
-    SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_3d_mni)
+    SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_3d_rand_eye)
 
-    img_3d_mni.to_filename(tmp_path / "tmp.nii.gz")
+    img_3d_rand_eye.to_filename(tmp_path / "tmp.nii.gz")
 
     SurfaceImage.from_volume(
         mesh=surf_mesh,
@@ -1230,13 +1248,13 @@ def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
 
 
 @pytest.mark.thread_unsafe
-def test_load_from_volume_4d_nifti(img_4d_mni, surf_mesh, tmp_path):
+def test_load_from_volume_4d_nifti(img_4d_rand_eye, surf_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
-    img = SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_4d_mni)
+    img = SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_4d_rand_eye)
     # check that we have the correct number of time points
-    assert img.shape[1] == img_4d_mni.shape[3]
+    assert img.shape[1] == img_4d_rand_eye.shape[3]
 
-    img_4d_mni.to_filename(tmp_path / "tmp.nii.gz")
+    img_4d_rand_eye.to_filename(tmp_path / "tmp.nii.gz")
 
     SurfaceImage.from_volume(
         mesh=surf_mesh,
