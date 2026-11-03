@@ -206,6 +206,9 @@ class ReportMixin:
         - docstring
         - parameters
         - date
+
+        Checks if:
+        - the report engine is supported
         """
         report_content = self._report_content
         # Generate a unique ID for report
@@ -232,6 +235,8 @@ class ReportMixin:
             datetime.now().replace(microsecond=0).isoformat()
         )
 
+        self._check_engine()
+
     def _check_engine(self) -> None:
         """Check that the report engine is supported by this estimator.
 
@@ -254,15 +259,13 @@ class ReportMixin:
     def _run_report_checks(self, **kwargs):
         """Run standard checks before report is generated.
 
-        Checks if:
-        - the report engine is supported
+        Update warnings depending if:
         - reporting is enabled
         - model is fitted
         - reporting was enabled at the time of fit
         - matplotlib is installed
         """
         _ = kwargs
-        self._check_engine()
 
         if self.reports is False:
             self._append_report_warning(
