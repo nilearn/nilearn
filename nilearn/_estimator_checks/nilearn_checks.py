@@ -35,6 +35,7 @@ import pickle
 import re
 import warnings
 from copy import deepcopy
+from operator import is_, is_not
 from pathlib import Path
 from tempfile import TemporaryDirectory, mkdtemp
 from typing import TYPE_CHECKING, Any
@@ -1554,38 +1555,28 @@ def check_img_estimator_fit_score_takes_y(estimator) -> None:
 
     For decoders, y is not optional
     """
+    operation = is_not
+    mesg = "{class_name} is missing 'y=None' for the method '{attr}'."
+
+    if is_classifier(estimator) or is_regressor(estimator):
+        operation = is_
+        mesg = "{class_name} is missing parameter 'y' for the method '{attr}'."
+
     for attr in ["fit", "fit_transform", "score"]:
         if not hasattr(estimator, attr):
             continue
 
-        if is_classifier(estimator) or is_regressor(estimator):
-            tmp = {
-                k: v.default
-                for k, v in inspect.signature(
-                    getattr(estimator, attr)
-                ).parameters.items()
-                if v.default is inspect.Parameter.empty
-            }
-            if "y" not in tmp:
-                raise ValueError(
-                    f"{estimator.__class__.__name__} "
-                    f"is missing parameter 'y' for the method '{attr}'."
-                )
+        tmp = {
+            k: v.default
+            for k, v in inspect.signature(
+                getattr(estimator, attr)
+            ).parameters.items()
+            if operation(v.default, inspect.Parameter.empty)
+        }
 
-        else:
-            tmp = {
-                k: v.default
-                for k, v in inspect.signature(
-                    getattr(estimator, attr)
-                ).parameters.items()
-                if v.default is not inspect.Parameter.empty
-            }
-            if "y" not in tmp:
-                raise ValueError(
-                    f"{estimator.__class__.__name__} "
-                    f"is missing 'y=None' for the method '{attr}'."
-                )
-            assert tmp["y"] is None
+        if "y" not in tmp:
+            raise ValueError(mesg.format(estimator.__class__.__name__, attr))
+        assert ~operation(tmp["y"], None)
 
 
 def check_img_estimator_n_elements(estimator) -> None:
