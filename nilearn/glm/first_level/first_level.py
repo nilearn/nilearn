@@ -7,7 +7,7 @@ import inspect
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Self, get_args
-from warnings import warn
+from warnings import catch_warnings, filterwarnings, warn
 
 import numpy as np
 import pandas as pd
@@ -63,6 +63,7 @@ from nilearn.nilearn_typing import (
     MemoryLike,
     NiimgLike,
     NJobs,
+    NoiseModel,
     NonNullScalar,
     SingleConfound,
     SmoothingFwhm,
@@ -164,7 +165,13 @@ def _yule_walker(x, order):
 
 @fill_doc
 def run_glm(
-    Y, X, noise_model="ar1", bins=100, n_jobs=1, verbose=0, random_state=None
+    Y: np.ndarray,
+    X: np.ndarray,
+    noise_model: NoiseModel = "ar1",
+    bins: int = 100,
+    n_jobs: NJobs = 1,
+    verbose: Verbose = 0,
+    random_state=None,
 ) -> tuple[np.ndarray, dict[str | float, RegressionResults]]:
     """:term:`GLM` fit for an :term:`fMRI` data matrix.
 
@@ -176,11 +183,7 @@ def run_glm(
     X : array of shape (n_time_points, n_regressors)
         The design matrix.
 
-    noise_model : {'ar(N)', 'ols'}, default='ar1'
-        The temporal variance model.
-        To specify the order of an autoregressive model place the
-        order after the characters `ar`, for example to specify a third order
-        model use `ar3`.
+    %(noise_model)s
 
     bins : :obj:`int`, default=100
         Maximum number of discrete bins for the AR coef histogram.
@@ -227,6 +230,9 @@ def run_glm(
 
     # Create the model
     ols_result = OLSModel(X).fit(Y)
+
+    labels: np.ndarray
+    results: dict[str | float, RegressionResults]
 
     if noise_model[:2] == "ar":
         err_msg = (
@@ -443,8 +449,7 @@ class FirstLevelModel(BaseGLM):
         Incompatible with standardize (``standardize=None`` is enforced when
         ``signal_scaling`` is not False).
 
-    noise_model : {'ar1', 'ols'}, default='ar1'
-        The temporal variance model.
+    %(noise_model)s
 
     %(verbose0)s
         If 0, prints nothing
@@ -525,7 +530,7 @@ class FirstLevelModel(BaseGLM):
     memory_level: MemoryLevel
     min_onset: float
     minimize_memory: bool
-    noise_model: Literal["ar1", "ols"]
+    noise_model: NoiseModel
     n_jobs: NJobs
     slice_time_ref: NonNullScalar
     standardize: Standardize
@@ -554,7 +559,7 @@ class FirstLevelModel(BaseGLM):
         memory_level: MemoryLevel = 1,
         standardize: Standardize = None,
         signal_scaling=0,
-        noise_model: Literal["ar1", "ols"] = "ar1",
+        noise_model: NoiseModel = "ar1",
         verbose: Verbose = 0,
         n_jobs: NJobs = 1,
         minimize_memory: bool = True,
@@ -1349,9 +1354,9 @@ class FirstLevelModel(BaseGLM):
         """Set up the masker.
 
         If mask_img == False, include all voxels / vertices in GLM.
-        If mask_img is a masker we just check it has been fitted.
         If mask_img is not a masker,
         we compute an implicit mask based on all the runs.
+        If mask_img is a masker we just check it has been fitted.
 
         Parameters
         ----------
@@ -1404,14 +1409,26 @@ class FirstLevelModel(BaseGLM):
                 and self.masker_ is None
             )
         ):
-            # compute implicit mask based on all runs
             masker = check_embedded_masker(
                 self, ignore=["high_pass"], masker_type=masker_type
             )
             masker.memory_level = self.memory_level
             if masker_type == "multi_nii":
                 masker.mask_strategy = "epi"
-            masker.fit(run_imgs)
+
+            # Compute implicit mask based on all runs.
+            #
+            # We ignore warning in case the masker
+            # was initialized in check_embedded_masker
+            # with a mask image (obtained from the FLM):
+            # the user has no control over this warning,
+            # so it would just add noise.
+            with catch_warnings():
+                filterwarnings(
+                    "ignore",
+                    message=r".*Generation of a mask.*",
+                )
+                masker.fit(run_imgs)
 
             # reuse mask_img to initialize a non-multi masker
             self.masker_ = check_embedded_masker(
@@ -1558,7 +1575,7 @@ def first_level_from_bids(
     memory_level: MemoryLevel = 1,
     standardize: Standardize = None,
     signal_scaling=0,
-    noise_model: Literal["ar1", "ols"] = "ar1",
+    noise_model: NoiseModel = "ar1",
     verbose: Verbose = 0,
     n_jobs: NJobs = 1,
     minimize_memory=True,

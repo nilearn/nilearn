@@ -279,6 +279,10 @@ def test_hommel(alpha, expected):
     assert _compute_hommel_value(z, alpha=alpha) == expected
 
 
+# verbose=1 shows a figure, which the non-interactive test backend warns about
+@pytest.mark.filterwarnings(
+    "ignore:FigureCanvasAgg is non-interactive:UserWarning"
+)
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, expected, expected_n_unique_values",
@@ -308,6 +312,10 @@ def test_all_resolution_inference(
     assert len(np.unique(vals)) == expected_n_unique_values
 
 
+# verbose=1 shows a figure, which the non-interactive test backend warns about
+@pytest.mark.filterwarnings(
+    "ignore:FigureCanvasAgg is non-interactive:UserWarning"
+)
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, expected_left, expected_right, expected_n_unique_values",

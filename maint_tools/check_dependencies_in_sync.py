@@ -21,7 +21,12 @@ from pathlib import Path
 from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
 from packaging.utils import canonicalize_name
-from utils import root_dir
+
+
+def root_dir() -> Path:
+    """Return path to root directory."""
+    return Path(__file__).parent.parent
+
 
 ASV_CONF = root_dir() / "asv_benchmarks" / "asv.conf.json"
 PYPROJECT = root_dir() / "pyproject.toml"

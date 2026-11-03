@@ -970,6 +970,11 @@ def _prepare_output_permuted_ols(
         )
         assert cluster_labels[0] == 0  # the background
 
+        # int32 avoids nifti int64 warnings when building images from sizes
+        cluster_dict["size_regressor"] = cluster_dict["size_regressor"].astype(
+            np.int32
+        )
+
         # Replace background's "cluster size" w zeros
         cluster_dict["size_regressor"][0] = 0
 
