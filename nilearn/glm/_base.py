@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from nibabel import Nifti1Image
 from nibabel.onetime import auto_attr
+from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._base import NilearnBaseEstimator
@@ -33,7 +34,7 @@ from nilearn.maskers import (
     SurfaceLabelsMasker,
     SurfaceMasker,
 )
-from nilearn.nilearn_typing import Bunch, NiimgLike
+from nilearn.nilearn_typing import NiimgLike, SKBunch
 from nilearn.surface import SurfaceImage
 from nilearn.utils.tags import InputTags
 
@@ -1013,7 +1014,7 @@ def _generate_design_matrices_dict(
     design_matrices,
     generate_bids_name: bool,
     entities_to_include: list[str],
-) -> Bunch[int, Bunch[str, str]]:
+) -> SKBunch[int, SKBunch[str, str]]:
     """Return dictionary with filenames for design_matrices figures / tables.
 
     design_matrices_dict[i_run][key] = filename
@@ -1058,7 +1059,7 @@ def _generate_contrasts_dict(
     generate_bids_name: bool,
     entities,
     entities_to_include: list[str],
-) -> Bunch[int, Bunch[str, str]]:
+) -> SKBunch[int, SKBunch[str, str]]:
     """Return dictionary with filenames for contrast matrices figures.
 
     contrasts_dict[i_run][contrast_name] = filename

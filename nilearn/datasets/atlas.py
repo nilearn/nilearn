@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from nibabel import freesurfer, load
 from requests.exceptions import SSLError
+from sklearn.utils import Bunch
 
 from nilearn._utils import logger
 from nilearn._utils.bids import (
@@ -31,7 +32,7 @@ from nilearn.datasets._utils import (
     get_dataset_dir,
 )
 from nilearn.image import check_niimg, new_img_like, reorder_img
-from nilearn.nilearn_typing import Bunch, DataDir, Resume, Url, Verbose
+from nilearn.nilearn_typing import DataDir, Resume, SKBunch, Url, Verbose
 
 
 class Atlas(Bunch):
@@ -966,7 +967,7 @@ def fetch_atlas_msdl(  # numpydoc ignore=RT05
 
 
 @fill_doc
-def fetch_coords_power_2011() -> Bunch[
+def fetch_coords_power_2011() -> SKBunch[
     str, pd.DataFrame | str
 ]:  # numpydoc ignore=RT05
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
@@ -1525,7 +1526,7 @@ def fetch_atlas_basc_multiscale_2015(
 @fill_doc
 def fetch_coords_dosenbach_2010(  # numpydoc ignore=RT05
     ordered_regions: bool = True,
-) -> Bunch[str, str | pd.DataFrame | pd.Series | list[str]]:
+) -> SKBunch[str, str | pd.DataFrame | pd.Series | list[str]]:
     """Load the Dosenbach et al 160 ROIs.
 
     These ROIs cover much of the cerebral cortex
@@ -1574,7 +1575,7 @@ def fetch_coords_dosenbach_2010(  # numpydoc ignore=RT05
 @fill_doc
 def fetch_coords_seitzman_2018(  # numpydoc ignore=RT05
     ordered_regions: bool = True,
-) -> Bunch[str, str | pd.DataFrame | np.ndarray]:
+) -> SKBunch[str, str | pd.DataFrame | np.ndarray]:
     """Load the Seitzman et al. 300 ROIs.
 
     For more information
@@ -1642,7 +1643,7 @@ def fetch_atlas_allen_2011(  # numpydoc ignore=RT05
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Download and return file names for the Allen and MIALAB :term:`ICA` \
     :term:`Probabilistic atlas` (dated 2011).
 
@@ -1728,7 +1729,7 @@ def fetch_atlas_surf_destrieux(  # numpydoc ignore=RT05
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Download and load Destrieux et al, 2010 cortical \
     :term:`Deterministic atlas`.
 

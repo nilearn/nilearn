@@ -19,6 +19,7 @@ from urllib.parse import urlencode, urljoin
 import numpy as np
 import requests
 from sklearn.feature_extraction import DictVectorizer
+from sklearn.utils import Bunch
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
@@ -34,7 +35,7 @@ from nilearn.datasets._utils import (
     logger,
 )
 from nilearn.image import resample_img
-from nilearn.nilearn_typing import Bunch, DataDir, Verbose
+from nilearn.nilearn_typing import DataDir, SKBunch, Verbose
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")
@@ -2475,7 +2476,7 @@ def fetch_neurovault(
     timeout: float = _DEFAULT_TIME_OUT,
     verbose: Verbose = 3,
     **kwarg_image_filters,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Download data from neurovault.org that match certain criteria.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -2719,7 +2720,7 @@ def fetch_neurovault_ids(
     vectorize_words: bool = True,
     timeout: float = _DEFAULT_TIME_OUT,
     verbose: Verbose = 3,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Download specific images and collections from neurovault.org.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -2831,7 +2832,7 @@ def fetch_neurovault_auditory_computation_task(
     data_dir: DataDir = None,
     verbose: Verbose = 1,
     timeout: float = _DEFAULT_TIME_OUT,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Fetch a :term:`contrast` map from :term:`Neurovault` showing \
     the effect of mental subtraction upon auditory instructions.
 
@@ -2845,7 +2846,7 @@ def fetch_neurovault_auditory_computation_task(
 
     Returns
     -------
-    data : Bunch
+    data : :class:`sklearn.utils.Bunch`
         A dict-like object which exposes its items as attributes. It contains:
             - 'images', the paths to downloaded files.
             - 'images_meta', the metadata for the images in a list of

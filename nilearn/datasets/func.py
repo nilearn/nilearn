@@ -18,6 +18,7 @@ import pandas as pd
 from nibabel import Nifti1Image, four_to_three
 from scipy.io import loadmat
 from scipy.io.matlab import MatReadError
+from sklearn.utils import Bunch
 
 from nilearn._utils import logger
 from nilearn._utils.docs import Description, fill_doc
@@ -46,10 +47,10 @@ from nilearn.image import check_niimg, get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.nilearn_typing import (
     AvailableMeshes,
-    Bunch,
     DataDir,
     NSubject,
     Resume,
+    SKBunch,
     Url,
     Verbose,
 )
@@ -66,7 +67,7 @@ def fetch_haxby(
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Download and loads complete the Haxby dataset.
 
     See :footcite:t:`Haxby2001`.
@@ -94,7 +95,7 @@ def fetch_haxby(
 
     Returns
     -------
-    data : :obj:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - 'anat': :obj:`list` of :obj:`str`.
@@ -295,7 +296,7 @@ def fetch_adhd(
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Download and load the ADHD :term:`resting-state` dataset.
 
     For more information
@@ -317,7 +318,7 @@ def fetch_adhd(
 
     Returns
     -------
-    data : :obj:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - 'func':
@@ -470,7 +471,7 @@ def fetch_miyawaki2008(
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Download and loads Miyawaki et al. 2008 dataset (153MB).
 
     See :footcite:t:`Miyawaki2008`.
@@ -484,7 +485,7 @@ def fetch_miyawaki2008(
 
     Returns
     -------
-    data : Bunch
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - 'func': :obj:`list` of :obj:`str`
@@ -633,7 +634,7 @@ def fetch_localizer_contrasts(
     data_dir: DataDir = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Download and load Brainomics/Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
@@ -748,7 +749,7 @@ def fetch_localizer_contrasts(
 
     Returns
     -------
-    data : Bunch
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - 'cmaps': :obj:`list` of :obj:`str`
@@ -974,7 +975,7 @@ def fetch_localizer_calculation_task(
     n_subjects: NSubject = 1,
     data_dir: DataDir = None,
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Fetch calculation task contrast maps from the localizer.
 
     .. nilearn_deprecated:: 0.15.0
@@ -996,7 +997,7 @@ def fetch_localizer_calculation_task(
 
     Returns
     -------
-    data : Bunch
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
         'cmaps': string list, giving paths to nifti contrast maps.
 
@@ -1045,7 +1046,7 @@ def fetch_localizer_calculation_task(
 @fill_doc
 def fetch_localizer_button_task(
     data_dir: DataDir = None, verbose: Verbose = 1
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
@@ -1057,7 +1058,7 @@ def fetch_localizer_button_task(
 
     Returns
     -------
-    data : Bunch
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - 'cmaps': string list, giving paths to nifti :term:`contrast` maps
@@ -1106,7 +1107,7 @@ def fetch_abide_pcp(
     url: Url = None,
     verbose: Verbose = 1,
     **kwargs: Any,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Fetch ABIDE dataset.
 
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
@@ -1437,7 +1438,7 @@ def fetch_mixed_gambles(
     resume: Resume = True,
     return_raw_data: bool = False,
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Fetch Jimura "mixed gambles" dataset.
 
     See the :ref:`dataset description <mixed_gamble_maps>`
@@ -1544,7 +1545,7 @@ def fetch_megatrawls_netmats(
     data_dir: DataDir = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Download and return Network Matrices data \
     from MegaTrawls release in HCP.
 
@@ -1601,7 +1602,7 @@ def fetch_megatrawls_netmats(
 
     Returns
     -------
-    data : Bunch
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - 'dimensions': int, consists of given input in dimensions.
@@ -1793,7 +1794,7 @@ def fetch_surf_nki_enhanced(
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
@@ -1818,7 +1819,7 @@ def fetch_surf_nki_enhanced(
 
     Returns
     -------
-    data : :obj:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - 'func_left': Paths to Gifti files containing resting state
@@ -2168,7 +2169,7 @@ def fetch_development_fmri(
     resume: Resume = True,
     verbose: Verbose = 1,
     age_group: Literal["adults", "child", "both"] = "both",
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Fetch movie watching based brain development dataset (fMRI).
 
     The data is downsampled to 4mm resolution for convenience
@@ -2208,7 +2209,7 @@ def fetch_development_fmri(
 
     Returns
     -------
-    data : Bunch
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - 'func': :obj:`list` of :obj:`str` (Nifti files)
@@ -2390,7 +2391,7 @@ def _reduce_confounds(regressors, keep_confounds):
 @fill_doc
 def fetch_language_localizer_demo_dataset(  # numpydoc ignore=RT05
     data_dir: DataDir = None, verbose: Verbose = 1
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Download language localizer demo dataset.
 
     For more information
@@ -2811,7 +2812,7 @@ def fetch_openneuro_dataset(
 @fill_doc
 def fetch_localizer_first_level(  # numpydoc ignore=RT05
     data_dir: DataDir = None, verbose: Verbose = 1
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Download a first-level localizer :term:`fMRI` dataset.
 
     For more information
@@ -2825,7 +2826,7 @@ def fetch_localizer_first_level(  # numpydoc ignore=RT05
 
     Returns
     -------
-    data : :obj:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         %(localizer_first_level_content)s
@@ -2882,7 +2883,7 @@ def fetch_spm_auditory(
     data_dir: DataDir = None,
     data_name: str = "spm_auditory",
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Fetch :term:`SPM` auditory single-subject data.
 
     See :footcite:t:`spm_auditory`.
@@ -2898,7 +2899,7 @@ def fetch_spm_auditory(
 
     Returns
     -------
-    data : :obj:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - 'anat': :obj:`list` of :obj:`str`.
@@ -3110,7 +3111,7 @@ def fetch_spm_multimodal_fmri(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     data_name: str = "spm_multimodal_fmri",
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Fetcher for Multi-modal Face Dataset.
 
     For more information,
@@ -3129,7 +3130,7 @@ def fetch_spm_multimodal_fmri(  # numpydoc ignore=RT05
 
     Returns
     -------
-    data : :obj:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         %(spm_multimodal_content)s
@@ -3160,7 +3161,7 @@ def fetch_spm_multimodal_fmri(  # numpydoc ignore=RT05
 @fill_doc
 def fetch_fiac_first_level(
     data_dir: DataDir = None, verbose: Verbose = 1
-) -> Bunch[str, Any]:
+) -> SKBunch[str, Any]:
     """Download a first-level fiac :term:`fMRI` dataset (2 runs).
 
     For more information
@@ -3174,7 +3175,7 @@ def fetch_fiac_first_level(
 
     Returns
     -------
-    data : :obj:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
          %(fiac_content)s

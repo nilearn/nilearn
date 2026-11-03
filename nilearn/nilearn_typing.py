@@ -34,20 +34,13 @@ if TYPE_CHECKING:
 _KT = TypeVar("_KT")
 _VT = TypeVar("_VT")
 
-if TYPE_CHECKING:
-    # sklearn is replaced by Any for type checkers (see pyproject.toml),
-    # which would make any annotation using sklearn.utils.Bunch unchecked.
-    # So we expose a minimal typed stand-in to type checkers.
-    class Bunch(dict[_KT, _VT]):
-        """Typed stand-in for sklearn.utils.Bunch."""
 
-        def __getattr__(self, key: str) -> _VT: ...
-        def __setattr__(self, key: str, value: _VT) -> None: ...
+class SKBunch(dict[_KT, _VT]):
+    """Typed stand-in for sklearn.utils.Bunch."""
 
-else:
-    from sklearn.utils import Bunch as _SklearnBunch
+    def __getattr__(self, key: str) -> _VT: ...
+    def __setattr__(self, key: str, value: _VT) -> None: ...
 
-    Bunch = _SklearnBunch
 
 Integer: TypeAlias = int | np.integer
 Float: TypeAlias = float | np.floating
