@@ -22,11 +22,16 @@ display ROIs on top of a background image.
 
 from nilearn import datasets
 
-localizer_dataset = datasets.fetch_localizer_button_task()
+localizer_dataset = datasets.fetch_localizer_contrasts(
+    ["left vs right button press"],
+    n_subjects=[2],
+    get_tmaps=True,
+    get_anats=True,
+)
 # Contrast map of motor task
-localizer_tmap_filename = localizer_dataset.tmap
+localizer_tmap_filename = localizer_dataset.tmaps[0]
 # Subject specific anatomical image
-localizer_anat_filename = localizer_dataset.anat
+localizer_anat_filename = localizer_dataset.anats[0]
 
 # %%
 # Plotting with enhancement of background image with dim=-.5

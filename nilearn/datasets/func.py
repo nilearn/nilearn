@@ -761,10 +761,6 @@ def fetch_localizer_contrasts(
         - 'anats': :obj:`list` of :obj:`str`
             Path to nifti files corresponding to the subjects structural images
 
-    See Also
-    --------
-    nilearn.datasets.fetch_localizer_button_task
-
     Notes
     -----
     %(fetcher_note)s
@@ -1003,7 +999,6 @@ def fetch_localizer_calculation_task(
 
     See Also
     --------
-    nilearn.datasets.fetch_localizer_button_task
     nilearn.datasets.fetch_localizer_contrasts
 
     Notes
@@ -1050,6 +1045,14 @@ def fetch_localizer_button_task(
     """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
+    .. nilearn_deprecated:: 0.15.0
+
+        ``fetch_localizer_button_task`` will be removed
+        in version 0.17.0.
+        Use :func:`~nilearn.datasets.fetch_localizer_contrasts`
+        with ``contrasts=["left vs right button press"]``
+        instead.
+
     Parameters
     ----------
     %(data_dir)s
@@ -1078,6 +1081,18 @@ def fetch_localizer_button_task(
     The 'left vs right button press' contrast is used.
     """
     check_params(locals())
+
+    # TODO (nilearn >= 0.17.0) remove the function
+    warnings.warn(
+        category=FutureWarning,
+        message=(
+            "'fetch_localizer_button_task' is deprecated "
+            "and will be removed in Nilearn 0.17.0.\n"
+            "Use 'fetch_localizer_contrasts' with"
+            "contrast='left vs right button press'."
+        ),
+        stacklevel=find_stack_level(),
+    )
 
     data = fetch_localizer_contrasts(
         ["left vs right button press"],

@@ -116,7 +116,6 @@ def main(args=sys.argv) -> None:
 
         _fetch(datasets.fetch_haxby)
         _fetch(datasets.fetch_language_localizer_demo_dataset)
-        _fetch(datasets.fetch_localizer_button_task)
         for contrast, n_subjects in zip(
             [
                 "calculation (auditory and visual cue)",
