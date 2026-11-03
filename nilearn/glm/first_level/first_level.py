@@ -7,7 +7,7 @@ import inspect
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Self, get_args
-from warnings import warn
+from warnings import catch_warnings, filterwarnings, warn
 
 import numpy as np
 import pandas as pd
@@ -1355,9 +1355,9 @@ class FirstLevelModel(BaseGLM):
         """Set up the masker.
 
         If mask_img == False, include all voxels / vertices in GLM.
-        If mask_img is a masker we just check it has been fitted.
         If mask_img is not a masker,
         we compute an implicit mask based on all the runs.
+        If mask_img is a masker we just check it has been fitted.
 
         Parameters
         ----------
@@ -1410,14 +1410,26 @@ class FirstLevelModel(BaseGLM):
                 and self.masker_ is None
             )
         ):
-            # compute implicit mask based on all runs
             masker = check_embedded_masker(
                 self, ignore=["high_pass"], masker_type=masker_type
             )
             masker.memory_level = self.memory_level
             if masker_type == "multi_nii":
                 masker.mask_strategy = "epi"
-            masker.fit(run_imgs)
+
+            # Compute implicit mask based on all runs.
+            #
+            # We ignore warning in case the masker
+            # was initialized in check_embedded_masker
+            # with a mask image (obtained from the FLM):
+            # the user has no control over this warning,
+            # so it would just add noise.
+            with catch_warnings():
+                filterwarnings(
+                    "ignore",
+                    message=r".*Generation of a mask.*",
+                )
+                masker.fit(run_imgs)
 
             # reuse mask_img to initialize a non-multi masker
             self.masker_ = check_embedded_masker(
