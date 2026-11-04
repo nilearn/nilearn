@@ -1941,6 +1941,8 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
     - with mask should only clean the included vertices
     - 1D image should raise error.
     - check sample mask can be passed as a kwarg and used correctly
+    - check an index array and an equivalent boolean array produce the
+      same result
     """
     length = 50
     imgs = surf_img_2d(length)
@@ -1985,6 +1987,8 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
         clean_img(surf_img_1d, detrend=True)
 
     sample_mask = np.arange(length - 1)
+    sample_mask_boolean = np.ones(length, dtype=bool)
+    sample_mask_boolean[-1] = False
 
     # check sample mask can be passed as a kwarg and used correctly
     cleaned_img = clean_img(
@@ -1996,6 +2000,17 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
         clean__sample_mask=sample_mask,
     )
     assert cleaned_img.shape[-1] == length - 1
+
+    # an equivalent boolean sample_mask must give the same result
+    cleaned_img_boolean = clean_img(
+        imgs,
+        detrend=True,
+        standardize=None,
+        low_pass=0.1,
+        t_r=1.0,
+        clean__sample_mask=sample_mask_boolean,
+    )
+    assert_surface_image_equal(cleaned_img_boolean, cleaned_img)
 
 
 @pytest.mark.thread_unsafe
@@ -2097,38 +2112,51 @@ def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
     assert get_data(out_img).dtype == "uint8"
 
 
-def test_clean_img_sample_mask(img_4d_rand_eye, shape_4d_default):
-    """Check sample mask can be passed as a kwarg and used correctly."""
+@pytest.mark.parametrize("use_mask_img", [False, True])
+def test_clean_img_sample_mask(
+    use_mask_img, img_4d_rand_eye, shape_4d_default, shape_3d_default
+):
+    """Check sample_mask can be passed as a kwarg and used correctly,
+    alone or combined with mask_img.
+
+    Also check that an index array and an equivalent boolean array produce
+    the same result: signal.clean documents both forms (an index array of
+    kept volumes, or a boolean array over all volumes) as valid for
+    sample_mask, and clean_img must reshape its output the same way
+    regardless of which form was passed.
+    """
     length = shape_4d_default[3]
     confounds = _basic_confounds(length)
     # exclude last time point
     sample_mask = np.arange(length - 1)
+    sample_mask_boolean = np.ones(length, dtype=bool)
+    sample_mask_boolean[-1] = False
 
-    img = clean_img(
-        img_4d_rand_eye, confounds=confounds, clean__sample_mask=sample_mask
-    )
-    assert img.shape == (*shape_4d_default[:3], length - 1)
+    if use_mask_img:
+        img_4d, mask_img = generate_fake_fmri(
+            shape=shape_3d_default, length=length
+        )
+        expected_shape = (*shape_3d_default, length - 1)
+    else:
+        img_4d = img_4d_rand_eye
+        mask_img = None
+        expected_shape = (*shape_4d_default[:3], length - 1)
 
-
-def test_clean_img_sample_mask_mask_img(shape_3d_default):
-    """Check sample_mask and mask_img can be correctly used together."""
-    length = 10
-    confounds = _basic_confounds(length)
-    img_4d, mask_img = generate_fake_fmri(
-        shape=shape_3d_default, length=length
-    )
-
-    # exclude last time point
-    sample_mask = np.arange(length - 1)
-
-    # test with sample mask
     img = clean_img(
         img_4d,
         confounds=confounds,
         mask_img=mask_img,
         clean__sample_mask=sample_mask,
     )
-    assert img.shape == (*shape_3d_default, length - 1)
+    assert img.shape == expected_shape
+
+    img_boolean = clean_img(
+        img_4d,
+        confounds=confounds,
+        mask_img=mask_img,
+        clean__sample_mask=sample_mask_boolean,
+    )
+    assert_array_equal(get_data(img_boolean), get_data(img))
 
 
 def test_concat_niimgs_errors(affine_eye, shape_3d_default):
@@ -2747,8 +2775,10 @@ class PhonyNiimage(spatialimages.SpatialImage):
     def __init__(self):
         self.data = np.ones((9, 9, 9, 9))
         self.my_affine = np.ones((4, 4))
+        self._data_cache = self.data
+        self._dataobj = self.data
 
-    def get_data(self):
+    def get_data(self, caching="fill"):  # noqa: ARG002
         """Return data."""
         return self.data
 
@@ -2761,15 +2791,8 @@ class PhonyNiimage(spatialimages.SpatialImage):
         """Return shape."""
         return self.data.shape
 
-    @property
-    def _data_cache(self):
-        return self.data
 
-    @property
-    def _dataobj(self):
-        return self.data
-
-
+@pytest.mark.ai_generated
 def test_check_niimg_4d_phony_image():
     """Test a Niimg-like object that does not hold a shape attribute."""
     phony_img = PhonyNiimage()

@@ -193,6 +193,31 @@ def test_check_shape_first_level_models(shape_4d_default, n_subjects):
         )
 
 
+@pytest.mark.parametrize("mask_img_first", [True, False])
+def test_check_first_level_models_mask_img_false(
+    shape_4d_default, mask_img_first
+):
+    """Check FirstLevelModels fitted with mask_img=False are valid inputs.
+
+    Models fitted with mask_img=False can be mixed
+    with models fitted with a mask image, in any order.
+    """
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )
+    mask_imgs = [mask, False] if mask_img_first else [False, mask]
+    list_of_flm = [
+        FirstLevelModel(mask_img=mask_img, subject_label=f"sub-{i}").fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        )
+        for i, mask_img in enumerate(mask_imgs)
+    ]
+
+    _check_input_as_first_level_model(
+        second_level_input=list_of_flm, none_confounds=False
+    )
+
+
 def test_check_second_level_input(shape_4d_default):
     """Raise errors when wrong inputs are passed to SecondLevelModel."""
     with pytest.raises(TypeError, match="'second_level_input' must be"):

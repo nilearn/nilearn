@@ -2431,11 +2431,14 @@ def clean_img(
     # Put results back into Niimg-like object
     if isinstance(mask_img, NiimgLike):
         return masking.unmask(data, mask_img)
-    elif "sample_mask" in clean_kwargs:
-        sample_shape = imgs_.shape[:3] + clean_kwargs["sample_mask"].shape
-        return new_img_like(imgs_, data.T.reshape(sample_shape))
-    else:
-        return new_img_like(imgs_, data.T.reshape(imgs_.shape))
+    # Derive the retained-timepoint count from signal.clean's own output
+    # rather than the raw sample_mask kwarg's shape: sample_mask accepts
+    # either an index array (len == n_kept) or a boolean array
+    # (len == n_scans), and signal.clean converts a boolean mask to indices
+    # internally, so reading the untouched kwarg's shape undercounts how
+    # many volumes were actually scrubbed whenever it was passed as boolean.
+    sample_shape = (*imgs_.shape[:3], data.shape[0])
+    return new_img_like(imgs_, data.T.reshape(sample_shape))
 
 
 @fill_doc
@@ -2620,10 +2623,7 @@ def concat_imgs(
 
     iterator, literator = itertools.tee(iter(niimgs))
     try:
-        first_niimg = check_niimg(
-            next(literator),
-            ensure_ndim=ndim,  # type: ignore[arg-type]
-        )
+        first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
     except StopIteration as e:
         raise TypeError("Cannot concatenate empty objects") from e
     except DimensionError as exc:
@@ -3076,6 +3076,18 @@ def check_niimg(
     return_iterator: Literal[True] = ...,
     wildcards=...,
 ) -> Iterator[Nifti1Image]: ...
+
+
+# return_iterator=False always returns a NiftiImage
+@overload
+def check_niimg(
+    niimg,
+    ensure_ndim: Literal[3, 4] | None = ...,
+    atleast_4d=...,
+    dtype=...,
+    return_iterator: Literal[False] = ...,
+    wildcards=...,
+) -> Nifti1Image: ...
 
 
 @fill_doc

@@ -273,7 +273,6 @@ def run_glm(
             labels = np.array([cluster_labels[i] for i in kmeans.labels_])
 
         unique_labels = np.unique(labels)
-        results = {}
 
         # Fit the AR model according to current AR(N) estimates
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
@@ -532,7 +531,6 @@ class FirstLevelModel(BaseGLM):
     minimize_memory: bool
     noise_model: NoiseModel
     n_jobs: NJobs
-    reports: bool
     slice_time_ref: NonNullScalar
     standardize: Standardize
     subject_label: str | None
@@ -731,10 +729,14 @@ class FirstLevelModel(BaseGLM):
         elif step == "running":
             msg = "Performing GLM computation."
         elif step == "run_done":
+            if time_in_second is None:  # pragma: no cover
+                raise TypeError(f"'time_in_second' cannot be None for {step=}")
             msg = f"GLM took {int(time_in_second)} seconds."
         elif step == "masking":
             msg = "Performing mask computation."
         elif step == "masking_done":
+            if time_in_second is None:  # pragma: no cover
+                raise TypeError(f"'time_in_second' cannot be None for {step=}")
             msg = f"Masking took {int(time_in_second)} seconds."
         elif step == "done":
             msg = (
@@ -1370,16 +1372,14 @@ class FirstLevelModel(BaseGLM):
         """
         first_image = run_imgs[0]
 
+        # Computing an implicit mask based on all runs
+        # requires we use a multi masker
+        # to get a common mask for all runs.
         masker_type = "multi_nii"
         if not self._is_volume_glm() or isinstance(first_image, SurfaceImage):
             masker_type = "multi_surface"
 
-        # Learn the mask
         if self.mask_img is False:
-            # We create a dummy mask to preserve functionality of api
-            # TODO here we break the sklearn convention
-            # of not changing attributes passed at init
-            # This could probably be improved
             if masker_type == "multi_surface":
                 surf_data = {
                     part: np.ones(
@@ -1387,66 +1387,56 @@ class FirstLevelModel(BaseGLM):
                     )
                     for part in first_image.mesh.parts
                 }
-                self.mask_img = SurfaceImage(
-                    mesh=first_image.mesh, data=surf_data
-                )
+                mask_img = SurfaceImage(mesh=first_image.mesh, data=surf_data)
             else:
                 ref_img = check_niimg(first_image)
-                self.mask_img = Nifti1Image(
+                mask_img = Nifti1Image(
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
 
-        check_compatibility_mask_and_images(self.mask_img, first_image)
-
-        if (  # deal with self.mask_img as image, str, path, none
-            (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
-            or
-            # edge case:
-            # If fitted NiftiMasker with a None mask_img_ attribute
-            # the masker parameters are overridden
-            # by the FirstLevelModel parameters
-            (
-                getattr(self.mask_img, "mask_img_", "not_none") is None
-                and self.masker_ is None
-            )
-        ):
-            masker = check_embedded_masker(
-                self, ignore=["high_pass"], masker_type=masker_type
-            )
-            masker.memory_level = self.memory_level
-            if masker_type == "multi_nii":
-                masker.mask_strategy = "epi"
-
-            # Compute implicit mask based on all runs.
-            #
-            # We ignore warning in case the masker
-            # was initialized in check_embedded_masker
-            # with a mask image (obtained from the FLM):
-            # the user has no control over this warning,
-            # so it would just add noise.
-            with catch_warnings():
-                filterwarnings(
-                    "ignore",
-                    message=r".*Generation of a mask.*",
-                )
-                masker.fit(run_imgs)
-
-            # reuse mask_img to initialize a non-multi masker
-            self.masker_ = check_embedded_masker(
-                self,
-                ignore=["high_pass"],
-                masker_type=masker_type.replace("multi_", ""),
-            )
-            self.masker_.memory_level = self.memory_level
-            if masker_type == "multi_nii":
-                self.masker_.mask_strategy = "epi"
-            self.masker_.mask_img = masker.mask_img_
-            self.masker_.fit()
+            self._set_fitted_masker(masker_type, mask_img)
 
         else:
-            check_is_fitted(self.mask_img)
+            check_compatibility_mask_and_images(self.mask_img, first_image)
 
-            self.masker_ = self.mask_img
+            if (  # deal with self.mask_img as image, str, path, none
+                (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
+                or
+                # edge case:
+                # If fitted NiftiMasker with a None mask_img_ attribute
+                # the masker parameters are overridden
+                # by the FirstLevelModel parameters
+                (
+                    getattr(self.mask_img, "mask_img_", "not_none") is None
+                    and self.masker_ is None
+                )
+            ):
+                masker = check_embedded_masker(
+                    self, ignore=["high_pass"], masker_type=masker_type
+                )
+                masker.memory_level = self.memory_level
+                if masker_type == "multi_nii":
+                    masker.mask_strategy = "epi"
+
+                # We ignore warning in case the masker
+                # was initialized in check_embedded_masker
+                # with a mask image (obtained from the FLM):
+                # the user has no control over this warning,
+                # so it would just add noise.
+                with catch_warnings():
+                    filterwarnings(
+                        "ignore",
+                        message=r".*Generation of a mask.*",
+                    )
+                    masker.fit(run_imgs)
+
+                # reuse mask_img to initialize a non-multi masker
+                self._set_fitted_masker(masker_type, masker.mask_img_)
+
+            else:
+                check_is_fitted(self.mask_img)
+
+                self.masker_ = self.mask_img
 
         # override value of the masker standardize
         # with standardize_ that takes into account
@@ -1454,6 +1444,17 @@ class FirstLevelModel(BaseGLM):
         self.masker_.standardize = self.standardize_
 
         self.n_elements_ = self.masker_.n_elements_
+
+    def _set_fitted_masker(self, masker_type, mask_img):
+        """Define a masker for the model with an implicit mask."""
+        self.masker_ = check_embedded_masker(
+            self,
+            ignore=["high_pass"],
+            masker_type=masker_type.replace("multi_", ""),
+        )
+        self.masker_.memory_level = self.memory_level
+        self.masker_.mask_img = mask_img
+        self.masker_.fit()
 
 
 def _check_events_file_uses_tab_separators(events_files):

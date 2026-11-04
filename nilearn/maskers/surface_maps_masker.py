@@ -3,7 +3,7 @@ brain regions.
 """
 
 import warnings
-from typing import TYPE_CHECKING, Any, ClassVar, Self
+from typing import Any, ClassVar, Self
 
 import numpy as np
 from scipy import linalg
@@ -20,11 +20,9 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.param_validation import (
-    check_parameter_in_allowed,
-    check_params,
-)
+from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
+from nilearn.maskers._mixin import _MaskerReportDefaults
 from nilearn.maskers.base_masker import (
     _BaseSurfaceMasker,
     check_displayed_maps,
@@ -47,6 +45,7 @@ from nilearn.nilearn_typing import (
     Tr,
     Verbose,
 )
+from nilearn.reporting.mixin import DEFAULT_ENGINE
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -145,7 +144,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         nilearn.maskers.SurfaceLabelsMasker
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": (
             "This report shows the input surface image "
             "(if provided via img) overlaid with the regions provided "
@@ -156,6 +155,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         "number_of_maps": 0,
     }
     _template_name = "body_surface_maps_masker.jinja"
+    _allowed_engines = (DEFAULT_ENGINE, "plotly")
 
     def __init__(
         self,
@@ -457,6 +457,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         )
 
     def _run_report_checks(self, **kwargs):
+
         super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
@@ -492,13 +493,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if is_matplotlib_installed():
             engine = self._report_content["engine"]
 
-            check_parameter_in_allowed(
-                engine, ["plotly", "matplotlib"], "engine"
-            )
-
             # switch to matplotlib if plotly is selected but not installed
             if engine == "plotly" and not is_plotly_installed():
-                engine = "matplotlib"
+                engine = DEFAULT_ENGINE
                 warnings.warn(
                     "Plotly is not installed. "
                     "Switching to matplotlib for report generation.",
@@ -552,9 +549,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         threshold = 1e-6
 
-        if TYPE_CHECKING:
-            assert self._report_content["engine"] in ["matplotlib", "plotly"]
-
         if self._report_content["engine"] == "plotly":
             from nilearn.plotting import view_surf
 
@@ -574,9 +568,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
             return [fig]
 
-        elif self._report_content["engine"] == "matplotlib":
-            fig = self._generate_figure(
-                img=roi, bg_map=bg_img, threshold=threshold
-            )
+        fig = self._generate_figure(
+            img=roi, bg_map=bg_img, threshold=threshold
+        )
 
-            return [fig]
+        return [fig]

@@ -636,7 +636,7 @@ def test_clean_frequencies():
     assert cleaned_signal.max() > 0.1
 
     cleaned_signal = clean(
-        sx, standardize=standardize, high_pass=0.2, low_pass=None, t_r=t_r
+        sx, standardize=standardize, high_pass=0.19, low_pass=None, t_r=t_r
     )
     assert cleaned_signal.max() < 0.01
 
@@ -660,7 +660,7 @@ def test_clean_leaves_input_untouched():
     standardize = None
 
     _ = clean(
-        sx, standardize=standardize, detrend=False, low_pass=0.2, t_r=t_r
+        sx, standardize=standardize, detrend=False, low_pass=0.18, t_r=t_r
     )
 
     assert array_equal(sx_orig, sx)
@@ -914,7 +914,6 @@ def _confound_as(kind: str, block: np.ndarray, filename: Path):
     return block
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("container", [list, tuple])
 @pytest.mark.parametrize(
     "kinds",
@@ -955,7 +954,6 @@ def test_clean_confounds_collection(signals, tmp_path, container, kinds):
     assert_almost_equal(result, expected)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("as_str", [True, False])
 @pytest.mark.parametrize("in_list", [True, False])
 def test_clean_confounds_single_column_file(
@@ -1462,8 +1460,12 @@ def test_clean_zscore(rng):
     assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
 
 
-def test_clean_sample_mask():
-    """Test sample_mask related feature."""
+@pytest.mark.parametrize("filter_type", ["butterworth", "cosine", False])
+def test_clean_sample_mask(filter_type):
+    """Test sample_mask related feature.
+
+    Setting high_pass to some specific values to avoid warnings.
+    """
     signals, _, confounds = generate_signals(
         n_features=11, n_confounds=5, length=40
     )
@@ -1475,13 +1477,23 @@ def test_clean_sample_mask():
     sample_mask_binary = np.full(signals.shape[0], True)
     sample_mask_binary[scrub_index] = False
 
-    scrub_clean = clean(signals, confounds=confounds, sample_mask=sample_mask)
+    scrub_clean = clean(
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask,
+        filter=filter_type,
+        high_pass=0.05 if filter_type else None,
+    )
 
     assert scrub_clean.shape[0] == sample_mask.shape[0]
 
     # test the binary mask
     scrub_clean_bin = clean(
-        signals, confounds=confounds, sample_mask=sample_mask_binary
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask_binary,
+        filter=filter_type,
+        high_pass=0.05 if filter_type else None,
     )
     assert_equal(scrub_clean_bin, scrub_clean)
 
