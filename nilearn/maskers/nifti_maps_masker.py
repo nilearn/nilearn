@@ -417,8 +417,24 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             check_same_fov(raise_error=True, **images)
 
         ref_img = None
-        if self.resampling_target == "data" and imgs is not None:
-            ref_img = imgs_
+        if self.resampling_target == "data":
+            if imgs is not None:
+                ref_img = imgs_
+            else:
+                # TODO (nilearn >= 0.17.0) change to an exception
+                warnings.warn(
+                    (
+                        "resampling_target='data' was requested "
+                        "but no image was passed at fit time. "
+                        "To avoid this warning, "
+                        "either change the resamping target "
+                        "or pass image to the fit method. "
+                        "This warning will become an exception "
+                        "in version 0.17.0. "
+                    ),
+                    stacklevel=2,
+                    category=FutureWarning,
+                )
         elif self.resampling_target == "mask":
             ref_img = self.mask_img_
         elif self.resampling_target == "maps":
