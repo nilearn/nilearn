@@ -998,6 +998,7 @@ def non_parametric_inference(
     verbose=...,
     threshold: None = ...,
     tfce: Literal[False] = ...,
+    exchangeability_blocks=...,
 ) -> Nifti1Image | SurfaceImage: ...
 
 
@@ -1024,6 +1025,7 @@ def non_parametric_inference(
     verbose=...,
     threshold=...,
     tfce: bool = ...,
+    exchangeability_blocks=...,
 ) -> dict[str, Nifti1Image | SurfaceImage]: ...
 
 
@@ -1050,6 +1052,7 @@ def non_parametric_inference(  # numpydoc ignore=RT05
     verbose=0,
     threshold=None,
     tfce=False,
+    exchangeability_blocks=None,
 ) -> Nifti1Image | SurfaceImage | dict[str, Nifti1Image | SurfaceImage]:
     """Generate p-values corresponding to the contrasts provided \
     based on permutation testing.
@@ -1119,6 +1122,16 @@ def non_parametric_inference(  # numpydoc ignore=RT05
         .. warning::
 
             TFCE analysis are not implemented for surface data.
+
+    exchangeability_blocks : array-like, shape=(n_samples,), default=None
+        Labels identifying groups of rows in ``second_level_input`` that may
+        be exchanged. Permutations are restricted to rows within the same
+        block. For sign-flipping tests, one sign is drawn per block and
+        applied to all rows in that block. The labels must follow the row
+        order of the inputs and design matrix. If None, samples are
+        unrestricted.
+
+        .. nilearn_versionadded:: 0.15.0
 
     Returns
     -------
@@ -1326,6 +1339,7 @@ def non_parametric_inference(  # numpydoc ignore=RT05
         masker=masker,
         threshold=threshold,
         tfce=tfce,
+        exchangeability_blocks=exchangeability_blocks,
     )
     neg_log10_vfwe_pvals_img = masker.inverse_transform(
         np.ravel(outputs["logp_max_t"])
