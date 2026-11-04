@@ -2143,7 +2143,14 @@ def check_masker_compatibility_mask_image(estimator_orig) -> None:
 
     estimator = clone(estimator_orig)
     estimator.mask_img = mask_img
-    estimator.fit()
+    if isinstance(estimator, NiftiMapsMasker):
+        with pytest.warns(
+            FutureWarning, match="no image was passed at fit time"
+        ):
+            estimator.fit()
+    else:
+        estimator.fit()
+
     with pytest.raises(TypeError):
         estimator.transform(image_to_transform)
 
@@ -2163,7 +2170,14 @@ def check_masker_no_mask_no_img(estimator) -> None:
         ):
             estimator.fit()
     else:
-        estimator.fit()
+        if isinstance(estimator, NiftiMapsMasker):
+            with pytest.warns(
+                FutureWarning, match="no image was passed at fit time"
+            ):
+                estimator.fit()
+        else:
+            estimator.fit()
+
         assert estimator.mask_img_ is None
 
 
@@ -2245,7 +2259,13 @@ def check_masker_mask_img(estimator_orig) -> None:
     estimator.mask_img = binary_mask_img
     assert not hasattr(estimator, "mask_img_")
 
-    estimator.fit()
+    if isinstance(estimator, NiftiMapsMasker):
+        with pytest.warns(
+            FutureWarning, match="no image was passed at fit time"
+        ):
+            estimator.fit()
+    else:
+        estimator.fit()
 
     _check_mask_img_(estimator)
 
@@ -2254,7 +2274,13 @@ def check_masker_mask_img(estimator_orig) -> None:
     estimator.mask_img = non_binary_mask_img
     assert not hasattr(estimator, "mask_img_")
 
-    estimator.fit()
+    if isinstance(estimator, NiftiMapsMasker):
+        with pytest.warns(
+            FutureWarning, match="no image was passed at fit time"
+        ):
+            estimator.fit()
+    else:
+        estimator.fit()
 
     _check_mask_img_(estimator)
 
@@ -2267,7 +2293,14 @@ def check_masker_mask_img(estimator_orig) -> None:
     estimator.verbose = 1
     buffer = io.StringIO()
     with contextlib.redirect_stdout(buffer):
-        estimator.fit()
+        if isinstance(estimator, NiftiMapsMasker):
+            with pytest.warns(
+                FutureWarning, match="no image was passed at fit time"
+            ):
+                estimator.fit()
+        else:
+            estimator.fit()
+
     output = buffer.getvalue()
     assert "Loading mask" in output
 
@@ -2564,11 +2597,24 @@ def check_masker_refit(estimator) -> None:
         mask_img_2 = SurfaceImage(mask_img_1.mesh, data)
 
     estimator.mask_img = mask_img_1
-    estimator.fit()
+    if isinstance(estimator, NiftiMapsMasker):
+        with pytest.warns(
+            FutureWarning, match="no image was passed at fit time"
+        ):
+            estimator.fit()
+    else:
+        estimator.fit()
     fitted_mask_1 = estimator.mask_img_
 
     estimator.mask_img = mask_img_2
-    estimator.fit()
+    if isinstance(estimator, NiftiMapsMasker):
+        with pytest.warns(
+            FutureWarning, match="no image was passed at fit time"
+        ):
+            estimator.fit()
+    else:
+        estimator.fit()
+
     fitted_mask_2 = estimator.mask_img_
 
     if accepts_volume(estimator):
@@ -2607,7 +2653,15 @@ def check_masker_empty_data_messages(estimator) -> None:
         estimator.fit(imgs)
 
     estimator.mask_img = mask_img
-    estimator.fit()
+
+    if isinstance(estimator, NiftiMapsMasker):
+        with pytest.warns(
+            FutureWarning, match="no image was passed at fit time"
+        ):
+            estimator.fit()
+    else:
+        estimator.fit()
+
     with pytest.raises(ValueError, match="The image is empty"):
         estimator.transform(imgs)
 
@@ -2663,7 +2717,13 @@ def check_masker_fit_with_non_finite_in_mask(estimator) -> None:
 
     estimator.mask_img = mask_img
     with pytest.warns(UserWarning, match="Non-finite values detected."):
-        estimator.fit()
+        if isinstance(estimator, NiftiMapsMasker):
+            with pytest.warns(
+                FutureWarning, match="no image was passed at fit time"
+            ):
+                estimator.fit()
+        else:
+            estimator.fit()
 
     signal = estimator.transform(imgs)
     assert np.all(np.isfinite(signal))
@@ -3897,7 +3957,13 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(
 
     assert not hasattr(estimator, "mask_img_")
 
-    estimator.fit()
+    if isinstance(estimator, NiftiMapsMasker):
+        with pytest.warns(
+            FutureWarning, match="no image was passed at fit time"
+        ):
+            estimator.fit()
+    else:
+        estimator.fit()
 
     assert estimator._report_warnings == []
 
