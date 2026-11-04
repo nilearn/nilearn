@@ -461,7 +461,6 @@ def _check_mask_img_(estimator):
     load_mask_img(estimator.mask_img_)
 
 
-@xfail_if_not_gil()
 @skip_if_not(lambda e: accepts_image(e))
 def check_img_estimator_verbose(estimator_orig) -> None:
     """Check verbose behavior.
@@ -528,7 +527,6 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     assert len(output_2) >= len(output), f"\n{output=}\n{output_2=}"
 
 
-@xfail_if_not_gil()
 def check_verbosity_embedded_masker(estimator_orig) -> None:
     """Check control of verbosity of embedded maskers / estimators.
 
@@ -2780,7 +2778,6 @@ def check_masker_inverse_transform(estimator_orig) -> None:
             assert_surface_image_equal(new_imgs, new_imgs_2)
 
 
-@xfail_if_not_gil()
 @skip_if_not(
     (
         lambda e: hasattr(e, "resampling_target"),
