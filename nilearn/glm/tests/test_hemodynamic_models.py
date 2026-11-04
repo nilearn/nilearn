@@ -219,6 +219,18 @@ def test_sample_condition_7():
     assert reg[61] == 0.0
 
 
+def test_sample_condition_8():
+    """Test floating point errors do not introduce unwanted grid offsets."""
+    n_volumes = 504
+    t_r = 2.4
+    frame_times = np.arange(n_volumes) * t_r
+    condition = (frame_times, np.full(n_volumes, t_r), np.ones(n_volumes))
+    reg, _ = _sample_condition(
+        condition, frame_times, oversampling=1, min_onset=0
+    )
+    assert_array_equal(reg[:n_volumes], np.ones(n_volumes))
+
+
 def test_names():
     """Test the regressor naming function."""
     name = "con"
@@ -411,6 +423,26 @@ def test_make_regressor_3():
     )
 
     assert_array_equal(reg, reg_)
+
+
+def test_make_regressor_4():
+    """Test that constant input remains constant after initial bump."""
+    n_volumes = 504
+    t_r = 2.4
+    frame_times = np.arange(n_volumes) * t_r
+    condition = (frame_times, np.full(n_volumes, t_r), np.ones(n_volumes))
+    hrf_model = "spm"
+
+    reg, _ = compute_regressor(
+        condition,
+        hrf_model,
+        frame_times,
+        oversampling=1.0,
+        min_onset=0,
+    )
+
+    assert_almost_equal(reg[40:].mean(), 1)
+    assert_almost_equal(reg[40:].std(), 0)
 
 
 def test_calculate_tr():
