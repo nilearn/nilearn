@@ -162,6 +162,14 @@ from nilearn.utils.tags import (
 NILEARN_DIR = Path(__file__).parents[1]
 
 
+def _nifti_maps_masker_context(estimator):
+    """Manage warning when fitting NiftiMapsMasker with no data."""
+    # TODO (nilearn>=0.17.0) turn into an error
+    if not isinstance(estimator, NiftiMapsMasker):
+        return contextlib.nullcontext()
+    return pytest.warns(FutureWarning, match="no image was passed at fit time")
+
+
 def _not_fitted_error_message(estimator) -> str:
     return (
         f"This {estimator.__class__.__name__} instance is not fitted yet. "
@@ -2143,7 +2151,9 @@ def check_masker_compatibility_mask_image(estimator_orig) -> None:
 
     estimator = clone(estimator_orig)
     estimator.mask_img = mask_img
-    estimator.fit()
+    with _nifti_maps_masker_context(estimator):
+        estimator.fit()
+
     with pytest.raises(TypeError):
         estimator.transform(image_to_transform)
 
@@ -2163,7 +2173,9 @@ def check_masker_no_mask_no_img(estimator) -> None:
         ):
             estimator.fit()
     else:
-        estimator.fit()
+        with _nifti_maps_masker_context(estimator):
+            estimator.fit()
+
         assert estimator.mask_img_ is None
 
 
@@ -2214,18 +2226,24 @@ def check_masker_mask_img(estimator_orig) -> None:
     non_binary_mask_img: Nifti1Image | SurfaceImage
     input_img: Nifti1Image | SurfaceImage
     if accepts_volume(estimator_orig):
-        # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
+        # TODO
+        # Small image with shape=(7, 8, 9) would fail with NiftiLabelsMasker
+        # or RegionExtractor
         # giving mask_img_that mask all the data : do not know why!!!
-        mask_data = np.zeros(_shape_3d_large(), dtype="int8")
+        shape = (
+            _shape_3d_large()
+            if isinstance(estimator_orig, (NiftiLabelsMasker, RegionExtractor))
+            else _shape_3d_default()
+        )
+
+        mask_data = np.zeros(shape, dtype="int8")
         mask_data[2:-2, 2:-2, 2:-2] = 1
         binary_mask_img = Nifti1Image(mask_data, _affine_eye())
 
-        input_img = Nifti1Image(
-            _rng().random(_shape_3d_large()), _affine_eye()
-        )
+        input_img = Nifti1Image(_rng().random(shape), _affine_eye())
 
         non_binary_mask_img = Nifti1Image(
-            _rng().random((*_shape_3d_large(), 2)), _affine_eye()
+            _rng().random((*shape, 2)), _affine_eye()
         )
 
     else:
@@ -2239,7 +2257,8 @@ def check_masker_mask_img(estimator_orig) -> None:
     estimator.mask_img = binary_mask_img
     assert not hasattr(estimator, "mask_img_")
 
-    estimator.fit()
+    with _nifti_maps_masker_context(estimator):
+        estimator.fit()
 
     _check_mask_img_(estimator)
 
@@ -2248,7 +2267,8 @@ def check_masker_mask_img(estimator_orig) -> None:
     estimator.mask_img = non_binary_mask_img
     assert not hasattr(estimator, "mask_img_")
 
-    estimator.fit()
+    with _nifti_maps_masker_context(estimator):
+        estimator.fit()
 
     _check_mask_img_(estimator)
 
@@ -2260,8 +2280,12 @@ def check_masker_mask_img(estimator_orig) -> None:
     # when verbose masker says it's loading a mask
     estimator.verbose = 1
     buffer = io.StringIO()
-    with contextlib.redirect_stdout(buffer):
+    with (
+        contextlib.redirect_stdout(buffer),
+        _nifti_maps_masker_context(estimator),
+    ):
         estimator.fit()
+
     output = buffer.getvalue()
     assert "Loading mask" in output
 
@@ -2558,11 +2582,14 @@ def check_masker_refit(estimator) -> None:
         mask_img_2 = SurfaceImage(mask_img_1.mesh, data)
 
     estimator.mask_img = mask_img_1
-    estimator.fit()
+    with _nifti_maps_masker_context(estimator):
+        estimator.fit()
     fitted_mask_1 = estimator.mask_img_
 
     estimator.mask_img = mask_img_2
-    estimator.fit()
+    with _nifti_maps_masker_context(estimator):
+        estimator.fit()
+
     fitted_mask_2 = estimator.mask_img_
 
     if accepts_volume(estimator):
@@ -2601,7 +2628,10 @@ def check_masker_empty_data_messages(estimator) -> None:
         estimator.fit(imgs)
 
     estimator.mask_img = mask_img
-    estimator.fit()
+
+    with _nifti_maps_masker_context(estimator):
+        estimator.fit()
+
     with pytest.raises(ValueError, match="The image is empty"):
         estimator.transform(imgs)
 
@@ -2656,7 +2686,10 @@ def check_masker_fit_with_non_finite_in_mask(estimator) -> None:
         imgs = _make_surface_img(1)
 
     estimator.mask_img = mask_img
-    with pytest.warns(UserWarning, match="Non-finite values detected."):
+    with (
+        pytest.warns(UserWarning, match="Non-finite values detected."),
+        _nifti_maps_masker_context(estimator),
+    ):
         estimator.fit()
 
     signal = estimator.transform(imgs)
@@ -3891,7 +3924,8 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(
 
     assert not hasattr(estimator, "mask_img_")
 
-    estimator.fit()
+    with _nifti_maps_masker_context(estimator):
+        estimator.fit()
 
     assert estimator._report_warnings == []
 
