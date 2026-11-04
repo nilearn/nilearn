@@ -74,6 +74,9 @@ def test_fit_on_single_nifti_image(method, n_parcel, image_1):
     parcellator = Parcellations(method=method, n_parcels=n_parcel)
 
     with warnings.catch_warnings(record=True) as warning_list:
+        # make sure the warning is recorded
+        # even if it was already thrown in another thread
+        warnings.simplefilter("always")
         parcellator.fit(image_1)
 
     # The input image used for testing may not give the requested n_parcels.
