@@ -33,7 +33,7 @@ from nilearn.image import (
     resample_img,
     resample_to_img,
 )
-from nilearn.nilearn_typing import Threshold, Vmax, Vmin
+from nilearn.nilearn_typing import BlackBg, Threshold, Vmax, Vmin
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
@@ -626,7 +626,7 @@ def view_img(
     threshold=1e-6,
     annotate=True,
     draw_cross=True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cmap: bool = True,
     dim: float | Literal["auto"] = "auto",
@@ -778,7 +778,7 @@ def create_brainsprite(
     threshold=1e-6,
     annotate=True,
     draw_cross=True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cmap: bool = True,
     dim: float | Literal["auto"] = "auto",
