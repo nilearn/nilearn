@@ -324,12 +324,6 @@ checks = [
 ]
 
 [tool.pyrefly]
-# Errors already present in the code base are listed in the baseline file
-# and are not reported, so only new errors fail the check.
-# Regenerate it with: pyrefly check --update-baseline
-baseline = "pyrefly-baseline.json"
-baseline-format = "minimal"
-baseline-matching-mode = "concise-description"
 # Skip the bodies of unannotated functions and treat their return type
 # as Any, as mypy did.
 check-unannotated-defs = false

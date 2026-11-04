@@ -7,7 +7,7 @@ import inspect
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Self, get_args
-from warnings import warn
+from warnings import catch_warnings, filterwarnings, warn
 
 import numpy as np
 import pandas as pd
@@ -59,10 +59,20 @@ from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import intersect_masks
 from nilearn.nilearn_typing import (
     HrfModel,
+    MemoryLevel,
+    MemoryLike,
     NiimgLike,
+    NJobs,
+    NoiseModel,
+    NonNullScalar,
     SingleConfound,
+    SmoothingFwhm,
+    Standardize,
     TableLike,
+    TargetAffine,
+    TargetShape,
     Tr,
+    Verbose,
 )
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
@@ -155,7 +165,13 @@ def _yule_walker(x, order):
 
 @fill_doc
 def run_glm(
-    Y, X, noise_model="ar1", bins=100, n_jobs=1, verbose=0, random_state=None
+    Y: np.ndarray,
+    X: np.ndarray,
+    noise_model: NoiseModel = "ar1",
+    bins: int = 100,
+    n_jobs: NJobs = 1,
+    verbose: Verbose = 0,
+    random_state=None,
 ) -> tuple[np.ndarray, dict[str | float, RegressionResults]]:
     """:term:`GLM` fit for an :term:`fMRI` data matrix.
 
@@ -167,11 +183,7 @@ def run_glm(
     X : array of shape (n_time_points, n_regressors)
         The design matrix.
 
-    noise_model : {'ar(N)', 'ols'}, default='ar1'
-        The temporal variance model.
-        To specify the order of an autoregressive model place the
-        order after the characters `ar`, for example to specify a third order
-        model use `ar3`.
+    %(noise_model)s
 
     bins : :obj:`int`, default=100
         Maximum number of discrete bins for the AR coef histogram.
@@ -219,6 +231,9 @@ def run_glm(
     # Create the model
     ols_result = OLSModel(X).fit(Y)
 
+    labels: np.ndarray
+    results: dict[str | float, RegressionResults]
+
     if noise_model[:2] == "ar":
         err_msg = (
             "AR order must be a positive integer specified as arN, "
@@ -258,7 +273,6 @@ def run_glm(
             labels = np.array([cluster_labels[i] for i in kmeans.labels_])
 
         unique_labels = np.unique(labels)
-        results = {}
 
         # Fit the AR model according to current AR(N) estimates
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
@@ -383,7 +397,7 @@ class FirstLevelModel(BaseGLM):
             This parameter is ignored by fit() if design matrices
             are passed at fit time.
 
-    min_onset : :obj:`float`, default=-24
+    min_onset : :obj:`float`, default=-24.0
         This parameter specifies the minimal onset relative to the design
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
@@ -434,8 +448,7 @@ class FirstLevelModel(BaseGLM):
         Incompatible with standardize (``standardize=None`` is enforced when
         ``signal_scaling`` is not False).
 
-    noise_model : {'ar1', 'ols'}, default='ar1'
-        The temporal variance model.
+    %(noise_model)s
 
     %(verbose0)s
         If 0, prints nothing
@@ -505,34 +518,53 @@ class FirstLevelModel(BaseGLM):
         as it is set to ``None`` when ``signal_scaling`` is not False.
     """
 
+    drift_model: Literal["polynomial", "cosine", None]
+    drift_order: int
+    high_pass: float
+    hrf_model: HrfModel
+    target_affine: TargetAffine
+    target_shape: TargetShape
+    smoothing_fwhm: SmoothingFwhm
+    memory: MemoryLike
+    memory_level: MemoryLevel
+    min_onset: float
+    minimize_memory: bool
+    noise_model: NoiseModel
+    n_jobs: NJobs
+    slice_time_ref: NonNullScalar
+    standardize: Standardize
+    subject_label: str | None
+    t_r: Tr
+    verbose: Verbose
+
     def __str__(self):
         return "First Level Model"
 
     def __init__(
         self,
-        t_r=None,
-        slice_time_ref=0.0,
+        t_r: Tr = None,
+        slice_time_ref: NonNullScalar = 0.0,
         hrf_model: HrfModel = "glover",
-        drift_model="cosine",
-        high_pass=0.01,
-        drift_order=1,
+        drift_model: Literal["polynomial", "cosine", None] = "cosine",
+        high_pass: float = 0.01,
+        drift_order: int = 1,
         fir_delays=None,
-        min_onset=-24,
+        min_onset: float = -24.0,
         mask_img=None,
-        target_affine=None,
-        target_shape=None,
-        smoothing_fwhm=None,
-        memory=None,
-        memory_level=1,
-        standardize=None,
+        target_affine: TargetAffine = None,
+        target_shape: TargetShape = None,
+        smoothing_fwhm: SmoothingFwhm = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 1,
+        standardize: Standardize = None,
         signal_scaling=0,
-        noise_model="ar1",
-        verbose=0,
-        n_jobs=1,
-        minimize_memory=True,
-        subject_label=None,
+        noise_model: NoiseModel = "ar1",
+        verbose: Verbose = 0,
+        n_jobs: NJobs = 1,
+        minimize_memory: bool = True,
+        subject_label: str | None = None,
         random_state=None,
-        reports=True,
+        reports: bool = True,
     ):
         # design matrix parameters
         self.t_r = t_r
@@ -697,10 +729,14 @@ class FirstLevelModel(BaseGLM):
         elif step == "running":
             msg = "Performing GLM computation."
         elif step == "run_done":
+            if time_in_second is None:  # pragma: no cover
+                raise TypeError(f"'time_in_second' cannot be None for {step=}")
             msg = f"GLM took {int(time_in_second)} seconds."
         elif step == "masking":
             msg = "Performing mask computation."
         elif step == "masking_done":
+            if time_in_second is None:  # pragma: no cover
+                raise TypeError(f"'time_in_second' cannot be None for {step=}")
             msg = f"Masking took {int(time_in_second)} seconds."
         elif step == "done":
             msg = (
@@ -1040,7 +1076,7 @@ class FirstLevelModel(BaseGLM):
         # currently the values in reports_data is used in other places and
         # tests fail if only populated when reports is True.
 
-        self._reporting_data = {
+        self._reporting_data: dict[str, Any] = {
             "trial_types": [],
             "noise_model": self.noise_model,
             "hrf_model": "finite impulse response"
@@ -1321,9 +1357,9 @@ class FirstLevelModel(BaseGLM):
         """Set up the masker.
 
         If mask_img == False, include all voxels / vertices in GLM.
-        If mask_img is a masker we just check it has been fitted.
         If mask_img is not a masker,
         we compute an implicit mask based on all the runs.
+        If mask_img is a masker we just check it has been fitted.
 
         Parameters
         ----------
@@ -1336,16 +1372,14 @@ class FirstLevelModel(BaseGLM):
         """
         first_image = run_imgs[0]
 
+        # Computing an implicit mask based on all runs
+        # requires we use a multi masker
+        # to get a common mask for all runs.
         masker_type = "multi_nii"
         if not self._is_volume_glm() or isinstance(first_image, SurfaceImage):
             masker_type = "multi_surface"
 
-        # Learn the mask
         if self.mask_img is False:
-            # We create a dummy mask to preserve functionality of api
-            # TODO here we break the sklearn convention
-            # of not changing attributes passed at init
-            # This could probably be improved
             if masker_type == "multi_surface":
                 surf_data = {
                     part: np.ones(
@@ -1353,54 +1387,56 @@ class FirstLevelModel(BaseGLM):
                     )
                     for part in first_image.mesh.parts
                 }
-                self.mask_img = SurfaceImage(
-                    mesh=first_image.mesh, data=surf_data
-                )
+                mask_img = SurfaceImage(mesh=first_image.mesh, data=surf_data)
             else:
                 ref_img = check_niimg(first_image)
-                self.mask_img = Nifti1Image(
+                mask_img = Nifti1Image(
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
 
-        check_compatibility_mask_and_images(self.mask_img, first_image)
-
-        if (  # deal with self.mask_img as image, str, path, none
-            (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
-            or
-            # edge case:
-            # If fitted NiftiMasker with a None mask_img_ attribute
-            # the masker parameters are overridden
-            # by the FirstLevelModel parameters
-            (
-                getattr(self.mask_img, "mask_img_", "not_none") is None
-                and self.masker_ is None
-            )
-        ):
-            # compute implicit mask based on all runs
-            masker = check_embedded_masker(
-                self, ignore=["high_pass"], masker_type=masker_type
-            )
-            masker.memory_level = self.memory_level
-            if masker_type == "multi_nii":
-                masker.mask_strategy = "epi"
-            masker.fit(run_imgs)
-
-            # reuse mask_img to initialize a non-multi masker
-            self.masker_ = check_embedded_masker(
-                self,
-                ignore=["high_pass"],
-                masker_type=masker_type.replace("multi_", ""),
-            )
-            self.masker_.memory_level = self.memory_level
-            if masker_type == "multi_nii":
-                self.masker_.mask_strategy = "epi"
-            self.masker_.mask_img = masker.mask_img_
-            self.masker_.fit()
+            self._set_fitted_masker(masker_type, mask_img)
 
         else:
-            check_is_fitted(self.mask_img)
+            check_compatibility_mask_and_images(self.mask_img, first_image)
 
-            self.masker_ = self.mask_img
+            if (  # deal with self.mask_img as image, str, path, none
+                (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
+                or
+                # edge case:
+                # If fitted NiftiMasker with a None mask_img_ attribute
+                # the masker parameters are overridden
+                # by the FirstLevelModel parameters
+                (
+                    getattr(self.mask_img, "mask_img_", "not_none") is None
+                    and self.masker_ is None
+                )
+            ):
+                masker = check_embedded_masker(
+                    self, ignore=["high_pass"], masker_type=masker_type
+                )
+                masker.memory_level = self.memory_level
+                if masker_type == "multi_nii":
+                    masker.mask_strategy = "epi"
+
+                # We ignore warning in case the masker
+                # was initialized in check_embedded_masker
+                # with a mask image (obtained from the FLM):
+                # the user has no control over this warning,
+                # so it would just add noise.
+                with catch_warnings():
+                    filterwarnings(
+                        "ignore",
+                        message=r".*Generation of a mask.*",
+                    )
+                    masker.fit(run_imgs)
+
+                # reuse mask_img to initialize a non-multi masker
+                self._set_fitted_masker(masker_type, masker.mask_img_)
+
+            else:
+                check_is_fitted(self.mask_img)
+
+                self.masker_ = self.mask_img
 
         # override value of the masker standardize
         # with standardize_ that takes into account
@@ -1408,6 +1444,17 @@ class FirstLevelModel(BaseGLM):
         self.masker_.standardize = self.standardize_
 
         self.n_elements_ = self.masker_.n_elements_
+
+    def _set_fitted_masker(self, masker_type, mask_img):
+        """Define a masker for the model with an implicit mask."""
+        self.masker_ = check_embedded_masker(
+            self,
+            ignore=["high_pass"],
+            masker_type=masker_type.replace("multi_", ""),
+        )
+        self.masker_.memory_level = self.memory_level
+        self.masker_.mask_img = mask_img
+        self.masker_.fit()
 
 
 def _check_events_file_uses_tab_separators(events_files):
@@ -1495,10 +1542,8 @@ def _check_repetition_time(t_r) -> None:
         raise ValueError(f"'t_r' must be positive. Got {t_r} instead.")
 
 
-def _check_slice_time_ref(slice_time_ref) -> None:
+def _check_slice_time_ref(slice_time_ref: Any) -> None:
     """Check that slice_time_ref is a number between 0 and 1."""
-    if slice_time_ref is None:
-        return
     check_is_of_allowed_type(
         slice_time_ref, (float, int, np.floating, np.integer), "slice_time_ref"
     )
@@ -1516,25 +1561,25 @@ def first_level_from_bids(
     sub_labels=None,
     exclude_subjects=None,
     img_filters=None,
-    t_r=None,
-    slice_time_ref=None,
+    t_r: Tr = None,
+    slice_time_ref: NonNullScalar | None = None,
     hrf_model: HrfModel = "glover",
-    drift_model: Literal["polynomial", "cosine", None] = "cosine",
-    high_pass=0.01,
-    drift_order=1,
+    drift_model: Literal["cosine", "polynomial", None] = "cosine",
+    high_pass: float = 0.01,
+    drift_order: int = 1,
     fir_delays=None,
-    min_onset=-24,
+    min_onset: float = -24.0,
     mask_img=None,
-    target_affine=None,
-    target_shape=None,
-    smoothing_fwhm=None,
-    memory=None,
-    memory_level=1,
-    standardize=None,
+    target_affine: TargetAffine = None,
+    target_shape: TargetShape = None,
+    smoothing_fwhm: SmoothingFwhm = None,
+    memory: MemoryLike = None,
+    memory_level: MemoryLevel = 1,
+    standardize: Standardize = None,
     signal_scaling=0,
-    noise_model="ar1",
-    verbose=0,
-    n_jobs=1,
+    noise_model: NoiseModel = "ar1",
+    verbose: Verbose = 0,
+    n_jobs: NJobs = 1,
     minimize_memory=True,
     derivatives_folder="derivatives",
     **kwargs,
@@ -1908,12 +1953,9 @@ def first_level_from_bids(
             )
         inferred_slice_time_ref = 0.0
 
-    if slice_time_ref is None and inferred_slice_time_ref is not None:
+    if slice_time_ref is None:
         slice_time_ref = inferred_slice_time_ref
-    if (
-        slice_time_ref is not None
-        and slice_time_ref != inferred_slice_time_ref
-    ):
+    elif slice_time_ref != inferred_slice_time_ref:
         warn(
             f"'slice_time_ref' provided ({slice_time_ref}) is different "
             f"from the value found in the BIDS dataset "
@@ -2318,7 +2360,7 @@ def _get_masks_files(
     space_label: str,
     img_filters: list[tuple[str, str]],
     imgs: list[str],
-    verbose: int,
+    verbose: Verbose,
 ) -> list[str]:
     """Get mask images for a given subject, task, space and filters.
 

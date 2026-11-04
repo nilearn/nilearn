@@ -30,7 +30,12 @@ from nilearn.glm.second_level.second_level import (
     _process_second_level_input_as_firstlevelmodels,
     _sort_input_dataframe,
 )
-from nilearn.glm.tests.conftest import SHAPE, _confounds, fake_fmri_data
+from nilearn.glm.tests.conftest import (
+    SHAPE,
+    _confounds,
+    fake_fmri_data,
+    fake_subjects_fmri_data,
+)
 from nilearn.image import concat_imgs, get_data
 from nilearn.maskers import NiftiMasker
 from nilearn.surface import SurfaceImage
@@ -186,6 +191,31 @@ def test_check_shape_first_level_models(shape_4d_default, n_subjects):
         _check_input_as_first_level_model(
             second_level_input=list_of_flm, none_confounds=False
         )
+
+
+@pytest.mark.parametrize("mask_img_first", [True, False])
+def test_check_first_level_models_mask_img_false(
+    shape_4d_default, mask_img_first
+):
+    """Check FirstLevelModels fitted with mask_img=False are valid inputs.
+
+    Models fitted with mask_img=False can be mixed
+    with models fitted with a mask image, in any order.
+    """
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )
+    mask_imgs = [mask, False] if mask_img_first else [False, mask]
+    list_of_flm = [
+        FirstLevelModel(mask_img=mask_img, subject_label=f"sub-{i}").fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        )
+        for i, mask_img in enumerate(mask_imgs)
+    ]
+
+    _check_input_as_first_level_model(
+        second_level_input=list_of_flm, none_confounds=False
+    )
 
 
 def test_check_second_level_input(shape_4d_default):
@@ -357,7 +387,9 @@ def test_infer_effect_maps(tmp_path, shape_4d_default):
     or a dataframe 'mapping' a string to an image.
     """
     rk = 3
-    shapes = [SHAPE, shape_4d_default]
+    # single volume for the effect maps checks,
+    # then runs with more scans than regressors to fit first level models
+    shapes = [SHAPE, (*SHAPE[:3], 10), (*shape_4d_default[:3], 15)]
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
         shapes, rk=rk, file_path=tmp_path
     )
@@ -370,7 +402,7 @@ def test_infer_effect_maps(tmp_path, shape_4d_default):
 
     contrast = np.eye(rk)[1]
     second_level_input = [FirstLevelModel(mask_img=mask_file)] * 2
-    for i, model in enumerate(second_level_input):
+    for i, model in enumerate(second_level_input, start=1):
         model.fit(fmri_files[i], design_matrices=design_files[i])
 
     assert len(_infer_effect_maps(second_level_input, contrast)) == 2
@@ -848,9 +880,8 @@ def test_second_level_voxelwise_attribute_errors_minimize_memory(
 )
 def test_second_level_voxelwise_attribute(attribute, n_subjects):
     """Smoke test for voxelwise attributes for SecondLevelModel."""
-    mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
+    Y, mask = fake_subjects_fmri_data(n_subjects)
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
-    Y = fmri_data * n_subjects
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     model.fit(Y, design_matrix=X)
     model.compute_contrast()

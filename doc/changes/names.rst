@@ -361,6 +361,8 @@
 
 .. _Sanjana Soni: https://github.com/isha822
 
+.. _Siddhardha Nanda: https://github.com/SID-6921
+
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
 .. _Sin Kim: https://github.com/kimsin98

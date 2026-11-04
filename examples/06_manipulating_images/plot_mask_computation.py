@@ -14,8 +14,14 @@ In this example, the NiftiMasker is used to automatically compute a mask.
 In addition, we show here how to tweak the different parameters of the
 underlying routine that extract masks from EPI
 :func:`~nilearn.masking.compute_epi_mask`.
-"""
 
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`development fMRI dataset <development_dataset>`
+    - the :ref:`Miyawaki 2008 dataset <miyawaki_dataset>`
+"""
 # %%
 # Computing a mask from the background
 # ------------------------------------

@@ -95,7 +95,6 @@ autodoc_typehints = "none"
 autodoc_default_options = {
     "imported-members": True,
     "inherited-members": True,
-    "undoc-members": True,
     "member-order": "bysource",
 }
 
