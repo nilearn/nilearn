@@ -372,7 +372,7 @@ log_level = "INFO"
 markers = [
     # For tests that exceed the timeout allowed for each test.
     # Slow tests are run separately from the others in a different pytest invocation
-    # with no timeout limit so that slow tests are only run if all "fasts" tests pass.
+    # with a longer timeout limit so that slow tests are only run if all "fasts" tests pass.
     # Also helps find tests that could point
     # to potential performance issues (in the code or in the test).
     "slow",
