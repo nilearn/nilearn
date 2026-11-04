@@ -288,7 +288,6 @@ def check_set_output_accepts_surface(estimator) -> None:
         estimator.inverse_transform(signal)
 
 
-@xfail_if_not_gil()
 def check_doc_parameters_at_init(estimator) -> None:
     """Check that parameters are documented.
 
@@ -351,7 +350,6 @@ def check_doc_parameters_at_init(estimator) -> None:
     )
 
 
-@xfail_if_not_gil()
 @skip_if(
     (
         lambda e: isinstance(e, (GroupSparseCovarianceCV, ReNA)),
@@ -1632,7 +1630,6 @@ def check_img_estimator_n_elements(estimator) -> None:
                 getattr(estimator, method)(X)
 
 
-@xfail_if_not_gil()
 @skip_if((lambda e: is_masker(e), "Maskers have their own tests."))
 @skip_if_not(
     (
@@ -2009,7 +2006,6 @@ def check_masker_detrending(estimator) -> None:
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
 
 
-@xfail_if_not_gil()
 def check_masker_standardization(estimator_orig) -> None:
     """Check maskers with several value for standardize.
 
@@ -3842,7 +3838,6 @@ def check_masker_generate_report(estimator) -> None:
         )
 
 
-@xfail_if_not_gil()
 def check_masker_generate_report_constant(estimator) -> None:
     """Check report is constant across calls."""
     input_img: Nifti1Image | SurfaceImage
@@ -3876,7 +3871,6 @@ def check_masker_generate_report_constant(estimator) -> None:
     assert report_str == report_new_str
 
 
-@xfail_if_not_gil()
 def check_nifti_masker_generate_report_after_fit_with_only_mask(
     estimator,
 ) -> None:
@@ -3923,7 +3917,6 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(
     )
 
 
-@xfail_if_not_gil()
 def check_masker_generate_report_false(estimator) -> None:
     """Test with reports set to False."""
     estimator.reports = False
@@ -3941,7 +3934,6 @@ def check_masker_generate_report_false(estimator) -> None:
     generate_and_check_masker_report(estimator)
 
 
-@xfail_if_not_gil()
 def check_multimasker_generate_report(estimator) -> None:
     """Test calling generate report on multiple subjects raises warning."""
     input_img: list[Nifti1Image] | list[SurfaceImage]
