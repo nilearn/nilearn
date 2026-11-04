@@ -86,11 +86,15 @@ def test_empty_maps_dropped_warning(img_maps):
     maps_img = Nifti1Image(maps_data, img_maps.affine)
 
     masker = NiftiMapsMasker(maps_img)
-    with pytest.warns(
-        UserWarning,
-        match=(
-            r"The following maps are empty and were removed: \{1\}. "
-            f"Out of {n_maps} maps"
+    # TODO (nilearn >= 0.17) FutureWarning becomes exception
+    with (
+        pytest.warns(FutureWarning, match="no image was passed at fit time"),
+        pytest.warns(
+            UserWarning,
+            match=(
+                r"The following maps are empty and were removed: \{1\}. "
+                f"Out of {n_maps} maps"
+            ),
         ),
     ):
         masker.fit()
@@ -159,8 +163,12 @@ def test_mask_img_masks_all_maps_error(
         masker.fit(img_4d_rand_eye)
 
     masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
-    with pytest.raises(
-        ValueError, match="No map left after applying mask to the maps image"
+    with (
+        pytest.raises(
+            ValueError,
+            match="No map left after applying mask to the maps image",
+        ),
+        pytest.warns(FutureWarning, match="no image was passed at fit time"),
     ):
         masker.fit()
 
@@ -241,7 +249,9 @@ def test_no_map_after_resampling_error(
     input_img = Nifti1Image(rng.random(shape_3d_large), affine_mni)
 
     estimator = NiftiMapsMasker(maps_img=img_maps)
-    estimator.fit()
+    # TODO (nilearn >= 0.17) FutureWarning becomes exception
+    with pytest.warns(FutureWarning, match="no image was passed at fit time"):
+        estimator.fit()
     with (
         pytest.warns(UserWarning, match="Resampling maps at transform time"),
         pytest.raises(ValueError, match="No map left after resampling"),
@@ -596,12 +606,16 @@ def test_masking_inverse_transform(n_regions, length, affine_eye, with_mask):
 
     # resampling to data at transform time
     masker = clone(masker)
+    # TODO (nilearn >= 0.17) FutureWarning becomes exception
     with (
-        pytest.warns(
-            UserWarning, match="After applying mask to the maps image"
-        )
-        if with_mask
-        else nullcontext()
+        pytest.warns(FutureWarning, match="no image was passed at fit time"),
+        (
+            pytest.warns(
+                UserWarning, match="After applying mask to the maps image"
+            )
+            if with_mask
+            else nullcontext()
+        ),
     ):
         masker = masker.fit()
 
