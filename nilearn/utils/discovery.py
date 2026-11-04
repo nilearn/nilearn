@@ -205,7 +205,8 @@ def all_functions() -> list[tuple[str, Callable]]:
     >>> functions = all_functions()
     >>>
     >>> print(f"Nilearn's API has {len(functions)} public functions.")
-    Nilearn's API has 170 public functions.
+    Nilearn's API has 171 public functions.
+
     """
     all_functions = []
     # Ignore deprecation warnings triggered at import time and from walking
