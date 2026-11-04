@@ -105,6 +105,9 @@ Changes
 - :bdg-danger:`Deprecation` The parameter name ``subjects`` of the :func:`~nilearn.datasets.fetch_haxby` is deprecated will be completely removed in version 0.17.0. Use ``n_subjects`` instead (:gh:`6462` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-danger:`Deprecation` The function :func:`~nilearn.datasets.fetch_localizer_calculation_task` is deprecated and will be removed in version 0.17.0. Use :func:`~nilearn.datasets.fetch_localizer_contrasts` with ``contrasts=["calculation (auditory and visual cue)"]`` instead (:gh:`6538` by `Aniket Singh Yadav`_).
+- :bdg-danger:`Deprecation` The function :func:`~nilearn.datasets.fetch_localizer_button_task` is deprecated and will be removed in version 0.17.0. Use :func:`~nilearn.datasets.fetch_localizer_contrasts` with ``contrasts=["left vs right button press"]`` instead (:gh:`6719` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The function :func:`~nilearn.datasets.fetch_neurovault_auditory_computation_task` is deprecated and will be removed in version 0.17.0. Use :func:`~nilearn.datasets.fetch_neurovault_ids` with ``image_ids=[32980]`` instead (:gh:`6719` by `Rémi Gau`_).
 
 - :bdg-success:`API` The default value of ``n_clusters`` parameter of :class:`~nilearn.regions.HierarchicalKMeans` is changed from ``None`` to ``2``. (:gh:`6585` by `Hande Gözükan`_).
 
