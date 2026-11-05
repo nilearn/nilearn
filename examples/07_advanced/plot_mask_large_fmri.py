@@ -182,7 +182,7 @@ print(
 # Masking using numpy indexing
 # ----------------------------
 # Now let's see how we can mask the :term:`fMRI` image using
-# `numpy indexing.<https://numpy.org/doc/stable/user/basics.indexing.html>`_
+# `numpy indexing. <https://numpy.org/doc/stable/user/basics.indexing.html>`_
 # This could be more efficient than :class:`~nilearn.maskers.NiftiMasker`
 # when we simply need to extract :term:`fMRI` signals from a binary mask(s).
 #
