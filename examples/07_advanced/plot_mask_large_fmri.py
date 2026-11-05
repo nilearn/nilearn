@@ -8,7 +8,7 @@ more efficiently.
 Note that :term:`fMRI` images can be large on-disk due to multiple
 factors, including long acquisition times and high-resolution sampling.
 
-Each of these factors can be handled using different stratiegies.
+Each of these factors can be handled using different strategies.
 In this example, we focus on memory-efficient interactions with long
 time series :term:`fMRI` data; i.e., data where loading the whole time
 series into memory may represent a significant computational cost,
@@ -188,7 +188,7 @@ print(
 #
 # As before, we will first define a function that would mask the data array
 # of the :term:`fMRI` image using a single mask. We will then define another
-# functionthat would iterate over multiple masks in parallel and mask
+# function that would iterate over multiple masks in parallel and mask
 # the data array of the :term:`fMRI` image using each mask.
 
 import numpy as np
