@@ -23,6 +23,14 @@ See :ref:`plotting` for more information to know how to tune the parameters.
 
 Check the :ref:`list of atlases <listing_probabilistic_atlases>`
 to know the ones that are shipped with Nilearn.
+
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Allen 2011 atlas <allen_2011_atlas>`
+    - the :ref:`Smith 2009 atlas <smith_2009_atlas>`
+    - the :ref:`ICBM 152 template <icbm152_2009>`
 """
 
 # %%
@@ -36,9 +44,7 @@ allen = datasets.fetch_atlas_allen_2011()
 icbm = datasets.fetch_icbm152_2009()
 
 # Smith ICA BrainMap 2009
-smith_bm20 = datasets.fetch_atlas_smith_2009(resting=False, dimension=20)[
-    "maps"
-]
+smith_bm20 = datasets.fetch_atlas_smith_2009(resting=False, dimension=20)
 
 # %%
 # Visualization
@@ -53,7 +59,7 @@ plotting.plot_prob_atlas(
 
 # "filled_contours" example.
 plotting.plot_prob_atlas(
-    smith_bm20,
+    smith_bm20.maps,
     title="Smith2009 20 Brainmap",
 )
 

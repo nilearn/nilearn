@@ -1,4 +1,4 @@
-"""Tests saving glm to bids."""
+"""Test saving glm to bids."""
 
 import json
 import re
@@ -76,9 +76,6 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
     contrast_types = {"effects of interest": "F"}
     with (
         warnings.catch_warnings(record=True) as warning_list,
-        pytest.warns(
-            FutureWarning, match="the default 'threshold' will be set to"
-        ),
     ):
         save_glm_to_bids(
             model=single_run_model,
@@ -357,19 +354,20 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
             ]
         )
 
-    shapes = ((3, 3, 3, 1),)
+    # use different images for each subject
+    # to have some variance across subjects
+    shapes = ((3, 3, 3, 1),) * 2
     rk = 3
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(
         shapes,
         rk,
     )
-    fmri_data = fmri_data[0]
 
     # Ordinary Least Squares case
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
 
     # fit model
-    Y = [fmri_data] * 2
+    Y = fmri_data
     X = pd.DataFrame([[1]] * 2, columns=["intercept"])
     model = model.fit(Y, design_matrix=X)
 
@@ -519,23 +517,12 @@ def test_save_glm_to_bids_infer_filenames(tmp_path, kwargs):
     # 2 sessions with 2 runs each
     assert len(model._reporting_data["run_imgs"]) == 4
 
-    if kwargs == {"height_control": None}:
-        with pytest.warns(
-            FutureWarning, match="the default 'threshold' will be set to"
-        ):
-            model = save_glm_to_bids(
-                model=model,
-                out_dir=tmp_path / "output",
-                contrasts=["c0"],
-                **kwargs,
-            )
-    else:
-        model = save_glm_to_bids(
-            model=model,
-            out_dir=tmp_path / "output",
-            contrasts=["c0"],
-            **kwargs,
-        )
+    model = save_glm_to_bids(
+        model=model,
+        out_dir=tmp_path / "output",
+        contrasts=["c0"],
+        **kwargs,
+    )
 
     EXPECTED_FILENAME_ENDINGS = [
         "sub-01_task-main_space-MNI_contrast-c0_stat-z_statmap.nii.gz",

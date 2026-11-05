@@ -10,7 +10,7 @@ from scipy.ndimage import label, maximum_filter
 ###############################################################################
 
 
-def largest_connected_component(volume) -> np.ndarray:
+def largest_connected_component(volume: np.ndarray) -> np.ndarray:
     """Return the largest connected component of a 3D array.
 
     Parameters
@@ -34,7 +34,6 @@ def largest_connected_component(volume) -> np.ndarray:
     This function changes the existing byte-ordering information to new byte
     order, if the given volume has non-native data type. This operation
     is done inplace to avoid big-endian issues with scipy ndimage module.
-
     """
     if hasattr(volume, "get_fdata") or isinstance(volume, (str, Path)):
         raise ValueError(
@@ -44,7 +43,7 @@ def largest_connected_component(volume) -> np.ndarray:
     # Get the new byteorder to handle issues like "Big-endian buffer not
     # supported on little-endian compiler" with scipy ndimage label.
     if not volume.dtype.isnative:
-        volume.dtype = volume.dtype.newbyteorder("N")
+        volume = volume.view(volume.dtype.newbyteorder("N"))
 
     # We use asarray to be able to work with masked arrays.
     volume = np.asarray(volume)
@@ -127,7 +126,6 @@ def peak_local_max(
     This code is mostly adapted from scikit image 0.11.3 release.
     Location of file in scikit image: peak_local_max function in
     skimage.feature.peak
-
     """
     out = np.zeros_like(image, dtype=bool)
 

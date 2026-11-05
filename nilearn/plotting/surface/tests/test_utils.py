@@ -245,7 +245,7 @@ def test_get_faces_on_edge_matplotlib(in_memory_mesh):
 
 
 def test_get_surface_backend_unknown_error():
-    """Tests to see if get_surface_backend raises error when the specified
+    """Test to see if get_surface_backend raises error when the specified
     backend is not implemented.
     """
     with pytest.raises(ValueError, match="'engine' must be one of"):
@@ -257,7 +257,7 @@ def test_get_surface_backend_unknown_error():
     reason="This test is run only if plotly is not installed.",
 )
 def test_get_surface_backend_plotly_not_installed():
-    """Tests to see if get_surface_backend raises error when plotly is not
+    """Test to see if get_surface_backend raises error when plotly is not
     installed.
     """
     with pytest.raises(ImportError, match="Using engine"):

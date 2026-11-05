@@ -48,6 +48,7 @@ from nilearn.glm.first_level.hemodynamic_models import (
     compute_regressor,
     orthogonalize,
 )
+from nilearn.nilearn_typing import HrfModel, TableLike
 from nilearn.signal import create_cosine_drift
 
 ######################################################################
@@ -70,7 +71,6 @@ def _poly_drift(order, frame_times):
     -------
     pol : ndarray, shape(n_scans, order + 1)
          Estimated polynomial drifts plus a constant regressor.
-
     """
     order = int(order)
     pol = np.zeros((np.size(frame_times), order + 1))
@@ -88,7 +88,6 @@ def _none_drift(frame_times):
     Returns
     -------
     np.ones_like(frame_times)
-
     """
     return np.reshape(np.ones_like(frame_times), (np.size(frame_times), 1))
 
@@ -113,11 +112,10 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     Returns
     -------
     drift : array of shape(n_scans, n_drifts),
-        the drift matrix
+        The drift matrix.
 
     names : :obj:`list` of length(n_drifts),
-        the associated names
-
+        The associated names.
     """
     if isinstance(drift_model, str):
         drift_model = drift_model.lower()  # for robust comparisons
@@ -184,8 +182,7 @@ def _convolve_regressors(
         if 'spm + derivative + dispersion' or
             'glover + derivative + dispersion',
             a third name is used, i.e. '#name_dispersion'
-        if 'fir', the regressors are numbered according to '#name_#delay'
-
+        if 'fir', the regressors are numbered according to '#name_#delay'.
     """
     check_params(locals())
     if fir_delays is None:
@@ -234,8 +231,8 @@ def _convolve_regressors(
 @fill_doc
 def make_first_level_design_matrix(
     frame_times,
-    events=None,
-    hrf_model="glover",
+    events: TableLike | None = None,
+    hrf_model: HrfModel = "glover",
     drift_model="cosine",
     high_pass=0.01,
     drift_order=1,
@@ -324,8 +321,9 @@ def make_first_level_design_matrix(
 
     Returns
     -------
-    design_matrix : DataFrame instance,
-        holding the computed design matrix, the index being the frames_times
+    design_matrix : DataFrame instance
+        Holding the computed design matrix,
+        the index being the ``frames_times``
         and each column a regressor.
 
     Examples
@@ -357,7 +355,6 @@ def make_first_level_design_matrix(
     6  0.910  0.135  0.000       1.0
     7  0.934  0.378  0.001       1.0
     8  0.771  0.688  0.022       1.0
-
     """
     check_params(locals())
     if fir_delays is None:
@@ -365,8 +362,8 @@ def make_first_level_design_matrix(
     # check arguments
     # check that additional regressor specification is correct
     n_add_regs = 0
+    add_regs_as_array = np.empty(1)
     if add_regs is not None:
-        add_regs_as_array: np.ndarray
         if isinstance(add_regs, pd.DataFrame):
             add_regs_as_array = add_regs.to_numpy()
             add_reg_names = add_regs.columns.tolist()
@@ -400,10 +397,16 @@ def make_first_level_design_matrix(
     if events is not None:
         events = check_and_load_tables(events, "events")[0]
         # create the condition-related regressors
-        if isinstance(hrf_model, str):
-            hrf_model = hrf_model.lower()
+        hrf_model_ = (
+            hrf_model.lower() if isinstance(hrf_model, str) else hrf_model
+        )
         matrix, names = _convolve_regressors(
-            events, hrf_model, frame_times, fir_delays, min_onset, oversampling
+            events=events,
+            hrf_model=hrf_model_,
+            frame_times=frame_times,
+            fir_delays=fir_delays,
+            min_onset=min_onset,
+            oversampling=oversampling,
         )
 
     # step 2: additional regressors
@@ -455,7 +458,7 @@ def check_design_matrix(
         Numerical values for the design matrix.
 
     names : array of shape (n_events,), dtype='f'
-        Per-event onset time (in seconds)
+        Per-event onset time (in seconds).
 
     Examples
     --------
@@ -477,7 +480,6 @@ def check_design_matrix(
            [2, 4]])
     >>> names
     ['col1', 'col2']
-
     """
     if len(design_matrix.columns) == 0:
         raise ValueError("The design_matrix dataframe cannot be empty.")
@@ -488,7 +490,7 @@ def check_design_matrix(
 
 
 def make_second_level_design_matrix(
-    subjects_label, confounds=None
+    subjects_label, confounds: pd.DataFrame | None = None
 ) -> pd.DataFrame:
     """Set up a second level design.
 
@@ -510,7 +512,6 @@ def make_second_level_design_matrix(
     -------
     design_matrix : :class:`pandas.DataFrame`
         The second level design matrix.
-
     """
     confounds_name = []
     if confounds is not None:

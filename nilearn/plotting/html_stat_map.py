@@ -33,7 +33,7 @@ from nilearn.image import (
     resample_img,
     resample_to_img,
 )
-from nilearn.nilearn_typing import Threshold
+from nilearn.nilearn_typing import BlackBg, Threshold, Vmax, Vmin
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
@@ -59,7 +59,6 @@ def _data_to_sprite(
         size is (M x nz) x (N x ny), where M and N are computed to be roughly
         equal. All slices are pasted together row by row, from top left to
         bottom right. The last row is completed with empty slices.
-
     """
     nx, ny, nz = data.shape
     nrows = int(np.ceil(np.sqrt(nx)))
@@ -108,7 +107,6 @@ def _threshold_data(data: np.ndarray, threshold: Any = None):
 
     threshold : :obj:`float`
         Updated threshold value.
-
     """
     # If threshold is None, do nothing
     if threshold is None:
@@ -179,7 +177,6 @@ def _save_sprite(
     -------
     sprite : :class:`numpy.ndarray`
         Returned sprite.
-
     """
     # Create sprite
     sprite = _data_to_sprite(data, radiological)
@@ -260,7 +257,7 @@ def load_bg_img(
     stat_map_img,
     bg_img: Any = "MNI152",
     black_bg: bool | Literal["auto"] = "auto",
-    dim="auto",
+    dim: float | Literal["auto"] = "auto",
 ):
     """Load and resample bg_img in an isotropic resolution, \
     with a positive diagonal affine matrix.
@@ -629,12 +626,12 @@ def view_img(
     threshold=1e-6,
     annotate=True,
     draw_cross=True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     cmap=DEFAULT_DIVERGING_CMAP,
-    symmetric_cmap=True,
-    dim="auto",
-    vmax=None,
-    vmin=None,
+    symmetric_cmap: bool = True,
+    dim: float | Literal["auto"] = "auto",
+    vmax: Vmax = None,
+    vmin: Vmin = None,
     resampling_interpolation="continuous",
     width_view=600,
     opacity=1,
@@ -743,7 +740,6 @@ def view_img(
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
-
     """
     check_params(locals())
 
@@ -782,12 +778,12 @@ def create_brainsprite(
     threshold=1e-6,
     annotate=True,
     draw_cross=True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     cmap=DEFAULT_DIVERGING_CMAP,
-    symmetric_cmap=True,
-    dim="auto",
-    vmax=None,
-    vmin=None,
+    symmetric_cmap: bool = True,
+    dim: float | Literal["auto"] = "auto",
+    vmax: Vmax = None,
+    vmin: Vmin = None,
     resampling_interpolation="continuous",
     opacity=1,
     radiological=False,

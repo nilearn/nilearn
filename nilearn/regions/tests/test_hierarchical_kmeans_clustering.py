@@ -1,16 +1,8 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn._utils.estimator_checks import (
-    check_estimator,
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
-from nilearn._utils.helpers import is_windows_platform
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
     HierarchicalKMeans,
@@ -19,54 +11,6 @@ from nilearn.regions.hierarchical_kmeans_clustering import (
 )
 from nilearn.surface import SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
-
-# IMPORTANT
-# keeping the n_clusters low (< 3) to make it easier
-# to run sklearn checks
-ESTIMATORS_TO_CHECK = [HierarchicalKMeans(n_clusters=2)]
-
-if SKLEARN_LT_1_6:
-
-    @pytest.mark.single_process
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.single_process
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @pytest.mark.single_process
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-
-@pytest.mark.thread_unsafe
-@pytest.mark.single_process
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 @pytest.mark.parametrize(
@@ -92,7 +36,6 @@ def test_adjust_small_clusters(test_list, n_clusters):
         assert isinstance(a, (int, np.integer))
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_hierarchical_k_means():
     """Test that hierarchical_k_means recovers the expected cluster labels."""
     X = [[10, -10, 30], [12, -8, 24]]
@@ -111,7 +54,7 @@ def test_transform():
     data_img, mask_img = generate_fake_fmri(
         shape=(10, 11, 12), length=n_samples
     )
-    masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
+    masker = NiftiMasker(mask_img=mask_img).fit()
     X = masker.transform(data_img)
     hkmeans = HierarchicalKMeans(n_clusters=n_clusters).fit(X)
     X_red = hkmeans.transform(X)
@@ -127,7 +70,7 @@ def test_inverse_transform():
     data_img, mask_img = generate_fake_fmri(
         shape=(10, 11, 12), length=n_samples
     )
-    masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
+    masker = NiftiMasker(mask_img=mask_img).fit()
     X = masker.transform(data_img)
     hkmeans = HierarchicalKMeans(n_clusters=n_clusters).fit(X)
     X_red = hkmeans.transform(X)
@@ -143,7 +86,7 @@ def test_error_n_clusters(n_clusters):
     data_img, mask_img = generate_fake_fmri(
         shape=(10, 11, 12), length=n_samples
     )
-    masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
+    masker = NiftiMasker(mask_img=mask_img).fit()
     X = masker.transform(data_img)
 
     with pytest.raises(
@@ -154,7 +97,6 @@ def test_error_n_clusters(n_clusters):
         HierarchicalKMeans(n_clusters=n_clusters).fit(X)
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_scaling():
     """Test that scaling weights inverse_transform output by cluster size."""
     n_samples = 15
@@ -162,7 +104,7 @@ def test_scaling():
     data_img, mask_img = generate_fake_fmri(
         shape=(10, 11, 12), length=n_samples
     )
-    masker = NiftiMasker(mask_img=mask_img, standardize=None).fit()
+    masker = NiftiMasker(mask_img=mask_img).fit()
     X = masker.transform(data_img)
 
     hkmeans = HierarchicalKMeans(n_clusters=n_clusters)
@@ -183,7 +125,6 @@ def test_scaling():
     assert_array_almost_equal(X_compress, X_compress_scaled)
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.parametrize("n_clusters", [2, 4, 5])
 def test_surface(
@@ -193,7 +134,7 @@ def test_surface(
     n_samples = 100
     surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
     # create a surface masker
-    masker = SurfaceMasker(surf_mask, standardize=None).fit()
+    masker = SurfaceMasker(surf_mask).fit()
     # mask the surface image with 50 samples
     X = masker.transform(surf_img_2d(n_samples))
     # instantiate HierarchicalKMeans with n_clusters
@@ -211,7 +152,6 @@ def test_surface(
     assert X_inverse.shape == X.shape
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("img_type", ["surface", "volume"])
 def test_n_clusters_warning(img_type, rng):
     """Test that HierarchicalKMeans warns when n_clusters exceeds features."""
@@ -230,10 +170,10 @@ def test_n_clusters_warning(img_type, rng):
             ),
         }
         img = SurfaceImage(mesh=mesh, data=data)
-        X = SurfaceMasker(standardize=None).fit_transform(img)
+        X = SurfaceMasker().fit_transform(img)
     else:
         img, _ = generate_fake_fmri(shape=(10, 11, 12), length=n_samples)
-        X = NiftiMasker(standardize=None).fit_transform(img)
+        X = NiftiMasker().fit_transform(img)
 
     with pytest.warns(
         match="n_clusters should be at most the number of features.",

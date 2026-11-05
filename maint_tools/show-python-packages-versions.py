@@ -1,3 +1,9 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#    "rich"
+# ]
+# ///
 """Print the versions of Python and several packages used in the project."""
 
 import importlib.metadata

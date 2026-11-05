@@ -29,7 +29,6 @@ def z_score(pvalue, one_minus_pvalue=None):
     Returns
     -------
     z_scores : 1-d array shape=(n_z_scores,), with n_z_scores = n_pvalues
-
     """
     pvalue = np.clip(pvalue, 1.0e-300, 1.0 - 1.0e-16)
     z_scores_sf = norm.isf(pvalue)
@@ -72,7 +71,6 @@ def multiple_fast_inverse(a):
     -----
     This function is borrowed from scipy.linalg.inv,
     but with some customizations for speed-up.
-
     """
     if a.shape[1] != a.shape[2]:
         raise ValueError("a must have shape (n_samples, n_dim, n_dim)")
@@ -126,7 +124,6 @@ def multiple_mahalanobis(effect, covariance):
     -------
     sqd : array of shape (n_samples,)
          The squared distances (one per sample).
-
     """
     # check size
     if effect.ndim == 1:
@@ -168,11 +165,13 @@ def full_rank(X, cmax=1e15):
 
     cond : :obj:`float`,
         Actual condition number.
-
     """
     U, s, V = spl.svd(X, full_matrices=False)
     smax, smin = s.max(), s.min()
-    cond = smax / smin
+    # smin == 0 gives an infinite condition number:
+    # this is handled by the warning below
+    with np.errstate(divide="ignore"):
+        cond = smax / smin
     if cond < cmax:
         return X, cond
 
@@ -201,10 +200,11 @@ def positive_reciprocal(X):
     rX : array
        Array of same shape as `X`, dtype float, with values set to
        1/X where X > 0, 0 otherwise.
-
     """
     X = np.asarray(X)
-    return np.where(X <= 0, 0, 1.0 / X)
+    # 1 / X is computed everywhere, but only kept where X > 0
+    with np.errstate(divide="ignore"):
+        return np.where(X <= 0, 0, 1.0 / X)
 
 
 def pad_contrast(con_val, theta, stat_type):

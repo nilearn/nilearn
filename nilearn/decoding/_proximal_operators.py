@@ -324,7 +324,6 @@ def prox_tvl1_with_intercept(
     %(max_iter5000)s
 
     %(verbose0)s
-
     """
     check_params(locals())
 

@@ -52,7 +52,6 @@ def _local_max(data, affine, min_distance):
 
     vals : `numpy.ndarray`
         (n_foci,) array of values from data at ijk.
-
     """
     ijk, vals = _identify_subpeaks(data)
     xyz, ijk, vals = _sort_subpeaks(ijk, vals, affine)
@@ -215,6 +214,7 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
     return ijk, vals
 
 
+# TODO (nilearn >= 0.17.0) simplify overloads
 @overload
 def get_clusters_table(
     stat_img: NiimgLike,
@@ -260,13 +260,13 @@ def get_clusters_table(
 
 
 @fill_doc
-def get_clusters_table(
+def get_clusters_table(  # numpydoc ignore=RT05
     stat_img: NiimgLike | SurfaceImage,
     stat_threshold: NonNullScalar,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
     min_distance: NonNullScalar = 8.0,
-    return_label_maps: bool = False,
+    return_label_maps: bool = False,  # TODO (nilearn >= 0.17.0) remove
 ) -> (
     pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image] | list[SurfaceImage]]
 ):
@@ -298,7 +298,6 @@ def get_clusters_table(
         we recommend using
         the `atlasreader package <https://github.com/miykael/atlasreader>`_.
 
-
     Parameters
     ----------
     stat_img : Niimg-like object or :class:`~nilearn.surface.SurfaceImage`
@@ -328,6 +327,14 @@ def get_clusters_table(
         Whether or not to additionally output cluster label map images.
 
         .. nilearn_versionadded:: 0.10.1
+
+        .. nilearn_deprecated:: 0.15.0dev
+
+            This parameter will be removed in version 0.17.0, when
+            :func:`~nilearn.reporting.get_clusters_table` will always return
+            the cluster label maps together with the table. Set
+            ``return_label_maps=True`` and update your code to unpack both
+            outputs to prepare for this change.
 
     Returns
     -------
@@ -376,10 +383,11 @@ def get_clusters_table(
     >>> from nilearn.reporting import get_clusters_table
     >>>
     >>> img = load_sample_motor_activation_image()
-    >>> table = get_clusters_table(img,
-    ...                            stat_threshold = 4,
-    ...                            cluster_threshold = 20,
-    ...                            two_sided = True,
+    >>> table, _ = get_clusters_table(img,
+    ...                               stat_threshold = 4,
+    ...                               cluster_threshold = 20,
+    ...                               two_sided = True,
+    ...                               return_label_maps = True,
     ... )
     >>> table.head()
     Cluster   ID     X     Y     Z  Peak Stat Cluster Size (mm3)
@@ -388,7 +396,6 @@ def get_clusters_table(
     2         1b  42.0  -1.0  13.0   5.470704
     3          2  39.0 -22.0  58.0   7.941345              36936
     4         2a   6.0 -10.0  52.0   7.941345
-
     """
     check_params(locals())
 
@@ -398,6 +405,21 @@ def get_clusters_table(
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
     )
+
+    if not return_label_maps:
+        # TODO (nilearn >= 0.17.0) remove
+        warnings.warn(
+            (
+                'The "return_label_maps" parameter is deprecated. '
+                "In version 0.17.0, it will be removed and "
+                '"get_clusters_table" will always return the cluster label '
+                'maps together with the table. Set "return_label_maps" to '
+                "True and update your code to unpack both outputs to avoid "
+                "this warning."
+            ),
+            FutureWarning,
+            stacklevel=find_stack_level(),
+        )
 
     if not isinstance(stat_img, SurfaceImage):
         return _get_clusters_table_volume(
@@ -451,7 +473,6 @@ def _get_clusters_table_surface(
     Notes
     -----
     For other parameters, see `get_clusters_table`.
-
     """
     data = {}
     all_clusters = []
@@ -736,7 +757,6 @@ def clustering_params_to_dataframe(
     -------
     table_details : Pandas.DataFrame
         Dataframe with clustering parameters.
-
     """
     check_params(locals())
     table_details = OrderedDict()

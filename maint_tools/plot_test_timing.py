@@ -1,3 +1,11 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#    "pandas",
+#    "plotly",
+#    "kaleido"
+# ]
+# ///
 """Get output from pytest run and plot duration with different grouping."""
 
 from pathlib import Path

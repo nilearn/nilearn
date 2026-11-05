@@ -1,6 +1,6 @@
 """
-Default Mode Network extraction of ADHD dataset
-===============================================
+Default Mode Network extraction
+===============================
 
 This example shows a full step-by-step workflow of fitting a :term:`GLM`
 to signal extracted from a seed on the Posterior Cingulate Cortex
@@ -17,9 +17,11 @@ More specifically:
    then contrast estimation).
 4. The Default Mode Network is displayed.
 
+.. admonition:: dataset
+
+    This example uses the :ref:`ADHD dataset <adhd_dataset>`.
 """
 
-# %%
 import numpy as np
 
 from nilearn import plotting
@@ -35,9 +37,6 @@ from nilearn.maskers import NiftiSpheresMasker
 # ------------------------------------
 # Prepare the data.
 #
-# For more information
-# see the :ref:`dataset description <adhd_dataset>`.
-#
 adhd_dataset = fetch_adhd(n_subjects=1)
 
 # Prepare seed
@@ -48,7 +47,7 @@ pcc_coords = (0, -53, 26)
 # -------------------------------------
 # Extract the time course of the seed region.
 seed_masker = NiftiSpheresMasker(
-    [pcc_coords],
+    pcc_coords,
     radius=10,
     detrend=True,
     standardize="zscore_sample",

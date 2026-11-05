@@ -55,7 +55,7 @@ def extract_top_comment(yml_file: Path) -> str:
         f"should contain a comment before the top {SEPARATOR}."
     )
 
-    with yml_file.open() as file:
+    with yml_file.open(encoding="utf-8") as file:
         content = file.read()
 
     if SEPARATOR not in content:
@@ -87,7 +87,7 @@ def inject_with_jinja(
         output_file : Path to the output file.
         context : The context dictionary to render the template.
     """
-    with template_file.open() as file:
+    with template_file.open(encoding="utf-8") as file:
         template_content = file.read()
 
     # Create a Jinja template and render it
@@ -95,7 +95,7 @@ def inject_with_jinja(
     rendered_content = template.render(context=context)
 
     # Write the rendered content to the output file
-    with output_file.open("w") as file:
+    with output_file.open("w", encoding="utf-8") as file:
         file.write(rendered_content)
 
     print("Template rendered and written to", output_file)

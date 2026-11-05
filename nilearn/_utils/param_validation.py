@@ -176,6 +176,8 @@ TYPE_MAPS = {
     "annotate": nilearn_typing.Annotate,
     "border_size": nilearn_typing.BorderSize,
     "bg_on_data": nilearn_typing.BgOnData,
+    "black_bg": nilearn_typing.BlackBg,
+    "cbar_tick_format": nilearn_typing.CbarTickFormat,
     "colorbar": nilearn_typing.ColorBar,
     "cluster_threshold": nilearn_typing.ClusterThreshold,
     "connected": nilearn_typing.Connected,
@@ -186,14 +188,13 @@ TYPE_MAPS = {
     "force_resample": nilearn_typing.ForceResample,
     "high_pass": nilearn_typing.HighPass,
     "hrf_model": nilearn_typing.HrfModel,
-    "keep_masked_labels": nilearn_typing.KeepMaskedLabels,
-    "keep_masked_maps": nilearn_typing.KeepMaskedMaps,
     "low_pass": nilearn_typing.LowPass,
     "lower_cutoff": nilearn_typing.LowerCutoff,
     "memory": nilearn_typing.MemoryLike,
     "memory_level": nilearn_typing.MemoryLevel,
     "n_jobs": nilearn_typing.NJobs,
     "n_perm": nilearn_typing.NPerm,
+    "n_subjects": (int, list, tuple, type(None)),
     "opening": nilearn_typing.Opening,
     "output_file": nilearn_typing.OutputFile,
     "radiological": nilearn_typing.Radiological,
@@ -257,7 +258,6 @@ def check_params(fn_dict) -> None:
                 check_params(self.__dict__)
                 # check parameters passed to the method
                 check_params(locals())
-
     """
     keys_to_check = set(TYPE_MAPS.keys()).intersection(set(fn_dict.keys()))
     # Send a message to dev if they are using this function needlessly.
@@ -287,7 +287,6 @@ def check_is_of_allowed_type(
     Ignore truthy / falsy so that:
 
     check_is_of_allowed_type(True, (int), "foo") will fail.
-
     """
     if not isinstance(type_to_check, tuple):
         type_to_check = (type_to_check,)
@@ -345,3 +344,11 @@ def sanitize_verbose(verbose: int | bool) -> int:
     elif verbose is False:
         verbose = 0
     return verbose
+
+
+def check_n_confounds_match_n_images(confounds, imgs_list) -> None:
+    if len(confounds) != len(imgs_list):
+        raise ValueError(
+            f"Number of confounds ({len(confounds)}) "
+            f"must match number of images ({len(imgs_list)})."
+        )

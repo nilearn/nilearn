@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearn.plotting.plot_roi`."""
+"""Test for :func:`nilearn.plotting.plot_roi`."""
 
 # ruff: noqa: ARG001
 
@@ -81,7 +81,7 @@ def test_plot_roi_view_type_error(matplotlib_pyplot):
 
 @pytest.mark.thread_unsafe
 def test_demo_plot_roi_output_file(matplotlib_pyplot, tmp_path):
-    """Tests plot_roi file saving capabilities."""
+    """Test plot_roi file saving capabilities."""
     filename = tmp_path / "test.png"
     out = demo_plot_roi(output_file=filename)
     assert out is None

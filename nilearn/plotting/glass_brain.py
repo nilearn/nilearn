@@ -32,7 +32,6 @@ def _invert_color(color):
     If color is (R, G, B) it returns (1 - R, 1 - G, 1 - B). If
     'color' can not be converted to a color it is returned
     unmodified.
-
     """
     try:
         color_converter = colors.ColorConverter()
@@ -165,7 +164,6 @@ def plot_brain_schematics(ax, direction, **kwargs):
     -------
     object_bounds : (xmin, xmax, ymin, ymax) tuple
         Useful for the caller to be able to set axes limits.
-
     """
     get_axis_bg_color = ax.get_facecolor()
 

@@ -2,7 +2,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Self
 
 import numpy as np
 from scipy import ndimage
@@ -20,8 +20,29 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import mean_img
-from nilearn.maskers._mixin import _LabelMaskerMixin
+from nilearn.maskers._mixin import (
+    _LabelMaskerMixin,
+    _MaskerReportDefaults,
+)
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    ReductionStrategy,
+    Signals,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    TableLike,
+    Tr,
+    Verbose,
+)
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -98,7 +119,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -158,10 +179,9 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         (for example across timepoints) is finite value different from 0.
 
     memory_ : joblib memory cache
-
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": (
             "This report shows the input surface image overlaid "
             "with the outlines of the mask. "
@@ -174,27 +194,27 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
     def __init__(
         self,
-        labels_img=None,
-        labels=None,
-        lut=None,
-        background_label=0,
-        mask_img=None,
-        smoothing_fwhm=None,
-        standardize=False,
-        standardize_confounds=True,
-        detrend=False,
-        high_variance_confounds=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
-        memory=None,
-        memory_level=1,
-        verbose=0,
-        strategy="mean",
-        reports=True,
-        cmap=DEFAULT_SEQUENTIAL_CMAP,
-        clean_args=None,
+        labels_img: SurfaceImage | None = None,
+        labels: list[str] | None = None,
+        lut: TableLike | None = None,
+        background_label: int | float = 0,
+        mask_img: SurfaceImage | None = None,
+        smoothing_fwhm: SmoothingFwhm = None,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        detrend: Detrend = False,
+        high_variance_confounds: bool = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
+        strategy: ReductionStrategy = "mean",
+        reports: bool = True,
+        cmap: ColormapLike = DEFAULT_SEQUENTIAL_CMAP,
+        clean_args: dict[str, Any] | None = None,
     ):
         self.labels_img = labels_img
         self.labels = labels
@@ -221,7 +241,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self._reset_report()
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y: None = None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -347,14 +367,15 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
             table = self.lut_.copy()
 
+            part_data = self.labels_img_.data.parts[part]
+            n_non_background_vertices = np.sum(
+                part_data != self.background_label
+            )
+
             for _, row in table.iterrows():
-                n_vertices = self.labels_img_.data.parts[part] == row["index"]
+                n_vertices = part_data == row["index"]
                 size.append(n_vertices.sum())
-                tmp = (
-                    n_vertices.sum()
-                    / self.labels_img_.mesh.parts[part].n_vertices
-                    * 100
-                )
+                tmp = n_vertices.sum() / n_non_background_vertices * 100
                 relative_size.append(f"{tmp:.2}")
 
             table["size"] = size
@@ -371,7 +392,12 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         return hasattr(self, "lut_") and hasattr(self, "mask_img_")
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from surface object.
 
         Parameters
@@ -452,7 +478,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, signals):
+    def inverse_transform(self, signals: Signals) -> SurfaceImage:
         """Transform extracted signal back to surface image.
 
         Parameters

@@ -26,7 +26,7 @@ def test_encode(dtype):
 
 @pytest.mark.parametrize("hemi", ["left", "right"])
 def test_mesh_to_plotly(hemi):
-    """Tests for function mesh_to_plotly."""
+    """Test for function mesh_to_plotly."""
     fsaverage = fetch_surf_fsaverage()
     coord, triangles = load_surf_mesh(fsaverage[f"pial_{hemi}"])
     plotly = mesh_to_plotly(fsaverage[f"pial_{hemi}"])
@@ -50,7 +50,6 @@ def check_html_surface_plots(
     - ``view_connectome``
     - ``view_surf``
     -  ``view_markers``
-
     """
     tmpfile = tmp_path / "test.html"
 

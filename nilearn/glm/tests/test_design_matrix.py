@@ -417,7 +417,7 @@ def test_high_pass(n_frames):
 
 
 def test_csv_io(tmp_path, frame_times):
-    # test the csv io on design matrices
+    # test the CSV io on design matrices
     DM = make_first_level_design_matrix(
         frame_times,
         events=modulated_event_paradigm(),

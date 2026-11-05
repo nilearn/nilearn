@@ -6,6 +6,7 @@ features
 """
 
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
@@ -31,6 +32,8 @@ from nilearn.nilearn_typing import (
     HighPass,
     LowPass,
     NonNullScalar,
+    SingleConfound,
+    Standardize,
     StandardizeConfounds,
     Tr,
 )
@@ -48,9 +51,7 @@ AVAILABLE_FILTERS = ("butterworth", "cosine")
 def standardize_signal(
     signals,
     detrend: bool = False,
-    standardize: Literal["psc", "zscore_sample"]
-    | bool
-    | None = "zscore_sample",
+    standardize: Standardize = "zscore_sample",
 ) -> np.ndarray:
     """Center and standardize a given signal (time is along first axis).
 
@@ -73,20 +74,9 @@ def standardize_signal(
 
     signals = _detrend(signals, inplace=False) if detrend else signals.copy()
 
-    # TODO (nilearn >= 0.15) remove casting from bool
-    if standardize is False:
-        standardize = None
-    elif standardize is True:
-        standardize = "zscore_sample"
-
     if standardize is None:
         return signals
 
-    check_parameter_in_allowed(
-        standardize,
-        allowed=["psc", "zscore_sample"],
-        parameter_name="standardize",
-    )
     if signals.shape[0] == 1:
         warnings.warn(
             "Standardization of 3D signal has been requested but "
@@ -150,7 +140,6 @@ def _mean_of_squares(signals, n_batches=20):
             and computation time. The higher the value, the lower the
             memory consumption.
 
-
     Returns
     -------
     var : :class:`numpy.ndarray`
@@ -195,7 +184,6 @@ def row_sum_of_squares(signals, n_batches=20):
             and computation time. The higher the value, the lower the
             memory consumption.
 
-
     Returns
     -------
     var : :class:`numpy.ndarray`
@@ -213,7 +201,7 @@ def row_sum_of_squares(signals, n_batches=20):
     return var
 
 
-def _detrend(signals, inplace=False, type="linear", n_batches=10):
+def _detrend(signals, inplace: bool = False, type="linear", n_batches=10):
     """Detrend columns of input array.
 
     Signals are supposed to be columns of `signals`.
@@ -401,8 +389,6 @@ def butterworth(
         >>> leg = plt.legend(["Initial signals", "Filtered signals"])
         >>> plt.grid(True)
         >>> plt.show()
-
-
     """
     check_params(locals())
     if low_pass is None and high_pass is None:
@@ -422,6 +408,7 @@ def butterworth(
     nyq = sampling_rate * 0.5
 
     critical_freq = []
+    btype = "low"  # scipy.signal.butter default
     if high_pass is not None:
         btype = "high"
         critical_freq.append(_check_wn(btype, high_pass, nyq))
@@ -520,7 +507,11 @@ def high_variance_confounds(
     Returns
     -------
     v : :class:`numpy.ndarray`
-        Highest variance confounds. Shape: (samples, n_confounds)
+        Highest variance confounds with shape: (samples, n_confounds).
+
+    See Also
+    --------
+    nilearn.image.high_variance_confounds
 
     Notes
     -----
@@ -538,10 +529,6 @@ def high_variance_confounds(
     References
     ----------
     .. footbibliography::
-
-    See Also
-    --------
-    nilearn.image.high_variance_confounds
     """
     check_params(locals())
     if detrend:
@@ -578,7 +565,7 @@ def clean(
     detrend: bool = True,
     standardize="zscore_sample",
     sample_mask=None,
-    confounds=None,
+    confounds: SingleConfound | Sequence[SingleConfound] | None = None,
     standardize_confounds: StandardizeConfounds = True,
     filter: Literal["butterworth", "cosine", False] = "butterworth",
     low_pass: LowPass = None,
@@ -641,13 +628,14 @@ def clean(
         cleaned independently. Must be a 1D array of n_samples elements.
 
     confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
-                :class:`pandas.DataFrame` \
-                or :obj:`list` of confounds timeseries, default=None
+                :class:`pandas.DataFrame`, None, \
+                or :obj:`list` or :obj:`tuple` of confounds timeseries, \
+                default=None
         Shape must be (instant number, confound number), or just
         (instant number,).
         The number of time instants in ``signals`` and ``confounds`` must be
         identical (i.e. ``signals.shape[0] == confounds.shape[0]``).
-        If a string is provided, it is assumed to be the name of a csv file
+        If a string is provided, it is assumed to be the name of a CSV file
         containing signals as columns, with an optional one-line header.
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.
@@ -707,12 +695,15 @@ def clean(
         Kwargs prefixed with ``'butterworth__'`` will be passed to
         :func:`~nilearn.signal.butterworth`.
 
-
     Returns
     -------
     cleaned_signals : :class:`numpy.ndarray`
         Input signals, cleaned. Same shape as `signals` unless `sample_mask`
         is applied.
+
+    See Also
+    --------
+    nilearn.image.clean_img
 
     Notes
     -----
@@ -725,10 +716,6 @@ def clean(
     References
     ----------
     .. footbibliography::
-
-    See Also
-    --------
-    nilearn.image.clean_img
 
     Examples
     --------
@@ -770,8 +757,8 @@ def clean(
     )
 
     # Read confounds and signals
-    signals, runs, confounds, sample_mask, standardize = _sanitize_inputs(
-        signals, runs, confounds, sample_mask, ensure_finite, standardize
+    signals, runs, confounds, sample_mask = _sanitize_inputs(
+        signals, runs, confounds, sample_mask, ensure_finite
     )
 
     # Process each run independently
@@ -848,7 +835,11 @@ def clean(
                 **butterworth_kwargs,
             )
 
-        # apply sample_mask to remove censored volumes after signal filtering
+        # Butterworth: censored volumes were interpolated
+        # in _handle_scrubbed_volumes so filtering could run on a regularly
+        # sampled signal; remove them now that filtering is done.
+        # For other filter types, censoring already happened
+        # in _handle_scrubbed_volumes.
         if sample_mask is not None:
             signals, confounds = _censor_signals(
                 signals, confounds, sample_mask
@@ -856,10 +847,11 @@ def clean(
 
     # Remove confounds
     if confounds is not None:
-        tmp = None if standardize_confounds is False else "zscore_sample"
         confounds = standardize_signal(
             confounds,
-            standardize=tmp,
+            standardize=None
+            if standardize_confounds is False
+            else "zscore_sample",
             detrend=False,
         )
 
@@ -971,12 +963,11 @@ def create_cosine_drift(high_pass, frame_times):
     Returns
     -------
     cosine_drift : array of shape(n_scans, n_drifts)
-        Cosine drifts plus a constant regressor at cosine_drift[:, -1]
+        Cosine drifts plus a constant regressor at cosine_drift[:, -1].
 
     References
     ----------
     http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
-
     """
     n_frames = len(frame_times)
     n_times = np.arange(n_frames)
@@ -985,7 +976,7 @@ def create_cosine_drift(high_pass, frame_times):
         warnings.warn(
             "High-pass filter will span all accessible frequencies "
             "and saturate the design matrix. "
-            "You may want to reduce the high_pass value."
+            "You may want to reduce the high_pass value. "
             f"The provided value is {high_pass} Hz",
             stacklevel=find_stack_level(),
         )
@@ -1088,9 +1079,7 @@ def _process_runs(
     return np.vstack(cleaned_signals)
 
 
-def _sanitize_inputs(
-    signals, runs, confounds, sample_mask, ensure_finite, standardize
-):
+def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     """Clean up signals and confounds before processing."""
     n_time = len(signals)  # original length of the signal
     n_runs, runs = _sanitize_runs(n_time, runs)
@@ -1098,26 +1087,10 @@ def _sanitize_inputs(
     sample_mask = _sanitize_sample_mask(n_time, n_runs, runs, sample_mask)
     signals = _sanitize_signals(signals, ensure_finite)
 
-    if isinstance(standardize, bool):
-        warnings.warn(
-            stacklevel=find_stack_level(),
-            category=FutureWarning,
-            message=(
-                "boolean values for 'standardize' "
-                "will be deprecated in nilearn 0.15.0.\n"
-                "Use 'zscore_sample' instead of 'True' or "
-                "use 'None' instead of 'False'."
-            ),
-        )
-        if standardize is True:
-            standardize = "zscore_sample"
-        elif standardize is False:
-            standardize = None
-
-    return signals, runs, confounds, sample_mask, standardize
+    return signals, runs, confounds, sample_mask
 
 
-def sanitize_confounds(n_time, confounds):
+def sanitize_confounds(n_time, confounds) -> np.ndarray | None:
     """Check confounds are the correct type.
 
     When passing multiple runs, ensure the
@@ -1192,7 +1165,9 @@ def _sanitize_runs(n_time, runs):
     return n_runs, runs
 
 
-def _sanitize_confound_dtype(n_signal: int, confound) -> np.ndarray:
+def _sanitize_confound_dtype(
+    n_signal: int, confound: SingleConfound
+) -> np.ndarray:
     """Check confound is the correct datatype."""
     if isinstance(confound, pd.DataFrame):
         confound = confound.to_numpy()
@@ -1202,13 +1177,7 @@ def _sanitize_confound_dtype(n_signal: int, confound) -> np.ndarray:
         if np.isnan(confound.flat[0]):
             # There may be a header
             confound = csv_to_array(filename, skip_header=1)
-        if confound.shape[0] != n_signal:
-            raise ValueError(
-                "Confound signal has an incorrect length. \n"
-                f"Signal length: {n_signal}; "
-                f"confound length: {confound.shape[0]}"
-            )
-    elif isinstance(confound, np.ndarray):
+    if isinstance(confound, np.ndarray):
         if confound.ndim == 1:
             confound = np.atleast_2d(confound).T
         elif confound.ndim != 2:
@@ -1249,7 +1218,7 @@ def _check_filter_parameters(
             isinstance(item, (float, int)) for item in [low_pass, high_pass]
         ):
             warnings.warn(
-                "No filter type selected but cutoff frequency provided."
+                "No filter type selected but cutoff frequency provided. "
                 "Will not perform filtering.",
                 stacklevel=find_stack_level(),
             )
@@ -1278,7 +1247,7 @@ def _check_filter_parameters(
     return "butterworth", t_r, low_pass, high_pass
 
 
-def _sanitize_signals(signals, ensure_finite):
+def _sanitize_signals(signals, ensure_finite) -> np.ndarray:
     """Ensure signals are in the correct state."""
     check_parameter_in_allowed(ensure_finite, [True, False], "ensure_finite")
     signals = signals.copy()

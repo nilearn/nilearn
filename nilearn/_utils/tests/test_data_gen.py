@@ -1,4 +1,4 @@
-"""Tests for the data generation utilities."""
+"""Test for the data generation utilities."""
 
 import json
 
@@ -104,7 +104,6 @@ def _bids_path_template(
     File path is relative to the BIDS root folder.
 
     File path contains a session level folder.
-
     """
     task = f"task-{task}_*"
     run = "run-*_*" if n_runs is not None else "*"
@@ -260,7 +259,7 @@ def test_fake_bids_derivatives_with_session_and_runs(
 
 
 def test_bids_dataset_no_run_entity(tmp_path):
-    """n_runs = 0 produces files without the run entity."""
+    """Check n_runs = 0 produces files without the run entity."""
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
         n_sub=1,
@@ -294,8 +293,9 @@ def test_bids_dataset_no_run_entity(tmp_path):
         assert len(files) == 1
 
 
+@pytest.mark.ai_generated
 def test_bids_dataset_no_session(tmp_path):
-    """n_ses = 0 prevent creation of a session folder."""
+    """Check n_ses = 0 prevents creation of a session folder."""
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
         n_sub=1,

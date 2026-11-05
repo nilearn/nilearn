@@ -159,7 +159,7 @@ def _tseries_std(
     mask_img,
     confounds,
     sample_mask,
-    standardize_signal=False,
+    standardize_signal=None,
     standardize_confounds=True,
     detrend=False,
 ):
@@ -181,7 +181,7 @@ def _denoise(
     mask_img,
     confounds,
     sample_mask,
-    standardize_signal=False,
+    standardize_signal=None,
     standardize_confounds=True,
     detrend=False,
 ):
@@ -211,7 +211,7 @@ def _corr_tseries(tseries1, tseries2):
 def test_nilearn_standardize_false(tmp_path):
     """Test removing confounds with no standardization."""
     # niftimasker default:
-    # standardize=False, standardize_confounds=True, detrend=False
+    # standardize=None, standardize_confounds=True, detrend=False
 
     # Simulate data; set demean to False as standardize_confounds=True
     (img, mask_conf, mask_rand, confounds, sample_mask) = _simu_img(
@@ -225,7 +225,7 @@ def test_nilearn_standardize_false(tmp_path):
         mask_conf,
         confounds,
         sample_mask,
-        standardize_signal=False,
+        standardize_signal=None,
         standardize_confounds=True,
         detrend=False,
     )
@@ -238,7 +238,7 @@ def test_nilearn_standardize_false(tmp_path):
         mask_rand,
         confounds,
         sample_mask,
-        standardize_signal=False,
+        standardize_signal=None,
         standardize_confounds=True,
         detrend=False,
     )
@@ -567,7 +567,7 @@ def test_non_steady_state(tmp_path, fmriprep_version):
 
 def test_load_non_nifti(tmp_path):
     """Test non-nifti and invalid file type as input."""
-    # tsv file - unsupported input
+    # TSV file - unsupported input
     _, tsv = create_tmp_filepath(tmp_path, copy_confounds=True, copy_json=True)
 
     with pytest.raises(ValueError, match="Unsupported input"):

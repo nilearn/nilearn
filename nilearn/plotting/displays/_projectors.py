@@ -3,6 +3,7 @@ from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy
 from matplotlib import cm as mpl_cm
 from scipy.sparse import issparse
 from scipy.stats import scoreatpercentile
@@ -75,9 +76,8 @@ class OrthoProjector(OrthoSlicer):
         Returns
         -------
         cut_coords : :obj:`tuple` of `None`
-            tuple of None of length corresponding to the number of
+            Tuple of None of length corresponding to the number of
             directions of this projector.
-
         """
         return (None,) * len(cls._cut_displayed)
 
@@ -98,7 +98,6 @@ class OrthoProjector(OrthoSlicer):
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
             :func:`~matplotlib.pyplot.axhline`.
-
         """
 
     def _check_inputs_add_graph(
@@ -169,7 +168,10 @@ class OrthoProjector(OrthoSlicer):
     @fill_doc
     def add_graph(
         self,
-        adjacency_matrix,
+        adjacency_matrix: np.ndarray
+        | np.ma.masked_array
+        | scipy.sparse.coo_matrix
+        | scipy.sparse.coo_array,
         node_coords,
         node_color="auto",
         node_size=50,
@@ -185,11 +187,12 @@ class OrthoProjector(OrthoSlicer):
 
         Parameters
         ----------
-        adjacency_matrix : :class:`numpy.ndarray` of shape ``(n, n)``
-            Represents the edges strengths of the graph.
-            The matrix can be symmetric which will result in
-            an undirected graph, or not symmetric which will
-            result in a directed graph.
+        adjacency_matrix : :class:`numpy.ndarray` of shape ``(n, n)``, \
+            or :class:`scipy.sparse.coo_array`.
+            Represents the link strengths of the graph.
+            The matrix can be symmetric which will result
+            in an undirected graph,
+            or not symmetric which will result in a directed graph.
 
         node_coords : :class:`numpy.ndarray` of shape ``(n, 3)``
             3D coordinates of the graph nodes in world space.
@@ -368,7 +371,6 @@ class XProjector(OrthoProjector):
     --------
     nilearn.plotting.displays.YProjector : Coronal view
     nilearn.plotting.displays.ZProjector : Axial view
-
     """
 
     _cut_displayed: ClassVar[str] = "x"
@@ -407,7 +409,6 @@ class YProjector(OrthoProjector):
     --------
     nilearn.plotting.displays.XProjector : Sagittal view
     nilearn.plotting.displays.ZProjector : Axial view
-
     """
 
     _cut_displayed: ClassVar[str] = "y"
@@ -446,7 +447,6 @@ class ZProjector(OrthoProjector):
     --------
     nilearn.plotting.displays.XProjector : Sagittal view
     nilearn.plotting.displays.YProjector : Coronal view
-
     """
 
     _cut_displayed: ClassVar[str] = "z"
@@ -485,7 +485,6 @@ class XZProjector(OrthoProjector):
     --------
     nilearn.plotting.displays.YXProjector : Coronal + Sagittal views
     nilearn.plotting.displays.YZProjector : Coronal + Axial views
-
     """
 
     _cut_displayed = "xz"
@@ -524,7 +523,6 @@ class YXProjector(OrthoProjector):
     --------
     nilearn.plotting.displays.XZProjector : Sagittal + Axial views
     nilearn.plotting.displays.YZProjector : Coronal + Axial views
-
     """
 
     _cut_displayed = "xy"
@@ -562,7 +560,6 @@ class YZProjector(OrthoProjector):
     --------
     nilearn.plotting.displays.XZProjector : Sagittal + Axial views
     nilearn.plotting.displays.YXProjector : Coronal + Sagittal views
-
     """
 
     _cut_displayed: ClassVar[str] = "yz"
@@ -602,7 +599,6 @@ class LYRZProjector(OrthoProjector):
     See Also
     --------
     nilearn.plotting.displays.LZRYProjector : ?? views
-
     """
 
     _cut_displayed = "lyrz"
@@ -641,7 +637,6 @@ class LZRYProjector(OrthoProjector):
     See Also
     --------
     nilearn.plotting.displays.LYRZProjector : ?? views
-
     """
 
     _cut_displayed = "lzry"
@@ -678,7 +673,6 @@ class LZRProjector(OrthoProjector):
     See Also
     --------
     nilearn.plotting.displays.LYRProjector : ?? views
-
     """
 
     _cut_displayed = "lzr"
@@ -715,7 +709,6 @@ class LYRProjector(OrthoProjector):
     See Also
     --------
     nilearn.plotting.displays.LZRProjector : ?? views
-
     """
 
     _cut_displayed = "lyr"
@@ -748,7 +741,6 @@ class LRProjector(OrthoProjector):
         The axes used for plotting in each direction ('l' and 'r' here).
 
     %(displays_partial_attributes)s
-
     """
 
     _cut_displayed = "lr"
@@ -785,7 +777,6 @@ class LProjector(OrthoProjector):
     See Also
     --------
     nilearn.plotting.displays.RProjector : right projection view
-
     """
 
     _cut_displayed: ClassVar[str] = "l"
@@ -823,7 +814,6 @@ class RProjector(OrthoProjector):
     See Also
     --------
     nilearn.plotting.displays.LProjector : left projection view
-
     """
 
     _cut_displayed: ClassVar[str] = "r"
@@ -892,6 +882,5 @@ def get_projector(display_mode):
             :class:`~nilearn.plotting.displays.LProjector`.
         - "z": Returns a
             :class:`~nilearn.plotting.displays.RProjector`.
-
     """
     return get_create_display_fun(display_mode, PROJECTORS)

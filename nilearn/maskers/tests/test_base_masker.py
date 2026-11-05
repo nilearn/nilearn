@@ -4,6 +4,7 @@ import contextlib
 import io
 
 import numpy as np
+import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
@@ -12,6 +13,7 @@ from nilearn.maskers.base_masker import mask_logger
 from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
 
 
+@pytest.mark.thread_unsafe
 def test_mask_logger(img_3d_mni, img_3d_mni_as_file, surf_img_1d):
     """Check verbosity of mask_logger."""
     # verbose = 0 --> no output
@@ -53,7 +55,7 @@ def test_mask_logger(img_3d_mni, img_3d_mni_as_file, surf_img_1d):
                 mask_logger("load_data", img=img, verbose=verbose)
             output[verbose] = buffer.getvalue()
 
-        # verbose 2 gives fullpath or affine matrix or expands list
+        # verbose 2 gives full path or affine matrix or expands list
         assert len(output[1]) < len(output[2])
         assert len(output[2]) == len(output[3])
 
@@ -131,7 +133,7 @@ def test_get_masker_params():
         "reports": True,
         "runs": None,
         "smoothing_fwhm": None,
-        "standardize": False,
+        "standardize": None,
         "standardize_confounds": True,
         "t_r": None,
         "target_affine": None,
@@ -152,7 +154,7 @@ def test_get_masker_params():
         "reports": True,
         "runs": None,
         "smoothing_fwhm": None,
-        "standardize": False,
+        "standardize": None,
         "standardize_confounds": True,
         "target_affine": None,
         "target_shape": None,

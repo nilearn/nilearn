@@ -53,7 +53,7 @@ class CanICA(_MultiPCA):
 
     %(random_state)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     %(standardize_confounds)s
 
@@ -122,7 +122,6 @@ class CanICA(_MultiPCA):
     References
     ----------
     .. footbibliography::
-
     """
 
     def __init__(
@@ -134,7 +133,7 @@ class CanICA(_MultiPCA):
         threshold="auto",
         n_init=10,
         random_state=None,
-        standardize=True,
+        standardize="zscore_sample",
         standardize_confounds=True,
         detrend=True,
         low_pass=None,
@@ -252,7 +251,6 @@ class CanICA(_MultiPCA):
         ----------
         data : ndarray or memmap
             Unmasked data to process
-
         """
         if (
             isinstance(self.threshold, float)

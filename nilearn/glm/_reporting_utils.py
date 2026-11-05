@@ -18,21 +18,42 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD, threshold_stats_img
-from nilearn.nilearn_typing import ClusterThreshold, HeightControl
+from nilearn.nilearn_typing import (
+    ClusterThreshold,
+    HeightControl,
+    ReportEngine,
+    TypedBunch,
+)
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
     get_clusters_table,
 )
 from nilearn.reporting.html_report import HTMLReport
-from nilearn.reporting.mixin import ReportMixin
+from nilearn.reporting.mixin import (
+    DEFAULT_ENGINE,
+    ReportMixin,
+    _ReportDefaults,
+)
 from nilearn.reporting.utils import figure_to_png_base64
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
 
+class GLMReportDefaults(_ReportDefaults, total=False):
+    """Type of the default content of GLM reports."""
+
+    model_type: str
+    smoothing_fwhm: float | None
+    contrasts: Any
+    mask_plot: Any
+    results: Any
+    coverage: str | float
+    n_elements: int
+
+
 class GLMReportMixin(ReportMixin):
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[GLMReportDefaults] = {
         "model_type": "",
         "smoothing_fwhm": None,
         "contrasts": None,
@@ -43,7 +64,9 @@ class GLMReportMixin(ReportMixin):
     }
     _template_name = "body_glm.jinja"
 
-    def _set_report_basics(self, engine, title):
+    def _set_report_basics(
+        self, engine: ReportEngine, title: str | None
+    ) -> None:
         super()._set_report_basics(engine, title)
 
         report_content = self._report_content
@@ -255,7 +278,6 @@ class GLMReportMixin(ReportMixin):
             .. note::
                 ``cut_coords`` will not be used when ``plot_type='glass'``.
 
-
         display_mode :  :obj:`str`, default=None
             Default is 'z' if plot_type is 'slice';
             'ortho' if plot_type is 'glass'.
@@ -281,12 +303,11 @@ class GLMReportMixin(ReportMixin):
         -------
         report : :class:`~nilearn.reporting.HTMLReport`
             HTML report for the :term:`GLM`.
-
         """
         check_params(locals())
         self._reset_report_warnings()
 
-        self._set_report_basics(engine="matplotlib", title=title)
+        self._set_report_basics(engine=DEFAULT_ENGINE, title=title)
         self._run_report_checks(
             height_control=height_control,
             cluster_threshold=cluster_threshold,
@@ -403,19 +424,8 @@ def sanitize_generate_report_input(
         first_level_contrast = None
 
     if height_control is None:
-        # TODO (nilearn >= 0.15.0) update to DEFAULT_Z_THRESHOLD
         if threshold is None:
-            threshold = 3.09
-
-        # TODO (nilearn >= 0.15.0) remove
-        if threshold == 3.09:
-            warnings.warn(
-                "\nFrom nilearn version>=0.15, "
-                "the default 'threshold' will be set to "
-                f"{DEFAULT_Z_THRESHOLD}.",
-                FutureWarning,
-                stacklevel=find_stack_level(),
-            )
+            threshold = DEFAULT_Z_THRESHOLD
 
     elif threshold is not None:
         threshold = float(threshold)
@@ -437,7 +447,7 @@ def sanitize_generate_report_input(
     return threshold, cut_coords, first_level_contrast, warning_messages
 
 
-def turn_into_full_path(bunch, dir: Path) -> str | Bunch:
+def turn_into_full_path(bunch, dir: Path) -> str | TypedBunch[Any, Any]:
     """Recursively turns str values of a dict into path.
 
     Used to turn relative paths into full paths.
@@ -465,12 +475,10 @@ def mask_to_plot(model, bg_img):
         The background image that the mask will be plotted on top of.
         To turn off background image, just pass "bg_img=None".
 
-
     Returns
     -------
     mask_plot : :obj:`str`
         PNG Image for the mask plot.
-
     """
     if not is_matplotlib_installed() or not model.__sklearn_is_fitted__():
         return None
@@ -585,7 +593,6 @@ def make_stat_maps_contrast_clusters(
     results : dict
         Each key contains
         contrast name, contrast plot, statistical map, cluster table.
-
     """
     if not model.__sklearn_is_fitted__():
         return None
@@ -658,12 +665,13 @@ def make_stat_maps_contrast_clusters(
         #         )
         # else:
 
-        cluster_table = get_clusters_table(
+        cluster_table, _ = get_clusters_table(
             thresholded_img,
             stat_threshold=threshold,
             cluster_threshold=cluster_threshold,
             min_distance=min_distance,
             two_sided=two_sided,
+            return_label_maps=True,
         )
         cluster_table_html = dataframe_to_html(
             cluster_table,
@@ -802,8 +810,7 @@ def _stat_map_to_png(
         PNG Image Data representing a statistical map.
 
     fig : matplotlib figure
-        only used for testing
-
+        Only used for testing.
     """
     if not is_matplotlib_installed():
         return None, None
@@ -917,7 +924,6 @@ def _add_params_to_plot(table_details, stat_map_plot):
     -------
     stat_map_plot : matplotlib.Axes
         Axes object of the stat map plot, with the added suptitle.
-
     """
     from matplotlib import pyplot as plt
 

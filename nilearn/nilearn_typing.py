@@ -18,18 +18,40 @@ To expand the functionality of check_params you need to:
 
 import pathlib
 from collections.abc import Callable
-from typing import Literal, TypeAlias
+from typing import TYPE_CHECKING, Literal, TypeAlias, TypeVar
 
 import numpy as np
+import pandas as pd
 from joblib.memory import Memory
 from nibabel import Nifti1Image
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
+if TYPE_CHECKING:
+    import polars as pl
+    from matplotlib.colors import Colormap
+
+_KT = TypeVar("_KT")
+_VT = TypeVar("_VT")
+
+if TYPE_CHECKING:
+
+    class TypedBunch(dict[_KT, _VT]):
+        """Typed stand-in for sklearn.utils.Bunch."""
+
+        def __getattr__(self, key: str) -> _VT: ...
+        def __setattr__(self, key: str, value: _VT) -> None: ...
+
+else:
+    # to avoid TypedBunch existing at runtime
+    # with empty __getattr__/__setattr__
+    TypedBunch = dict
+
 Integer: TypeAlias = int | np.integer
 Float: TypeAlias = float | np.floating
 NonNullScalar: TypeAlias = Float | Integer
 Scalar: TypeAlias = NonNullScalar | None
+SingleConfound: TypeAlias = pd.DataFrame | np.ndarray | str | pathlib.Path
 
 Annotate: TypeAlias = bool
 AvailableMeshes: TypeAlias = Literal[
@@ -41,8 +63,14 @@ AvailableMeshes: TypeAlias = Literal[
     "fsaverage",
 ]
 BgOnData: TypeAlias = bool
+BlackBg: TypeAlias = Literal[True, False, "auto"]
 BorderSize: TypeAlias = Integer
+CbarTickFormat: TypeAlias = str
 ColorBar: TypeAlias = bool
+if TYPE_CHECKING:
+    ColormapLike: TypeAlias = Colormap | str | None
+else:
+    ColormapLike: TypeAlias = str | None
 ClusterThreshold: TypeAlias = Integer
 Connected: TypeAlias = bool
 CopyHeader: TypeAlias = bool
@@ -71,32 +99,64 @@ DisplayModeGlassBrain: TypeAlias = Literal[
 DrawCross: TypeAlias = bool
 ForceResample: TypeAlias = bool
 HeightControl: TypeAlias = Literal[None, "fpr", "fdr", "bonferroni"]
-# Note that for HrfModel
-# str is too generic here
-# and it should actually be Literal["spm", "glover", ...]
-# if we wanted to use proper type annotation
-HrfModel: TypeAlias = str | Callable | list | None
+if TYPE_CHECKING:
+    HrfModel: TypeAlias = (
+        Literal[
+            "spm",
+            "spm + derivative",
+            "spm + derivative + dispersion",
+            "fir",
+            "glover",
+            "glover + derivative",
+            "glover + derivative + dispersion",
+        ]
+        | Callable
+        | list[Callable]
+        | None
+    )
+else:
+    HrfModel: TypeAlias = str | Callable | list | None
 
 HighPass: TypeAlias = Scalar
-KeepMaskedLabels: TypeAlias = bool
-KeepMaskedMaps: TypeAlias = bool
 LowerCutoff: TypeAlias = Float
 LowPass: TypeAlias = Scalar
+MaskStrategy: TypeAlias = Literal[
+    "background", "epi", "whole-brain-template", "gm-template", "wm-template"
+]
 MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
 MemoryLevel: TypeAlias = Integer
 NJobs: TypeAlias = Integer
+# 'ols' or 'arN' where N is a positive integer (e.g. 'ar1', 'ar3').
+# This pattern cannot be expressed with Literal,
+# so validation happens at run time.
+NoiseModel: TypeAlias = str
 NPerm: TypeAlias = Integer
+NSubject: TypeAlias = int | list[int] | tuple[int, ...] | None
 NiimgLike: TypeAlias = Nifti1Image | str | pathlib.Path
 Opening: TypeAlias = bool | Integer
 OutputFile: TypeAlias = str | pathlib.Path | None
 Radiological: TypeAlias = bool
+ReductionStrategy: TypeAlias = Literal[
+    "mean",
+    "median",
+    "sum",
+    "minimum",
+    "maximum",
+    "standard_deviation",
+    "variance",
+]
 RandomState: TypeAlias = Integer | np.random.RandomState | None
+ReportEngine: TypeAlias = Literal["matplotlib", "plotly", "brainsprite"]
 ResamplingInterpolation: TypeAlias = Literal["continuous", "nearest"]
 Resolution: TypeAlias = Integer | None
 Resume: TypeAlias = bool
 ScreeningPercentile: TypeAlias = Scalar
+if TYPE_CHECKING:
+    Signals: TypeAlias = np.ndarray | pd.DataFrame | pl.DataFrame
+else:
+    Signals: TypeAlias = np.ndarray | pd.DataFrame
 SmoothingFwhm: TypeAlias = Scalar
-Standardize: TypeAlias = Literal["zscore_sample", "psc", True, False, None]
+Standardize: TypeAlias = Literal["zscore_sample", "psc", None]
 StandardizeConfounds: TypeAlias = bool
 SupportedRegressors: TypeAlias = Literal[
     "ridge",
@@ -116,6 +176,7 @@ SupportedClassifiers: TypeAlias = Literal[
     "ridge_classifier",
     "dummy_classifier",
 ]
+TableLike: TypeAlias = str | pathlib.Path | pd.DataFrame
 TargetAffine: TypeAlias = ndarray | list | tuple | None
 
 # Note that this is usable as for static type checking,

@@ -23,8 +23,10 @@ visualization & results checking are possible at each step.
     for automatic ROI extraction of brain connected networks
     given in 4D image.
 
-"""
+.. admonition:: dataset
 
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+"""
 # %%
 # Here are the coordinates of the slice we are interested in each direction.
 # We will be using them for visualization.
@@ -374,7 +376,8 @@ labels_img = new_img_like(fmri_img, labels)
 # First, we initialize a masker with parameters suited for data extraction:
 # labels as input image, ``resampling_target`` is None as the affine and
 # shape/size are the same for all the data used here, time series signal
-# processing parameters ``standardize`` and ``detrend`` are set to ``False``.
+# processing parameters ``standardize`` and ``detrend``
+# are set to ``None`` or ``False``.
 masker = NiftiLabelsMasker(
     labels_img,
     resampling_target=None,

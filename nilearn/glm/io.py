@@ -63,7 +63,7 @@ def _generate_model_metadata(out_file, model) -> None:
                 density[d] = f"{d} vertices per hemisphere"
         model_metadata["Density"] = density
 
-    with Path(out_file).open("w") as f_obj:
+    with Path(out_file).open("w", encoding="utf-8") as f_obj:
         json.dump(model_metadata, f_obj, indent=4, sort_keys=True)
 
 
@@ -132,7 +132,7 @@ def save_glm_to_bids(
 
 
 @fill_doc
-def save_glm_to_bids(
+def save_glm_to_bids(  # numpydoc ignore=RT05
     model,
     contrasts,
     first_level_contrast=None,
@@ -220,7 +220,6 @@ def save_glm_to_bids(
 
             - ``contrast-winminusneutral_stat-t_statmap.nii.gz``
 
-
             but this dictionary:
 
             .. code-block:: python
@@ -261,7 +260,6 @@ def save_glm_to_bids(
         the name of the output will be inferred from the input filenames
         by trying to parse them as BIDS files.
         This behavior can prevented by passing ``""`` as ``prefix``.
-
 
     kwargs : extra keywords arguments to pass to ``model.generate_report``
         Can be any of the following: ``title``, ``bg_img``, ``threshold``,
@@ -305,7 +303,6 @@ def save_glm_to_bids(
     - Contrast p- and z-values
       (``contrast-[name]_stat-[p|z]_statmap.nii.gz``)
     - Contrast weights figure (``contrast-[name]_design.svg``)
-
     """
     # grab the default from generate_report()
     # fail early if invalid parameters to pass to generate_report()
@@ -425,6 +422,7 @@ def save_glm_to_bids(
         first_level_contrast=first_level_contrast,
     )
     for contrast_name, contrast_maps in statistical_maps.items():
+        img = None
         for output_type in contrast_maps:
             if output_type in ["metadata", "clusters_tsv"]:
                 continue
@@ -448,6 +446,8 @@ def save_glm_to_bids(
                         )
                     )
 
+        if TYPE_CHECKING:
+            assert img is not None
         thresholded_img, threshold = threshold_stats_img(
             stat_img=img,
             threshold=report_kwargs["threshold"],
@@ -469,12 +469,13 @@ def save_glm_to_bids(
         ).open("w") as f:
             json.dump(table_details[0], f)
 
-        cluster_table = get_clusters_table(
+        cluster_table, _ = get_clusters_table(
             thresholded_img,
             stat_threshold=threshold,
             cluster_threshold=report_kwargs["cluster_threshold"],
             min_distance=report_kwargs["min_distance"],
             two_sided=report_kwargs["two_sided"],
+            return_label_maps=True,
         )
         cluster_table.to_csv(
             out_dir

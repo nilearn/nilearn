@@ -25,7 +25,6 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
     Returns
     -------
     t-values: np.ndarray, shape=(n_regressors, n_descriptors)
-
     """
     # set up design
     n_samples, n_regressors = tested_vars.shape

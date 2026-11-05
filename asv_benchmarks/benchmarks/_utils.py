@@ -49,8 +49,7 @@ def generate_fake_fmri(
     Returns
     -------
     Niimg-like object
-        Fake fmri signal.
-        shape: shape + (length,)
+        Fake fmri signal with shape: shape + (length,).
 
     Niimg-like object
         Mask giving non-zero voxels.
@@ -103,9 +102,8 @@ def generate_regions_ts(n_features: int, n_regions: int):
     Returns
     -------
     regions : :obj:`numpy.ndarray`
-        Regions, represented as signals.
-        shape (n_features, n_regions)
-
+        Regions, represented as signals
+        with shape (n_features, n_regions).
     """
     rng = _rng()
     window = "boxcar"
@@ -141,7 +139,6 @@ def img_labels(
     """Generate fixture for default label image.
 
     adapted from nilearn._utils.data_gen.generate_labeled_regions
-
     """
     n_voxels = shape[0] * shape[1] * shape[2]
 

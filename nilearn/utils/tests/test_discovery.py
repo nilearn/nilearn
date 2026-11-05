@@ -14,13 +14,13 @@ with contextlib.suppress(ImportError):
 @pytest.mark.parametrize(
     "type_filter, n_expected",
     [
-        (None, 33),
+        (None, 31),
         ("classifier", 3),
         ("regressor", 3),
         ("cluster", 2),
-        ("masker", 15),
+        ("masker", 14),
         ("multi_masker", 6),
-        ("transformer", 22),
+        ("transformer", 21),
     ],
 )
 def test_all_estimators(
@@ -38,9 +38,9 @@ def test_all_functions():
     fn = all_functions()
     print(fn)
     if is_matplotlib_installed():
-        assert len(fn) == 172
+        assert len(fn) == 170
     else:
-        assert len(fn) == 138
+        assert len(fn) == 136
 
 
 @pytest.mark.parametrize(

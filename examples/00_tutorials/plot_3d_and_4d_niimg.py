@@ -3,13 +3,22 @@
 ==========================================
 
 Here we discover how to work with 3D and 4D niimgs.
+
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Smith 2009 atlas <smith_2009_atlas>`
+    - a sample motor activation statistical map (`image 10426
+      <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
+      <neurovault_dataset>`)
 """
 
 # %%
 # Downloading tutorial datasets from Internet
 # -------------------------------------------
 #
-# Nilearn comes with functions that download public data from Internet
+# Nilearn comes with functions that download public data from Internet.
 #
 # Let's first check where the data is downloaded on our disk:
 from nilearn.datasets import load_sample_motor_activation_image
@@ -51,25 +60,27 @@ show()
 # correspondence between rest and task.
 from nilearn.datasets import fetch_atlas_smith_2009
 
-rsn = fetch_atlas_smith_2009(resting=True, dimension=10)["maps"]
-print(rsn)
+rsn = fetch_atlas_smith_2009(resting=True, dimension=10)
 
 # %%
-# It is a 4D nifti file.
-# the :mod:`nilearn.image` package
+print(rsn.description.content.maps)
+print(rsn.maps)
+
+# %%
+# The :mod:`nilearn.image` package
 # provides some utility functions to work with image files.
 # We can load it into the memory to print its shape.
 from nilearn.image import load_img
 
-print(load_img(rsn).shape)
+print(load_img(rsn.maps).shape)
 
 # %%
 # We can retrieve the first volume (note that Python indexing starts at 0):
 from nilearn.image import index_img
 
-first_rsn = index_img(rsn, 0)
+first_rsn = index_img(rsn.maps, 0)
 
-first_rsn = index_img(rsn, 0)
+first_rsn = index_img(rsn.maps, 0)
 print(first_rsn.shape)
 
 # %%
@@ -92,7 +103,7 @@ show()
 # compact display.
 from nilearn.image import iter_img
 
-for img in iter_img(rsn):
+for img in iter_img(rsn.maps):
     # img is now an in-memory 3D img
     plot_stat_map(
         img, threshold=3, display_mode="z", cut_coords=1, colorbar=False
@@ -109,7 +120,7 @@ show()
 #
 # Afterwards, we'll use iter_img to loop through them following the same
 # formula as before.
-selected_volumes = index_img(rsn, slice(3, 5))
+selected_volumes = index_img(rsn.maps, slice(3, 5))
 
 # %%
 # If you're new to Python, one thing to note is that the slice constructor

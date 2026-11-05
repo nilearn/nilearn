@@ -1,4 +1,4 @@
-.. _spm_multimodal_dataset:
+.. _spm_multimodal:
 
 SPM multimodal dataset
 ======================
@@ -26,13 +26,7 @@ See :footcite:t:`spm_multiface`.
 
 Content
 -------
-:'func1': Paths to functional images for run 1 (list of 3D images)
-:'func2': Paths to functional images for run 2 (list of 3D images)
-:'events1': Path to onsets TSV file for run 1
-:'trials_ses1': Path to .mat file containing onsets for run 1
-:'events2': Path to onsets TSV file for run 2
-:'trials_ses1': Path to .mat file containing onsets for run 2
-:'anat': Path to anat file
+.. nilearn_dataset_content:: spm_multimodal
 
 References
 ----------
@@ -41,4 +35,4 @@ References
 
 License
 -------
-unknown
+.. nilearn_dataset_license:: spm_multimodal

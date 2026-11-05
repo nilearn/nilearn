@@ -9,7 +9,7 @@ from nilearn.nilearn_typing import Verbose
 
 
 def generate_atlas_look_up_table(
-    function=None,
+    function: str | None = None,
     name=None,
     index=None,
     strict: bool = False,
@@ -38,7 +38,7 @@ def generate_atlas_look_up_table(
         Atlas fetching function name as a string.
         Defaults to "unknown" in case None is passed.
 
-    name : iterable of bytes or string, or int or None, default=None
+    name : iterable of bytes or :obj:`str`, or int or None, default=None
         If an integer is passed,
         this corresponds to the number of ROIs in the atlas.
         If an iterable is passed, then it contains the ROI names.
@@ -54,7 +54,7 @@ def generate_atlas_look_up_table(
         If True, an error will be thrown
         if ``name`` and ``index``have different length.
 
-    background_label : int or float or None, default=None
+    background_label : :obj:`int` or float or None, default=None
         If not None and no 'name' was passed,
         this label is used to describe the background value in the image.
     """
@@ -68,6 +68,7 @@ def generate_atlas_look_up_table(
         if fname == "unknown":
             index = get_indices_from_image(index)
         name = []
+        assert index is not None
         for x in index:
             if background_label is not None and x == background_label:
                 name.append("Background")
@@ -106,7 +107,7 @@ def generate_atlas_look_up_table(
         and "Background" not in name
         and background_label in index
     ):
-        name.insert(index.index(background_label), "Background")
+        name.insert(index.index(int(background_label)), "Background")
 
     if len(name) != len(index):
         if strict:
@@ -191,7 +192,6 @@ def check_look_up_table(
     UserWarning
         If regions in the image do not exist in the atlas lookup table
         and `strict=False`.
-
     """
     assert isinstance(lut, pd.DataFrame)
     assert "name" in lut.columns

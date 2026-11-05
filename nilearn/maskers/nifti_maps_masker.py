@@ -2,9 +2,10 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import numpy as np
+from nibabel import Nifti1Image
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -19,9 +20,11 @@ from nilearn.image import (
     clean_img,
     get_data,
     index_img,
+    new_img_like,
     resample_img,
 )
 from nilearn.image.image import check_same_fov
+from nilearn.maskers._mixin import _MaskerReportDefaults
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -31,15 +34,31 @@ from nilearn.maskers.base_masker import (
     sanitize_displayed_maps,
 )
 from nilearn.masking import load_mask_img
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    Signals,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 
 
 class _ExtractionFunctor:
     func_name = "nifti_maps_masker_extractor"
 
-    def __init__(self, maps_img_, mask_img_, keep_masked_maps):
+    def __init__(self, maps_img_, mask_img_):
         self.maps_img_ = maps_img_
         self.mask_img_ = mask_img_
-        self.keep_masked_maps = keep_masked_maps
 
     def __call__(self, imgs):
         from nilearn.regions import signal_extraction
@@ -48,7 +67,6 @@ class _ExtractionFunctor:
             imgs,
             self.maps_img_,
             mask_img=self.mask_img_,
-            keep_masked_maps=self.keep_masked_maps,
         )
 
 
@@ -88,7 +106,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -121,8 +139,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         - ``None`` means no resampling: if shapes and affines do not match,
           a :obj:`ValueError` is raised.
 
-    %(keep_masked_maps)s
-
     %(memory)s
 
     %(memory_level)s
@@ -139,7 +155,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     %(clean_args)s
 
         .. nilearn_versionadded:: 0.12.0
-
 
     Attributes
     ----------
@@ -158,20 +173,19 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         .. nilearn_versionadded:: 0.9.2
 
-    Notes
-    -----
-    If resampling_target is set to "maps", every 3D image processed by
-    transform() will be resampled to the shape of maps_img. It may lead to a
-    very large memory consumption if the voxel number in maps_img is large.
-
     See Also
     --------
     nilearn.maskers.NiftiMasker
     nilearn.maskers.NiftiLabelsMasker
 
+    Notes
+    -----
+    If resampling_target is set to "maps", every 3D image processed by
+    transform() will be resampled to the shape of maps_img. It may lead to a
+    very large memory consumption if the voxel number in maps_img is large.
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": (
             "This report shows the spatial maps provided to the mask."
         ),
@@ -183,26 +197,25 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     def __init__(
         self,
-        maps_img=None,
-        mask_img=None,
-        allow_overlap=True,
-        smoothing_fwhm=None,
-        standardize=False,
-        standardize_confounds=True,
-        high_variance_confounds=False,
-        detrend=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
-        resampling_target="data",
-        keep_masked_maps=False,
-        memory=None,
-        memory_level=0,
-        verbose=0,
-        reports=True,
-        cmap="CMRmap_r",
-        clean_args=None,
+        maps_img: NiimgLike | None = None,
+        mask_img: NiimgLike | None = None,
+        allow_overlap: bool = True,
+        smoothing_fwhm: SmoothingFwhm = None,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        high_variance_confounds: bool = False,
+        detrend: Detrend = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
+        resampling_target: Literal["data", "mask", "maps"] | None = "data",
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 0,
+        verbose: Verbose = 0,
+        reports: bool = True,
+        cmap: ColormapLike = "CMRmap_r",
+        clean_args: dict[str, Any] | None = None,
     ):
         self.maps_img = maps_img
         self.mask_img = mask_img
@@ -234,8 +247,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self.reports = reports
         self.cmap = cmap
-
-        self.keep_masked_maps = keep_masked_maps
 
         self._reset_report()
 
@@ -279,7 +290,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         -------
         displays : :obj:`list`
             A list of all displays to be rendered.
-
         """
         if not self._has_report_data():
             return [None]
@@ -448,6 +458,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     "No map left after applying mask to the maps image."
                 )
 
+        # TODO throw warning if some maps were dropped at fit time
+        # due to masking or resampling
+
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._reporting_data = {
@@ -472,7 +485,13 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
 
     @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+    def fit_transform(
+        self,
+        imgs,
+        y: None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ) -> Signals:
         """Prepare and perform signal extraction.
 
         Parameters
@@ -500,7 +519,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         )
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -509,10 +533,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             See :ref:`extracting_data`.
             Images to process.
 
-        confounds : CSV file or array-like, default=None
-            This parameter is passed to :func:`nilearn.signal.clean`.
-            Please see the related documentation for details.
-            shape: (number of scans, number of confounds)
+        %(confounds)s
 
         %(sample_mask)s
 
@@ -521,7 +542,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -658,7 +678,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         sklearn_output_config = getattr(self, "_sklearn_output_config", None)
 
-        region_signals, _ = self._cache(
+        region_signals, extracted_maps = self._cache(
             filter_and_extract,
             ignore=["verbose", "memory", "memory_level"],
         )(
@@ -667,7 +687,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             _ExtractionFunctor(
                 maps_img_,
                 mask_img_,
-                self.keep_masked_maps,
             ),
             # Pre-treatments
             params,
@@ -681,6 +700,14 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             sklearn_output_config=sklearn_output_config,
         )
 
+        # we update some attributes
+        # that may have been changed by resampling or masking
+        if len(extracted_maps) != self.n_elements_:
+            self.n_elements_ = len(extracted_maps)
+            maps_data = get_data(maps_img_)[:, :, :, extracted_maps]
+            self.maps_img_ = new_img_like(self.maps_img_, maps_data)
+            self._reporting_data["maps_image"] = self.maps_img_
+
         # if target_dtype is still None, self.dtype is None: no explicit
         # dtype was requested, so keep the dtype produced by the
         # extraction/cleaning pipeline (e.g. float after standardize)
@@ -692,7 +719,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, region_signals):
+    def inverse_transform(self, region_signals: Signals) -> Nifti1Image:
         """Compute :term:`voxel` signals from region signals.
 
         Any mask given at initialization is taken into account.
@@ -704,7 +731,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(img_inv_transform_nifti)s
-
         """
         from nilearn.regions import signal_extraction
 

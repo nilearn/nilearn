@@ -9,12 +9,15 @@ import collections.abc
 import functools
 import inspect
 import warnings
+from typing import Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import scipy
 from matplotlib import get_backend
-from matplotlib.colors import LinearSegmentedColormap, Normalize
+from matplotlib.axes import Axes
+from matplotlib.colors import Colormap, LinearSegmentedColormap, Normalize
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpecFromSubplotSpec
 from matplotlib.ticker import MaxNLocator
@@ -44,14 +47,17 @@ from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.nilearn_typing import (
     Annotate,
+    BlackBg,
+    CbarTickFormat,
     ColorBar,
     DisplayMode,
     DrawCross,
     OutputFile,
     Radiological,
     ResamplingInterpolation,
-    Standardize,
     Title,
+    Vmax,
+    Vmin,
 )
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import (
@@ -78,7 +84,6 @@ def show() -> None:
     This function is equivalent to :func:`matplotlib.pyplot.show`,
     but is skipped on the 'Agg' backend where it has no effect other
     than to emit a warning.
-
     """
     if get_backend().lower() != "agg":  # avoid warnings
         plt.show()
@@ -123,7 +128,7 @@ def _plot_img_with_bg(
     display_factory=get_slicer,
     cbar_vmin=None,
     cbar_vmax=None,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
+    cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
     brain_color=(0.5, 0.5, 0.5),
     decimals=False,
     radiological: Radiological = False,
@@ -238,6 +243,8 @@ def _plot_img_with_bg(
         )
         warnings.warn(nan_msg, stacklevel=find_stack_level())
 
+    data = np.empty(1)
+    affine = np.empty(1)
     if img is not False and img is not None:
         img = check_niimg_3d(img, dtype="auto")
         data = safe_get_data(img, ensure_finite=True)
@@ -317,19 +324,19 @@ def plot_img(
     cut_coords=None,
     output_file: OutputFile = None,
     display_mode: DisplayMode = "ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: str | None = None,
     threshold=None,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg: bool = False,
+    black_bg: BlackBg = False,
     colorbar: ColorBar = True,
     cbar_tick_format: str = DEFAULT_TICK_FORMAT,
     resampling_interpolation: ResamplingInterpolation = "continuous",
     bg_img=None,
-    vmin=None,
-    vmax=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     radiological: Radiological = False,
     decimals: bool = False,
     cmap="gray",
@@ -413,11 +420,6 @@ def plot_img(
     ValueError
         if the specified threshold is a negative number
 
-    Notes
-    -----
-    This is a low-level function. For most use cases, other plotting
-    functions might be more appropriate and easier to use.
-
     See Also
     --------
         :func:`~nilearn.plotting.plot_anat`
@@ -430,6 +432,11 @@ def plot_img(
             To simply plot probabilistic atlases (4D images)
         :mod:`nilearn.plotting`
             See API reference for other options
+
+    Notes
+    -----
+    This is a low-level function. For most use cases, other plotting
+    functions might be more appropriate and easier to use.
 
     Examples
     --------
@@ -444,7 +451,6 @@ def plot_img(
         >>>
         >>> display = plot_img(data, title="Plotting a 3D image with plot_img")
         >>> show()
-
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -487,20 +493,20 @@ def plot_anat(
     cut_coords=None,
     output_file: OutputFile = None,
     display_mode="ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     annotate: Annotate = True,
     threshold=None,
     draw_cross: DrawCross = True,
-    black_bg="auto",
-    dim="auto",
+    black_bg: BlackBg = "auto",
+    dim: float | Literal["auto"] = "auto",
     cmap="gray",
     colorbar: ColorBar = True,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
+    cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
     radiological: Radiological = False,
-    vmin=None,
-    vmax=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     **kwargs,
 ) -> BaseSlicer:
     """Plot cuts of an anatomical image.
@@ -576,6 +582,19 @@ def plot_anat(
     For visualization, non-finite values found in passed 'anat_img'
     are set to zero.
 
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_anat, show
+        >>> from nilearn.datasets import load_mni152_template
+        >>>
+        >>> mni152_template = load_mni152_template()
+        >>>
+        >>> fig = plot_anat(mni152_template, title="mni152 template")
+        >>>
+        >>> show()
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -618,17 +637,17 @@ def plot_epi(
     cut_coords=None,
     output_file: OutputFile = None,
     display_mode="ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg: bool = True,
+    black_bg: BlackBg = True,
     colorbar: ColorBar = True,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
+    cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
     cmap="gray",
-    vmin=None,
-    vmax=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     radiological: Radiological = False,
     **kwargs,
 ) -> BaseSlicer:
@@ -742,7 +761,6 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     -------
     display : :class:`~nilearn.plotting.displays.BaseSlicer`, object
         Contours displayed on the background image.
-
     """
     roi_img = check_niimg_3d(roi_img)
     roi_data = get_data(roi_img)
@@ -773,20 +791,20 @@ def plot_roi(
     cut_coords=None,
     output_file: OutputFile = None,
     display_mode="ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     threshold=0.5,
     alpha=0.7,
-    cmap="gist_ncar",
-    dim="auto",
+    cmap: Colormap | str | pd.DataFrame = "gist_ncar",
+    dim: float | Literal["auto"] = "auto",
     colorbar: ColorBar = True,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
-    vmin=None,
-    vmax=None,
+    cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     resampling_interpolation="nearest",
     view_type="continuous",
     linewidths=2.5,
@@ -882,6 +900,11 @@ def plot_roi(
     ValueError
         if the specified threshold is a negative number
 
+    See Also
+    --------
+    nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
+        (4D images)
+
     Notes
     -----
     A small threshold is applied by default to eliminate numerical
@@ -890,18 +913,28 @@ def plot_roi(
     For visualization, non-finite values found in passed 'roi_img' or
     'bg_img' are set to zero.
 
-    See Also
+    Examples
     --------
-    nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
-        (4D images)
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_roi, show
+        >>> from nilearn.datasets import load_mni152_gm_mask
+        >>>
+        >>> grey_matter_mask = load_mni152_gm_mask()
+        >>>
+        >>> fig = plot_roi(grey_matter_mask, title="grey matter mni152")
+        >>>
+        >>> show()
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
 
     valid_view_types = ["continuous", "contours"]
     check_parameter_in_allowed(view_type, valid_view_types, "view_type")
+
+    img = roi_img
     if view_type == "contours":
-        img = roi_img
         roi_img = None
 
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
@@ -957,17 +990,17 @@ def plot_prob_atlas(
     cut_coords=None,
     output_file: OutputFile = None,
     display_mode="ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg="auto",
-    dim="auto",
+    black_bg: BlackBg = "auto",
+    dim: float | Literal["auto"] = "auto",
     colorbar: ColorBar = True,
     cmap="gist_rainbow",
-    vmin=None,
-    vmax=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     alpha=0.7,
     radiological: Radiological = False,
     **kwargs,
@@ -1245,19 +1278,19 @@ def plot_stat_map(
     output_file: OutputFile = None,
     display_mode="ortho",
     colorbar: ColorBar = True,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
-    figure=None,
-    axes=None,
+    cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     threshold=1e-6,
     annotate: Annotate = True,
     draw_cross: DrawCross = True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cbar="auto",
-    dim="auto",
-    vmin=None,
-    vmax=None,
+    dim: float | Literal["auto"] = "auto",
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     radiological: Radiological = False,
     resampling_interpolation="continuous",
     transparency=None,
@@ -1345,6 +1378,12 @@ def plot_stat_map(
     ValueError
         if the specified threshold is a negative number
 
+    See Also
+    --------
+    nilearn.plotting.plot_anat : To simply plot anatomical images
+    nilearn.plotting.plot_epi : To simply plot raw EPI images
+    nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -1352,11 +1391,19 @@ def plot_stat_map(
     For visualization, non-finite values found in passed 'stat_map_img' or
     'bg_img' are set to zero.
 
-    See Also
+    Examples
     --------
-    nilearn.plotting.plot_anat : To simply plot anatomical images
-    nilearn.plotting.plot_epi : To simply plot raw EPI images
-    nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_stat_map, show
+        >>> from nilearn.datasets import load_sample_motor_activation_image
+        >>>
+        >>> motor_activation_image = load_sample_motor_activation_image()
+        >>>
+        >>> fig = plot_stat_map(motor_activation_image)
+        >>>
+        >>> show()
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
@@ -1413,17 +1460,17 @@ def plot_glass_brain(
     output_file=None,
     display_mode="ortho",
     colorbar=True,
-    cbar_tick_format=DEFAULT_TICK_FORMAT,
-    figure=None,
-    axes=None,
+    cbar_tick_format: CbarTickFormat = DEFAULT_TICK_FORMAT,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title=None,
     threshold="auto",
     annotate=True,
-    black_bg=False,
+    black_bg: BlackBg = False,
     cmap=None,
     alpha=0.7,
-    vmin=None,
-    vmax=None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     plot_abs=True,
     symmetric_cbar="auto",
     resampling_interpolation="continuous",
@@ -1525,14 +1572,28 @@ def plot_glass_brain(
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from nilearn.plotting import plot_glass_brain, show
+        >>> from nilearn.datasets import load_sample_motor_activation_image
+        >>>
+        >>> motor_activation_image = load_sample_motor_activation_image()
+        >>>
+        >>> fig = plot_glass_brain(motor_activation_image, plot_abs=False)
+        >>>
+        >>> show()
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
 
     if cmap is None:
-        cmap = cm.cold_white_hot
+        cmap = cm.cold_white_hot  # type: ignore[attr-defined]
         if black_bg:
-            cmap = cm.cold_hot
+            cmap = cm.cold_hot  # type: ignore[attr-defined]
         if not plot_abs:
             cmap = plt.cm.RdBu_r
         # use only positive half of colormap if plotting absolute values
@@ -1602,7 +1663,10 @@ def plot_glass_brain(
 
 @fill_doc
 def plot_connectome(
-    adjacency_matrix,
+    adjacency_matrix: np.ndarray
+    | np.ma.masked_array
+    | scipy.sparse.coo_matrix
+    | scipy.sparse.coo_array,
     node_coords,
     node_color="auto",
     node_size=50,
@@ -1612,11 +1676,11 @@ def plot_connectome(
     edge_threshold=None,
     output_file: OutputFile = None,
     display_mode="ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     annotate: Annotate = True,
-    black_bg: bool = False,
+    black_bg: BlackBg = False,
     alpha=0.7,
     edge_kwargs=None,
     node_kwargs=None,
@@ -1633,10 +1697,11 @@ def plot_connectome(
 
     Parameters
     ----------
-    adjacency_matrix : numpy array of shape (n, n)
-        Represents the link strengths of the graph. The matrix can be
-        symmetric which will result in an undirected graph, or not
-        symmetric which will result in a directed graph.
+    adjacency_matrix : :class:`numpy.ndarray` of shape ``(n, n)``, \
+            or :class:`scipy.sparse.coo_array`.
+        Represents the link strengths of the graph.
+        The matrix can be symmetric which will result in an undirected graph,
+        or not symmetric which will result in a directed graph.
 
     node_coords : numpy array_like of shape (n, 3)
         3d coordinates of the graph nodes in world space.
@@ -1664,7 +1729,9 @@ def plot_connectome(
         If it is a string it must finish with a percent sign,
         e.g. "25.3%%", and only the edges with a abs(value) above
         the given percentile will be shown.
+
     %(output_file)s
+
     display_mode : :obj:`str`, default='ortho'
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'l' - sagittal left hemisphere only,
@@ -1672,12 +1739,18 @@ def plot_connectome(
         performed in orthogonal directions. Possible values are: 'ortho',
         'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
         'lzry', 'lyrz'.
+
     %(figure)s
+
     %(axes)s
+
     %(title)s
+
     %(annotate)s
+
     %(black_bg)s
         default=False.
+
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for the brain schematics.
 
@@ -1704,7 +1777,6 @@ def plot_connectome(
         coords on brain parcellations.
     nilearn.plotting.find_probabilistic_atlas_cut_coords : Extraction of
         node coords on brain probabilistic atlases.
-
     """
     check_params(locals())
 
@@ -1750,11 +1822,11 @@ def plot_markers(
     alpha=0.7,
     output_file: OutputFile = None,
     display_mode="ortho",
-    figure=None,
-    axes=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
     title: Title = None,
     annotate: Annotate = True,
-    black_bg: bool = False,
+    black_bg: BlackBg = False,
     node_kwargs=None,
     colorbar: ColorBar = True,
     radiological: Radiological = False,
@@ -1781,11 +1853,11 @@ def plot_markers(
         Colormap used to represent the node measure.
 
     node_vmin : :obj:`float` or None, default=None
-        Lower bound of the colormap. If `None`, the min of the node_values is
+        Lower bound of the colormap. If ``None``, the min of the node_values is
         used.
 
     node_vmax : :obj:`float` or None, default=None
-        Upper bound of the colormap. If `None`, the min of the node_values is
+        Upper bound of the colormap. If ``None``, the min of the node_values is
         used.
 
     node_threshold : :obj:`float` or None, default=None
@@ -1794,6 +1866,7 @@ def plot_markers(
 
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for markers.
+
     %(output_file)s
 
     display_mode : :obj:`str`, default='ortho'
@@ -1803,17 +1876,25 @@ def plot_markers(
         performed in orthogonal directions. Possible values are: 'ortho',
         'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
         'lzry', 'lyrz'.
+
     %(figure)s
+
     %(axes)s
+
     %(title)s
+
     %(annotate)s
+
     %(black_bg)s
         default=False.
+
     node_kwargs : :obj:`dict` or None, default=None
         will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go
+
     %(colorbar)s
         default=True.
+
     %(radiological)s
 
     Returns
@@ -1911,14 +1992,13 @@ def plot_carpet(
     t_r=None,
     detrend: bool = True,
     output_file: OutputFile = None,
-    figure=None,
-    axes=None,
-    vmin=None,
-    vmax=None,
+    figure: Figure | None = None,
+    axes: Axes | None = None,
+    vmin: Vmin = None,
+    vmax: Vmax = None,
     title: Title = None,
     cmap="gray",
     cmap_labels="gist_ncar",
-    standardize: Standardize = True,
 ) -> Figure:
     """Plot an image representation of :term:`voxel` intensities across time.
 
@@ -1976,15 +2056,6 @@ def plot_carpet(
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.
 
-    %(standardize_true)s
-
-        .. note::
-
-            Added to control passing value to `standardize` of ``signal.clean``
-            to call new behavior since passing False or True (default) is
-            deprecated.
-            This parameter will be removed in version 0.15.
-
     Returns
     -------
     figure : :class:`matplotlib.figure.Figure`
@@ -2024,17 +2095,9 @@ def plot_carpet(
         ... )
         >>>
         >>> show()
-
     """
     check_params(locals())
     img = check_niimg_4d(img, dtype="auto")
-
-    # TODO (nilearn >= 0.15) remove if and elif below
-    # and change default of function
-    if standardize is True:
-        standardize = "zscore_sample"
-    elif standardize is False:
-        standardize = None
 
     # Define TR and number of frames
     t_r = t_r or float(img.header.get_zooms()[-1])
@@ -2046,6 +2109,7 @@ def plot_carpet(
         mask_img = check_niimg_3d(mask_img, dtype="auto")
 
     is_atlas = len(np.unique(mask_img.get_fdata())) > 2
+    atlas_values = np.empty(1)
     if is_atlas:
         background_label = 0
 
@@ -2083,7 +2147,7 @@ def plot_carpet(
 
     # Detrend and standardize data
     if detrend:
-        data = clean(data, t_r=t_r, detrend=True, standardize=standardize)
+        data = clean(data, t_r=t_r, detrend=True)
 
     if figure is None:
         if not axes:

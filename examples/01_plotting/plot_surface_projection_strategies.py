@@ -19,7 +19,6 @@ take a similar amount of time and give almost identical results for most
 images. If you do have both pial and white matter surfaces (as for the
 fsaverage and fsaverage5 surfaces fetched by :mod:`nilearn.datasets`)
 we recommend passing both to ``vol_to_surf``.
-
 """
 
 from nilearn._utils.helpers import check_matplotlib

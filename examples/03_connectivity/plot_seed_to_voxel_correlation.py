@@ -16,14 +16,17 @@ numpy array, corresponding to the data inside the mask.
     :ref:`for a similar example using cortical surface input data
     <sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
 
+.. admonition:: dataset
+
+    This example uses the :ref:`development fMRI dataset
+    <development_dataset>`.
 """
 
 # %%
 # Getting the data
 # ----------------
 #
-# We will work with the first subject
-# of the brain development :term:`fMRI` data set.
+# We will work with the first subject of dataset.
 # dataset.func is a list of filenames.
 # We select the 1st (0-based) subject by indexing with [0]).
 from nilearn.datasets import fetch_development_fmri
@@ -49,7 +52,7 @@ print(confound_filename)
 #
 # We will be working with one seed sphere in the Posterior Cingulate Cortex
 # (PCC), considered part of the Default Mode Network.
-pcc_coords = [(0, -52, 18)]
+pcc_coords = (0, -52, 18)
 
 # %%
 # We use :class:`~nilearn.maskers.NiftiSpheresMasker` to extract the
@@ -189,11 +192,11 @@ display = plot_stat_map(
     seed_to_voxel_correlations_img,
     threshold=0.5,
     vmax=1,
-    cut_coords=pcc_coords[0],
+    cut_coords=pcc_coords,
     title="Seed-to-voxel correlation (PCC seed)",
 )
 display.add_markers(
-    marker_coords=pcc_coords, marker_color="g", marker_size=300
+    marker_coords=[pcc_coords], marker_color="g", marker_size=300
 )
 # At last, we save the plot as pdf.
 from pathlib import Path

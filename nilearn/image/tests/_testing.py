@@ -51,7 +51,6 @@ def pad_array(array, pad_sizes):
     ------
     ValueError
         Inconsistent min/max padding quantities.
-
     """
     if len(pad_sizes) % 2 != 0:
         raise ValueError(

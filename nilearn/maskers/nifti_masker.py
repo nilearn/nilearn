@@ -16,6 +16,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import sanitize_verbose
 from nilearn.image import check_niimg, crop_img, load_img, resample_img
 from nilearn.image.image import check_same_fov
+from nilearn.maskers._mixin import _MaskerReportDefaults
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -30,6 +31,26 @@ from nilearn.masking import (
     compute_multi_brain_mask,
     load_mask_img,
 )
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MaskStrategy,
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    TargetAffine,
+    TargetShape,
+    Tr,
+    Verbose,
+)
+from nilearn.reporting.mixin import DEFAULT_ENGINE
 
 
 class _ExtractionFunctor:
@@ -149,7 +170,6 @@ def filter_and_mask(
     Notes
     -----
     For all other parameters refer to NiftiMasker documentation.
-
     """
     if memory is None:
         memory = Memory(location=None)
@@ -233,7 +253,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -296,7 +316,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         .. nilearn_versionadded:: 0.12.0
 
-
     Attributes
     ----------
     affine_ : 4x4 :obj:`numpy.ndarray`
@@ -321,10 +340,9 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     nilearn.image.high_variance_confounds
     nilearn.masking.apply_mask
     nilearn.signal.clean
-
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": (
             "This report shows the input Nifti image overlaid "
             "with the outlines of the mask. "
@@ -333,29 +351,31 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         ),
     }
 
+    _allowed_engines = (DEFAULT_ENGINE, "brainsprite")
+
     def __init__(
         self,
-        mask_img=None,
-        runs=None,
-        smoothing_fwhm=None,
-        standardize=False,
-        standardize_confounds=True,
-        detrend=False,
-        high_variance_confounds=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        target_affine=None,
-        target_shape=None,
-        mask_strategy="background",
-        mask_args=None,
-        dtype=None,
-        memory=None,
-        memory_level=1,
-        verbose=0,
-        reports=True,
-        cmap="gray",
-        clean_args=None,
+        mask_img: NiimgLike | None = None,
+        runs: np.ndarray | None = None,
+        smoothing_fwhm: SmoothingFwhm = None,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        detrend: Detrend = False,
+        high_variance_confounds: bool = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        target_affine: TargetAffine = None,
+        target_shape: TargetShape = None,
+        mask_strategy: MaskStrategy = "background",
+        mask_args: dict[str, Any] | None = None,
+        dtype: DType = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
+        reports: bool = True,
+        cmap: ColormapLike = "gray",
+        clean_args: dict[str, Any] | None = None,
     ):
         # Mask is provided or computed
         self.mask_img = mask_img
@@ -383,6 +403,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._reset_report()
 
     def _run_report_checks(self, **kwargs):
+
         super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
@@ -411,7 +432,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         -------
         displays : :obj:`list` of :class:`~matplotlib.figure.Figure`
             A list of all displays to be rendered.
-            Returns None when masker is not fitted
+            Returns None when masker is not fitted.
         """
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
@@ -633,7 +654,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     def transform_single_imgs(
         self,
         imgs,
-        confounds=None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_mask=None,
         copy=True,
     ):
@@ -655,7 +676,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Returns
         -------
         %(signals_transform_nifti)s
-
         """
         check_is_fitted(self)
 

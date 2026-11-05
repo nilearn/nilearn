@@ -3,7 +3,7 @@ brain regions.
 """
 
 import warnings
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Self
 
 import numpy as np
 from scipy import linalg
@@ -20,17 +20,32 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.param_validation import (
-    check_parameter_in_allowed,
-    check_params,
-)
+from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
+from nilearn.maskers._mixin import _MaskerReportDefaults
 from nilearn.maskers.base_masker import (
     _BaseSurfaceMasker,
     check_displayed_maps,
     mask_logger,
     sanitize_displayed_maps,
 )
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    Signals,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
+from nilearn.reporting.mixin import DEFAULT_ENGINE
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -66,7 +81,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -127,10 +142,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     --------
         nilearn.maskers.SurfaceMasker
         nilearn.maskers.SurfaceLabelsMasker
-
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": (
             "This report shows the input surface image "
             "(if provided via img) overlaid with the regions provided "
@@ -141,27 +155,28 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         "number_of_maps": 0,
     }
     _template_name = "body_surface_maps_masker.jinja"
+    _allowed_engines = (DEFAULT_ENGINE, "plotly")
 
     def __init__(
         self,
-        maps_img=None,
-        mask_img=None,
-        allow_overlap=True,
-        smoothing_fwhm=None,
-        standardize=False,
-        standardize_confounds=True,
-        detrend=False,
-        high_variance_confounds=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
-        memory=None,
-        memory_level=1,
-        verbose=0,
-        reports=True,
-        cmap=DEFAULT_SEQUENTIAL_CMAP,
-        clean_args=None,
+        maps_img: SurfaceImage | None = None,
+        mask_img: SurfaceImage | None = None,
+        allow_overlap: bool = True,
+        smoothing_fwhm: SmoothingFwhm = None,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        detrend: Detrend = False,
+        high_variance_confounds: bool = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
+        reports: bool = True,
+        cmap: ColormapLike = DEFAULT_SEQUENTIAL_CMAP,
+        clean_args: dict[str, Any] | None = None,
     ):
         self.maps_img = maps_img
         self.mask_img = mask_img
@@ -185,7 +200,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._reset_report()
 
     @fill_doc
-    def fit(self, imgs=None, y=None):
+    def fit(self, imgs=None, y: None = None) -> Self:
         """Prepare signal extraction from regions.
 
         Parameters
@@ -282,7 +297,12 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         return hasattr(self, "n_elements_")
 
     @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ):
         """Extract signals from surface object.
 
         Parameters
@@ -302,8 +322,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        check_compatibility_mask_and_images(self.maps_img, imgs)
-        check_polymesh_equal(self.maps_img.mesh, imgs.mesh)
+        check_compatibility_mask_and_images(self.maps_img_, imgs)
+        check_polymesh_equal(self.maps_img_.mesh, imgs.mesh)
 
         if isinstance(imgs, SurfaceImage) and any(
             hemi.ndim > 2 for hemi in imgs.data.parts.values()
@@ -324,7 +344,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         ).astype(np.float32)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
-        maps_data = get_data(self.maps_img)
+        maps_data = get_data(self.maps_img_)
 
         if not self.allow_overlap:
             # Create mask depending on dtype
@@ -371,7 +391,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         )
 
     @fill_doc
-    def inverse_transform(self, region_signals):
+    def inverse_transform(self, region_signals: Signals) -> SurfaceImage:
         """Compute :term:`vertex` signals from region signals.
 
         Parameters
@@ -389,7 +409,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         region_signals = self._check_array(region_signals)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
-        maps_data = get_data(self.maps_img)
+        maps_data = get_data(self.maps_img_)
         mask_data = (
             get_data(self.mask_img) if self.mask_img is not None else None
         )
@@ -407,7 +427,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             # so we initialize the vertex signals with 0
             # and shape (n_timepoints, n_vertices)
             vertex_signals = np.zeros(
-                (region_signals.shape[0], self.maps_img.mesh.n_vertices)
+                (region_signals.shape[0], self.maps_img_.mesh.n_vertices)
             )
             # dot product between (n_timepoints, n_regions) and
             # (n_regions, n_vertices)
@@ -422,22 +442,22 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         vertex_signals = vertex_signals.T
 
         # split the signal into hemispheres
-        vertex_signals = {
+        data = {
             "left": vertex_signals[
-                : self.maps_img.data.parts["left"].shape[0], :
+                : self.maps_img_.data.parts["left"].shape[0], :
             ],
             "right": vertex_signals[
-                self.maps_img.data.parts["left"].shape[0] :, :
+                self.maps_img_.data.parts["left"].shape[0] :, :
             ],
         }
-
-        imgs = SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
+        imgs = SurfaceImage(mesh=self.maps_img_.mesh, data=data)
 
         return self._post_process_inverse_transform(
             region_signals, imgs, return_1D
         )
 
     def _run_report_checks(self, **kwargs):
+
         super()._run_report_checks(**kwargs)
 
         if self._has_report_data():
@@ -473,13 +493,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if is_matplotlib_installed():
             engine = self._report_content["engine"]
 
-            check_parameter_in_allowed(
-                engine, ["plotly", "matplotlib"], "engine"
-            )
-
             # switch to matplotlib if plotly is selected but not installed
             if engine == "plotly" and not is_plotly_installed():
-                engine = "matplotlib"
+                engine = DEFAULT_ENGINE
                 warnings.warn(
                     "Plotly is not installed. "
                     "Switching to matplotlib for report generation.",
@@ -550,9 +566,10 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 cmap=self.cmap,
             ).get_iframe(width=500)
 
-        elif self._report_content["engine"] == "matplotlib":
-            fig = self._generate_figure(
-                img=roi, bg_map=bg_img, threshold=threshold
-            )
+            return [fig]
+
+        fig = self._generate_figure(
+            img=roi, bg_map=bg_img, threshold=threshold
+        )
 
         return [fig]

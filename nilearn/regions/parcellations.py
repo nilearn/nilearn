@@ -5,10 +5,10 @@ from typing import ClassVar
 
 import numpy as np
 from joblib import Parallel, delayed
-from scipy.sparse import coo_matrix
+from scipy.sparse import coo_array
 from sklearn.base import clone
 from sklearn.cluster import AgglomerativeClustering, MiniBatchKMeans
-from sklearn.feature_extraction import image
+from sklearn.feature_extraction import image as sk_image_feature_extraction
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
 
@@ -22,10 +22,12 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     sanitize_verbose,
 )
+from nilearn._utils.versions import sparray_context
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.image.image import iter_check_niimg, new_img_like
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
 from nilearn.maskers.surface_labels_masker import signals_to_surf_img_labels
+from nilearn.nilearn_typing import SingleConfound
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
 from nilearn.regions.rena_clustering import ReNA, make_edges_surface
 from nilearn.surface import SurfaceImage
@@ -59,13 +61,12 @@ def _connectivity_surface(mask_img):
     -------
     connectivity : a sparse matrix
         Connectivity or adjacency matrix for the mask.
-
     """
     # total True vertices in the mask
     n_vertices = (
         mask_img.data.parts["left"].sum() + mask_img.data.parts["right"].sum()
     )
-    connectivity = coo_matrix((n_vertices, n_vertices))
+    connectivity = coo_array((n_vertices, n_vertices))
     len_previous_mask = 0
     for part in mask_img.mesh.parts:
         face_part = mask_img.mesh.parts[part].faces
@@ -87,7 +88,7 @@ def _connectivity_surface(mask_img):
         edges = order[edges]
         len_previous_mask += mask_part.sum()
         # update the connectivity matrix
-        conn_temp = coo_matrix(
+        conn_temp = coo_array(
             (np.ones((edges.shape[1])), edges),
             (n_vertices, n_vertices),
         ).tocsr()
@@ -123,8 +124,7 @@ def _estimator_fit(data, estimator, method=None):
     Returns
     -------
     labels_ : numpy.ndarray
-        labels_ estimated from estimator.
-
+        Labels estimated from estimator.
     """
     estimator = clone(estimator)
     if method in ["rena", "hierarchical_kmeans"]:
@@ -133,7 +133,8 @@ def _estimator_fit(data, estimator, method=None):
     # they cluster first dimension of data (samples) but we want to cluster
     # features (voxels)
     else:
-        estimator.fit(data.T)
+        with sparray_context():
+            estimator.fit(data.T)
     labels_ = estimator.labels_
 
     return labels_
@@ -178,7 +179,7 @@ def _labels_masker_extraction(img, masker, confound):
     masker : instance of NiftiLabelsMasker
         Used for extracting signals with fit_transform.
 
-    confound : csv file, numpy ndarray or pandas DataFrame
+    confound : CSV file, numpy ndarray or pandas DataFrame
         Confound used for signal cleaning while extraction.
         Passed to signal.clean.
 
@@ -186,7 +187,6 @@ def _labels_masker_extraction(img, masker, confound):
     -------
     signals : numpy array
         Signals extracted on given img.
-
     """
     masker = clone(masker)
     signals = masker.fit_transform(img, confounds=confound)
@@ -257,7 +257,7 @@ class Parcellations(_MultiPCA):
     %(smoothing_fwhm)s
         default=4.0.
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
@@ -373,10 +373,9 @@ class Parcellations(_MultiPCA):
       ReNA clustering for method='rena'. Spatial connectivity matrix
       (voxel-to-voxel) is built-in object which means no need of explicitly
       giving the matrix.
-
     """
 
-    VALID_METHODS: ClassVar[tuple[str, ...]] = (
+    _VALID_METHODS: ClassVar[tuple[str, ...]] = (
         "kmeans",
         "ward",
         "complete",
@@ -392,7 +391,7 @@ class Parcellations(_MultiPCA):
         random_state=0,
         mask=None,
         smoothing_fwhm=4.0,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         low_pass=None,
@@ -437,7 +436,7 @@ class Parcellations(_MultiPCA):
         )
 
     def _raw_fit(self, data):
-        """Fits the parcellation method on this reduced data.
+        """Fit the parcellation method on this reduced data.
 
         Data are coming from a base decomposition estimator which computes
         the mask and reduces the dimensionality of images using
@@ -457,9 +456,8 @@ class Parcellations(_MultiPCA):
             Voxel-to-voxel connectivity matrix computed from a mask.
             Note that, this attribute is returned only for selected methods
             such as 'ward', 'complete', 'average'.
-
         """
-        valid_methods = self.VALID_METHODS
+        valid_methods = self._VALID_METHODS
         if self.method is None:
             raise ValueError(
                 "Parcellation method is specified as None. "
@@ -526,9 +524,10 @@ class Parcellations(_MultiPCA):
             else:
                 mask_ = safe_get_data(mask_img_).astype(bool)
                 shape = mask_.shape
-                connectivity = image.grid_to_graph(
-                    n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
-                )
+                with sparray_context():
+                    connectivity = sk_image_feature_extraction.grid_to_graph(
+                        n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
+                    )
 
             agglomerative = AgglomerativeClustering(
                 n_clusters=self.n_parcels,
@@ -568,7 +567,7 @@ class Parcellations(_MultiPCA):
         return self
 
     @property
-    def n_elements_(self):
+    def n_elements_(self) -> int:
         """Return number of regions."""
         return self._n_elements_
 
@@ -579,7 +578,11 @@ class Parcellations(_MultiPCA):
         return hasattr(self, "labels_img_")
 
     @fill_doc
-    def transform(self, imgs, confounds=None):
+    def transform(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound | None] | None = None,
+    ):
         """Extract signals from :term:`parcellations<parcellation>` learned \
         on :term:`fMRI` images.
 
@@ -588,23 +591,14 @@ class Parcellations(_MultiPCA):
         %(imgs)s
             Images to process.
 
-        confounds : :obj:`list` of CSV files, arrays-like,\
-            or :class:`pandas.DataFrame`, default=None
-            Each file or numpy array in a list should have shape
-            (number of scans, number of confounds)
-            Must be of same length as imgs.
-
-            .. note::
-                This parameter is passed to :func:`nilearn.signal.clean`.
-                Please see the related documentation for details.
+        %(confounds_multi)s
 
         Returns
         -------
         region_signals : :obj:`list` of or 2D :class:`numpy.ndarray`
             Signals extracted for each label for each image.
             Example, for single image shape will be
-            (number of scans, number of labels)
-
+            (number of scans, number of labels).
         """
         check_is_fitted(self)
         imgs, confounds, single_subject = _check_parameters_transform(
@@ -613,21 +607,13 @@ class Parcellations(_MultiPCA):
         # Required for special cases like extracting signals on list of
         # 3D images or SurfaceImages.
 
-        # TODO (nilearn > 0.15.0)
-        # remove casting to None or "zscore_sample"
-        standardize = self.standardize
-        if standardize is False:
-            standardize = None
-        elif standardize is True:
-            standardize = "zscore_sample"
-
         if isinstance(self.masker_.mask_img_, SurfaceImage):
             imgs_list = imgs.copy()
             masker = SurfaceLabelsMasker(
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
                 smoothing_fwhm=self.smoothing_fwhm,
-                standardize=standardize,
+                standardize=self.standardize,
                 detrend=self.detrend,
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,
@@ -643,7 +629,7 @@ class Parcellations(_MultiPCA):
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
                 smoothing_fwhm=self.smoothing_fwhm,
-                standardize=standardize,
+                standardize=self.standardize,
                 detrend=self.detrend,
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,
@@ -665,7 +651,12 @@ class Parcellations(_MultiPCA):
         return region_signals[0] if single_subject else region_signals
 
     @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None):
+    def fit_transform(
+        self,
+        imgs,
+        y: None = None,
+        confounds: SingleConfound | list[SingleConfound | None] | None = None,
+    ):
         """Fit the images to :term:`parcellations<parcellation>` and \
         then transform them.
 
@@ -676,16 +667,7 @@ class Parcellations(_MultiPCA):
 
         %(y_dummy)s
 
-        confounds : :obj:`list` of CSV files, arrays-like or\
-            :class:`pandas.DataFrame`, default=None
-            Each file or numpy array in a list should have shape
-            (number of scans, number of confounds).
-            Given confounds should have same length as images if
-            given as a list.
-
-            .. note::
-                This parameter is passed to :func:`nilearn.signal.clean`.
-                Please see the related documentation for details.
+        %(confounds_multi)s
 
             .. note::
                 Confounds will be used for cleaning signals before
@@ -696,8 +678,7 @@ class Parcellations(_MultiPCA):
         region_signals : :obj:`list` of or 2D :class:`numpy.ndarray`
             Signals extracted for each label for each image.
             Example, for single image shape will be
-            (number of scans, number of labels)
-
+            (number of scans, number of labels).
         """
         del y
         return self.fit(imgs, confounds=confounds).transform(imgs, confounds)
@@ -718,7 +699,6 @@ class Parcellations(_MultiPCA):
         -------
         %(imgs)s
             Brain image(s).
-
         """
         from nilearn.regions.signal_extraction import signals_to_img_labels
 

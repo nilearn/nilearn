@@ -149,7 +149,6 @@ def mfista(
     "Benchmarking solvers for TV-L1 least-squares and logistic regression
     in brain imaging". Pattern Recognition in Neuroimaging (PRNI),
     Jun 2014, Tubingen, Germany. IEEE
-
     """
     check_params(locals())
 

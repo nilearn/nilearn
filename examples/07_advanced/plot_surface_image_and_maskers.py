@@ -19,6 +19,14 @@ This shows:
 
     See the :ref:`dataset description <nki_dataset>`
     for more information on the data used in this example.
+
+.. admonition:: dataset
+
+   This example uses:
+
+   - the :ref:`Destrieux atlas <destrieux_2009_atlas>`
+   - the :ref:`fsaverage template <fsaverage>`
+   - the :ref:`NKI enhanced surface dataset <nki_dataset>`
 """
 
 from nilearn._utils.helpers import check_matplotlib
@@ -47,7 +55,7 @@ from nilearn.plotting import plot_matrix, plot_surf, show
 surf_img_nki = load_nki()[0]
 print(f"NKI image: {surf_img_nki}")
 
-masker = SurfaceMasker(verbose=1, smoothing_fwhm=3, standardize=None)
+masker = SurfaceMasker(verbose=1, smoothing_fwhm=3)
 masked_data = masker.fit_transform(surf_img_nki)
 print(f"Masked data shape: {masked_data.shape}")
 
@@ -131,15 +139,15 @@ destrieux = fetch_atlas_surf_destrieux()
 # Let's create a surface image
 # for this atlas.
 labels_img = SurfaceImage(
-    mesh=fsaverage["pial"],
+    mesh=fsaverage.pial,
     data={
-        "left": destrieux["map_left"],
-        "right": destrieux["map_right"],
+        "left": destrieux.map_left,
+        "right": destrieux.map_right,
     },
 )
 
 labels_masker = SurfaceLabelsMasker(
-    labels_img=labels_img, lut=destrieux.lut, verbose=1, standardize=None
+    labels_img=labels_img, lut=destrieux.lut, verbose=1
 ).fit()
 
 masked_data = labels_masker.transform(surf_img_nki)
@@ -226,7 +234,7 @@ show()
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
 decoder = pipeline.make_pipeline(
-    SurfaceMasker(verbose=1, standardize=None),
+    SurfaceMasker(verbose=1),
     preprocessing.StandardScaler(),
     feature_selection.SelectKBest(
         score_func=feature_selection.f_regression, k=500

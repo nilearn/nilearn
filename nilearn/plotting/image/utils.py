@@ -15,6 +15,7 @@ from nilearn._utils.niimg import safe_get_data
 from nilearn.datasets import load_mni152_template
 from nilearn.image import check_niimg_3d, get_data, new_img_like
 from nilearn.image.resampling import reorder_img
+from nilearn.nilearn_typing import BlackBg
 
 
 # A constant class to serve as a sentinel for the default MNI template
@@ -32,7 +33,7 @@ class _MNI152Template(SpatialImage):
         # Comply with spatial image requirements while allowing empty init
         pass
 
-    def load(self):
+    def _load(self):
         if self.data is None:
             anat_img = load_mni152_template(resolution=2)
             anat_img = reorder_img(anat_img)
@@ -47,34 +48,42 @@ class _MNI152Template(SpatialImage):
 
     @property
     def _data_cache(self):
-        self.load()
+        self._load()
         return self.data
+
+    @_data_cache.setter
+    def _data_cache(self, value):
+        self.data = value
 
     @property
     def _dataobj(self):
-        self.load()
+        self._load()
         return self.data
 
-    def get_data(self):
-        self.load()
+    @_dataobj.setter
+    def _dataobj(self, value):
+        self.data = value
+
+    def get_data(self, caching="fill"):  # noqa: ARG002
+        self._load()
         return self.data
 
     @property
     def affine(self):
-        self.load()
+        self._load()
         return self._affine
 
     def get_affine(self):
-        self.load()
+        self._load()
         return self._affine
 
     @property
     def shape(self):
-        self.load()
+        self._load()
         return self._shape
 
     def get_shape(self):
-        self.load()
+        self._load()
         return self._shape
 
     def __str__(self):
@@ -103,7 +112,7 @@ def _load_mni152_template(
         The loaded template, whether to use a black background, and the vmin
         and vmax values for the template.
     """
-    anat_img.load()
+    anat_img._load()
     # We special-case the 'canonical anat', as we don't need
     # to do a few transforms to it.
     vmin = 0
@@ -114,7 +123,7 @@ def _load_mni152_template(
 
 
 def _load_custom_anat(
-    anat_img, dim: Literal["auto"] | float, black_bg: Literal["auto"] | bool
+    anat_img, dim: Literal["auto"] | float, black_bg: BlackBg
 ) -> tuple[Any, bool, float | None, float | None]:
     """Load custom anatomy image.
 
@@ -152,7 +161,8 @@ def _load_custom_anat(
         if black_bg == "auto":
             # Guess if the background is rather black or light based on
             # the values of voxels near the border
-            background = np.median(get_border_data(data, 2))
+            # the mask of masked arrays is ignored by np.median anyway
+            background = np.median(np.ma.getdata(get_border_data(data, 2)))
             black_bg = bool(background <= 0.5 * (vmin + vmax))
 
     return anat_img, black_bg, vmin, vmax
@@ -191,6 +201,7 @@ def _apply_dimming(
             f"You provided dim={dim} in {dim.__class__.__name__}."
         )
 
+    orig_vmin = vmin
     vmean = 0.5 * (vmin + vmax)
     ptp = 0.5 * (vmax - vmin)
 
@@ -202,6 +213,8 @@ def _apply_dimming(
         if not isinstance(dim, numbers.Number):
             dim = 0.6
         vmin = 0.5 * (2 - dim) * vmean - (1 + dim) * ptp
+        if orig_vmin >= 0:
+            vmin = max(orig_vmin, vmin)
 
     return vmin, vmax
 

@@ -22,9 +22,10 @@ jobs:
             SKIP_TYPE: ${{ inputs.skip_type }}
         steps:
         -   name: Get repo
-            uses: actions/checkout@v7
+            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             with:
                 ref: ${{ github.event.pull_request.head.sha }}
+                persist-credentials: false
         -   name: Check head git commit message
             run: |
                 headCommitMsg=$(git show -s --format=%s)

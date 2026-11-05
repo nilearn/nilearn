@@ -1,6 +1,6 @@
 """
-Massively univariate analysis of a calculation task from the Localizer dataset
-==============================================================================
+Massively univariate analysis of a calculation task
+===================================================
 
 This example shows how to perform a standard
 :term:`ANOVA` with `scikit-learn <https://scikit-learn.org>`_ and Nilearn.
@@ -10,34 +10,27 @@ Using :func:`sklearn.feature_selection.f_regression`,
 is performed; we then threshold and plot the resulting
 :term:`Bonferroni-corrected <FPR correction>` p-values.
 
-We use the calculation-task :term:`contrast` maps from the
-:ref:`Localizer dataset <brainomics_maps>`,
-accessed via the
-:func:`~nilearn.datasets.fetch_localizer_calculation_task` fetcher.
-For a complete picture of this dataset,
-please refer to the :ref:`dataset description <brainomics_maps>`.
+.. admonition:: dataset
 
-This fetcher returns a subset of the broader Localizer task;
-note that this dataset contains many other contrast maps as
-well as external, subject-related or behavioral variates,
-which can be accessed with the
-:func:`~nilearn.datasets.fetch_localizer_contrasts` fetcher.
-Please refer to the
-:ref:`sphx_glr_auto_examples_07_advanced_plot_localizer_mass_univariate_methods.py`
-example for an illustration of
-how to use these external variates in other massively
-univariate analyses.
+   This example uses the calculation-task :term:`contrast` maps
+   from the :ref:`Localizer dataset <brainomics_maps>`,
+   accessed via the
+   :func:`~nilearn.datasets.fetch_localizer_contrasts` fetcher.
+
+   Here we only fetch a single contrast of the broader Localizer task;
+   note that the same fetcher also gives access to many other
+   contrast maps as well as external, subject-related or behavioral variates.
+   Please refer to the
+   :ref:`sphx_glr_auto_examples_07_advanced_plot_localizer_mass_univariate_methods.py`
+   example for an illustration of
+   how to use these external variates in other massively
+   univariate analyses.
 """
 
 # %%
 # Load Localizer "calculation task" contrast maps
 # -----------------------------------------------
-# First, we fetch calculation task
-# :term:`contrast` maps
-# from the
-# :func:`~nilearn.datasets.fetch_localizer_calculation_task`
-# data fetcher for a subset of subjects.
-# Here, we only use :term:`contrast` maps from 20 subjects
+# Here, we only use :term:`contrast` maps from a subset of subjects
 # in order to speed up computation.
 # Paths on disk for all :term:`contrast` maps are accessed
 # via the ``cmaps`` attribute.
@@ -50,8 +43,9 @@ import numpy as np
 from nilearn import datasets
 
 n_subjects = 20
-localizer_dataset = datasets.fetch_localizer_calculation_task(
-    n_subjects=n_subjects
+localizer_dataset = datasets.fetch_localizer_contrasts(
+    ["calculation (auditory and visual cue)"],
+    n_subjects=n_subjects,
 )
 cmap_filenames = localizer_dataset.cmaps
 

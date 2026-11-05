@@ -1,12 +1,12 @@
 """
-Machine Learning module for NeuroImaging in python.
----------------------------------------------------
+Machine Learning module for NeuroImaging in python
+..................................................
 
 Documentation is available in the docstrings and online at
 https://nilearn.github.io.
 
 Contents
---------
+........
 
 Nilearn aims at simplifying the use of the scikit-learn package
 in the context of neuroimaging.
@@ -14,7 +14,7 @@ It provides specific input/output functions, algorithms and
 visualization tools.
 
 Submodules
----------
+..........
 
 connectome              --- Set of tools for computing functional
                             connectivity matrices
@@ -55,7 +55,7 @@ except ImportError:
 # and the os.path.expanduser usage in CacheMixin.
 # Default value it True, set it to False to completely deactivate this
 # behavior.
-EXPAND_PATH_WILDCARDS = True
+EXPAND_PATH_WILDCARDS: bool = True
 
 DEFAULT_DIVERGING_CMAP = "RdBu_r"
 DEFAULT_SEQUENTIAL_CMAP = "inferno"

@@ -33,7 +33,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-success:`API` Functions :func:`~reporting.make_glm_report` and :func:`~reporting.get_clusters_table` have a new argument, ``two_sided``, which allows for two-sided thresholding, which is disabled by default (:gh:`2719` by `Taylor Salo`_).
+- :bdg-success:`API` Functions ``nilearn.reporting.make_glm_report`` and :func:`~reporting.get_clusters_table` have a new argument, ``two_sided``, which allows for two-sided thresholding, which is disabled by default (:gh:`2719` by `Taylor Salo`_).
 
 - :bdg-success:`API` Function :func:`~signal.clean` now has a ``psc`` standardization option which allows time series with negative mean values (:gh:`2714` by `Hao-Ting Wang`_).
 

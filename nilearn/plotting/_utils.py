@@ -57,9 +57,8 @@ def set_mpl_backend() -> None:
 
 
 def engine_warning(engine: str) -> None:
-    if engine == "matplolib":
-        option = "plotting"
-    elif engine == "plotly":
+    option = "plotting"
+    if engine == "plotly":
         option = "matplolib, plotly"
     message = (
         f"'{engine}' is not installed. To be able to use '{engine}' as "
@@ -120,6 +119,16 @@ def _remove_close_values(ticks, step_size, threshold, vmin, vmax):
                     # otherwise remove 0 if it is not vmin or vmax
                 elif vmin != 0 and vmax != 0:
                     value_to_remove = 0
+
+            # if one of the ticks is 0 and the other is vmin or vmax
+            # remove 0 (unless it is vmin or vmax itself)
+            if (
+                value_to_remove is None
+                and 0 in (a, b)
+                and vmin != 0
+                and vmax != 0
+            ):
+                value_to_remove = 0
             if value_to_remove is not None:
                 ticks = np.delete(ticks, np.where(ticks == value_to_remove))
     return ticks
@@ -151,8 +160,8 @@ def get_cbar_ticks(
     Returns
     -------
     :class:`~numpy.ndarray`
-        an array with ``n_ticks`` elements if ``vmin`` != ``vmax``, else array
-        with one element.
+        An array with ``n_ticks`` elements if ``vmin`` != ``vmax``,
+        else array with one element.
     """
     f_vmin = float(tick_format % vmin)
     f_vmax = float(tick_format % vmax)

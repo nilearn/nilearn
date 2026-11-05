@@ -8,7 +8,7 @@ import pytest
 import scipy.signal
 from numpy import array_equal
 from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
-from pandas import read_csv
+from pandas import DataFrame, read_csv
 
 from nilearn.conftest import _rng
 from nilearn.exceptions import AllVolumesRemovedError
@@ -59,15 +59,15 @@ def generate_signals(
     Returns
     -------
     signals : numpy.ndarray, shape (length, n_features)
-        unperturbed signals.
+        Unperturbed signals.
 
     noises : numpy.ndarray, shape (length, n_features)
-        confound-based noises. Each column is a signal obtained by linear
+        Confound-based noises. Each column is a signal obtained by linear
         combination of all confounds signals (below). The coefficients in
         the linear combination are also random.
 
     confounds : numpy.ndarray, shape (length, n_confounds)
-        random signals used as confounds.
+        Random signals used as confounds.
     """
     rng = _rng()
 
@@ -109,7 +109,7 @@ def generate_trends(n_features=17, length=41):
     Returns
     -------
     trends : numpy.ndarray, shape (length, n_features)
-        output signals, one per column.
+        Output signals, one per column.
     """
     rng = _rng()
     trends = scipy.signal.detrend(np.linspace(0, 1.0, length), type="constant")
@@ -388,27 +388,6 @@ def test_standardize(rng):
     )
 
 
-def test_standardize_boolean(rng):
-    """Test standardize_signal with standardize as boolean.
-
-    TODO (nilearn >= 0.15) remove this test
-    """
-    n_features = 10
-    n_samples = 17
-
-    # Create random signals with offsets and and negative mean
-    a = rng.random((n_samples, n_features))
-    a += np.linspace(0, 2.0, n_features)
-
-    assert_array_equal(
-        standardize_signal(a), standardize_signal(a, standardize=True)
-    )
-    assert_array_equal(
-        standardize_signal(a, standardize=None),
-        standardize_signal(a, standardize=False),
-    )
-
-
 def test_detrend():
     """Test custom detrend implementation."""
     point_number = 703
@@ -517,10 +496,7 @@ def test_clean_detrending():
     # using assert_almost_equal instead of array_equal due to NaNs
     assert_almost_equal(y_orig, y, decimal=13)
 
-    # This should remove trends as detrend is True by default
-    match = "boolean values for 'standardize' will be deprecated"
-    with pytest.warns(FutureWarning, match=match):
-        x_detrended = clean(x, standardize=False)
+    x_detrended = clean(x, standardize=None)
 
     assert_almost_equal(x_detrended, signals, decimal=13)
     # clean should not modify inputs
@@ -660,7 +636,7 @@ def test_clean_frequencies():
     assert cleaned_signal.max() > 0.1
 
     cleaned_signal = clean(
-        sx, standardize=standardize, high_pass=0.2, low_pass=None, t_r=t_r
+        sx, standardize=standardize, high_pass=0.19, low_pass=None, t_r=t_r
     )
     assert cleaned_signal.max() < 0.01
 
@@ -684,7 +660,7 @@ def test_clean_leaves_input_untouched():
     standardize = None
 
     _ = clean(
-        sx, standardize=standardize, detrend=False, low_pass=0.2, t_r=t_r
+        sx, standardize=standardize, detrend=False, low_pass=0.18, t_r=t_r
     )
 
     assert array_equal(sx_orig, sx)
@@ -866,8 +842,8 @@ def test_clean_confounds_detrending():
 
 
 @pytest.mark.thread_unsafe
-def test_clean_standardize_true_false():
-    """Check difference between standardize False and True."""
+def test_clean_standardize_none_zscore():
+    """Check difference between standardize None and zscore_sample."""
     signals, _, _ = generate_signals(n_features=41, n_confounds=5, length=45)
 
     input_signals = 10 * signals
@@ -875,12 +851,7 @@ def test_clean_standardize_true_false():
 
     assert_almost_equal(cleaned_signals, input_signals)
 
-    # TODO (nilearn >= 0.15) remove catch_warnings
-    with pytest.warns(
-        FutureWarning,
-        match="boolean values for 'standardize' will be deprecated",
-    ):
-        clean(input_signals, detrend=False, standardize=True)
+    clean(input_signals, detrend=False)
 
 
 def test_clean_confounds_inputs():
@@ -931,6 +902,83 @@ def test_clean_confounds_inputs():
             confounds[:, 2],
         ],
     )
+
+
+def _confound_as(kind: str, block: np.ndarray, filename: Path):
+    """Convert a block of confounds to the requested input type."""
+    if kind == "dataframe":
+        return DataFrame(block)
+    if kind in ("str", "path"):
+        np.savetxt(filename, block, delimiter=",")
+        return str(filename) if kind == "str" else filename
+    return block
+
+
+@pytest.mark.parametrize("container", [list, tuple])
+@pytest.mark.parametrize(
+    "kinds",
+    [
+        ("array", "array"),
+        ("array_1d", "array"),
+        ("dataframe", "dataframe"),
+        ("str", "str"),
+        ("path", "path"),
+        ("dataframe", "array", "array_1d", "str", "path"),
+    ],
+)
+def test_clean_confounds_collection(signals, tmp_path, container, kinds):
+    """Check that a list or tuple of confounds of mixed types \
+    is equivalent to passing all confounds stacked in a single array.
+    """
+    rng = _rng()
+    blocks = [
+        rng.standard_normal(signals.shape[0])
+        if kind == "array_1d"
+        else rng.standard_normal((signals.shape[0], 2))
+        for kind in kinds
+    ]
+
+    confounds = container(
+        _confound_as(kind, block, tmp_path / f"confounds_{i}.csv")
+        for i, (kind, block) in enumerate(zip(kinds, blocks, strict=True))
+    )
+    stacked = np.hstack([np.atleast_2d(b.T).T for b in blocks])
+
+    expected = clean(
+        signals, detrend=False, standardize=None, confounds=stacked
+    )
+    result = clean(
+        signals, detrend=False, standardize=None, confounds=confounds
+    )
+
+    assert_almost_equal(result, expected)
+
+
+@pytest.mark.parametrize("as_str", [True, False])
+@pytest.mark.parametrize("in_list", [True, False])
+def test_clean_confounds_single_column_file(
+    signals, tmp_path, as_str, in_list
+):
+    """Check that a confounds file with a single column can be used.
+
+    Regression test: such a file is loaded as a 1D array,
+    which used to make clean fail.
+    """
+    confound = _rng().standard_normal((signals.shape[0], 1))
+    filename = tmp_path / "confounds.csv"
+    np.savetxt(filename, confound)
+    confounds = str(filename) if as_str else filename
+    if in_list:
+        confounds = [confounds]
+
+    expected = clean(
+        signals, detrend=False, standardize=None, confounds=confound
+    )
+    result = clean(
+        signals, detrend=False, standardize=None, confounds=confounds
+    )
+
+    assert_almost_equal(result, expected)
 
 
 def test_clean_warning(signals):
@@ -1412,8 +1460,12 @@ def test_clean_zscore(rng):
     assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
 
 
-def test_clean_sample_mask():
-    """Test sample_mask related feature."""
+@pytest.mark.parametrize("filter_type", ["butterworth", "cosine", False])
+def test_clean_sample_mask(filter_type):
+    """Test sample_mask related feature.
+
+    Setting high_pass to some specific values to avoid warnings.
+    """
     signals, _, confounds = generate_signals(
         n_features=11, n_confounds=5, length=40
     )
@@ -1425,13 +1477,23 @@ def test_clean_sample_mask():
     sample_mask_binary = np.full(signals.shape[0], True)
     sample_mask_binary[scrub_index] = False
 
-    scrub_clean = clean(signals, confounds=confounds, sample_mask=sample_mask)
+    scrub_clean = clean(
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask,
+        filter=filter_type,
+        high_pass=0.05 if filter_type else None,
+    )
 
     assert scrub_clean.shape[0] == sample_mask.shape[0]
 
     # test the binary mask
     scrub_clean_bin = clean(
-        signals, confounds=confounds, sample_mask=sample_mask_binary
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask_binary,
+        filter=filter_type,
+        high_pass=0.05 if filter_type else None,
     )
     assert_equal(scrub_clean_bin, scrub_clean)
 

@@ -182,8 +182,7 @@ Nifti and Analyze data
 For volumetric data, nilearn works with data stored as in the Nifti
 structure (via the nibabel_ package).
 
-The `NifTi <https://nifti.nimh.nih.gov/>`_ data structure (also used in
-Analyze files) is the standard way of sharing data in neuroimaging
+The NIfTI data structure (also used in Analyze files) is the standard way of sharing data in neuroimaging
 research. Three main components are:
 
 :data:

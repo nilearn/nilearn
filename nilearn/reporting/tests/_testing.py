@@ -34,11 +34,11 @@ def generate_and_check_report(
         Title to include in report.
         If None is passed the estimator name should be in report instead.
 
-    view: bool, default=False
+    view : bool, default=False
         if True the report is open in browser
         only used for debugging locally
 
-    pth: Path or None, default=None
+    pth : Path or None, default=None
         Where to save the report
 
     extend_includes : Iterable[str] | None, default=None
@@ -101,6 +101,7 @@ def generate_and_check_report(
         title = estimator.__class__.__name__
     includes.append(title)
 
+    warnings_list = []
     if len(warnings_msg_to_check) > 0:
         with pytest.warns(UserWarning) as warnings_list:
             report = estimator.generate_report(title=title, **kwargs)

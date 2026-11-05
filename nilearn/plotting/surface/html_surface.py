@@ -14,7 +14,7 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn.image import check_niimg_3d
-from nilearn.nilearn_typing import ColorBar, Title
+from nilearn.nilearn_typing import ColorBar, Title, Vmax, Vmin
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import mesh_to_plotly
 from nilearn.plotting.surface._utils import (
@@ -72,7 +72,6 @@ def _full_brain_info(
     This computes the dictionary that gets inserted in the web page,
     which contains encoded meshes, colors, min and max values, and
     background color.
-
     """
     if vol_to_surf_kwargs is None:
         vol_to_surf_kwargs = {}
@@ -179,9 +178,9 @@ def view_img_on_surf(
     threshold=None,
     cmap=DEFAULT_DIVERGING_CMAP,
     black_bg: bool = False,
-    vmax=None,
-    vmin=None,
-    symmetric_cmap=True,
+    vmax: Vmax = None,
+    vmin: Vmin = None,
+    symmetric_cmap: bool = True,
     bg_on_data: bool = False,
     colorbar: ColorBar = True,
     colorbar_height=0.5,
@@ -278,7 +277,6 @@ def view_img_on_surf(
     See Also
     --------
     nilearn.plotting.view_surf: plot from a surface map on a cortical mesh.
-
     """
     check_params(locals())
 
@@ -318,8 +316,8 @@ def view_surf(
     threshold=None,
     cmap=DEFAULT_DIVERGING_CMAP,
     black_bg: bool = False,
-    vmax=None,
-    vmin=None,
+    vmax: Vmax = None,
+    vmin: Vmin = None,
     bg_on_data: bool = False,
     symmetric_cmap: bool = True,
     colorbar: ColorBar = True,

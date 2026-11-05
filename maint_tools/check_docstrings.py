@@ -1,5 +1,5 @@
 # /// script
-# requires-python = ">=3.10"
+# requires-python = ">=3.11"
 # dependencies = [
 #   "nilearn[plotting,plotly]>=0.12",
 #    "numpydoc",
@@ -18,7 +18,6 @@
     but point to some other part of the API for more information ;
     a comment should be added to disable this script flagging
     this as an error
-
 
   - find missing :obj:`` in doc string type
 

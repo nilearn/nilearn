@@ -105,7 +105,6 @@ def check_hemispheres(hemispheres):
 
     hemispheres : :obj:`list`
         Any combination of 'left' and 'right'.
-
     """
     invalid_hemis = [
         not _check_hemisphere_is_valid(hemi) for hemi in hemispheres
@@ -272,7 +271,7 @@ def check_surface_plotting_inputs(
     objects are passed to be able to give them to the surface plotting
     functions.
 
-    - ``surf_mesh`` and ``surf_map`` cannot be `None` at the same time.
+    - ``surf_mesh`` and ``surf_map`` cannot be ``None`` at the same time.
     - If ``surf_mesh=None``, then ``surf_map`` should be of type
     :obj:`~nilearn.surface.SurfaceImage`.
     - ``surf_mesh`` cannot be of type :obj:`~nilearn.surface.SurfaceImage`.
@@ -286,7 +285,7 @@ def check_surface_plotting_inputs(
               | None
 
     %(surf_mesh)s
-        If `None` is passed, then ``surf_map`` must be a
+        If ``None`` is passed, then ``surf_map`` must be a
         :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
         :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
@@ -309,7 +308,6 @@ def check_surface_plotting_inputs(
           :obj:`numpy.ndarray`.
         - If ``hemi='both'``, returns :obj:`~nilearn.surface.InMemoryMesh`
     bg_map : :obj:`str` | :obj:`pathlib.Path` | :obj:`numpy.ndarray` | None
-
     """
     if surf_mesh is None and surf_map is None:
         raise TypeError(
@@ -391,7 +389,6 @@ def get_faces_on_edge(faces, parc_idx):
 
     parc_idx : :obj:`numpy.ndarray`, indices of the vertices of the region to
                be plotted
-
     """
     # count how many vertices belong to the given parcellation in each face
     verts_per_face = np.isin(faces, parc_idx).sum(axis=1)
@@ -409,7 +406,7 @@ def get_faces_on_edge(faces, parc_idx):
 
 
 def sanitize_hemi_view(hemi, view):
-    """Check ``hemi`` and ``view``, if ``view`` is `None`, set value for
+    """Check ``hemi`` and ``view``, if ``view`` is ``None``, set value for
     ``view`` depending on the ``hemi`` value and return ``view``.
     """
     check_hemispheres([hemi])

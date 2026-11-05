@@ -1,4 +1,4 @@
-.. _fiac_dataset:
+.. _fiac:
 
 fiac first level dataset
 ========================
@@ -33,18 +33,12 @@ For more details on the data, please see experiment 2 :footcite:t:`Dehaene2006`.
 
 Content
 -------
-:'design_matrix1': Design matrix of run 1
-:'func1': Path to Nifti file of run 1
-:'design_matrix2':  Design matrix of run 2
-:'func2': Path to Nifti file of run 2
-:'mask': Path to mask file
-:'description': Data description
+.. nilearn_dataset_content:: fiac
 
 References
 ----------
-
 .. footbibliography::
 
 License
 -------
-unknown
+.. nilearn_dataset_license:: fiac

@@ -19,6 +19,8 @@ BASE_TESTS = [
     "nilearn/tests/test_init.py",
     "nilearn/tests/test_package_import.py",
     "nilearn/_utils/tests",
+    "nilearn/_estimator_checks/tests/test_estimator_checks_nilearn.py",
+    "nilearn/_estimator_checks/tests/test_estimator_checks_sklearn.py",
 ]
 
 HIGHEST_LAYER = ["nilearn/utils"]
@@ -58,6 +60,7 @@ known_dirs = sorted(
         "nilearn/connectome",
         "nilearn/mass_univariate",
         "nilearn/_assets",
+        "nilearn/_estimator_checks",
     ]
 )
 assert known_dirs == all_folders, f"\n{known_dirs=}\n{all_folders=}"

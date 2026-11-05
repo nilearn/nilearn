@@ -20,7 +20,6 @@ def bids_entities() -> dict[str, list[str]]:
     Returns
     -------
     Dictionary of raw and derivatives entities : dict[str, list[str]]
-
     """
     return {
         "raw": [
@@ -48,7 +47,6 @@ def check_bids_label(label: Any) -> None:
     ----------
     label : Any
         Label to validate
-
     """
     if not isinstance(label, str):
         raise TypeError(
@@ -87,7 +85,6 @@ def create_bids_filename(
     Returns
     -------
     BIDS filename : :obj:`str`
-
     """
     if entities_to_include is None:
         entities_to_include = bids_entities()["raw"]

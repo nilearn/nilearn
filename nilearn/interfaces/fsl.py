@@ -25,7 +25,9 @@ def get_design_from_fslmat(
     design_matrix : :obj:`pandas.DataFrame`
         A DataFrame containing the design matrix.
     """
-    with Path(fsl_design_matrix_path).open() as design_matrix_file:
+    with Path(fsl_design_matrix_path).open(
+        encoding="utf-8"
+    ) as design_matrix_file:
         # Based on the openneuro example this seems to be the right
         # marker to start extracting the matrix until the end of the file
         # Conventions of FSL mat files should be verified in more detail for

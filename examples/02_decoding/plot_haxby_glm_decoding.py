@@ -13,8 +13,11 @@ More specifically:
 2. Extract the information to generate a glm
    representing the blocks of stimuli.
 3. Analyze the decoding performance using a classifier.
-"""
 
+.. admonition:: dataset
+
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
+"""
 # %%
 # Fetch example Haxby dataset
 # ---------------------------
@@ -146,7 +149,7 @@ report
 #
 # * although it usually helps to decode better, z-maps time series don't
 #   need to be rescaled to a 0 mean, variance of 1 so we use
-#   standardize=False.
+#   standardize=None.
 #
 # * we use univariate feature selection to reduce the dimension of the
 #   problem keeping only 5% of voxels which are most informative.
@@ -166,7 +169,7 @@ from nilearn.decoding import Decoder
 decoder = Decoder(
     estimator="svc",
     mask=haxby_dataset.mask,
-    standardize=False,
+    standardize=None,
     screening_percentile=5,
     cv=LeaveOneGroupOut(),
     verbose=1,

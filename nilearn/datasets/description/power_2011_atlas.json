@@ -1,0 +1,6 @@
+{
+    "rois": {
+        "type": "pd.DataFrame",
+        "desc": "Coordinates of 264 ROIs in :term:`MNI` space with x, y, z coordinates."
+    }
+}
