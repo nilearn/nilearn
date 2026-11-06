@@ -3,8 +3,8 @@ Working with long time series fMRI images
 =========================================
 
 In this example,
-we will demonstrate how one can work with large :term:`fMRI `images
-more efficiently.
+we will demonstrate how to work with large :term:`fMRI`
+images more efficiently.
 Note that :term:`fMRI` images can be large on-disk due to multiple
 factors, including long acquisition times and high-resolution sampling.
 
