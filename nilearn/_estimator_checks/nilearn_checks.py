@@ -1353,26 +1353,25 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
             f"Got '{output_dtype}' instead."
         )
 
-        try:
-            if isinstance(output_img, Nifti1Image):
-                if target_dtype != np.int64:
-                    # ensure both image and dataobj have consistent type
-                    assert (
-                        img_data_dtype(output_img)
-                        == output_img.get_data_dtype()
-                        == target_dtype
-                    )
-                else:
-                    # except when int64
-                    # in this case nibabel coerce the image
-                    # but not the object
-                    # to int32
-                    assert img_data_dtype(output_img) == "int32"
-                    assert output_img.get_data_dtype() == target_dtype
-            else:
-                assert output_dtype == target_dtype
-        except AssertionError as e:
-            raise TypeError(msg) from e
+        assert (
+            isinstance(output_img, Nifti1Image)
+            and output_img.get_data_dtype() == target_dtype
+            and (
+                # ensure both image and dataobj have consistent type
+                (
+                    target_dtype != np.int64
+                    and img_data_dtype(output_img) == target_dtype
+                )
+                # except when int64
+                # in this case nibabel coerce the image
+                # but not the object
+                # to int32
+                or (
+                    target_dtype == np.int64
+                    and img_data_dtype(output_img) == "int32"
+                )
+            )
+        ) or output_dtype == target_dtype, msg
 
 
 @skip_if_not(
