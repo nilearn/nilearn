@@ -1347,6 +1347,11 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
             output_dtype = output_img.data._dtype
 
         target_dtype = get_expected_dtype(input_dtype, dtype)
+        msg = (
+            "'inverse_transform' should have returned "
+            f"an image of type '{target_dtype}'. "
+            f"Got '{output_dtype}' instead."
+        )
 
         try:
             if isinstance(output_img, Nifti1Image):
@@ -1367,11 +1372,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
             else:
                 assert output_dtype == target_dtype
         except AssertionError as e:
-            raise TypeError(
-                "'inverse_transform' should have returned "
-                f"an image of type '{target_dtype}'. "
-                f"Got '{output_dtype}' instead."
-            ) from e
+            raise TypeError(msg) from e
 
 
 @skip_if_not(
