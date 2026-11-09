@@ -1312,22 +1312,27 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
             "data has been converted to int32" in str(x.message)
             for x in warning_list
         )
-        if isinstance(output_img, Nifti1Image) and dtype == np.int64:
-            assert any(warning_present)
-        elif isinstance(
-            estimator,
-            (NiftiMapsMasker, NiftiSpheresMasker, _BaseDecomposition),
-        ):
-            # These estimators route inverse_transform through
-            # signals_to_img_maps which uses np.dot and produces float64
-            # output, so nibabel never sees int64 data directly.
-            # A warning only fires when dtype=None causes int64 to be
-            # stored in the NIfTI header.
-            if input_dtype == np.int64 and dtype is None:
-                assert any(warning_present)
-        elif isinstance(output_img, Nifti1Image) and input_dtype == np.int64:
+        if (
             # Other maskers call unmask() directly with the int64 signal,
             # so nibabel warns on every int64 input regardless of dtype.
+            (
+                isinstance(output_img, Nifti1Image)
+                and (np.int64 in (dtype, input_dtype))
+            )
+            or (
+                dtype is None
+                and input_dtype == np.int64
+                # These estimators route inverse_transform through
+                # signals_to_img_maps which uses np.dot and produces float64
+                # output, so nibabel never sees int64 data directly.
+                # A warning only fires when dtype=None causes int64 to be
+                # stored in the NIfTI header.
+                and isinstance(
+                    estimator,
+                    (NiftiMapsMasker, NiftiSpheresMasker, _BaseDecomposition),
+                )
+            )
+        ):
             assert any(warning_present)
         else:
             assert not any(warning_present)
