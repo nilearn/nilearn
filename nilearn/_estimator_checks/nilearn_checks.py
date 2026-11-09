@@ -1308,8 +1308,6 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
         ):
             output_img = output_img[0]
 
-        target_dtype = get_expected_dtype(input_dtype, dtype)
-
         warning_present = (
             "data has been converted to int32" in str(x.message)
             for x in warning_list
@@ -1334,6 +1332,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
         else:
             assert not any(warning_present)
 
+        target_dtype = get_expected_dtype(input_dtype, dtype)
         output_dtype = None
         try:
             if isinstance(output_img, Nifti1Image):
