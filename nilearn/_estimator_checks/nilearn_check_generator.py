@@ -18,9 +18,7 @@ from nilearn._estimator_checks.nilearn_checks import (
     check_img_estimator_dict_unchanged,
     check_img_estimator_dont_overwrite_parameters,
     check_img_estimator_dtype_bool,
-    check_img_estimator_dtypes,
-    check_img_estimator_dtypes_inverse_transform,
-    check_img_estimator_dtypes_transform,
+    check_img_estimator_dtypes_funcs,
     check_img_estimator_fit_check_is_fitted,
     check_img_estimator_fit_idempotent,
     check_img_estimator_fit_score_takes_y,
@@ -105,8 +103,6 @@ COMMON_CHECKS = [
 # input
 IMG_INPUT_COMMON_CHECKS = [
     check_fit_returns_self,
-    check_img_estimator_dtypes,
-    check_img_estimator_dtypes_transform,
     check_img_estimator_dtype_bool,
     check_img_estimator_dict_unchanged,
     check_img_estimator_dont_overwrite_parameters,
@@ -121,7 +117,6 @@ IMG_INPUT_COMMON_CHECKS = [
     check_img_estimator_verbose,
     check_nilearn_methods_sample_order_invariance,
     check_img_estimator_clean_dtype,
-    check_img_estimator_dtypes_inverse_transform,
 ]
 
 # Checks for classifiers which accept volume or surface image as input
@@ -232,6 +227,9 @@ CHECK_SELECTOR = [
     (lambda e: True, COMMON_CHECKS),
     # ----------INPUT VOLUME OR SURFACE----------
     (lambda e: accepts_image(e), IMG_INPUT_COMMON_CHECKS),
+    # this is a function that generates list of test cases
+    # at runtime
+    (lambda e: accepts_image(e), check_img_estimator_dtypes_funcs),
     (
         lambda e: accepts_image(e) and is_classifier(e),
         IMG_INPUT_CLASSIFIER_CHECKS,
@@ -277,7 +275,11 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
     """
     for condition, checks in CHECK_SELECTOR:
         if condition(estimator):
-            yield from checks
+            if isinstance(checks, list):
+                yield from checks
+            else:
+                check_list = checks(estimator)
+                yield from check_list
 
 
 def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
