@@ -1300,12 +1300,6 @@ def check_img_estimator_dtypes(input_dtype, dtype, memory) -> Callable:
     return _check_img_estimator_dtypes
 
 
-@skip_if_not(
-    (
-        lambda e: hasattr(e, "inverse_transform"),
-        "'inverse_transform' attribute is not implemented.",
-    ),
-)
 def check_img_estimator_dtypes_inverse_transform(
     input_dtype, dtype
 ) -> Callable:
