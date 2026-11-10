@@ -29,7 +29,7 @@ and we will compare these strategies against a naive usage of
 # %%
 # Create a large fMRI image
 # -------------------------
-# Here we will create a "large" fMRI image by fetching 6 subjects'
+# Here we will create a "large" :term:`fMRI` image by fetching 6 subjects'
 # :term:`fMRI` images via the :func:`~nilearn.datasets.fetch_adhd` function,
 # concatenating them into a single time series with over 800 time points.
 #
