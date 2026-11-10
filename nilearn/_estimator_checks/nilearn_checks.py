@@ -1168,9 +1168,7 @@ def check_img_estimator_dtypes_funcs(estimator_orig):
         estimator_orig, with_memory=True
     ):
         check_list.append(
-            check_img_estimator_dtypes(
-                estimator_orig, input_dtype, dtype, memory
-            )
+            check_img_estimator_dtypes(input_dtype, dtype, memory)
         )
         if (
             hasattr(estimator_orig, "transform")
@@ -1179,14 +1177,14 @@ def check_img_estimator_dtypes_funcs(estimator_orig):
         ):
             check_list.append(
                 check_img_estimator_dtypes_transform(
-                    estimator_orig, input_dtype, dtype, memory
+                    input_dtype, dtype, memory
                 )
             )
 
         if hasattr(estimator_orig, "inverse_transform") and memory is None:
             check_list.append(
                 check_img_estimator_dtypes_inverse_transform(
-                    estimator_orig, input_dtype, dtype
+                    input_dtype, dtype
                 )
             )
 
