@@ -2,7 +2,12 @@ import pytest
 from nibabel import Nifti1Image
 from sklearn import clone
 
-from nilearn.conftest import _img_3d_rand, _make_surface_img
+from nilearn.conftest import (
+    _img_3d_rand,
+    _img_4d_rand_eye,
+    _make_surface_img,
+    _rng,
+)
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
     MultiNiftiMapsMasker,
@@ -197,3 +202,39 @@ def test_masker_reporting_false(masker, img_func):
         masker,
         warnings_msg_to_check=["Report generation was disabled when fit"],
     )
+
+
+@pytest.mark.parametrize("confound_container", [list, tuple])
+def test_multi_masker_high_variance_confounds_with_list_confounds(
+    confound_container,
+):
+    """Check high_variance_confounds=True with per-image confounds that
+    are themselves a list/tuple of several confound sources.
+
+    nilearn.signal.clean (and hence maskers) accept a confound for a given
+    image to be a list or tuple of several confound sources that get
+    concatenated. When high_variance_confounds=True, the mixin used to
+    merge the computed high-variance confounds into that collection with
+    confounds[i] += hv_confounds, which (for a 'list') extends the
+    collection with one new entry per *timepoint* instead of appending
+    hv_confounds as a single extra confound source, and (for a 'tuple')
+    crashes outright since tuples have no .append.
+
+    Regression test: both containers must work and simply add one more
+    confound source, not change the number of per-image confound sources
+    in an unexpected way.
+    """
+    imgs = [_img_4d_rand_eye(), _img_4d_rand_eye()]
+    n_time = imgs[0].shape[-1]
+    extra_confound = _rng().random((n_time, 2))
+
+    masker = MultiNiftiMasker(high_variance_confounds=True)
+    masker.fit(imgs)
+
+    confounds = [confound_container([extra_confound]), None]
+
+    signals = masker.transform(imgs, confounds=confounds)
+
+    assert len(signals) == len(imgs)
+    for s in signals:
+        assert s.shape[0] == n_time
