@@ -273,8 +273,14 @@ class _MultiMixin:
 
                 if confounds[i] is None:
                     confounds[i] = hv_confounds
-                elif isinstance(confounds[i], list):
-                    confounds[i] += hv_confounds
+                elif isinstance(confounds[i], (list, tuple)):
+                    # ponytail: 'list'/'tuple' here means confounds[i] is
+                    # already a collection of confound sources (as accepted
+                    # by nilearn.signal.clean). Append hv_confounds as one
+                    # more source instead of '+=', which would call
+                    # ndarray.__radd__ and try to broadcast-add hv_confounds
+                    # onto the collection instead of extending it.
+                    confounds[i] = [*confounds[i], hv_confounds]
                 elif isinstance(confounds[i], np.ndarray):
                     confounds[i] = np.hstack([confounds[i], hv_confounds])
                 elif isinstance(confounds[i], pd.DataFrame):
