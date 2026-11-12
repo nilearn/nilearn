@@ -7,7 +7,9 @@ from nilearn._estimator_checks.sklearn_expected_failed_checks import (
 from nilearn.utils.discovery import all_estimators
 
 
-@pytest.mark.slow
+@pytest.mark.filterwarnings(
+    "ignore:.*Input signals do not all have unit variance.*:UserWarning"
+)
 # TODO (scipy >= 1.20 or sklearn >= ?)
 # remove the pytest.mark.filterwarnings
 @pytest.mark.filterwarnings(
