@@ -115,7 +115,7 @@ jobs:
                     env: plot_min
                 # make sure everything is fine with latest dependencies without plotting
                 -   description: latest dependencies - no plotting
-                    py: '3.14'
+                    py: '3.15'
                     os: macos-latest
                     env: latest
                 # plotly images saved on different OS can generate slightly
