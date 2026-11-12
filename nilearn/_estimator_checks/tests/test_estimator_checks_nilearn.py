@@ -179,30 +179,6 @@ def _estimators_to_test():
     return estimator_list
 
 
-# Those checks capture stdout (contextlib.redirect_stdout),
-# which is not thread safe.
-THREAD_UNSAFE_CHECKS = {
-    "check_img_estimator_verbose",
-    "check_masker_mask_img",
-    "check_masker_transform_resampling",
-    "check_masker_verbose",
-    "check_verbosity_embedded_masker",
-}
-
-
-def _checks_to_run():
-    """Mark checks that cannot be run in parallel threads as thread unsafe."""
-    for estimator, name, check in nilearn_check_estimator(
-        estimators=_estimators_to_test()
-    ):
-        if getattr(check, "func", check).__name__ in THREAD_UNSAFE_CHECKS:
-            yield pytest.param(
-                estimator, name, check, marks=pytest.mark.thread_unsafe
-            )
-        else:
-            yield estimator, name, check
-
-
 def test_check_estimator_count():
     """Test if all estimators provided by nilearn are covered by
     ESTIMATORS_TO_CHECK.
@@ -213,7 +189,10 @@ def test_check_estimator_count():
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("estimator, name, check", _checks_to_run())
+@pytest.mark.parametrize(
+    "estimator, name, check",
+    nilearn_check_estimator(estimators=_estimators_to_test()),
+)
 def test_check_estimator_nilearn(estimator, name, check):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
     # use a copy of the estimator:
