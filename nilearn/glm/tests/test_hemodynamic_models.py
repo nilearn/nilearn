@@ -220,7 +220,11 @@ def test_sample_condition_7():
 
 
 def test_sample_condition_8():
-    """Test floating point errors do not introduce unwanted grid offsets."""
+    """Test floating point errors do not introduce unwanted grid offsets.
+    
+    regression test for:
+    https://github.com/nilearn/nilearn/issues/6720
+    """
     n_volumes = 504
     t_r = 2.4
     frame_times = np.arange(n_volumes) * t_r
@@ -426,7 +430,11 @@ def test_make_regressor_3():
 
 
 def test_make_regressor_4():
-    """Test that constant input remains constant after initial bump."""
+    """Test that constant input remains constant after initial bump.
+    
+    regression test for:
+    https://github.com/nilearn/nilearn/issues/6720
+    """
     n_volumes = 504
     t_r = 2.4
     frame_times = np.arange(n_volumes) * t_r
