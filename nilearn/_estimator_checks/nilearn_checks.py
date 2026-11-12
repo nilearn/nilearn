@@ -826,7 +826,9 @@ def check_img_estimator_cache_warning(estimator_orig) -> None:
                 estimator.compute_contrast(np.asarray([1]))
 
 
-@xfail_if_not_gil(classes=[SearchLight, Decoder])
+# liblinear (used by LinearSVC) relies on a global random state
+# which is not thread safe
+@xfail_if_not_gil(classes=[SearchLight, Decoder, FREMClassifier])
 def check_img_estimator_fit_idempotent(estimator_orig) -> None:
     """Check that est.fit(X) is the same as est.fit(X).fit(X).
 

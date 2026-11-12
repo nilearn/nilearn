@@ -1,5 +1,6 @@
 """Configuration and extra fixtures for pytest."""
 
+import threading
 from collections.abc import Callable, Generator
 from pathlib import Path
 from types import ModuleType
@@ -143,10 +144,43 @@ def _rng(seed=42):
     return np.random.default_rng(seed)
 
 
+class _ThreadLocalGenerator(np.random.Generator):
+    """Random number generator with one independent generator per thread.
+
+    Each thread gets its own generator initialized with the same seed,
+    so all threads draw the same sequence of numbers
+    as a single-threaded run would.
+
+    This is needed because pytest-run-parallel shares fixtures across threads:
+    with a plain generator, each thread would get different numbers
+    depending on how threads interleave.
+    """
+
+    def __init__(self, seed):
+        super().__init__(np.random.PCG64(seed))
+        object.__setattr__(self, "_seed", seed)
+        object.__setattr__(self, "_local", threading.local())
+
+    def _generator(self) -> np.random.Generator:
+        local = object.__getattribute__(self, "_local")
+        if not hasattr(local, "generator"):
+            local.generator = _rng(object.__getattribute__(self, "_seed"))
+        return local.generator
+
+    def __getattribute__(self, name):
+        if name.startswith("__") or name == "_generator":
+            return object.__getattribute__(self, name)
+        return getattr(object.__getattribute__(self, "_generator")(), name)
+
+
 @pytest.fixture()
 def rng() -> np.random.Generator:
-    """Return a seeded random number generator."""
-    return _rng()
+    """Return a seeded random number generator.
+
+    Safe to use when running tests in parallel threads:
+    each thread gets the same sequence of random numbers.
+    """
+    return _ThreadLocalGenerator(seed=42)
 
 
 # ------------------------ AFFINES ------------------------#
