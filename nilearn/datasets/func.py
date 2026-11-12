@@ -2870,14 +2870,21 @@ def _download_spm_auditory_data(data_dir, verbose):
 
 
 @fill_doc
-def fetch_spm_auditory(
+# TODO (nilearn >= 0.17.0) remove 'data_name' parameter
+@remove_parameters(
+    removed_params=["data_name"],
+    reason="parameter is unused",
+    end_version="0.17.0",
+)
+def fetch_spm_auditory(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     data_name: str = "spm_auditory",
     verbose: Verbose = 1,
 ) -> TypedBunch[str, Any]:
     """Fetch :term:`SPM` auditory single-subject data.
 
-    See :footcite:t:`spm_auditory`.
+    For more information,
+    see the :ref:`dataset description <spm_auditory>`.
 
     Parameters
     ----------
@@ -2886,6 +2893,10 @@ def fetch_spm_auditory(
     data_name : :obj:`str`, default='spm_auditory'
         Name of the dataset.
 
+        .. nilearn_deprecated:: 0.15.0
+
+            Will be removed in Nilearn >= 0.17.0
+
     %(verbose)s
 
     Returns
@@ -2893,28 +2904,11 @@ def fetch_spm_auditory(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'anat': :obj:`list` of :obj:`str`.
-            Paths to anat images
-
-        - 'func': :obj:`list` of :obj:`str`.
-            Paths to functional images
-
-        - 'events': :obj:`list` of :obj:`str`.
-            Paths to events.tsv files
-
-        - 'description': :obj:`str`.
-            Data description
-
-        - 't_r' : :obj:`float`.
-            Repetition time in seconds of the functional images.
+        %(spm_auditory_content)s
 
     Notes
     -----
     %(fetcher_note)s
-
-    References
-    ----------
-    .. footbibliography::
     """
     check_params(locals())
 
@@ -3116,6 +3110,8 @@ def fetch_spm_multimodal_fmri(  # numpydoc ignore=RT05
         Name of the dataset.
 
         .. nilearn_deprecated:: 0.15.0
+
+            Will be removed in Nilearn >= 0.17.0
 
     %(verbose)s
 

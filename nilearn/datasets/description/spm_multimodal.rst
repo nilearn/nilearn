@@ -30,7 +30,6 @@ Content
 
 References
 ----------
-
 .. footbibliography::
 
 License
