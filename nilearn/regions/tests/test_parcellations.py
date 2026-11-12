@@ -20,15 +20,7 @@ from nilearn.regions.parcellations import (
 )
 from nilearn.surface import SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
-
-METHODS = [
-    "kmeans",
-    "ward",
-    "complete",
-    "average",
-    "rena",
-    "hierarchical_kmeans",
-]
+from nilearn.tests.test_base import TestNilearnBaseEstimator
 
 
 @pytest.fixture
@@ -45,6 +37,80 @@ def image_2() -> Nifti1Image:
     data[6, 7, 8] = 2
     data[9, 10, 11] = 3
     return Nifti1Image(data, affine=_affine_eye())
+
+
+class TestParcellations(TestNilearnBaseEstimator):
+    def create_instance(self) -> Parcellations:
+        return Parcellations(method="kmeans")
+
+    @pytest.fixture
+    def fitted_estimator(self, image_1):
+        return self.estimator.fit(image_1)
+
+    def test_sklearn_tags(self):
+        tags = self.estimator.__sklearn_tags__().input_tags
+
+        assert hasattr(tags, "niimg_like")
+        assert tags.niimg_like is True
+
+        assert hasattr(tags, "surf_img")
+        assert tags.surf_img is True
+
+    def test_doc_no_undocumented_params(self, doc):
+        # check public attributes before fit
+        parameters = [
+            x for x in self.estimator.__dict__ if not x.startswith("_")
+        ]
+        documented_parameters: dict[str, str] = {
+            param.name: param.type for param in doc["Parameters"]
+        }
+
+        undocumented_parameters = list(
+            set(parameters) - set(documented_parameters)
+        )
+        assert len(undocumented_parameters) == 3
+        warnings.warn(
+            (
+                "Missing docstring for parameters "
+                f"[{', '.join(undocumented_parameters)}] "
+                f"in estimator {self.estimator.__class__.__name__}."
+            ),
+            stacklevel=2,
+        )
+
+    def test_doc_no_extra_attributes_after_fit(self, doc, fitted_estimator):
+        fitted_attributes = [
+            x
+            for x in fitted_estimator.__dict__
+            if x.endswith("_") and not x.startswith("_")
+        ]
+        documented_attributes: dict[str, str] = {
+            attr.name: attr.type for attr in doc["Attributes"]
+        }
+        extra_attributes = list(
+            set(documented_attributes) - set(fitted_attributes)
+        )
+
+        assert len(extra_attributes) == 1
+
+        warnings.warn(
+            (
+                "Extra docstring for attributes "
+                f"[{', '.join(extra_attributes)}] "
+                f"in estimator {self.estimator.__class__.__name__}."
+            ),
+            stacklevel=2,
+        )
+
+
+METHODS = [
+    "kmeans",
+    "ward",
+    "complete",
+    "average",
+    "rena",
+    "hierarchical_kmeans",
+]
 
 
 @pytest.mark.slow

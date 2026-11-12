@@ -14,6 +14,17 @@ from nilearn.regions.rena_clustering import (
 )
 from nilearn.surface import SurfaceImage
 
+from nilearn.tests.test_base import TestNilearnBaseEstimator
+
+
+class TestReNA(TestNilearnBaseEstimator):
+
+    def create_instance(self) -> ReNA:
+        return ReNA()
+
+    def test_doc_attributes_after_fit(self):
+        pass
+
 
 def test_mask_error():
     """Check an error is raised if invalid mask is provided before fit."""
