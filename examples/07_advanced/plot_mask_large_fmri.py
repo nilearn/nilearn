@@ -2,47 +2,22 @@
 Working with long time series fMRI images
 =========================================
 
-In this example, we will demonstrate how one can work with large fMRI images
-more efficiently. Note that fMRI images can be large on-disk due to several
-different factors, including a long acquisition or high-resolution sampling.
-Currently, this example focuses on memory-efficient interactions with long
-time series fMRI data. In this case, loading the whole time series into memory
-may represent a significant computational cost. We will therefore explore
-strategies to minimize the amount of data that is loaded into memory,
+In this example,
+we will demonstrate how to work with large :term:`fMRI`
+images more efficiently.
+Note that :term:`fMRI` images can be large on-disk due to multiple
+factors, including long acquisition times and high-resolution sampling.
+
+Each of these factors can be handled using different strategies.
+In this example, we focus on memory-efficient interactions with long
+time series :term:`fMRI` data; i.e., data where loading the whole time
+series into memory may represent a significant computational cost,
+but where each individual volume can be handled in-memory.
+
+We will therefore explore strategies to minimize the amount of timeseries
+data that is loaded into memory for a given set of Regions of Interest (ROIs),
 and we will compare these strategies against a naive usage of
 :class:`~nilearn.maskers.NiftiMasker`.
-
-To make this more concrete, we will create a large fMRI image with over
-800 time points by concatenating individual subjects in the
-:func:`~nilearn.datasets.fetch_adhd` dataset.
-Our goal is to extract data from several regions of interest (ROIs)
-defined by a number of binary masks, all in parallel.
-
-When using :class:`~nilearn.maskers.NiftiMasker` to extract data from each
-ROI in parallel, each parallel process will load the entire fMRI image into
-memory. This can lead to a significant increase in memory usage and may be
-infeasible in some computational environments.
-
-We will thus compare three different methods for this task, each handling
-the fMRI image in a different way:
-
-1. A naive, unoptimized usage of :class:`~nilearn.maskers.NiftiMasker`.
-2. Masking the fMRI image's data array using numpy indexing.
-3. Using :class:`multiprocessing.shared_memory.SharedMemory`.
-
-For the first method, there are two ways to input the fMRI image:
-
-1. passing the file path (i.e., the location of the large fMRI image on-disk).
-2. loading image first and passing this in-memory object to joblib.
-
-When using file paths, the entire image is loaded into memory for each process,
-and that is exactly the problem we described earlier.
-
-However, when the fMRI image is loaded once and then passed to
-:class:`joblib.Parallel` as an in-memory object, the image is not loaded
-multiple times. We will see that this can already be a significant
-improvement over the naive usage of :class:`~nilearn.maskers.NiftiMasker` with
-file paths.
 
 .. admonition:: dataset
 
@@ -54,9 +29,9 @@ file paths.
 # %%
 # Create a large fMRI image
 # -------------------------
-# Here we will create a "large" fMRI image by fetching 6 subjects'
-# fMRI images via the :func:`~nilearn.datasets.fetch_adhd` function,
-# concatenating them and then saving to a file.
+# Here we will create a "large" :term:`fMRI` image by fetching 6 subjects'
+# :term:`fMRI` images via the :func:`~nilearn.datasets.fetch_adhd` function,
+# concatenating them into a single time series with over 800 time points.
 #
 
 from pathlib import Path
@@ -64,8 +39,7 @@ from pathlib import Path
 from nilearn.datasets import fetch_adhd
 from nilearn.image import concat_imgs
 
-N_SUBJECTS = 6
-N_REGIONS = 2
+N_SUBJECTS = 15
 
 
 def create_large_fmri(n_subjects):
@@ -87,23 +61,25 @@ fmri_path, n_timepoints = create_large_fmri(N_SUBJECTS)
 # %%
 # Create a set of binary masks
 # ----------------------------
-# We will now create 4 binary masks from BASC multiscale atlas.
+# We will now create 2 binary masks from the
+# :ref:`BASC multiscale atlas <basc_multiscale_2015_atlas>`.
 # We will fetch a 64-region version of this atlas and then create separate
-# binary masks for the first 4 regions.
+# binary masks for the first 2 regions.
 #
-# In this case, the atlas and the fMRI image have different resolutions.
-# So we will resample the atlas to the fMRI image. It is important to do that
-# because only :class:`~nilearn.maskers.NiftiMasker` can handle the resampling
-# of the mask to the fMRI image but other methods considered here will not.
-
 from nilearn.datasets import fetch_atlas_basc_multiscale_2015
 from nilearn.image import load_img, new_img_like, resample_to_img
+
+N_REGIONS = 2
 
 
 def create_masks(fmri_path, n_regions):
     atlas_path = fetch_atlas_basc_multiscale_2015(resolution=64).maps
     atlas_img = load_img(atlas_path)
 
+    # We will resample the atlas to the fMRI image outside of the
+    # masking procedure, as---of the methods we consider---only
+    # nilearn.maskers.NiftiMasker
+    # can handle resampling internally.
     resampled_atlas = resample_to_img(
         atlas_img, fmri_path, interpolation="nearest"
     )
@@ -127,22 +103,30 @@ mask_paths = create_masks(fmri_path, N_REGIONS)
 # %%
 # Mask the fMRI image using NiftiMasker
 # -------------------------------------
-# Let's first mask the fMRI image using :class:`~nilearn.maskers.NiftiMasker`.
+# Let's first mask the :term:`fMRI` image using
+# :class:`~nilearn.maskers.NiftiMasker`.
 # This is the most user-friendly way to extract data from an fMRI image as it
 # makes it easy to standardize, smooth, detrend, etc. the data.
 #
 # We will first wrap the :meth:`~nilearn.maskers.NiftiMasker.fit_transform`
 # within a function so that it is more readable and easier to use.
-# We will then define another function that would mask the fMRI image using
-# multiple masks in parallel using the :mod:`joblib` package. As mentioned
-# earlier, this could further be done in two ways: directly using file paths
-# as input or first loading the images in-memory and passing them as input.
+# We will then define another function that would mask the :term:`fMRI` image
+# using multiple masks in parallel using the :mod:`joblib` package.
 #
-# So we will define two functions for each case.
+# This could be done in two different ways:
+#   * directly using file paths, or
+#   * first loading the images in-memory and then passing them to the masker.
 #
+# When using file paths, the entire image is loaded into memory for
+# each process. However, when the fMRI image is loaded into memory
+# once and then passed to :class:`joblib.Parallel`
+# as an in-memory object,
+# we will see a significant drop in memory usage.
+#
+# To view this effect, we will define a function for each case.
 # We can then track the memory usage of these functions via the
 # ``memory_profiler`` package.
-
+#
 from joblib import Parallel, delayed
 
 from nilearn.maskers import NiftiMasker
@@ -197,15 +181,15 @@ print(
 # %%
 # Masking using numpy indexing
 # ----------------------------
-# Now let's see how we can mask the fMRI image using numpy indexing. This
-# could be more efficient than the NiftiMasker when we simply need to mask
-# the fMRI image with binary masks and don't need to standardize, smooth, etc.
-# the image.
+# Now let's see how we can mask the :term:`fMRI` image using
+# `numpy indexing. <https://numpy.org/doc/stable/user/basics.indexing.html>`_
+# This could be more efficient than :class:`~nilearn.maskers.NiftiMasker`
+# when we simply need to extract :term:`fMRI` signals from a binary mask(s).
 #
-# As before we will first define a function that would mask the data array
-# of the fMRI image using a single mask. We will then define another function
-# that would iterate over multiple masks in parallel and mask the data array
-# of the fMRI image using each mask.
+# As before, we will first define a function that would mask the data array
+# of the :term:`fMRI` image using a single mask. We will then define another
+# function that would iterate over multiple masks in parallel and mask
+# the data array of the :term:`fMRI` image using each mask.
 
 import numpy as np
 
@@ -240,15 +224,17 @@ print(
 # %%
 # Masking using numpy indexing in parallel with shared memory
 # -----------------------------------------------------------
-# Finally, let's see how we can combine numpy indexing and shared memory from
+# Finally, let's see how we can combine
+# `numpy indexing <https://numpy.org/doc/stable/user/basics.indexing.html>`_
+# and shared memory from
 # the :mod:`multiprocessing` module, and if that makes the masking more
 # memory-efficient.
 #
-# For this method, we would have to load the fMRI image into shared memory
-# that can be accessed by multiple processes.
+# For this method, we would have to load the :term:`fMRI` image into
+# shared memory that can be accessed by multiple processes.
 # This way, each process can
-# access the data directly from the shared memory without loading the entire
-# image into memory again.
+# access the data directly from the shared memory without loading
+# the entire image into memory again.
 
 from multiprocessing.shared_memory import SharedMemory
 
@@ -319,16 +305,19 @@ plt.show()
 # %%
 # Conclusion
 # ----------
-# So overall we can see that there are much more memory-efficient ways to
-# extract ROIs in parallel from large fMRI images than simply
+# Overall we can see that there are much more memory-efficient ways to
+# extract ROIs in parallel from large :term:`fMRI` images than simply
 # using :class:`~nilearn.maskers.NiftiMasker` with file paths.
 #
-# The two methods that standout both use numpy indexing and involve
-# loading the fMRI image prior to masking. In fact, loading the fMRI image
+# The two methods that standout both use
+# `numpy indexing <https://numpy.org/doc/stable/user/basics.indexing.html>`_
+# and involve loading the :term:`fMRI` image prior to masking.
+# In fact, loading the :term:`fMRI` image
 # prior is generally better than using file paths even with
 # :class:`~nilearn.maskers.NiftiMasker`.
 #
-# So if your goal is to simply extract data from an fMRI image, numpy indexing
+# So if your goal is to simply extract data from an :term:`fMRI` image,
+# `numpy indexing <https://numpy.org/doc/stable/user/basics.indexing.html>`_
 # is much more memory-efficient than using
 # :class:`~nilearn.maskers.NiftiMasker`.
 #
@@ -340,5 +329,5 @@ plt.show()
 # Finally, it should be noted that the differences in memory usage between
 # the methods can be more significant when working with even larger images
 # and/or more jobs/regions in parallel. You can try increasing the
-# ``N_SUBJECTS`` and ``N_REGIONS`` variables at the beginning of this example
+# ``N_SUBJECTS`` and ``N_REGIONS`` variables in this example
 # to see how the memory usage changes for each method.
