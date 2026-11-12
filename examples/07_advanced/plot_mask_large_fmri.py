@@ -78,7 +78,7 @@ def create_masks(fmri_path, n_regions):
 
     # We will resample the atlas to the fMRI image outside of the
     # masking procedure, as---of the methods we consider---only
-    # :class:`~nilearn.maskers.NiftiMasker`
+    # nilearn.maskers.NiftiMasker
     # can handle resampling internally.
     resampled_atlas = resample_to_img(
         atlas_img, fmri_path, interpolation="nearest"
