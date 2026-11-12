@@ -58,7 +58,7 @@ Fixes
 
 - :bdg-dark:`Code` Fix dataset downloads failing with ``Only one live display may be active at once`` after a failed download when `rich <https://github.com/Textualize/rich>`_ is installed (:gh:`6624` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Fix :func:`~nilearn.glm.first_level.compute_regressor` producing ripples for dense inputs because floating-point errors in ``nilearn.glm.first_level._sample_condition`` shifted on-grid events to the next grid point (:gh:`XXXX` by `Zach Nudelman <https://github.com/zachnudels>`_).
+- :bdg-dark:`Code` Fix :func:`~nilearn.glm.first_level.compute_regressor` producing ripples for dense inputs because floating-point errors in ``nilearn.glm.first_level._sample_condition`` shifted on-grid events to the next grid point (:gh:`6722` by `Zach Nudelman`_).
 
 Enhancements
 ------------
