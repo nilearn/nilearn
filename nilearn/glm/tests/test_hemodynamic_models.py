@@ -221,7 +221,7 @@ def test_sample_condition_7():
 
 def test_sample_condition_8():
     """Test floating point errors do not introduce unwanted grid offsets.
-    
+
     regression test for:
     https://github.com/nilearn/nilearn/issues/6720
     """
@@ -431,7 +431,7 @@ def test_make_regressor_3():
 
 def test_make_regressor_4():
     """Test that constant input remains constant after initial bump.
-    
+
     regression test for:
     https://github.com/nilearn/nilearn/issues/6720
     """
