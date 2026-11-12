@@ -12,17 +12,20 @@ extract objects using a function
 
 .. admonition:: dataset
 
-    We use localizer t-statistic maps from
-    :func:`~nilearn.datasets.fetch_neurovault_auditory_computation_task`
-    as input images.
+    We fetch
+    a `localizer t-statistic maps <https://neurovault.org/images/32980/>`_
+    from NeuroVault with :func:`~nilearn.datasets.fetch_neurovault_ids`
+    as input image.
+    This is the contrast image of
+    performing a mental subtraction after auditory instructions
+    versus fixating a cross.
 """
 
 # %%
-# Fetching t-statistic image of localizer contrasts by loading from datasets
-# utilities
-from nilearn.datasets import fetch_neurovault_auditory_computation_task
+# Fetching the input image directly via its ID (32980).
+from nilearn.datasets import fetch_neurovault_ids
 
-localizer = fetch_neurovault_auditory_computation_task(timeout=30.0)
+localizer = fetch_neurovault_ids(image_ids=[32980], timeout=30.0)
 tmap_filename = localizer.images[0]
 
 # %%
@@ -34,7 +37,6 @@ from nilearn.image import threshold_img
 threshold_percentile_img = threshold_img(
     tmap_filename, threshold="97%", copy=False
 )
-
 
 # Type 2: threshold strategy used will be based on image intensity
 # Here, threshold value should be within the limits i.e. less than max value.
