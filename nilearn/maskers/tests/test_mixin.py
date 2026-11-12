@@ -215,14 +215,14 @@ def test_multi_masker_high_variance_confounds_with_list_confounds(
     image to be a list or tuple of several confound sources that get
     concatenated. When high_variance_confounds=True, the mixin used to
     merge the computed high-variance confounds into that collection with
-    confounds[i] += hv_confounds, which (for a 'list') extends the
-    collection with one new entry per *timepoint* instead of appending
-    hv_confounds as a single extra confound source, and (for a 'tuple')
-    crashes outright since tuples have no .append.
+    confounds[i] += hv_confounds. For a single-element 'list', that is
+    list.__iadd__ on a (1, n_time, n_hv)-shaped array built from the list,
+    which falls back to ndarray.__radd__ and raises a ValueError trying to
+    broadcast-add hv_confounds onto it. A 'tuple' has no += at all and
+    crashes outright with AttributeError, since tuples have no .append.
 
     Regression test: both containers must work and simply add one more
-    confound source, not change the number of per-image confound sources
-    in an unexpected way.
+    confound source, not raise either error.
     """
     imgs = [_img_4d_rand_eye(), _img_4d_rand_eye()]
     n_time = imgs[0].shape[-1]
