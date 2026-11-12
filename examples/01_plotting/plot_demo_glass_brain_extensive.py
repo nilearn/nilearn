@@ -13,8 +13,13 @@ See :ref:`plotting` for more plotting functionalities and
 :ref:`Section 4.3 <display_modules>` for more details about display objects
 in Nilearn.
 
-Also, see :func:`~nilearn.datasets.load_sample_motor_activation_image`
-for details about the plotting data and associated meta-data.
+.. admonition:: dataset
+
+    This example uses a sample motor activation statistical map (`image 10426
+    <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
+    <neurovault_dataset>`).
+    Also, see :func:`~nilearn.datasets.load_sample_motor_activation_image`
+    for details about the plotting data and associated meta-data.
 """
 
 # %%

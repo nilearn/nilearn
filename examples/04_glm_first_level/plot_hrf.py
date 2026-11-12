@@ -23,13 +23,7 @@ Glover model does not make a huge
 difference. Adding derivatives should be considered whenever timing
 information has some degree of uncertainty, and is actually useful to detect
 timing issues.
-
-This example requires matplotlib and scipy.
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
 
 import matplotlib.pyplot as plt
 import numpy as np

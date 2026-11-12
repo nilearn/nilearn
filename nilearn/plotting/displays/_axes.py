@@ -540,12 +540,12 @@ class GlassBrainAxes(BaseAxes):
         """
         # colormap for colorbar
         self.cmap = cmap
-        if vmin is None and vmax is None:
-            abs_line_values_max = np.abs(line_values).max()
-            vmin = -abs_line_values_max
-            vmax = abs_line_values_max
-        elif vmin is None:
-            if vmax > 0:
+        if vmin is None:
+            if vmax is None:
+                abs_line_values_max = np.abs(line_values).max()
+                vmin = -abs_line_values_max
+                vmax = abs_line_values_max
+            elif vmax > 0:
                 vmin = -vmax
             else:
                 raise ValueError(

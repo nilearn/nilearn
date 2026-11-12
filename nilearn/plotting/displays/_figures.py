@@ -43,7 +43,7 @@ class SurfaceFigure:
         """Show the figure."""
         raise NotImplementedError
 
-    def add_contours(self):
+    def add_contours(self, *args, **kwargs):
         """Draw boundaries around roi."""
         raise NotImplementedError
 

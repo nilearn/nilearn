@@ -47,6 +47,7 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
+from nilearn._utils.versions import SKLEARN_GT_1_9
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import (
     SUPPORTED_ESTIMATORS,
@@ -183,7 +184,13 @@ def _default_param_grid(estimator, X, y):
         # in which case min_c is computed with sklearn.svm.l1_min_c(),
         # so for L2 penalty, param_grid["Cs"] is either 1e-3, ..., 1e4, and
         # for L1 penalty the values are obtained in a more data-driven way
-        param_grid["Cs"] = [np.geomspace(2e-3, 2e4, 8) * min_c]
+        tmp = np.geomspace(2e-3, 2e4, 8) * min_c
+        # TODO (sklearn >= 1.10)
+        # simplify
+        if SKLEARN_GT_1_9:
+            param_grid["alphas"] = [1 / tmp]
+        else:
+            param_grid["Cs"] = [tmp]
     elif isinstance(estimator, LassoCV):
         # the default is to generate 30 alphas based on the data
         # (alpha values can also be set with the 'alphas' parameter, in which
@@ -387,10 +394,12 @@ def _parallel_fit(
             if isinstance(estimator, (RidgeCV, RidgeClassifierCV, LassoCV)):
                 params["best_alpha"] = estimator.alpha_
             elif isinstance(estimator, LogisticRegressionCV):
-                if isinstance(estimator.C_, float):
+                if SKLEARN_GT_1_9:
+                    params["best_alpha"] = estimator.alpha_
+                elif isinstance(estimator.C_, float):
                     # TODO (sklearn >= 1.10)
                     # estimator.C_ is always a float
-                    # so we can get rif of the else part
+                    # so we can get rid of the else part
                     params["best_C"] = estimator.C_
                 else:
                     params["best_C"] = estimator.C_.item()

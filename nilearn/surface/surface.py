@@ -1233,7 +1233,12 @@ def _interpolation_sampling(
         all_samples.append(samples)
     all_samples = np.asarray(all_samples)
     all_samples = all_samples.reshape((len(images), n_vertices, n_points))
-    texture = np.nanmean(all_samples, axis=2)
+    with warnings.catch_warnings():
+        # vertices with only NaN samples are expected to get NaN
+        warnings.filterwarnings(
+            "ignore", message="Mean of empty slice", category=RuntimeWarning
+        )
+        texture = np.nanmean(all_samples, axis=2)
     return texture
 
 
