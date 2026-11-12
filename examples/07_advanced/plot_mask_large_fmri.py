@@ -39,7 +39,7 @@ from pathlib import Path
 from nilearn.datasets import fetch_adhd
 from nilearn.image import concat_imgs
 
-N_SUBJECTS = 6
+N_SUBJECTS = 15
 
 
 def create_large_fmri(n_subjects):
