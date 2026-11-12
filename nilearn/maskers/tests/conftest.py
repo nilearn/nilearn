@@ -1,5 +1,7 @@
 """Fixtures specific for maskers."""
 
+import contextlib
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -8,6 +10,14 @@ from numpy.testing import assert_almost_equal
 from nilearn.conftest import _make_mesh
 from nilearn.maskers import NiftiMapsMasker
 from nilearn.surface import SurfaceImage
+
+
+def _nifti_maps_masker_context(estimator):
+    """Manage warning when fitting NiftiMapsMasker with no data."""
+    # TODO (nilearn>=0.17.0) turn into an error
+    if not isinstance(estimator, NiftiMapsMasker):
+        return contextlib.nullcontext()
+    return pytest.warns(FutureWarning, match="no image was passed at fit time")
 
 
 def check_signal_and_inverse_transform(

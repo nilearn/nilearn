@@ -140,6 +140,7 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers._mixin import _MultiMixin
+from nilearn.maskers.tests.conftest import _nifti_maps_masker_context
 from nilearn.maskers.tests.test_html_report import (
     generate_and_check_masker_report,
 )
@@ -160,14 +161,6 @@ from nilearn.utils.tags import (
 )
 
 NILEARN_DIR = Path(__file__).parents[1]
-
-
-def _nifti_maps_masker_context(estimator):
-    """Manage warning when fitting NiftiMapsMasker with no data."""
-    # TODO (nilearn>=0.17.0) turn into an error
-    if not isinstance(estimator, NiftiMapsMasker):
-        return contextlib.nullcontext()
-    return pytest.warns(FutureWarning, match="no image was passed at fit time")
 
 
 def _not_fitted_error_message(estimator) -> str:
