@@ -37,7 +37,6 @@ def test_group_sparse_covariance(rng):
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("duality_gap", [True, False])
 def test_group_sparse_covariance_with_probe_function(rng, duality_gap):
     """Test that the probe records a decreasing objective over iterations."""

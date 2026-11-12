@@ -445,7 +445,6 @@ def test_resampling_warning_s_form(data, affine_eye, force_resample):
         )
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_resampling_warning_binary_image(affine_eye, rng, force_resample):
     """Warn when resampling binary images with continuous \
@@ -605,7 +604,7 @@ def test_3x3_affine_bbox(affine_eye, force_resample):
     # that would count as binary
     # and throw warnings.
     image = np.full((20, 30), 2.0)
-    source_affine = affine_eye
+    source_affine = affine_eye.copy()
     # Give the affine an offset
     source_affine[:2, 3] = np.array([96, 64])
 
@@ -815,7 +814,7 @@ def test_resampling_nan_big(affine_eye, force_resample):
 
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_resample_to_img(data, affine_eye, force_resample):
-    source_affine = affine_eye
+    source_affine = affine_eye.copy()
     source_img = Nifti1Image(data, source_affine)
 
     target_affine = 2 * affine_eye
@@ -845,13 +844,12 @@ def test_crop(affine_eye):
     assert_equal(get_data(cropped), data)
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_resample_identify_affine_int_translation(
     affine_eye, rng, force_resample
 ):
     source_shape = (6, 4, 6)
-    source_affine = affine_eye
+    source_affine = affine_eye.copy()
     source_affine[:, 3] = np.append(rng.integers(0, 4, 3), 1)
     source_data = rng.random(source_shape)
     source_img = Nifti1Image(source_data, source_affine)
@@ -1104,9 +1102,8 @@ def test_reorder_img_copied_header(img_4d_mni_tr2):
     )
 
 
-@pytest.mark.thread_unsafe
 def test_coord_transform_trivial(affine_eye, rng):
-    sform = affine_eye
+    sform = affine_eye.copy()
     x = rng.random((10,))
     y = rng.random((10,))
     z = rng.random((10,))
