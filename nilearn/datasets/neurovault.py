@@ -2836,6 +2836,13 @@ def fetch_neurovault_auditory_computation_task(
     """Fetch a :term:`contrast` map from :term:`Neurovault` showing \
     the effect of mental subtraction upon auditory instructions.
 
+    .. nilearn_deprecated:: 0.15.0
+
+        ``fetch_neurovault_auditory_computation_task`` will be removed
+        in version 0.17.0.
+        Use :func:`~nilearn.datasets.fetch_neurovault_ids`
+        with ``image_ids=[32980]`` instead.
+
     Parameters
     ----------
     %(data_dir)s
