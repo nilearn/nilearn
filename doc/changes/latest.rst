@@ -55,7 +55,6 @@ Fixes
 
 - :bdg-dark:`Code` Fix residual variance of :class:`~nilearn.glm.OLSModel` and :class:`~nilearn.glm.ARModel` being divided by the number of design columns instead of the design rank, which made t and F statistics too small for rank-deficient designs in :class:`~nilearn.glm.first_level.FirstLevelModel` and :class:`~nilearn.glm.second_level.SecondLevelModel` (:gh:`6611` by `Wolfgang Aura`_).
 
-
 - :bdg-dark:`Code` Fix dataset downloads failing with ``Only one live display may be active at once`` after a failed download when `rich <https://github.com/Textualize/rich>`_ is installed (:gh:`6624` by `Rémi Gau`_).
 
 
@@ -105,6 +104,7 @@ Changes
 - :bdg-danger:`Deprecation` The parameter name ``subjects`` of the :func:`~nilearn.datasets.fetch_haxby` is deprecated will be completely removed in version 0.17.0. Use ``n_subjects`` instead (:gh:`6462` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-danger:`Deprecation` The function :func:`~nilearn.datasets.fetch_localizer_calculation_task` is deprecated and will be removed in version 0.17.0. Use :func:`~nilearn.datasets.fetch_localizer_contrasts` with ``contrasts=["calculation (auditory and visual cue)"]`` instead (:gh:`6538` by `Aniket Singh Yadav`_).
+
 - :bdg-danger:`Deprecation` The function :func:`~nilearn.datasets.fetch_localizer_button_task` is deprecated and will be removed in version 0.17.0. Use :func:`~nilearn.datasets.fetch_localizer_contrasts` with ``contrasts=["left vs right button press"]`` instead (:gh:`6719` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The function :func:`~nilearn.datasets.fetch_neurovault_auditory_computation_task` is deprecated and will be removed in version 0.17.0. Use :func:`~nilearn.datasets.fetch_neurovault_ids` with ``image_ids=[32980]`` instead (:gh:`6719` by `Rémi Gau`_).
