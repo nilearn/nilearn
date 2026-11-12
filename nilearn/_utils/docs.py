@@ -2046,6 +2046,7 @@ DATASET_DESCRIPTIONS: dict[str, TypedBunch] = {
     "localizer_first_level": Bunch(
         content=Bunch(template=Bunch(type=str, desc=template))
     ),
+    "miyawaki2008": Bunch(),
     "msdl_atlas": Bunch(
         license="usage is unrestricted for non-commercial research purposes."
     ),

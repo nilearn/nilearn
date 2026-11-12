@@ -1,0 +1,22 @@
+{
+    "label": {
+        "type": "list[str]",
+        "desc": "Full paths to text files containing run and target data. Labels are 10x10 patches representing the stimuli shown to the subject: 20 random labels, 12 figure labels (letters and shapes)."
+    },
+    "func": {
+        "type": "list[str]",
+        "desc": "Full paths to 4D nifti files with :term:`BOLD` data. 20 random scans (usually used for training) and 12 figure scans (usually used for testing)."
+    },
+    "mask": {
+        "type": "str",
+        "desc": "Full Path to 3D nifti file that defines target volume in visual cortex"
+    },
+    "mask_roi": {
+        "type": "list[str]",
+        "desc": "List of full paths to 3D nifti file to images with specific data ('RH' for right hemisphere, 'LH' for left hemisphere, 'Vxxx' denote visual areas)"
+    },
+    "background": {
+        "type": "str",
+        "desc": "Full path to nifti file containing a background image usable as a background image for miyawaki images."
+    }
+}

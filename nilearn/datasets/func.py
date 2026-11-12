@@ -466,7 +466,7 @@ def miyawaki2008_file_mask():
 
 
 @fill_doc
-def fetch_miyawaki2008(
+def fetch_miyawaki2008(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -474,13 +474,17 @@ def fetch_miyawaki2008(
 ) -> TypedBunch[str, Any]:
     """Download and loads Miyawaki et al. 2008 dataset (153MB).
 
-    See :footcite:t:`Miyawaki2008`.
+    For more information,
+    see the :ref:`dataset description <miyawaki2008>`.
 
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -488,24 +492,11 @@ def fetch_miyawaki2008(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'func': :obj:`list` of :obj:`str`
-            Paths to nifti file with :term:`BOLD` data
-        - 'label': :obj:`list` of :obj:`str`
-            Paths to text file containing run and target data
-        - 'mask': :obj:`str`
-            Path to nifti mask file to define target volume in visual
-            cortex
-        - 'background': :obj:`str`
-            Path to nifti file containing a background image usable as a
-            background image for miyawaki images.
+        %(miyawaki2008_content)s
 
     Notes
     -----
     %(fetcher_note)s
-
-    References
-    ----------
-    .. footbibliography::
     """
     check_params(locals())
 
@@ -566,8 +557,6 @@ def fetch_miyawaki2008(
         data_dir, [("bg.nii.gz", url, opts)], resume=resume, verbose=verbose
     )[0]
 
-    fdescr = get_dataset_descr(dataset_name)
-
     # Return the data
     return Bunch(
         func=files[:32],
@@ -575,7 +564,7 @@ def fetch_miyawaki2008(
         mask=files[64],
         mask_roi=files[65:],
         background=bg_img,
-        description=fdescr,
+        description=Description.from_registry(dataset_name),
     )
 
 
@@ -2938,7 +2927,7 @@ def fetch_spm_auditory(  # numpydoc ignore=RT05
         "anat": anat,
         "func": func,
         "events": events,
-        "description": get_dataset_descr("spm_auditory"),
+        "description": Description.from_registry("spm_auditory"),
         "t_r": 7.0,
     }
     return Bunch(**spm_auditory_data)

@@ -1,4 +1,4 @@
-.. _miyawaki_dataset:
+.. _miyawaki2008:
 
 Miyawaki 2008 dataset
 =====================
@@ -20,19 +20,12 @@ See :footcite:t:`Miyawaki2008`.
 
 Content
 -------
-
-    :'label': Paths to text files containing run and target data
-    :'func': Paths to nifti files with :term:`BOLD` data
-    :'mask': Path to general mask nifti that defines target volume in visual cortex
-    :'mask_roi': List of paths to images with specific data
-                 ('RH' for right hemisphere, 'LH' for left hemisphere, 'Vxxx' denote visual areas)
+.. nilearn_dataset_license:: miyawaki
 
 References
 ----------
-
 .. footbibliography::
-
 
 License
 -------
-unknown
+.. nilearn_dataset_license:: miyawaki
