@@ -9,6 +9,7 @@ from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn.conftest import _img_4d_zeros
 from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, threshold_img
+from nilearn.maskers.tests.conftest import _nifti_maps_masker_context
 from nilearn.regions import (
     RegionExtractor,
     connected_label_regions,
@@ -237,10 +238,14 @@ def test_fit_and_transform(maps_and_mask):
     # Test maps are zero in the mask
     mask_data = get_data(mask_img)
     mask_data[1, 1, 1] = 0
+
     extractor_without_mask = RegionExtractor(maps)
-    extractor_without_mask.fit()
+    with _nifti_maps_masker_context(extractor_without_mask):
+        extractor_without_mask.fit()
+
     extractor_with_mask = RegionExtractor(maps, mask_img=mask_img)
-    extractor_with_mask.fit()
+    with _nifti_maps_masker_context(extractor_with_mask):
+        extractor_with_mask.fit()
 
     assert not np.all(
         get_data(extractor_without_mask.regions_img_)[mask_data == 0] == 0.0
@@ -254,7 +259,8 @@ def test_strategy_ratio_n_voxels(maps):
     extract_ratio = RegionExtractor(
         maps, threshold=0.2, thresholding_strategy="ratio_n_voxels"
     )
-    extract_ratio.fit()
+    with _nifti_maps_masker_context(extract_ratio):
+        extract_ratio.fit()
 
     assert extract_ratio.regions_img_ != ""
     assert extract_ratio.regions_img_.shape[-1] >= N_REGIONS
@@ -274,7 +280,8 @@ def test_two_sided(maps):
         min_region_size=min_region_size,
         extractor="connected_components",
     )
-    extract_ratio1.fit()
+    with _nifti_maps_masker_context(extract_ratio1):
+        extract_ratio1.fit()
 
     extract_ratio2 = RegionExtractor(
         maps,
@@ -285,7 +292,8 @@ def test_two_sided(maps):
         extractor="connected_components",
     )
 
-    extract_ratio2.fit()
+    with _nifti_maps_masker_context(extract_ratio2):
+        extract_ratio2.fit()
 
     assert not np.array_equal(
         np.unique(extract_ratio1.regions_img_.get_fdata()),
@@ -303,7 +311,8 @@ def test_strategy_percentile(maps_and_mask):
         mask_img=mask_img,
         two_sided=True,
     )
-    extractor.fit()
+    with _nifti_maps_masker_context(extractor):
+        extractor.fit()
 
     assert extractor.index_, np.ndarray
     assert extractor.regions_img_ != ""
@@ -331,7 +340,9 @@ def test_high_resolution_image(affine_eye, n_regions, shape_3d_large):
         smoothing_fwhm=0.6,
         min_region_size=0.4,
     )
-    extract_ratio.fit()
+
+    with _nifti_maps_masker_context(extract_ratio):
+        extract_ratio.fit()
 
     assert extract_ratio.regions_img_ != ""
     assert extract_ratio.regions_img_.shape[-1] >= n_regions
@@ -351,7 +362,8 @@ def test_zeros_affine_diagonal(affine_eye, n_regions):
     extract_ratio = RegionExtractor(
         maps, threshold=0.2, thresholding_strategy="ratio_n_voxels"
     )
-    extract_ratio.fit()
+    with _nifti_maps_masker_context(extract_ratio):
+        extract_ratio.fit()
 
     assert extract_ratio.regions_img_ != ""
     assert extract_ratio.regions_img_.shape[-1] >= n_regions
