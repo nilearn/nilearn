@@ -3678,7 +3678,16 @@ def check_multimasker_transformer_high_variance_confounds(
         tmp_path = Path(tmp_dir)
         dataframe.to_csv(tmp_path / "confounds.csv")
 
-        for c in [array, dataframe, tmp_path / "confounds.csv"]:
+        # A per-image confound entry may itself be a list or tuple of
+        # several confound sources that get concatenated, matching
+        # nilearn.signal.clean's accepted format.
+        for c in [
+            array,
+            dataframe,
+            tmp_path / "confounds.csv",
+            [array],
+            (array,),
+        ]:
             confounds = [c, c]
 
             estimator = clone(estimator)
