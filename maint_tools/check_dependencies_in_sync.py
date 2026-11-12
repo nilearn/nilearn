@@ -22,8 +22,14 @@ from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
 from packaging.utils import canonicalize_name
 
-ASV_CONF = Path(__file__).parent / "asv.conf.json"
-PYPROJECT = Path(__file__).parents[1] / "pyproject.toml"
+
+def root_dir() -> Path:
+    """Return path to root directory."""
+    return Path(__file__).parent.parent
+
+
+ASV_CONF = root_dir() / "asv_benchmarks" / "asv.conf.json"
+PYPROJECT = root_dir() / "pyproject.toml"
 
 
 def _strip_json_comments(text: str) -> str:
@@ -316,7 +322,6 @@ try:
         path.write_text(content)
         return path
 
-    @pytest.mark.ai_generated
     def test_min_versions_from_pyproject(pyproject):
         """Resolve include-group and keep only "==" pinned versions."""
         assert min_versions_from_pyproject(pyproject) == {
@@ -325,12 +330,10 @@ try:
             "matplotlib": "3.8.0",
         }
 
-    @pytest.mark.ai_generated
     def test_min_python_from_pyproject(pyproject):
         """Extract the "major.minor" floor from requires-python."""
         assert min_python_from_pyproject(pyproject) == "3.11"
 
-    @pytest.mark.ai_generated
     def test_strip_json_comments_keeps_urls_intact():
         """A "//" inside a string value must survive comment-stripping."""
         text = (
@@ -343,7 +346,6 @@ try:
             "repo": "https://github.com/nilearn/nilearn.git"
         }
 
-    @pytest.mark.ai_generated
     @pytest.mark.parametrize(
         "asv_conf, pyproject_versions, pyproject_min_python, expected",
         [
@@ -418,7 +420,6 @@ try:
             "}\n"
         )
 
-    @pytest.mark.ai_generated
     def test_apply_fixes_rewrites_only_resolvable_mismatches(
         stale_asv_conf_text,
     ):
@@ -442,7 +443,6 @@ try:
         # the "//" inside the "repo" URL must survive the rewrite
         assert "https://github.com/nilearn/nilearn.git" in fixed_text
 
-    @pytest.mark.ai_generated
     def test_main_fix_end_to_end(tmp_path, monkeypatch, pyproject):
         """`main(["--fix"])` rewrites the file on disk and exits 0 once
         every mismatch it can resolve has been fixed.
@@ -470,7 +470,6 @@ try:
             "matplotlib": ["3.8.0"],
         }
 
-    @pytest.mark.ai_generated
     def test_main_fix_still_fails_on_unresolvable_mismatch(
         tmp_path, monkeypatch, pyproject
     ):

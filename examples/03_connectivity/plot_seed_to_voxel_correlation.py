@@ -52,7 +52,7 @@ print(confound_filename)
 #
 # We will be working with one seed sphere in the Posterior Cingulate Cortex
 # (PCC), considered part of the Default Mode Network.
-pcc_coords = [(0, -52, 18)]
+pcc_coords = (0, -52, 18)
 
 # %%
 # We use :class:`~nilearn.maskers.NiftiSpheresMasker` to extract the
@@ -192,11 +192,11 @@ display = plot_stat_map(
     seed_to_voxel_correlations_img,
     threshold=0.5,
     vmax=1,
-    cut_coords=pcc_coords[0],
+    cut_coords=pcc_coords,
     title="Seed-to-voxel correlation (PCC seed)",
 )
 display.add_markers(
-    marker_coords=pcc_coords, marker_color="g", marker_size=300
+    marker_coords=[pcc_coords], marker_color="g", marker_size=300
 )
 # At last, we save the plot as pdf.
 from pathlib import Path

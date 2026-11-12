@@ -35,6 +35,12 @@ from nilearn.surface.surface import (
     find_surface_clusters,
 )
 
+# tests return figures for pytest-mpl,
+# which pytest warns about when run without --mpl
+pytestmark = pytest.mark.filterwarnings(
+    "ignore::pytest.PytestReturnNotNoneWarning"
+)
+
 
 def loaded_motor_activation_image():
     """Load motor activation image.

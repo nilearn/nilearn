@@ -33,6 +33,8 @@ Direct download links from OSF:
 For more information about this dataset's structure:
 https://inria.hal.science/hal-02904869
 
+See also :footcite:t:`Poldrack2013` and :footcite:t:`Mensch2018`.
+
 Content
 -------
 .. nilearn_dataset_content:: difumo_atlas
@@ -40,14 +42,6 @@ Content
 References
 ----------
 .. footbibliography::
-
-Mensch, A., Mairal, J., Thirion, B., Varoquaux, G., 2018.
-Stochastic Subsampling for Factorizing Huge Matrices.
-IEEE Transactions on Signal Processing 66, 113–128.
-
-Poldrack, R.A., Barch, D.M., Mitchell, J.P., et al., 2013.
-Toward open sharing of task-based fMRI data:
-the OpenfMRI project. Frontiers in neuroinformatics 7.
 
 License
 -------

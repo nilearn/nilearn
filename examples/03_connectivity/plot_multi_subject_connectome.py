@@ -10,7 +10,7 @@ require a longer run time.
 
 .. admonition:: dataset
 
-    This example uses the :ref:`MSDL atlas <msdl_atlas>`to extract data
+    This example uses the :ref:`MSDL atlas <msdl_atlas>` to extract data
     from the :ref:`development fMRI dataset <development_dataset>`.
 """
 

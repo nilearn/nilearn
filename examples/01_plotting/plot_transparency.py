@@ -65,7 +65,7 @@ is shown in the rest of this example.
 
     - the :ref:`Brainomics Localizer dataset <brainomics_maps>`
     - the :ref:`SPM auditory dataset <spm_auditory_dataset>`
-    - the :ref:`ICBM 152 template <icbm_152_template>`
+    - the :ref:`ICBM 152 template <icbm152_2009>`
     - a sample motor activation statistical map (`image 10426
       <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
       <neurovault_dataset>`)
