@@ -1,0 +1,39 @@
+# List of gallery image filenames (or glob patterns using '*') to skip
+# when comparing stable vs dev doc images in compare_doc_images.py.
+#
+# Use this when a diff is expected and accepted,
+# e.g. after intentionally changing the example script that generates an image.
+#
+# One pattern per line.
+# Lines starting with '#' and empty lines are ignored.
+# Patterns are matched against the image basename, e.g.:
+#
+# sphx_glr_plot_ica_neurovault_001.png
+# sphx_glr_plot_ica_neurovault_*.png
+
+# --------------- Changes to ignore for all versions ---------------
+
+# REASON: order of the components of ICA may vary between runs
+sphx_glr_plot_ica_neurovault_*.png
+
+# REASON: image is output of an ICA, so results may look different between runs
+sphx_glr_plot_nifti_simple_002.png
+
+# --------------- Changes to ignore since last version ---------------
+# REASON: stimuli are now displayed in alphabetical order
+sphx_glr_plot_haxby_stimuli_*.png
+
+
+# REASON: change (probably) due black background of figure
+sphx_glr_plot_3d_and_4d_niimg_011.png
+sphx_glr_plot_compare_decomposition_016.png
+sphx_glr_plot_compare_decomposition_018.png
+sphx_glr_plot_compare_decomposition_027.png
+sphx_glr_plot_compare_decomposition_037.png
+sphx_glr_plot_compare_decomposition_039.png
+sphx_glr_plot_compare_decomposition_040.png
+sphx_glr_plot_templateflow_002.png
+
+
+# REASON: change of figure layout
+sphx_glr_plot_sphere_based_connectome_001.png
