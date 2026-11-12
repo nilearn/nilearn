@@ -31,6 +31,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix :func:`~nilearn.image.clean_img` reshaping its output using the raw ``sample_mask`` shape instead of the actual cleaned-signal shape, which raised a ``ValueError`` whenever ``sample_mask`` was passed as a boolean array (:gh:`6709` by `Siddhardha Nanda`_).
+
 - :bdg-dark:`Code` Check tar extraction destinations by path components so sibling directories with a shared name prefix are rejected (:gh:`6654` by `Jeffrey Cooney <https://github.com/jdotc1>`_).
 
 - :bdg-warning:`Test` Use deterministic parameter order in plotting tests so parallel workers collect the same cases (:gh:`6664` by `Jeffrey Cooney`_).
@@ -77,6 +79,8 @@ Enhancements
 - :bdg-info:`Plotting` add a ``plot_predicted_signal_and_residuals`` method to :class:`~glm.first_level.FirstLevelModel` and :class:`~glm.second_level.SecondLevelModel` to easily visualize predicted VS observed time series as well as residuals time series and distribution at given coordinates or for some regions (:gh:`5761` by `Fernanda Ponce`_).
 
 - :bdg-secondary:`Maint` Refactor ``math_img`` and ``new_img_like`` to reduce complexity (:gh:`6676` by `Akaash P`_)
+
+- :bdg-success:`API` The ``seeds`` parameter of :class:`~maskers.NiftiSpheresMasker` now also accepts a single triplet of coordinates, for example ``NiftiSpheresMasker(seeds=(0, -52, 18))`` (:gh:`6700` by `Rémi Gau`_).
 
 Changes
 -------

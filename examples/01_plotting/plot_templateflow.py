@@ -16,7 +16,7 @@ for the Harvard-Oxford volumetric atlas.
    This example uses:
 
    - the :ref:`Harvard-Oxford atlas <harvard_oxford_atlas>`
-   - the :ref:`fsaverage template <fs_average_template>`
+   - the :ref:`fsaverage template <fsaverage>`
    - the `Desikan-Killiany atlas <https://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation>`_
      from TemplateFlow
 """

@@ -16,7 +16,7 @@ This figure was originally developed in :footcite:t:`Power2017`.
     This example uses:
 
     - the :ref:`ADHD dataset <adhd_dataset>`
-    - the :ref:`ICBM 152 template <icbm_152_template>`
+    - the :ref:`ICBM 152 template <icbm152_2009>`
 """
 
 # %%

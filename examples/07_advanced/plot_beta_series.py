@@ -297,7 +297,7 @@ import numpy as np
 from nilearn.maskers import NiftiMasker, NiftiSpheresMasker
 
 # Use coordinate taken from Neurosynth's "language" meta-analysis.
-coords = [(-54, -42, 3)]
+coords = (-54, -42, 3)
 
 # Initialize masker for the Neurosynth seed.
 seed_masker = NiftiSpheresMasker(
@@ -371,13 +371,13 @@ for img, lbl, ax in zip(conn_imgs, conn_img_lbls, axes, strict=False):
         img,
         threshold=0.5,
         vmax=1,
-        cut_coords=coords[0],
+        cut_coords=coords,
         title=lbl,
         figure=fig,
         axes=ax,
     )
     display.add_markers(
-        marker_coords=coords,
+        marker_coords=[coords],
         marker_color="g",
         marker_size=200,
     )

@@ -13,6 +13,7 @@ from sklearn.utils._testing import set_random_state
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.helpers import is_gil_enabled
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn.conftest import (
     _affine_eye,
     _make_surface_img,
@@ -32,6 +33,8 @@ from nilearn.decomposition.tests.conftest import (
     _canica_components_volume,
     _make_volume_data_from_components,
 )
+from nilearn.image.image import new_img_like
+from nilearn.maskers.nifti_spheres_masker import NiftiSpheresMasker
 from nilearn.surface import SurfaceImage
 from nilearn.utils.tags import (
     accepts_surface,
@@ -58,6 +61,14 @@ def requires_y(estimator) -> bool:
     """Check if estimator expects target as input."""
     tags = estimator.__sklearn_tags__()
     return getattr(tags.target_tags, "required", True)
+
+
+def get_expected_dtype(dtype, target_dtype):
+    """Check possible target dtype, if None return ``dtype`` specified."""
+    target_dtype = get_target_dtype(np.dtype(dtype), target_dtype)
+    if target_dtype is None:
+        target_dtype = dtype
+    return target_dtype
 
 
 def run_method(estimator, method, X, y):
@@ -162,6 +173,31 @@ def generate_data_to_fit(estimator: NilearnBaseEstimator):
         data = _rng().random(_shape_3d_large()) + 10.0
         imgs = Nifti1Image(data, _affine_eye())
         return imgs, None
+
+
+def generate_inverse_transform_signal(estimator, nb, dtype=None):
+    """Generate a signal to be used as an input to inverse_transform function
+    of the estimator.
+    Return the signal in a list when necessary.
+    """
+    signal = _rng().random((nb, estimator.n_elements_)).astype(dtype)
+
+    if isinstance(estimator, _BaseDecomposition):
+        signal = [signal]
+    return signal
+
+
+def set_mask_if_nifti_spheres(estimator, X=None):
+    """Generate a mask image from X and set mask_img for the estimator if it is
+    a NiftiSpheresMasker.
+    """
+    if isinstance(estimator, NiftiSpheresMasker):
+        if X is None:
+            X, _ = generate_data_to_fit(estimator)
+        # NiftiSpheresMasker needs mask_img to run inverse_transform
+        mask_img = new_img_like(X, np.ones(X.shape[:3]))
+        estimator.mask_img = mask_img
+    return estimator
 
 
 def fit_estimator(

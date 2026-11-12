@@ -49,7 +49,17 @@ from nilearn.image.image import (
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.mass_univariate import permuted_ols
-from nilearn.nilearn_typing import NiimgLike, TableLike
+from nilearn.nilearn_typing import (
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    NJobs,
+    SmoothingFwhm,
+    TableLike,
+    TargetAffine,
+    TargetShape,
+    Verbose,
+)
 from nilearn.surface.surface import (
     SurfaceImage,
 )
@@ -202,13 +212,9 @@ def _check_input_as_first_level_model(
 
         affine = None
         shape = None
-        if first_level.mask_img is not None:
-            if isinstance(first_level.mask_img, NiftiMasker):
-                affine = first_level.mask_img.affine_
-                shape = first_level.mask_img.mask_img_.shape
-            elif isinstance(first_level.mask_img, Nifti1Image):
-                affine = first_level.mask_img.affine
-                shape = first_level.mask_img.shape
+        if isinstance(first_level.mask_img_, Nifti1Image):
+            affine = first_level.mask_img_.affine
+            shape = first_level.mask_img_.shape
 
         # take as reference the first values we found
         if ref_affine is None:
@@ -579,21 +585,30 @@ class SecondLevelModel(BaseGLM):
         Input used to fit the GLM.
     """
 
+    memory: MemoryLike
+    memory_level: MemoryLevel
+    minimize_memory: bool
+    n_jobs: NJobs
+    smoothing_fwhm: SmoothingFwhm
+    target_affine: TargetAffine
+    target_shape: TargetShape
+    verbose: Verbose
+
     def __str__(self):
         return "Second Level Model"
 
     def __init__(
         self,
         mask_img=None,
-        target_affine=None,
-        target_shape=None,
-        smoothing_fwhm=None,
-        memory=None,
-        memory_level=1,
-        verbose=0,
-        n_jobs=1,
-        minimize_memory=True,
-        reports=True,
+        target_affine: TargetAffine = None,
+        target_shape: TargetShape = None,
+        smoothing_fwhm: SmoothingFwhm = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 1,
+        verbose: Verbose = 0,
+        n_jobs: NJobs = 1,
+        minimize_memory: bool = True,
+        reports: bool = True,
     ):
         self.mask_img = mask_img
         self.target_affine = target_affine

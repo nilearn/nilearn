@@ -34,7 +34,7 @@ from nilearn.datasets._utils import (
     logger,
 )
 from nilearn.image import resample_img
-from nilearn.nilearn_typing import DataDir, Verbose
+from nilearn.nilearn_typing import DataDir, TypedBunch, Verbose
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")
@@ -2475,7 +2475,7 @@ def fetch_neurovault(  # numpydoc ignore=RT05
     timeout: float = _DEFAULT_TIME_OUT,
     verbose: Verbose = 3,
     **kwarg_image_filters,
-) -> Bunch[str, Any]:
+) -> TypedBunch[str, Any]:
     """Download data from neurovault.org that match certain criteria.
 
     We explore the metadata for :term:`Neurovault` collections and images,
@@ -2703,7 +2703,7 @@ def fetch_neurovault_ids(  # numpydoc ignore=RT05
     vectorize_words: bool = True,
     timeout: float = _DEFAULT_TIME_OUT,
     verbose: Verbose = 3,
-) -> Bunch[str, Any]:
+) -> TypedBunch[str, Any]:
     """Download specific images and collections from neurovault.org.
 
     For more information,
@@ -2798,7 +2798,7 @@ def fetch_neurovault_auditory_computation_task(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     verbose: Verbose = 1,
     timeout: float = _DEFAULT_TIME_OUT,
-) -> Bunch[str, Any]:
+) -> TypedBunch[str, Any]:
     """Fetch a :term:`contrast` map from :term:`Neurovault` showing \
     the effect of mental subtraction upon auditory instructions.
 
