@@ -902,6 +902,48 @@ def surface_glm_data() -> Callable[..., tuple[SurfaceImage, pd.DataFrame]]:
     return _make_surface_img_and_design
 
 
+# ------------------------ DATAFRAMES ------------------------#
+
+
+@pytest.fixture(params=["pandas", "polars"])
+def dataframe_backend(request) -> str:
+    """Return the name of a dataframe library to test with.
+
+    Tests using this fixture run once per library.
+    Tests run with ``"polars"`` are skipped if polars is not installed.
+
+    Returns
+    -------
+    :obj:`str`
+        Name of the dataframe library.
+    """
+    if request.param == "polars":
+        pytest.importorskip("polars")
+    return request.param
+
+
+@pytest.fixture
+def to_dataframe_backend(dataframe_backend) -> Callable[[pd.DataFrame], Any]:
+    """Return a function converting a pandas dataframe \
+    to the library under test.
+
+    Use it to build test inputs from a pandas dataframe,
+    so that the same test runs with each library of ``dataframe_backend``.
+
+    Returns
+    -------
+    Callable
+        Function taking a :class:`pandas.DataFrame`
+        and returning the equivalent dataframe of the library under test.
+    """
+    if dataframe_backend == "pandas":
+        return lambda df: df
+
+    import polars as pl
+
+    return pl.from_pandas
+
+
 # ------------------------ PLOTTING ------------------------#
 
 

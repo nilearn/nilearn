@@ -75,6 +75,13 @@ ClusterThreshold: TypeAlias = Integer
 Connected: TypeAlias = bool
 CopyHeader: TypeAlias = bool
 DType: TypeAlias = DTypeLike | None
+# Dataframes accepted as input by the public API.
+# Not used in public signatures yet:
+# see https://github.com/nilearn/nilearn/issues/6335
+if TYPE_CHECKING:
+    DataFrameLike: TypeAlias = pd.DataFrame | pl.DataFrame
+else:
+    DataFrameLike: TypeAlias = pd.DataFrame
 DataDir: TypeAlias = str | pathlib.Path | None
 Detrend: TypeAlias = bool
 DisplayMode: TypeAlias = Literal[
