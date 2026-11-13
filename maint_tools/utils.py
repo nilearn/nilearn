@@ -122,6 +122,6 @@ try:
         filenames = list_modules(
             skip_private=True, folders_to_skip=["data", "tests"]
         )
-        assert len(filenames) == 107
+        assert len(filenames) == 108
 except Exception:
     ...
