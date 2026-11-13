@@ -938,7 +938,7 @@ def test_connectivity_measure_inverse_transform_tangent(
         tangent_measure.inverse_transform(vectorized_displacements)
 
 
-def test_confounds_connectome_measure():
+def test_confounds_connectome_measure(tmp_path):
     n_subjects = 10
 
     signals, confounds = _signals(n_subjects)
@@ -960,8 +960,32 @@ def test_confounds_connectome_measure():
     assert isinstance(cleaned_vectors, np.ndarray)
 
     # Confounds as pandas DataFrame
-    confounds_df = DataFrame(confounds[:10])
-    correlation_measure.fit_transform(signals, confounds=confounds_df)
+    confounds_df = DataFrame(
+        confounds[:10],
+        columns=[f"confound_{i}" for i in range(confounds.shape[1])],
+    )
+    cleaned_vectors_df = correlation_measure.fit_transform(
+        signals, confounds=confounds_df
+    )
+    assert_array_almost_equal(cleaned_vectors_df, cleaned_vectors)
+
+    # Confounds as csv and tsv
+    confounds_df.to_csv(tmp_path / "tmp.tsv", sep="\t", index=False)
+    cleaned_vectors_file = correlation_measure.fit_transform(
+        signals, confounds=tmp_path / "tmp.tsv"
+    )
+    assert_array_almost_equal(cleaned_vectors_df, cleaned_vectors_file)
+
+    confounds_df.to_csv(tmp_path / "tmp.csv", sep=",", index=False)
+    cleaned_vectors_file = correlation_measure.fit_transform(
+        signals, confounds=tmp_path / "tmp.csv"
+    )
+    assert_array_almost_equal(cleaned_vectors_df, cleaned_vectors_file)
+
+    cleaned_vectors_file = correlation_measure.fit_transform(
+        signals, confounds=str(tmp_path / "tmp.tsv")
+    )
+    assert_array_almost_equal(cleaned_vectors_df, cleaned_vectors_file)
 
 
 def test_confounds_connectome_measure_errors(signals):
@@ -977,24 +1001,22 @@ def test_confounds_connectome_measure_errors(signals):
     # computing covariances
     signals, confounds = _signals()
 
-    # Raising error for input confounds are not iterable
-    conn_measure = ConnectivityMeasure(vectorize=True)
-    msg = "'confounds' input argument must be an iterable"
-
-    with pytest.raises(TypeError, match=msg):
-        conn_measure._check_input(X=signals, confounds=1.0)
-
-    with pytest.raises(TypeError, match=msg):
-        conn_measure._fit_transform(
-            X=signals, do_fit=True, do_transform=True, confounds=1.0
-        )
-
-    with pytest.raises(TypeError, match=msg):
-        conn_measure.fit_transform(X=signals, y=None, confounds=1.0)
-
     # Raising error for input confounds are given but not vectorize=True
     conn_measure = ConnectivityMeasure(vectorize=False)
     with pytest.raises(
         ValueError, match="'confounds' are provided but vectorize=False"
     ):
         conn_measure.fit_transform(signals, None, confounds[:10])
+
+    # Raising error for input confounds are not iterable
+    conn_measure = ConnectivityMeasure(vectorize=True)
+    msg = "'confounds' must be of type"
+
+    conn_measure._fit_transform(X=signals, do_fit=True, do_transform=False)
+    with pytest.raises(TypeError, match=msg):
+        conn_measure._fit_transform(
+            X=signals, do_fit=False, do_transform=True, confounds=1.0
+        )
+
+    with pytest.raises(TypeError, match=msg):
+        conn_measure.fit_transform(X=signals, y=None, confounds=1.0)

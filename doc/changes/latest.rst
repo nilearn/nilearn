@@ -55,12 +55,13 @@ Fixes
 
 - :bdg-dark:`Code` Fix residual variance of :class:`~nilearn.glm.OLSModel` and :class:`~nilearn.glm.ARModel` being divided by the number of design columns instead of the design rank, which made t and F statistics too small for rank-deficient designs in :class:`~nilearn.glm.first_level.FirstLevelModel` and :class:`~nilearn.glm.second_level.SecondLevelModel` (:gh:`6611` by `Wolfgang Aura`_).
 
-
 - :bdg-dark:`Code` Fix dataset downloads failing with ``Only one live display may be active at once`` after a failed download when `rich <https://github.com/Textualize/rich>`_ is installed (:gh:`6624` by `Rémi Gau`_).
 
 
 Enhancements
 ------------
+
+- :bdg-success:`API` :class:`~nilearn.connectome.ConnectivityMeasure` now accepts paths to csv or tsv files (as :obj:`str` or :class:`pathlib.Path`) and lists of confounds for the ``confounds`` parameter of :meth:`~nilearn.connectome.ConnectivityMeasure.fit_transform` and :meth:`~nilearn.connectome.ConnectivityMeasure.transform` (:gh:`6731` by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Add privacy-friendly page view analytics with `GoatCounter <https://www.goatcounter.com/>`_ to the documentation website (:gh:`6393` by `Rémi Gau`_).
 
@@ -84,7 +85,6 @@ Enhancements
 
 Changes
 -------
-
 
 - :bdg-danger:`Deprecation` The ``return_label_maps`` parameter of :func:`~reporting.get_clusters_table` is deprecated and will be removed in version 0.17.0, when cluster label maps will always be returned together with the table (:gh:`6376` by `Mohammad Sadeghi Hardengi`_).
 
