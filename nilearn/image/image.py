@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, TypeGuard, get_args, overload
 
 import numpy as np
+import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image, Nifti1Pair, load, spatialimages
 from nibabel.fileslice import is_fancy
@@ -26,6 +27,7 @@ from scipy.stats import scoreatpercentile
 from nilearn import EXPAND_PATH_WILDCARDS, signal
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import cache
+from nilearn._utils.dataframes import is_dataframe, is_series, to_pandas
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
@@ -49,7 +51,9 @@ from nilearn._utils.path_finding import resolve_globbing
 from nilearn.exceptions import DimensionError
 from nilearn.nilearn_typing import (
     ClusterThreshold,
+    DataFrameLike,
     HighPass,
+    ImgIndex,
     LowPass,
     NiimgLike,
     SingleConfound,
@@ -1091,14 +1095,16 @@ def swap_img_hemispheres(img) -> Nifti1Image:
 
 
 @overload
-def index_img(imgs: SurfaceImage, index) -> SurfaceImage: ...
+def index_img(imgs: SurfaceImage, index: ImgIndex) -> SurfaceImage: ...
 
 
 @overload
-def index_img(imgs: NiimgLike, index) -> Nifti1Image: ...
+def index_img(imgs: NiimgLike, index: ImgIndex) -> Nifti1Image: ...
 
 
-def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
+def index_img(
+    imgs: NiimgLike | SurfaceImage, index: ImgIndex
+) -> Nifti1Image | SurfaceImage:
     """Index into an image in the last dimension.
 
     Common use cases include extracting an image out of `img` or
@@ -1110,8 +1116,19 @@ def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
     imgs : 4D Niimg-like object or 2D :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
 
-    index : Any type compatible with numpy array indexing
+    index : :obj:`int`, :obj:`slice`, :obj:`range`, :obj:`list` of \
+            :obj:`int` or :obj:`bool`, :class:`numpy.ndarray`, \
+            :class:`pandas.Series`, polars.Series, \
+            :class:`pandas.DataFrame` or polars.DataFrame
         Used for indexing the data array in the last dimension.
+        Integers select positions, booleans act as a mask.
+        Dataframes must have a single column.
+
+        .. nilearn_versionchanged:: 0.15.0
+
+            Added support for polars dataframes and series,
+            and for pandas dataframes with surface images.
+            Dataframes with more than one column now raise an error.
 
     Returns
     -------
@@ -1147,14 +1164,24 @@ def index_img(imgs, index) -> Nifti1Image | SurfaceImage:
     >>> first_three_images.shape
     (197, 233, 189, 3)
     """
+    if is_dataframe(index) or is_series(index):
+        pandas_index = to_pandas(index)
+        if (
+            isinstance(pandas_index, pd.DataFrame)
+            and pandas_index.shape[1] != 1
+        ):
+            raise ValueError(
+                "A dataframe used as 'index' must have a single column. "
+                f"Got {pandas_index.shape[1]} columns: "
+                f"{list(pandas_index.columns)}."
+            )
+        index = pandas_index.to_numpy().flatten()
+
     if isinstance(imgs, SurfaceImage):
         imgs.data._check_ndims(2, var_name="imgs")
         return new_img_like(imgs, data=_extract_data(imgs, index))
 
     imgs = check_niimg_4d(imgs)
-    # duck-type for pandas arrays, and select the 'values' attr
-    if hasattr(index, "values") and hasattr(index, "iloc"):
-        index = index.to_numpy().flatten()
     return _index_img(imgs, index)
 
 
@@ -2178,7 +2205,10 @@ def clean_img(
     runs: np.ndarray | None = ...,
     detrend: bool = ...,
     standardize: Standardize = ...,
-    confounds: SingleConfound | list[SingleConfound] | None = ...,
+    confounds: SingleConfound
+    | DataFrameLike
+    | list[SingleConfound | DataFrameLike]
+    | None = ...,
     low_pass: LowPass = ...,
     high_pass: HighPass = ...,
     t_r: Tr = ...,
@@ -2194,7 +2224,10 @@ def clean_img(
     runs: np.ndarray | None = ...,
     detrend: bool = ...,
     standardize: Standardize = ...,
-    confounds: SingleConfound | list[SingleConfound] | None = ...,
+    confounds: SingleConfound
+    | DataFrameLike
+    | list[SingleConfound | DataFrameLike]
+    | None = ...,
     low_pass: LowPass = ...,
     high_pass: HighPass = ...,
     t_r: Tr = ...,
@@ -2210,7 +2243,10 @@ def clean_img(
     runs: np.ndarray | None = None,
     detrend: bool = True,
     standardize: Standardize = "zscore_sample",
-    confounds: SingleConfound | list[SingleConfound] | None = None,
+    confounds: SingleConfound
+    | DataFrameLike
+    | list[SingleConfound | DataFrameLike]
+    | None = None,
     low_pass: LowPass = None,
     high_pass: HighPass = None,
     t_r: Tr = None,
@@ -2263,7 +2299,11 @@ def clean_img(
 
     %(standardize_zscore)s
 
-    %(confounds)s
+    %(confounds_clean_img)s
+
+        .. nilearn_versionchanged:: 0.15.0
+
+            Added support for polars dataframes.
 
     %(low_pass)s
 

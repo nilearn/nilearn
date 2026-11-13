@@ -62,6 +62,10 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` The ``confounds`` parameter of :func:`~nilearn.signal.clean` and :func:`~nilearn.image.clean_img` now also accepts polars dataframes (alone or in a list or tuple) (:gh:`XXXX` by `Rémi Gau`_).
+
+- :bdg-success:`API` The ``index`` parameter of :func:`~nilearn.image.index_img` now also accepts polars dataframes and series, as well as pandas dataframes for surface images. Dataframes passed as ``index`` must have a single column: they used to be flattened, which gave an index longer than the image (:gh:`XXXX` by `Rémi Gau`_).
+
 - :bdg-primary:`Doc` Add privacy-friendly page view analytics with `GoatCounter <https://www.goatcounter.com/>`_ to the documentation website (:gh:`6393` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
