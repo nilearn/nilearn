@@ -31,6 +31,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix :func:`~nilearn.connectome.group_sparse_covariance` and :class:`~nilearn.connectome.GroupSparseCovariance` returning divergent, non-positive-definite precision matrices when ``alpha=0`` (:gh:`6681` by `uvcode01-max <https://github.com/uvcode01-max>`_).
+
 - :bdg-dark:`Code` Fix :func:`~nilearn.image.clean_img` reshaping its output using the raw ``sample_mask`` shape instead of the actual cleaned-signal shape, which raised a ``ValueError`` whenever ``sample_mask`` was passed as a boolean array (:gh:`6709` by `Siddhardha Nanda`_).
 
 - :bdg-dark:`Code` Check tar extraction destinations by path components so sibling directories with a shared name prefix are rejected (:gh:`6654` by `Jeffrey Cooney <https://github.com/jdotc1>`_).
