@@ -395,6 +395,8 @@
 
 .. _Tom Vanasse: https://github.com/tvanasse
 
+.. _uvcode01-max: https://github.com/uvcode01-max
+
 .. _Vasco Diogo: https://github.com/vascosa
 
 .. _Venish Paneliya: https://github.com/VenishPaneliya
