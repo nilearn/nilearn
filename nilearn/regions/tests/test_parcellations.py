@@ -74,6 +74,9 @@ def test_fit_on_single_nifti_image(method, n_parcel, image_1):
     parcellator = Parcellations(method=method, n_parcels=n_parcel)
 
     with warnings.catch_warnings(record=True) as warning_list:
+        # make sure the warning is recorded
+        # even if it was already thrown in another thread
+        warnings.simplefilter("always")
         parcellator.fit(image_1)
 
     # The input image used for testing may not give the requested n_parcels.
@@ -253,7 +256,6 @@ def test_check_parameters_transform(image_2, rng):
 
 
 @pytest.mark.slow
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_transform_with_multi_confounds_multi_images(
@@ -289,7 +291,6 @@ def test_fit_transform(method, n_parcel, image_2):
 
 
 @pytest.mark.slow
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_fit_transform_with_confounds(method, n_parcel, image_2, rng):

@@ -410,7 +410,6 @@ def test_contrast_computation_errors(rng, n_subjects):
         )
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("two_sided_test", [True, False])
 def test_with_surface_images(two_sided_test, n_subjects, surf_imgs_with_noise):
     """Smoke test non_parametric_inference on list of 1D surfaces."""
@@ -465,7 +464,6 @@ def test_with_surface_images_smoothing(surf_imgs_with_noise, n_subjects):
     )
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("kwargs", [{"tfce": True}, {"threshold": 0.001}])
 def test_with_surface_images_warnings(
     surf_imgs_with_noise, n_subjects, kwargs

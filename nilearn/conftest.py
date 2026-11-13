@@ -1,5 +1,6 @@
 """Configuration and extra fixtures for pytest."""
 
+import threading
 from collections.abc import Callable, Generator
 from pathlib import Path
 from types import ModuleType
@@ -81,7 +82,8 @@ def pytest_configure(config):  # noqa: ARG001
 
 
 def pytest_collection_modifyitems(items):
-    """Set estimator tests flaky only on windows platform.
+    """Set estimator tests flaky only on windows platform \
+    and mark some estimator checks as thread unsafe.
 
     https://docs.pytest.org/en/stable/example/markers.html#automatically-adding-markers-based-on-test-names
     """
@@ -114,11 +116,27 @@ def pytest_collection_modifyitems(items):
         "test_load_uniform_ball_cloud",
     ]
 
+    # Estimator checks that capture stdout (contextlib.redirect_stdout),
+    # which is not thread safe.
+    thread_unsafe_checks = {
+        "check_img_estimator_verbose",
+        "check_masker_mask_img",
+        "check_masker_transform_resampling",
+        "check_masker_verbose",
+        "check_verbosity_embedded_masker",
+    }
+
     for item in items:
         if not isinstance(item, pytest.Function):
             continue
         if is_windows_platform() and item.originalname in flaky_tests:
             item.add_marker(pytest.mark.flaky(reruns=5, reruns_delay=2))
+        if item.originalname == "test_check_estimator_nilearn":
+            check = item.callspec.params["check"]
+            if getattr(check, "func", check).__name__ in thread_unsafe_checks:
+                item.add_marker(
+                    pytest.mark.thread_unsafe(reason="captures stdout")
+                )
 
 
 @pytest.fixture(autouse=True)
@@ -143,10 +161,43 @@ def _rng(seed=42):
     return np.random.default_rng(seed)
 
 
+class _ThreadLocalGenerator(np.random.Generator):
+    """Random number generator with one independent generator per thread.
+
+    Each thread gets its own generator initialized with the same seed,
+    so all threads draw the same sequence of numbers
+    as a single-threaded run would.
+
+    This is needed because pytest-run-parallel shares fixtures across threads:
+    with a plain generator, each thread would get different numbers
+    depending on how threads interleave.
+    """
+
+    def __init__(self, seed):
+        super().__init__(np.random.PCG64(seed))
+        object.__setattr__(self, "_seed", seed)
+        object.__setattr__(self, "_local", threading.local())
+
+    def _generator(self) -> np.random.Generator:
+        local = object.__getattribute__(self, "_local")
+        if not hasattr(local, "generator"):
+            local.generator = _rng(object.__getattribute__(self, "_seed"))
+        return local.generator
+
+    def __getattribute__(self, name):
+        if name.startswith("__") or name == "_generator":
+            return object.__getattribute__(self, name)
+        return getattr(object.__getattribute__(self, "_generator")(), name)
+
+
 @pytest.fixture()
 def rng() -> np.random.Generator:
-    """Return a seeded random number generator."""
-    return _rng()
+    """Return a seeded random number generator.
+
+    Safe to use when running tests in parallel threads:
+    each thread gets the same sequence of random numbers.
+    """
+    return _ThreadLocalGenerator(seed=42)
 
 
 # ------------------------ AFFINES ------------------------#
