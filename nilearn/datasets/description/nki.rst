@@ -1,4 +1,4 @@
-.. _nki_dataset:
+.. _nki:
 
 NKI enhanced surface dataset
 ============================
@@ -21,13 +21,10 @@ See :footcite:t:`Nooner2012`.
 
 Content
 -------
-
 This refers to the content returned by
 :func:`nilearn.datasets.fetch_surf_nki_enhanced`.
 
-:'func_left': :term:`resting-state` data for the left hemisphere
-:'func_right': :term:`resting-state` data for the right hemisphere
-:'phenotypic': phenotypical metadata
+.. nilearn_dataset_content:: nki
 
 References
 ----------
@@ -35,4 +32,4 @@ References
 
 License
 -------
-unknown
+.. nilearn_dataset_license:: nki

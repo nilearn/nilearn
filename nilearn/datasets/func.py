@@ -466,7 +466,7 @@ def miyawaki2008_file_mask():
 
 
 @fill_doc
-def fetch_miyawaki2008(
+def fetch_miyawaki2008(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     url: Url = None,
     resume: Resume = True,
@@ -474,13 +474,17 @@ def fetch_miyawaki2008(
 ) -> TypedBunch[str, Any]:
     """Download and loads Miyawaki et al. 2008 dataset (153MB).
 
-    See :footcite:t:`Miyawaki2008`.
+    For more information,
+    see the :ref:`dataset description <miyawaki2008>`.
 
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -488,24 +492,11 @@ def fetch_miyawaki2008(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'func': :obj:`list` of :obj:`str`
-            Paths to nifti file with :term:`BOLD` data
-        - 'label': :obj:`list` of :obj:`str`
-            Paths to text file containing run and target data
-        - 'mask': :obj:`str`
-            Path to nifti mask file to define target volume in visual
-            cortex
-        - 'background': :obj:`str`
-            Path to nifti file containing a background image usable as a
-            background image for miyawaki images.
+        %(miyawaki2008_content)s
 
     Notes
     -----
     %(fetcher_note)s
-
-    References
-    ----------
-    .. footbibliography::
     """
     check_params(locals())
 
@@ -566,8 +557,6 @@ def fetch_miyawaki2008(
         data_dir, [("bg.nii.gz", url, opts)], resume=resume, verbose=verbose
     )[0]
 
-    fdescr = get_dataset_descr(dataset_name)
-
     # Return the data
     return Bunch(
         func=files[:32],
@@ -575,7 +564,7 @@ def fetch_miyawaki2008(
         mask=files[64],
         mask_roi=files[65:],
         background=bg_img,
-        description=fdescr,
+        description=Description.from_registry(dataset_name),
     )
 
 
@@ -1788,7 +1777,7 @@ def nki_ids():
 
 
 @fill_doc
-def fetch_surf_nki_enhanced(
+def fetch_surf_nki_enhanced(  # numpydoc ignore=RT05
     n_subjects: NSubject = 10,
     data_dir: DataDir = None,
     url: Url = None,
@@ -1799,7 +1788,7 @@ def fetch_surf_nki_enhanced(
     preprocessed and projected to the fsaverage5 space surface.
 
     For more information
-    see the :ref:`dataset description <nki_dataset>`.
+    see the :ref:`dataset description <nki>`.
 
     .. nilearn_versionadded:: 0.3
 
@@ -1822,13 +1811,7 @@ def fetch_surf_nki_enhanced(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'func_left': Paths to Gifti files containing resting state
-                        time series left hemisphere
-        - 'func_right': Paths to Gifti files containing resting state
-                         time series right hemisphere
-        - 'phenotypic': pd.DataFrame containing tuple with subject ID, age,
-                         dominant hand and sex for each subject.
-        - 'description': data description of the release and references.
+        %(nki_content)s
 
     ..  admonition:: scipy >= 0.14.0 compatibility
         :class: important
@@ -1847,7 +1830,7 @@ def fetch_surf_nki_enhanced(
         url = "https://www.nitrc.org/frs/download.php/"
 
     # Preliminary checks and declarations
-    dataset_name = "nki_enhanced_surface"
+    dataset_name = "nki"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
@@ -1862,9 +1845,6 @@ def fetch_surf_nki_enhanced(
     )
     subject_indices = n_subjects
     ids = [all_ids[index] for index in subject_indices]
-
-    # Dataset description
-    fdescr = get_dataset_descr(dataset_name)
 
     # First, get the metadata
     phenotypic_file = "NKI_enhanced_surface_phenotypics.csv"
@@ -1927,7 +1907,7 @@ def fetch_surf_nki_enhanced(
         func_left=func_left,
         func_right=func_right,
         phenotypic=phenotypic_df,
-        description=fdescr,
+        description=Description.from_registry(dataset_name),
     )
 
 
@@ -1946,7 +1926,7 @@ def load_nki(
     """Load NKI enhanced surface data into a surface object.
 
     For more information
-    see the :ref:`dataset description <nki_dataset>`.
+    see the :ref:`dataset description <nki>`.
 
     .. nilearn_versionadded:: 0.11.0
 
@@ -2879,14 +2859,21 @@ def _download_spm_auditory_data(data_dir, verbose):
 
 
 @fill_doc
-def fetch_spm_auditory(
+# TODO (nilearn >= 0.17.0) remove 'data_name' parameter
+@remove_parameters(
+    removed_params=["data_name"],
+    reason="parameter is unused",
+    end_version="0.17.0",
+)
+def fetch_spm_auditory(  # numpydoc ignore=RT05
     data_dir: DataDir = None,
     data_name: str = "spm_auditory",
     verbose: Verbose = 1,
 ) -> TypedBunch[str, Any]:
     """Fetch :term:`SPM` auditory single-subject data.
 
-    See :footcite:t:`spm_auditory`.
+    For more information,
+    see the :ref:`dataset description <spm_auditory>`.
 
     Parameters
     ----------
@@ -2895,6 +2882,10 @@ def fetch_spm_auditory(
     data_name : :obj:`str`, default='spm_auditory'
         Name of the dataset.
 
+        .. nilearn_deprecated:: 0.15.0
+
+            Will be removed in Nilearn >= 0.17.0
+
     %(verbose)s
 
     Returns
@@ -2902,28 +2893,11 @@ def fetch_spm_auditory(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'anat': :obj:`list` of :obj:`str`.
-            Paths to anat images
-
-        - 'func': :obj:`list` of :obj:`str`.
-            Paths to functional images
-
-        - 'events': :obj:`list` of :obj:`str`.
-            Paths to events.tsv files
-
-        - 'description': :obj:`str`.
-            Data description
-
-        - 't_r' : :obj:`float`.
-            Repetition time in seconds of the functional images.
+        %(spm_auditory_content)s
 
     Notes
     -----
     %(fetcher_note)s
-
-    References
-    ----------
-    .. footbibliography::
     """
     check_params(locals())
 
@@ -2953,7 +2927,7 @@ def fetch_spm_auditory(
         "anat": anat,
         "func": func,
         "events": events,
-        "description": get_dataset_descr("spm_auditory"),
+        "description": Description.from_registry("spm_auditory"),
         "t_r": 7.0,
     }
     return Bunch(**spm_auditory_data)
@@ -3126,6 +3100,8 @@ def fetch_spm_multimodal_fmri(  # numpydoc ignore=RT05
 
         .. nilearn_deprecated:: 0.15.0
 
+            Will be removed in Nilearn >= 0.17.0
+
     %(verbose)s
 
     Returns
@@ -3260,22 +3236,20 @@ def fetch_fiac_first_level(
 
 @functools.lru_cache
 def load_sample_motor_activation_image() -> str:
-    """Load a single functional image showing motor activations.
+    """Return the full path to a single contrast image of motor activations.
+
+    For more information see the
+    :ref:`dataset description <sample motor activation statistical map>`.
 
     Returns
     -------
     str
-        Path to the sample functional image.
+        Full path to the sample image.
 
     See Also
     --------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
     nilearn.datasets.fetch_neurovault_auditory_computation_task
-
-    Notes
-    -----
-    The 'left vs right button press' contrast is used:
-    https://neurovault.org/images/10426/
     """
     return str(Path(__file__).parent / "data" / "image_10426.nii.gz")

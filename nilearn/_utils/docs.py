@@ -2046,9 +2046,14 @@ DATASET_DESCRIPTIONS: dict[str, TypedBunch] = {
     "localizer_first_level": Bunch(
         content=Bunch(template=Bunch(type=str, desc=template))
     ),
+    "miyawaki2008": Bunch(),
     "msdl_atlas": Bunch(
         license="usage is unrestricted for non-commercial research purposes."
     ),
+    "neurovault": Bunch(
+        license="All data are distributed under the CC0 license."
+    ),
+    "nki": Bunch(),
     "oasis_vbm": Bunch(
         license="Provided under an open access data use agreement (DUA)."
     ),
@@ -2057,6 +2062,17 @@ DATASET_DESCRIPTIONS: dict[str, TypedBunch] = {
         license="UCC-By Attribution 4.0 International",
     ),
     "power_2011_atlas": Bunch(),
+    "spm_auditory": Bunch(
+        license="""
+The purpose was to explore new equipment and techniques.
+As such it has not been formally written up,
+and is freely available for personal education and evaluation purposes.
+Those wishing to use these data for other purposes,
+including published evaluation of methods,
+should contact the methods group
+at the Wellcome Department of Cognitive Neurology.
+"""
+    ),
     "spm_multimodal": Bunch(),
     "seitzman_2018_atlas": Bunch(),
     "schaefer_2018_atlas": Bunch(

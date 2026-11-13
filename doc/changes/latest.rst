@@ -108,4 +108,4 @@ Changes
 
 - :bdg-success:`API` The default value of ``n_clusters`` parameter of :class:`~nilearn.regions.HierarchicalKMeans` is changed from ``None`` to ``2``. (:gh:`6585` by `Hande Gözükan`_).
 
-- :bdg-danger:`Deprecation` The parameter ``data_name`` of the :func:`~datasets.fetch_spm_multimodal_fmri` is deprecated and will be removed in Nilearn version 0.17.0 (:gh:`6624` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` The parameters ``data_name`` of the :func:`~datasets.fetch_spm_multimodal_fmri` and :func:`~datasets.fetch_spm_auditory` are deprecated and will be removed in Nilearn version 0.17.0 (:gh:`6624` and :gh:`6689` by `Rémi Gau`_).
