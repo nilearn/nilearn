@@ -263,41 +263,39 @@ class _MultiMixin:
 
     def _prepare_confounds(self: _MultiMasker, imgs_list, confounds):
         """Check and prepare confounds."""
+        prepared_confounds: list[Any]
         if confounds is None:
-            confounds = list(itertools.repeat(None, len(imgs_list)))
+            prepared_confounds = [None] * len(imgs_list)
         else:
-            confounds = list(confounds)
-        check_n_confounds_match_n_images(confounds, imgs_list)
+            prepared_confounds = list(confounds)
+        check_n_confounds_match_n_images(prepared_confounds, imgs_list)
 
         if self.high_variance_confounds:
             for i, img in enumerate(imgs_list):
                 hv_confounds = self._cache(high_variance_confounds)(img)
+                c_i = prepared_confounds[i]
 
-                if confounds[i] is None:
-                    confounds[i] = hv_confounds
-                elif isinstance(confounds[i], (list, tuple)):
-                    confounds[i] = [*confounds[i], hv_confounds]
-                elif isinstance(confounds[i], np.ndarray):
-                    c = (
-                        np.atleast_2d(confounds[i]).T
-                        if confounds[i].ndim == 1
-                        else confounds[i]
+                if c_i is None:
+                    prepared_confounds[i] = hv_confounds
+                elif isinstance(c_i, (list, tuple)):
+                    prepared_confounds[i] = [*c_i, hv_confounds]
+                elif isinstance(c_i, np.ndarray):
+                    c = np.atleast_2d(c_i).T if c_i.ndim == 1 else c_i
+                    prepared_confounds[i] = np.hstack([c, hv_confounds])
+                elif isinstance(c_i, pd.DataFrame):
+                    prepared_confounds[i] = np.hstack(
+                        [c_i.to_numpy(), hv_confounds]
                     )
-                    confounds[i] = np.hstack([c, hv_confounds])
-                elif isinstance(confounds[i], pd.DataFrame):
-                    confounds[i] = np.hstack(
-                        [confounds[i].to_numpy(), hv_confounds]
-                    )
-                elif isinstance(confounds[i], (str, Path)):
-                    c = csv_to_array(confounds[i])
+                elif isinstance(c_i, (str, Path)):
+                    c = csv_to_array(c_i)
                     if np.isnan(c.flat[0]):
                         # There may be a header
-                        c = csv_to_array(confounds[i], skip_header=1)
-                    confounds[i] = np.hstack([c, hv_confounds])
+                        c = csv_to_array(c_i, skip_header=1)
+                    prepared_confounds[i] = np.hstack([c, hv_confounds])
                 else:
-                    confounds[i] = [confounds[i], hv_confounds]
+                    prepared_confounds[i] = [c_i, hv_confounds]
 
-        return confounds
+        return prepared_confounds
 
     def _prepare_sample_mask(self: _MultiMasker, imgs_list, sample_mask):
         """Check and prepare sample_mask."""
