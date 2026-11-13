@@ -95,8 +95,10 @@ def test_design_matrix_no_experimental_paradigm(frame_times):
     assert_almost_equal(X[:, 0], x)
 
 
-def test_design_matrix_regressors_provided_manually(rng, frame_times):
-    # test design matrix creation when regressors are provided manually
+def test_make_first_level_design_matrix_regressors_provided_manually(
+    rng, frame_times, tmp_path
+):
+    """Test design matrix creation when regressors are provided manually."""
     ax = rng.standard_normal(size=(len(frame_times), 4))
     _, X, names = check_design_matrix(
         make_first_level_design_matrix(
@@ -109,13 +111,46 @@ def test_design_matrix_regressors_provided_manually(rng, frame_times):
 
     # with pandas Dataframe
     axdf = pd.DataFrame(ax)
-    _, X1, names = check_design_matrix(
-        make_first_level_design_matrix(
-            frame_times, drift_model="polynomial", drift_order=3, add_regs=axdf
-        )
+    des_mat = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3, add_regs=axdf
     )
+    _, X1, names = check_design_matrix(des_mat)
     assert_almost_equal(X1[:, 0], ax[:, 0])
     assert_array_equal(names[:4], np.arange(4))
+
+    # with paths and strings
+    # column names read from a file header are always strings,
+    # so compare against a DataFrame with string column names
+    axdf = pd.DataFrame(ax, columns=[f"conf{i}" for i in range(4)])
+    des_mat = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3, add_regs=axdf
+    )
+
+    axdf.to_csv(tmp_path / "tmp.csv", index=False)
+    des_mat_csv = make_first_level_design_matrix(
+        frame_times,
+        drift_model="polynomial",
+        drift_order=3,
+        add_regs=tmp_path / "tmp.csv",
+    )
+    pd.testing.assert_frame_equal(des_mat_csv, des_mat)
+
+    axdf.to_csv(tmp_path / "tmp.tsv", index=False, sep="\t")
+    des_mat_tsv = make_first_level_design_matrix(
+        frame_times,
+        drift_model="polynomial",
+        drift_order=3,
+        add_regs=tmp_path / "tmp.tsv",
+    )
+    pd.testing.assert_frame_equal(des_mat_tsv, des_mat)
+
+    des_mat_str = make_first_level_design_matrix(
+        frame_times,
+        drift_model="polynomial",
+        drift_order=3,
+        add_regs=str(tmp_path / "tmp.tsv"),
+    )
+    pd.testing.assert_frame_equal(des_mat_str, des_mat)
 
 
 def test_design_matrix_regressors_provided_manually_errors(rng, frame_times):

@@ -817,7 +817,11 @@ class FirstLevelModel(BaseGLM):
         del Y
 
     def _create_all_designs(
-        self, run_imgs, events, confounds, design_matrices
+        self,
+        run_imgs,
+        events,
+        confounds: list[np.ndarray | pd.DataFrame] | None,
+        design_matrices,
     ) -> list[pd.DataFrame]:
         """Build experimental design of all runs."""
         if design_matrices is not None:

@@ -52,7 +52,7 @@ from nilearn.glm.first_level.hemodynamic_models import (
     compute_regressor,
     orthogonalize,
 )
-from nilearn.nilearn_typing import HrfModel, TableLike
+from nilearn.nilearn_typing import HrfModel, SingleConfound, TableLike
 from nilearn.signal import create_cosine_drift
 
 ######################################################################
@@ -241,7 +241,7 @@ def make_first_level_design_matrix(
     high_pass=0.01,
     drift_order=1,
     fir_delays=None,
-    add_regs: np.ndarray | pd.DataFrame | None = None,
+    add_regs: SingleConfound | None = None,
     add_reg_names=None,
     min_onset=-24,
     oversampling=50,
@@ -304,17 +304,21 @@ def make_first_level_design_matrix(
         yields the array of delays used in the :term:`FIR`
         model (in scans).
 
-    add_regs : array of shape(n_frames, n_add_reg) or \
-            pandas DataFrame or None, default=None
-        additional user-supplied regressors, e.g. data driven noise regressors
+    add_regs : array of shape(n_frames, n_add_reg), \
+            :obj:`str`, :class:`pathlib.Path`, :class:`pandas.DataFrame` \
+            or None, default=None
+        Additional user-supplied regressors, e.g. data driven noise regressors
         or seed based regressors.
+        If a :class:`pathlib.Path` or :obj:`str` is provided,
+        it is assumed to be the name of a csv or tsv file
+        containing confounds as columns, with a one-line header.
 
     add_reg_names : :obj:`list` of (n_add_reg,) :obj:`str`, or \
         None, default=None
         If None, while add_regs was provided, these will be termed
         'reg_i', i = 0..n_add_reg - 1
-        If add_regs is a DataFrame, the corresponding column names are used
-        and add_reg_names is ignored.
+        If ``add_regs`` is a DataFrame, the corresponding column names are used
+        and ``add_reg_names`` is ignored.
 
     min_onset : :obj:`float`, default=-24
         Minimal onset relative to frame_times[0] (in seconds)
@@ -368,6 +372,8 @@ def make_first_level_design_matrix(
     n_add_regs = 0
     add_regs_as_array = np.empty(1)
     if add_regs is not None:
+        if isinstance(add_regs, (str, Path)):
+            add_regs = read_table_from_file(add_regs)
         if isinstance(add_regs, pd.DataFrame):
             add_regs_as_array = add_regs.to_numpy()
             add_reg_names = add_regs.columns.tolist()
