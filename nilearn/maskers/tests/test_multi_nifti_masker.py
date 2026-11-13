@@ -153,3 +153,55 @@ def test_no_warning_partial_joblib(strategy, list_random_imgs):
         "Cannot inspect object functools.partial" not in str(x)
         for x in warning_list
     )
+
+
+@pytest.mark.parametrize("container", [list, tuple])
+def test_multi_nifti_masker_high_variance_confounds_containers(
+    container, affine_eye
+):
+    """Test high_variance_confounds=True with container confounds (#6728)."""
+    rng = np.random.RandomState(0)
+    shape = (5, 5, 5, 20)
+    imgs = [
+        Nifti1Image(rng.random(shape), affine_eye),
+        Nifti1Image(rng.random(shape), affine_eye),
+    ]
+    n_time = shape[-1]
+    extra_confound = rng.random((n_time, 2))
+
+    masker = MultiNiftiMasker(high_variance_confounds=True)
+    masker.fit(imgs)
+
+    inner_confound = container([extra_confound])
+    confounds = [inner_confound, None]
+    signals = masker.transform(imgs, confounds=confounds)
+
+    assert len(signals) == 2
+    for sig in signals:
+        assert sig.shape[0] == n_time
+    # Ensure caller's outer list and inner container were not mutated
+    assert len(confounds) == 2
+    assert confounds[0] is inner_confound
+    assert len(confounds[0]) == 1
+
+
+def test_multi_nifti_masker_high_variance_confounds_1d_array(affine_eye):
+    """Test high_variance_confounds=True with a 1D array confound."""
+    rng = np.random.RandomState(0)
+    shape = (5, 5, 5, 20)
+    imgs = [
+        Nifti1Image(rng.random(shape), affine_eye),
+        Nifti1Image(rng.random(shape), affine_eye),
+    ]
+    n_time = shape[-1]
+    extra_confound = rng.random(n_time)
+
+    masker = MultiNiftiMasker(high_variance_confounds=True)
+    masker.fit(imgs)
+
+    confounds = [extra_confound, None]
+    signals = masker.transform(imgs, confounds=confounds)
+
+    assert len(signals) == 2
+    for sig in signals:
+        assert sig.shape[0] == n_time

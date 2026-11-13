@@ -58,6 +58,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix dataset downloads failing with ``Only one live display may be active at once`` after a failed download when `rich <https://github.com/Textualize/rich>`_ is installed (:gh:`6624` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Fix :class:`~nilearn.maskers.MultiNiftiMasker` (and other multi-image maskers) raising error when ``high_variance_confounds=True`` is used with list or tuple per-image confound entries (:gh:`6728` by `uvcode01-max`_).
+
 
 Enhancements
 ------------

@@ -265,6 +265,8 @@ class _MultiMixin:
         """Check and prepare confounds."""
         if confounds is None:
             confounds = list(itertools.repeat(None, len(imgs_list)))
+        else:
+            confounds = list(confounds)
         check_n_confounds_match_n_images(confounds, imgs_list)
 
         if self.high_variance_confounds:
@@ -273,10 +275,15 @@ class _MultiMixin:
 
                 if confounds[i] is None:
                     confounds[i] = hv_confounds
-                elif isinstance(confounds[i], list):
-                    confounds[i] += hv_confounds
+                elif isinstance(confounds[i], (list, tuple)):
+                    confounds[i] = [*confounds[i], hv_confounds]
                 elif isinstance(confounds[i], np.ndarray):
-                    confounds[i] = np.hstack([confounds[i], hv_confounds])
+                    c = (
+                        np.atleast_2d(confounds[i]).T
+                        if confounds[i].ndim == 1
+                        else confounds[i]
+                    )
+                    confounds[i] = np.hstack([c, hv_confounds])
                 elif isinstance(confounds[i], pd.DataFrame):
                     confounds[i] = np.hstack(
                         [confounds[i].to_numpy(), hv_confounds]
@@ -288,7 +295,7 @@ class _MultiMixin:
                         c = csv_to_array(confounds[i], skip_header=1)
                     confounds[i] = np.hstack([c, hv_confounds])
                 else:
-                    confounds[i].append(hv_confounds)
+                    confounds[i] = [confounds[i], hv_confounds]
 
         return confounds
 
