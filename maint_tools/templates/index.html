@@ -19,6 +19,16 @@
     display: block;
     margin-bottom: 8px;
     }
+    /* passed tests are not collapsible (see html1/module.html) */
+    div.test > .title {
+    padding: 0.5rem;
+    padding-left: 0.75rem;
+    }
+    div.test > .title::before {
+    content: " ";
+    width: 0.75rem;
+    display: inline-block;
+    }
 {% endblock %}
 
 {% set title = "Nilearn test report" %}

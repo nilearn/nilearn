@@ -1,0 +1,50 @@
+<!-- Overrides the module template of pytest-reporter-html1 to keep the report small. -->
+<!-- https://github.com/christiansandberg/pytest-reporter-html1/blob/master/pytest_reporter_html1/templates/html1/module.html -->
+<!-- - passed tests: only show the test title -->
+<!-- - xfailed tests: only show the xfail reason and the exception lines -->
+<!-- - other tests: show the full details -->
+{% block module_content scoped %}
+    {% for test in tests %}
+        {% set category = test.status.category %}
+        {% set title %}
+
+            <h3 class="title test-title">
+                <span class="status badge {{ category }} {{ test.status.style|join(" ") }}">{{ test.status.word }}</span>
+                <span class="test-name">
+                    {% set name = test.item.nodeid.split('::')[1:]|join('::') %}
+                    {% set funcname, _, params = name.partition('[') %}
+
+                    <span class="funcname">{{ funcname }}</span>
+                    {%- if params -%}
+                        <span class="params">[{{ params }}</span>
+                    {% endif %}
+                </span>
+                <span class="duration">{{ test.phases|sum("report.duration")|timedelta }}</span>
+            </h3>
+        {% endset %}
+        {% if category == "passed" %}
+            <div class="test {{ category }}">{{ title }}</div>
+        {% else %}
+            <details class="test {{ category }}">
+                <summary>{{ title }}</summary>
+                <div class="content">
+                    {% if category == "xfailed" %}
+                        {% for phase in test.phases if phase.report.longrepr %}
+                            <div class="repr">
+                                <pre><samp>
+                {%- if phase.report.wasxfail %}reason: {{ phase.report.wasxfail }}&#10;&#10;{% endif -%}
+                {%- set lines = phase.report.longreprtext.splitlines() -%}
+                {%- for line in lines if line.startswith("E ") %}{{ line|ansi|safe }}&#10;{% endfor -%}
+                {{ lines|last|ansi|safe -}}
+              </samp></pre>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+
+                        {% include "html1/test.html" %}
+                    {% endif %}
+                </div>
+            </details>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
