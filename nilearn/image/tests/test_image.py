@@ -1832,7 +1832,9 @@ def test_binarize_img_surface(surf_img_1d):
 
 def test_binarize_negative_img(img_4d_rand_eye, rng):
     # Test option to use original or absolute values
-    img_data = img_4d_rand_eye.dataobj
+    # copy the data: the fixture image is shared across threads
+    # when running tests in parallel
+    img_data = np.array(img_4d_rand_eye.dataobj)
     # Create a mask for half of the values and make them negative
     neg_mask = rng.choice(
         [True, False], size=img_4d_rand_eye.shape, p=[0.5, 0.5]
