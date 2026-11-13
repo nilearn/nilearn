@@ -89,7 +89,7 @@ Enhancements
 Changes
 -------
 
-- :bdg-secondary:`Maint` `narwhals <https://narwhals-dev.github.io/narwhals/>`_ (version 2.0.1 or higher) is now a required dependency of Nilearn. It will be used to support dataframes from other libraries than pandas (for example polars) in the public API (:gh:`6335` by `Rémi Gau`_).
+- :bdg-secondary:`Maint` `narwhals <https://narwhals-dev.github.io/narwhals/>`_ (version 2.0.1 or higher) is now a required dependency of Nilearn. It will be used to support dataframes from other libraries than pandas (for example polars) in the public API (:gh:`6730` by `Rémi Gau`_).
 
 
 - :bdg-danger:`Deprecation` The ``return_label_maps`` parameter of :func:`~reporting.get_clusters_table` is deprecated and will be removed in version 0.17.0, when cluster label maps will always be returned together with the table (:gh:`6376` by `Mohammad Sadeghi Hardengi`_).
