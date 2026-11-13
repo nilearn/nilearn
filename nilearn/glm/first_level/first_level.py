@@ -841,7 +841,11 @@ class FirstLevelModel(BaseGLM):
         return design_matrices
 
     def _create_single_design(
-        self, n_scans, events, confounds, run_idx
+        self,
+        n_scans,
+        events,
+        confounds: list[np.ndarray | pd.DataFrame] | None,
+        run_idx,
     ) -> pd.DataFrame:
         """Build experimental design of a single run.
 
@@ -851,7 +855,7 @@ class FirstLevelModel(BaseGLM):
 
         events : :obj:`list` of pandas.DataFrame
 
-        confounds : :obj:`list` of pandas.DataFrame or numpy.arrays
+        confounds : :obj:`list` of pandas.DataFrame or numpy.arrays or None
 
         run_idx : int
         """
