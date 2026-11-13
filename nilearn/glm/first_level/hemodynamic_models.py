@@ -498,13 +498,17 @@ def _sample_condition(
     # Set up the regressor timecourse
     tmax = len(frame_times_high_res)
     regressor = np.zeros_like(frame_times_high_res).astype(np.float64)
+
+    # Tolerate floating point errors so on-grid times match their own grid pts
+    tolerance = 1e-6 * (frame_times_high_res[1] - frame_times_high_res[0])
     t_onset = np.minimum(
-        np.searchsorted(frame_times_high_res, onsets), tmax - 1
+        np.searchsorted(frame_times_high_res, onsets - tolerance), tmax - 1
     )
     for t, v in zip(t_onset, values, strict=False):
         regressor[t] += v
     t_offset = np.minimum(
-        np.searchsorted(frame_times_high_res, onsets + durations), tmax - 1
+        np.searchsorted(frame_times_high_res, onsets + durations - tolerance),
+        tmax - 1,
     )
 
     # Handle the case where duration is 0 by offsetting at t + 1
