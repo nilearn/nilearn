@@ -1994,7 +1994,6 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     assert_almost_equal(get_data(data_img_), get_data(data_img_mask_))
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("data_type", ["volume", "surface"])
 def test_clean_img_confounds_dataframe(
     rng, img_4d_rand_eye, surf_img_2d, to_dataframe_backend, data_type
@@ -2879,7 +2878,6 @@ class PhonyNiimage(spatialimages.SpatialImage):
         return self.data.shape
 
 
-@pytest.mark.ai_generated
 def test_check_niimg_4d_phony_image():
     """Test a Niimg-like object that does not hold a shape attribute."""
     phony_img = PhonyNiimage()
