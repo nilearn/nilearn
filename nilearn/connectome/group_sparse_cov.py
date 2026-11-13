@@ -230,6 +230,42 @@ def group_sparse_covariance(
     return emp_covs, precisions
 
 
+def _group_sparse_covariance_zero_alpha(
+    emp_covs,
+    n_samples,
+    alpha,
+    max_iter,
+    tol,
+    probe_function=None,
+    debug=False,
+):
+    """Compute precision matrices for unregularized case alpha=0."""
+    n_subjects = emp_covs.shape[-1]
+    omega = np.empty_like(emp_covs, order="F")
+    for k in range(n_subjects):
+        inv_cov = scipy.linalg.inv(emp_covs[..., k])
+        omega[..., k] = (inv_cov + inv_cov.T) / 2
+        if debug:
+            assert is_spd(omega[..., k])
+
+    if probe_function is not None:
+        probe_function(
+            emp_covs, n_samples, alpha, max_iter, tol, -1, omega, None
+        )
+        probe_function(
+            emp_covs,
+            n_samples,
+            alpha,
+            max_iter,
+            tol,
+            0,
+            omega,
+            np.zeros_like(omega),
+        )
+
+    return omega
+
+
 def _group_sparse_covariance(
     emp_covs,
     n_samples,
@@ -250,10 +286,46 @@ def _group_sparse_covariance(
 
     _check_alpha(alpha)
 
-    n_subjects = emp_covs.shape[-1]
-    n_features = emp_covs[0].shape[0]
     n_samples = np.asarray(n_samples)
     n_samples /= n_samples.sum()  # essential for numerical stability
+
+    if alpha == 0:
+        return _group_sparse_covariance_zero_alpha(
+            emp_covs,
+            n_samples,
+            alpha,
+            max_iter,
+            tol,
+            probe_function=probe_function,
+            debug=debug,
+        )
+
+    return _group_sparse_covariance_iterative(
+        emp_covs,
+        n_samples,
+        alpha,
+        max_iter=max_iter,
+        tol=tol,
+        precisions_init=precisions_init,
+        probe_function=probe_function,
+        verbose=verbose,
+        debug=debug,
+    )
+
+
+def _group_sparse_covariance_iterative(
+    emp_covs,
+    n_samples,
+    alpha,
+    max_iter=10,
+    tol=1e-3,
+    precisions_init=None,
+    probe_function=None,
+    verbose=0,
+    debug=False,
+):
+    n_subjects = emp_covs.shape[-1]
+    n_features = emp_covs[0].shape[0]
 
     _check_diagonal_normalization(emp_covs, n_subjects)
 
