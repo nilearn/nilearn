@@ -713,7 +713,7 @@ def test_fmri_inputs_design_matrices_csv(tmp_path, shape_4d_default):
 
 def test_fmri_inputs_events_type(tmp_path):
     """Check events can be dataframe or pathlike to CSV / TSV."""
-    n_timepoints = 10
+    n_timepoints = 30
     shapes = ((3, 4, 5, n_timepoints),)
     mask_file, fmri_files, _ = write_fake_fmri_data_and_design(
         shapes, file_path=tmp_path
@@ -733,7 +733,7 @@ def test_fmri_inputs_events_type(tmp_path):
 
 def test_fmri_inputs_with_confounds(tmp_path):
     """Test with confounds and, events."""
-    n_timepoints = 10
+    n_timepoints = 30
     shapes = ((3, 4, 5, n_timepoints),)
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
 
@@ -1358,7 +1358,7 @@ def test_first_level_hrf_model(hrf_model, spaces, shape_4d_default):
     """
     # use enough scans for the number of regressors
     # to have residual degrees of freedom
-    shape = (*shape_4d_default[:3], 20)
+    shape = (*shape_4d_default[:3], 30)
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes=[shape])
 
     events = basic_paradigm(condition_names_have_spaces=spaces)
@@ -1639,7 +1639,7 @@ def test_flm_with_surface_masker_with_mask(
 
 def test_flm_with_surface_data_no_design_matrix(surface_glm_data):
     """Smoke test FirstLevelModel with surface data and no design matrix."""
-    img, _ = surface_glm_data(5)
+    img, _ = surface_glm_data(30)
     masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     model.fit(img, events=basic_paradigm())
@@ -1647,7 +1647,7 @@ def test_flm_with_surface_data_no_design_matrix(surface_glm_data):
 
 def test_flm_compute_contrast_with_surface_data(surface_glm_data):
     """Smoke test FirstLevelModel compute_contrast with surface data."""
-    img, _ = surface_glm_data(5)
+    img, _ = surface_glm_data(30)
     masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     events = basic_paradigm()
@@ -1662,7 +1662,7 @@ def test_flm_get_element_wise_model_attribute_with_surface_data(
     surface_glm_data,
 ):
     """Smoke test 'voxel wise' attribute with surface data."""
-    img, _ = surface_glm_data(5)
+    img, _ = surface_glm_data(30)
     masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0, minimize_memory=False)
     events = basic_paradigm()
@@ -1678,7 +1678,7 @@ def test_flm_get_element_wise_model_attribute_with_surface_data(
 
 def test_fixed_effect_contrast_surface(surface_glm_data):
     """Smoke test of compute_fixed_effects with surface data."""
-    mini_img, _ = surface_glm_data(5)
+    mini_img, _ = surface_glm_data(30)
     masker = SurfaceMasker().fit(mini_img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     events = basic_paradigm()

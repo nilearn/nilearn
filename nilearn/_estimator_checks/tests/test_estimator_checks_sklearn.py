@@ -10,6 +10,13 @@ from nilearn.utils.discovery import all_estimators
 @pytest.mark.filterwarnings(
     "ignore:.*Input signals do not all have unit variance.*:UserWarning"
 )
+# sklearn checks fitting covariance estimators on single samples
+@pytest.mark.filterwarnings("ignore:Only one sample available:UserWarning")
+# raised by pytest itself when it compares locals in tracebacks
+# of expected failed checks
+@pytest.mark.filterwarnings(
+    "ignore:Comparing two sparse matrices:scipy.sparse.SparseEfficiencyWarning"
+)
 # TODO (scipy >= 1.20 or sklearn >= ?)
 # remove the pytest.mark.filterwarnings
 @pytest.mark.filterwarnings(
