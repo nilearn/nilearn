@@ -58,6 +58,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix dataset downloads failing with ``Only one live display may be active at once`` after a failed download when `rich <https://github.com/Textualize/rich>`_ is installed (:gh:`6624` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Fix :func:`~nilearn.image.crop_img` computing a wrong cropping threshold for images with integer data, because negating the minimum of the data could overflow (:gh:`6735` by `Rémi Gau`_).
+
 
 Enhancements
 ------------

@@ -721,7 +721,7 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         if screening_percentile_lt_100:
             extra_msg += "'screening_percentile' "
             if clustering_percentile_lt_100:
-                extra_msg += "and / or"
+                extra_msg += "and / or "
         if clustering_percentile_lt_100:
             extra_msg += "'clustering_percentile'"
 
