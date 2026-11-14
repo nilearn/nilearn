@@ -31,6 +31,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix :class:`~nilearn.maskers.MultiNiftiMasker` and other multi-image maskers raising a ``ValueError`` or ``AttributeError`` when ``high_variance_confounds=True`` was combined with a per-image ``confounds`` entry that was itself a list or tuple of several confound sources (:gh:`6726` by `Siddhardha Nanda`_).
+
 - :bdg-dark:`Code` Fix :func:`~nilearn.image.clean_img` reshaping its output using the raw ``sample_mask`` shape instead of the actual cleaned-signal shape, which raised a ``ValueError`` whenever ``sample_mask`` was passed as a boolean array (:gh:`6709` by `Siddhardha Nanda`_).
 
 - :bdg-dark:`Code` Check tar extraction destinations by path components so sibling directories with a shared name prefix are rejected (:gh:`6654` by `Jeffrey Cooney <https://github.com/jdotc1>`_).
