@@ -178,3 +178,36 @@ def test_group_sparse_covariance_cross_validation(
 
     cv_scores_ = gsc.cv_scores_
     assert cv_scores_.shape == (alphas * n_refinements,)
+
+
+def test_group_sparse_covariance_alpha_zero(rng):
+    """Test group_sparse_covariance and GroupSparseCovariance with alpha=0."""
+    signals, _, _ = generate_group_sparse_gaussian_graphs(
+        density=0.1,
+        n_subjects=3,
+        n_features=5,
+        min_n_samples=50,
+        max_n_samples=60,
+        rand_gen=rng,
+    )
+
+    emp_covs, omega = group_sparse_covariance(signals, alpha=0.0, debug=True)
+    assert omega.shape == (5, 5, 3)
+
+    for k in range(3):
+        inv_cov = np.linalg.inv(emp_covs[..., k])
+        np.testing.assert_allclose(omega[..., k], inv_cov, atol=1e-10)
+
+    # Test through GroupSparseCovariance estimator
+    gsc = GroupSparseCovariance(alpha=0.0)
+    gsc.fit(signals)
+    np.testing.assert_allclose(gsc.precisions_, omega)
+
+    # Test with probe_function
+    probe_calls = []
+
+    def probe(*args):
+        probe_calls.append(args)
+
+    group_sparse_covariance(signals, alpha=0.0, probe_function=probe)
+    assert len(probe_calls) == 1
