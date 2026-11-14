@@ -202,3 +202,12 @@ def test_group_sparse_covariance_alpha_zero(rng):
     gsc = GroupSparseCovariance(alpha=0.0)
     gsc.fit(signals)
     np.testing.assert_allclose(gsc.precisions_, omega)
+
+    # Test with probe_function
+    probe_calls = []
+
+    def probe(*args):
+        probe_calls.append(args)
+
+    group_sparse_covariance(signals, alpha=0.0, probe_function=probe)
+    assert len(probe_calls) == 1
