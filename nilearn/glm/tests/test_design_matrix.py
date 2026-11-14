@@ -22,6 +22,7 @@ from nilearn.glm.first_level.design_matrix import (
     check_design_matrix,
     make_first_level_design_matrix,
     make_second_level_design_matrix,
+    sanitize_confounds_second_level,
 )
 from nilearn.glm.tests._testing import (
     block_paradigm,
@@ -94,8 +95,10 @@ def test_design_matrix_no_experimental_paradigm(frame_times):
     assert_almost_equal(X[:, 0], x)
 
 
-def test_design_matrix_regressors_provided_manually(rng, frame_times):
-    # test design matrix creation when regressors are provided manually
+def test_make_first_level_design_matrix_regressors_provided_manually(
+    rng, frame_times, tmp_path
+):
+    """Test design matrix creation when regressors are provided manually."""
     ax = rng.standard_normal(size=(len(frame_times), 4))
     _, X, names = check_design_matrix(
         make_first_level_design_matrix(
@@ -108,13 +111,46 @@ def test_design_matrix_regressors_provided_manually(rng, frame_times):
 
     # with pandas Dataframe
     axdf = pd.DataFrame(ax)
-    _, X1, names = check_design_matrix(
-        make_first_level_design_matrix(
-            frame_times, drift_model="polynomial", drift_order=3, add_regs=axdf
-        )
+    des_mat = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3, add_regs=axdf
     )
+    _, X1, names = check_design_matrix(des_mat)
     assert_almost_equal(X1[:, 0], ax[:, 0])
     assert_array_equal(names[:4], np.arange(4))
+
+    # with paths and strings
+    # column names read from a file header are always strings,
+    # so compare against a DataFrame with string column names
+    axdf = pd.DataFrame(ax, columns=[f"conf{i}" for i in range(4)])
+    des_mat = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3, add_regs=axdf
+    )
+
+    axdf.to_csv(tmp_path / "tmp.csv", index=False)
+    des_mat_csv = make_first_level_design_matrix(
+        frame_times,
+        drift_model="polynomial",
+        drift_order=3,
+        add_regs=tmp_path / "tmp.csv",
+    )
+    pd.testing.assert_frame_equal(des_mat_csv, des_mat)
+
+    axdf.to_csv(tmp_path / "tmp.tsv", index=False, sep="\t")
+    des_mat_tsv = make_first_level_design_matrix(
+        frame_times,
+        drift_model="polynomial",
+        drift_order=3,
+        add_regs=tmp_path / "tmp.tsv",
+    )
+    pd.testing.assert_frame_equal(des_mat_tsv, des_mat)
+
+    des_mat_str = make_first_level_design_matrix(
+        frame_times,
+        drift_model="polynomial",
+        drift_order=3,
+        add_regs=str(tmp_path / "tmp.tsv"),
+    )
+    pd.testing.assert_frame_equal(des_mat_str, des_mat)
 
 
 def test_design_matrix_regressors_provided_manually_errors(rng, frame_times):
@@ -454,20 +490,67 @@ def test_compare_design_matrix_to_spm(block_duration, array):
     ).sum() < 0.1
 
 
-def test_create_second_level_design():
+def test_check_confounds_slm():
+    assert sanitize_confounds_second_level(None) is None
+    with pytest.raises(TypeError, match="'confounds' must be of type"):
+        sanitize_confounds_second_level(1)
+    with pytest.raises(FileNotFoundError, match="No such file"):
+        sanitize_confounds_second_level("foo")
+    with pytest.raises(ValueError, match="confounds must contain column"):
+        sanitize_confounds_second_level(pd.DataFrame())
+    with pytest.raises(
+        ValueError, match="confounds should contain at least 2 columns"
+    ):
+        sanitize_confounds_second_level(
+            pd.DataFrame(columns=["subject_label"])
+        )
+    with pytest.raises(
+        ValueError, match="subject_label column must contain only strings"
+    ):
+        sanitize_confounds_second_level(
+            pd.DataFrame(
+                {"subject_label": [None, None, None], "conf": [4, 5, 6]}
+            )
+        )
+
+
+def test_make_second_level_design_matrix(tmp_path):
+    """Test make_second_level_design_matrix with confounds."""
     subjects_label = ["02", "01"]  # change order to test right output order
     regressors = [["01", 0.1], ["02", 0.75]]
-    regressors = pd.DataFrame(regressors, columns=["subject_label", "f1"])
+    regressors_df = pd.DataFrame(regressors, columns=["subject_label", "f1"])
 
-    design = make_second_level_design_matrix(subjects_label, regressors)
+    design = make_second_level_design_matrix(subjects_label, regressors_df)
 
-    expected_design = np.array([[0.75, 1.0], [0.1, 1.0]])
-    assert_array_equal(design, expected_design)
     assert len(design.columns) == 2
     assert len(design) == 2
 
+    expected_design = np.array([[0.75, 1.0], [0.1, 1.0]])
+    assert_array_equal(design, expected_design)
 
-def test_create_second_level_design_nan():
+    pd.DataFrame(regressors, columns=["subject_label", "f1"]).to_csv(
+        tmp_path / "tmp.csv", index=False
+    )
+    design_csv = make_second_level_design_matrix(
+        subjects_label, tmp_path / "tmp.csv"
+    )
+    assert_array_equal(design_csv, expected_design)
+
+    pd.DataFrame(regressors, columns=["subject_label", "f1"]).to_csv(
+        tmp_path / "tmp.tsv", sep="\t", index=False
+    )
+    design_tsv = make_second_level_design_matrix(
+        subjects_label, tmp_path / "tmp.tsv"
+    )
+    assert_array_equal(design_tsv, expected_design)
+
+    design_str = make_second_level_design_matrix(
+        subjects_label, str(tmp_path / "tmp.csv")
+    )
+    assert_array_equal(design_str, expected_design)
+
+
+def test_make_second_level_design_matrix_nan():
     """Ensure second level matrix can be generated with nan in confounds."""
     subjects_label = ["01", "02", "03"]
     regressors = [
@@ -479,6 +562,37 @@ def test_create_second_level_design_nan():
 
     with pytest.raises(ValueError, match="Confounds contain NaN values"):
         make_second_level_design_matrix(subjects_label, regressors)
+
+
+def test_make_second_level_design_matrix_error_regressor():
+    """Check error when regressor mismatch subjects."""
+    subjects_label = ["02", "01"]
+
+    # missing regressor
+    regressors = [["01", 0.1]]
+    regressors_df = pd.DataFrame(regressors, columns=["subject_label", "f1"])
+    with pytest.raises(
+        ValueError, match="confounds not specified for subject 02"
+    ):
+        make_second_level_design_matrix(subjects_label, regressors_df)
+
+    # too many regressors
+    regressors = [["01", 0.1], ["02", 0.75], ["02", 1.0]]
+    regressors_df = pd.DataFrame(regressors, columns=["subject_label", "f1"])
+    with pytest.raises(
+        ValueError, match="confounds contain more than one row for subject 02"
+    ):
+        make_second_level_design_matrix(subjects_label, regressors_df)
+
+    # columns with same name
+    regressors = [["01", 0.1, 0.3], ["02", 0.75, 0.5]]
+    regressors_df = pd.DataFrame(
+        regressors, columns=["subject_label", "f1", "f1"]
+    )
+    with pytest.raises(
+        ValueError, match="Design matrix columns do not have unique names"
+    ):
+        make_second_level_design_matrix(subjects_label, regressors_df)
 
 
 def test_designs_with_negative_onsets_warning(frame_times):

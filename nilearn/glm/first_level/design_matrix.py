@@ -30,15 +30,19 @@ Design matrices contain three different types of regressors:
    estimates.
 """
 
+from pathlib import Path
 from warnings import warn
 
 import numpy as np
 import pandas as pd
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.glm import check_and_load_tables, read_table_from_file
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
 from nilearn.glm._utils import full_rank
 from nilearn.glm.first_level.experimental_paradigm import (
     check_events,
@@ -48,7 +52,7 @@ from nilearn.glm.first_level.hemodynamic_models import (
     compute_regressor,
     orthogonalize,
 )
-from nilearn.nilearn_typing import HrfModel, TableLike
+from nilearn.nilearn_typing import HrfModel, SingleConfound, TableLike
 from nilearn.signal import create_cosine_drift
 
 ######################################################################
@@ -237,7 +241,7 @@ def make_first_level_design_matrix(
     high_pass=0.01,
     drift_order=1,
     fir_delays=None,
-    add_regs: np.ndarray | pd.DataFrame | None = None,
+    add_regs: SingleConfound | None = None,
     add_reg_names=None,
     min_onset=-24,
     oversampling=50,
@@ -300,17 +304,21 @@ def make_first_level_design_matrix(
         yields the array of delays used in the :term:`FIR`
         model (in scans).
 
-    add_regs : array of shape(n_frames, n_add_reg) or \
-            pandas DataFrame or None, default=None
-        additional user-supplied regressors, e.g. data driven noise regressors
+    add_regs : array of shape(n_frames, n_add_reg), \
+            :obj:`str`, :class:`pathlib.Path`, :class:`pandas.DataFrame` \
+            or None, default=None
+        Additional user-supplied regressors, e.g. data driven noise regressors
         or seed based regressors.
+        If a :class:`pathlib.Path` or :obj:`str` is provided,
+        it is assumed to be the name of a csv or tsv file
+        containing confounds as columns, with a one-line header.
 
     add_reg_names : :obj:`list` of (n_add_reg,) :obj:`str`, or \
         None, default=None
         If None, while add_regs was provided, these will be termed
         'reg_i', i = 0..n_add_reg - 1
-        If add_regs is a DataFrame, the corresponding column names are used
-        and add_reg_names is ignored.
+        If ``add_regs`` is a DataFrame, the corresponding column names are used
+        and ``add_reg_names`` is ignored.
 
     min_onset : :obj:`float`, default=-24
         Minimal onset relative to frame_times[0] (in seconds)
@@ -364,6 +372,8 @@ def make_first_level_design_matrix(
     n_add_regs = 0
     add_regs_as_array = np.empty(1)
     if add_regs is not None:
+        if isinstance(add_regs, (str, Path)):
+            add_regs = read_table_from_file(add_regs)
         if isinstance(add_regs, pd.DataFrame):
             add_regs_as_array = add_regs.to_numpy()
             add_reg_names = add_regs.columns.tolist()
@@ -489,8 +499,42 @@ def check_design_matrix(
     return frame_times, matrix, names
 
 
+def sanitize_confounds_second_level(
+    confounds: pd.DataFrame | str | Path | None,
+) -> pd.DataFrame | None:
+    """Check confounds for second level matrices."""
+    if confounds is None:
+        return None
+
+    check_is_of_allowed_type(confounds, (pd.DataFrame, str, Path), "confounds")
+
+    if isinstance(confounds, (str, Path)):
+        confounds = read_table_from_file(
+            confounds, dtype={"subject_label": str}
+        )
+
+    if "subject_label" not in confounds.columns:
+        raise ValueError("confounds must contain column 'subject_label'")
+    if len(confounds.columns) < 2:
+        raise ValueError(
+            "confounds should contain at least 2 columns"
+            ' one called "subject_label" and the other'
+            " with a given confound"
+        )
+    # Make sure subject_label contain strings
+    if not all(
+        isinstance(_, str) for _ in confounds["subject_label"].tolist()
+    ):
+        raise ValueError("subject_label column must contain only strings")
+
+    if confounds.isna().to_numpy().any():
+        raise ValueError("Confounds contain NaN values.")
+
+    return confounds
+
+
 def make_second_level_design_matrix(
-    subjects_label, confounds: pd.DataFrame | None = None
+    subjects_label, confounds: pd.DataFrame | str | Path | None = None
 ) -> pd.DataFrame:
     """Set up a second level design.
 
@@ -502,24 +546,21 @@ def make_second_level_design_matrix(
         Contain subject labels to extract confounders in the right order,
         corresponding with the images, to create the design matrix.
 
-    confounds : :class:`pandas.DataFrame` or ``None``, default=None
-        If given, contains at least two columns, ``subject_label`` and one
-        confound. The subjects list determines the rows to extract from
-        confounds thanks to its ``subject_label`` column. All subjects must
-        have confounds specified. There should be only one row per subject.
+    %(second_level_confounds)s
+        The subjects list determines the rows to extract
+        from confounds thanks to its ``subject_label`` column.
 
     Returns
     -------
     design_matrix : :class:`pandas.DataFrame`
         The second level design matrix.
     """
+    confounds = sanitize_confounds_second_level(confounds)
+
     confounds_name = []
     if confounds is not None:
         confounds_name = confounds.columns.tolist()
         confounds_name.remove("subject_label")
-
-        if confounds.isna().to_numpy().any():
-            raise ValueError("Confounds contain NaN values.")
 
     design_columns = [*confounds_name, "intercept"]
     # check column names are unique

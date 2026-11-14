@@ -28,6 +28,7 @@ def input_df() -> pd.DataFrame:
 
 
 def _confounds() -> pd.DataFrame:
+    """Generate confounds for second level model."""
     return pd.DataFrame(
         [["01", 1], ["02", 2], ["03", 3]],
         columns=["subject_label", "conf1"],

@@ -21,7 +21,6 @@ from nilearn._utils.data_gen import (
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level.second_level import (
     SecondLevelModel,
-    _check_confounds,
     _check_first_level_contrast,
     _check_input_as_first_level_model,
     _check_second_level_input,
@@ -348,30 +347,6 @@ def test_check_second_level_input_design_matrix(shape_3d_default):
         _check_second_level_input(fmri_data[0], None)
 
 
-def test_check_confounds():
-    _check_confounds(None)  # Should not do anything
-    with pytest.raises(
-        TypeError, match="confounds must be a pandas DataFrame"
-    ):
-        _check_confounds("foo")
-    with pytest.raises(
-        ValueError, match="confounds DataFrame must contain column"
-    ):
-        _check_confounds(pd.DataFrame())
-    with pytest.raises(
-        ValueError, match="confounds should contain at least 2 columns"
-    ):
-        _check_confounds(pd.DataFrame(columns=["subject_label"]))
-    with pytest.raises(
-        ValueError, match="subject_label column must contain only strings"
-    ):
-        _check_confounds(
-            pd.DataFrame(
-                {"subject_label": [None, None, None], "conf": [4, 5, 6]}
-            )
-        )
-
-
 def test_check_first_level_contrast():
     _check_first_level_contrast(["foo"], None)  # Should not do anything
     _check_first_level_contrast([FirstLevelModel()], "foo")
@@ -658,17 +633,11 @@ def test_fit_inputs_errors(confounds, shape_4d_default):
 
     # test first_level_conditions, confounds, and design
     flms = [flm, flm, flm]
-    with pytest.raises(
-        TypeError, match="confounds must be a pandas DataFrame"
-    ):
+    with pytest.raises(TypeError, match="'confounds' must be of type"):
         SecondLevelModel().fit(second_level_input=flms, confounds=["", []])
-    with pytest.raises(
-        TypeError, match="confounds must be a pandas DataFrame"
-    ):
+    with pytest.raises(TypeError, match="'confounds' must be of type"):
         SecondLevelModel().fit(second_level_input=flms, confounds=[])
-    with pytest.raises(
-        TypeError, match="confounds must be a pandas DataFrame"
-    ):
+    with pytest.raises(TypeError, match="'confounds' must be of type"):
         SecondLevelModel().fit(
             second_level_input=flms, confounds=confounds["conf1"]
         )
@@ -774,12 +743,56 @@ def test_design_matrix_path(img_3d_mni, tmp_path, filename, sep):
     )
 
 
+@pytest.mark.parametrize("as_str", [False, True])
+@pytest.mark.parametrize(
+    "filename, sep", [("confounds.csv", ","), ("confounds.tsv", "\t")]
+)
+def test_confounds_path(tmp_path, shape_4d_default, filename, sep, as_str):
+    """Check confounds can be passed as a path to a CSV / TSV file.
+
+    Subject labels with leading zeros must survive loading
+    and be matched to the subject_label of the first level models,
+    regardless of the row order in the file.
+    """
+    subject_labels = ["01", "02", "03"]
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        [shape_4d_default] * len(subject_labels), rk=1
+    )
+    flms = [
+        FirstLevelModel(subject_label=label).fit(img, design_matrices=design)
+        for label, img, design in zip(
+            subject_labels, fmri_data, design_matrices, strict=False
+        )
+    ]
+
+    # rows deliberately not in the same order as the first level models
+    confounds = pd.DataFrame(
+        {"subject_label": ["03", "01", "02"], "age": [30.0, 10.0, 20.0]}
+    )
+    confounds_file = tmp_path / filename
+    confounds.to_csv(confounds_file, sep=sep, index=False)
+    if as_str:
+        confounds_file = str(confounds_file)
+
+    model = SecondLevelModel().fit(flms, confounds=confounds_file)
+
+    assert isinstance(model.confounds_, pd.DataFrame)
+    assert model.confounds_["subject_label"].to_list() == ["03", "01", "02"]
+
+    assert model.design_matrix_.columns.to_list() == ["age", "intercept"]
+    assert_array_equal(model.design_matrix_["age"], [10.0, 20.0, 30.0])
+
+    # same result as when passing the DataFrame directly
+    model_df = SecondLevelModel().fit(flms, confounds=confounds)
+    pd.testing.assert_frame_equal(
+        model.design_matrix_, model_df.design_matrix_
+    )
+
+
 @pytest.mark.parametrize("design_matrix", ["foo", Path("foo")])
 def test_design_matrix_error_path(img_3d_mni, design_matrix):
     second_level_input = [img_3d_mni, img_3d_mni, img_3d_mni]
-    with pytest.raises(
-        ValueError, match=r"Tables to load can only be TSV or CSV."
-    ):
+    with pytest.raises(FileNotFoundError, match=r"No such file"):
         SecondLevelModel().fit(
             second_level_input=second_level_input, design_matrix=design_matrix
         )

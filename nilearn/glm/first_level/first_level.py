@@ -817,7 +817,11 @@ class FirstLevelModel(BaseGLM):
         del Y
 
     def _create_all_designs(
-        self, run_imgs, events, confounds, design_matrices
+        self,
+        run_imgs,
+        events,
+        confounds: list[np.ndarray | pd.DataFrame] | None,
+        design_matrices,
     ) -> list[pd.DataFrame]:
         """Build experimental design of all runs."""
         if design_matrices is not None:
@@ -841,7 +845,11 @@ class FirstLevelModel(BaseGLM):
         return design_matrices
 
     def _create_single_design(
-        self, n_scans, events, confounds, run_idx
+        self,
+        n_scans,
+        events,
+        confounds: list[np.ndarray | pd.DataFrame] | None,
+        run_idx,
     ) -> pd.DataFrame:
         """Build experimental design of a single run.
 
@@ -851,7 +859,7 @@ class FirstLevelModel(BaseGLM):
 
         events : :obj:`list` of pandas.DataFrame
 
-        confounds : :obj:`list` of pandas.DataFrame or numpy.arrays
+        confounds : :obj:`list` of pandas.DataFrame or numpy.arrays or None
 
         run_idx : int
         """

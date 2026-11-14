@@ -86,7 +86,7 @@ def check_and_load_tables(
             )
 
         if isinstance(table, str):
-            loaded = _read_events_table(table)
+            loaded = read_table_from_file(table)
             tables.append(loaded)
         elif isinstance(table, (pd.DataFrame, np.ndarray)):
             tables.append(table)
@@ -94,8 +94,8 @@ def check_and_load_tables(
     return tables
 
 
-def _read_events_table(table_path: str | Path) -> pd.DataFrame:
-    """Load the contents of the event file specified by `table_path`\
+def read_table_from_file(table_path: str | Path, **kwargs) -> pd.DataFrame:
+    """Load the contents of a file specified by `table_path`\
        to a pandas.DataFrame.
 
     Parameters
@@ -103,6 +103,9 @@ def _read_events_table(table_path: str | Path) -> pd.DataFrame:
     table_path : :obj:`str`, :obj:`pathlib.Path`
         Path to a TSV or CSV file. In the case of CSV file,
         the first column is considered to be index column.
+
+    kwargs :
+        key words parameter to pass to pandas.read_csv
 
     Returns
     -------
@@ -112,13 +115,18 @@ def _read_events_table(table_path: str | Path) -> pd.DataFrame:
     Raises
     ------
     ValueError
-    If file loading fails.
+        If file loading fails.
+
+    FileNotFoundError
+        If file does not exist.
     """
     table_path = Path(table_path)
     if table_path.suffix == ".tsv":
-        loaded = pd.read_csv(table_path, sep="\t")
+        loaded = pd.read_csv(table_path, sep="\t", **kwargs)
     elif table_path.suffix == ".csv":
-        loaded = pd.read_csv(table_path)
+        loaded = pd.read_csv(table_path, **kwargs)
+    elif not table_path.exists():
+        raise FileNotFoundError(f"No such file: {table_path}")
     else:
         raise ValueError(
             f"Tables to load can only be TSV or CSV.\nGot {table_path}"

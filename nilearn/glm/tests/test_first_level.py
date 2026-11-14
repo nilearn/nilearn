@@ -1418,19 +1418,15 @@ def test_check_run_tables_errors():
     """Check high level wrapper keeps behavior."""
     with pytest.raises(ValueError, match=r"len.* does not match len.*"):
         _check_run_tables([""] * 2, [""], "")
-    with pytest.raises(
-        ValueError, match=r"Tables to load can only be TSV or CSV."
-    ):
-        _check_run_tables([""] * 2, [".csv", ".csv"], "")
+    with pytest.raises(FileNotFoundError, match="No such file"):
+        _check_run_tables([""] * 2, ["foo.csv", "bar.csv"], "")
     with pytest.raises(
         TypeError,
         match="can only be a pandas DataFrame, a Path object or a string",
     ):
         _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
-    with pytest.raises(
-        ValueError, match=r"Tables to load can only be TSV or CSV."
-    ):
-        _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")
+    with pytest.raises(FileNotFoundError, match="No such file or directory"):
+        _check_run_tables([""] * 2, ["foo.csv", pd.DataFrame()], "")
 
 
 def test_img_table_checks():

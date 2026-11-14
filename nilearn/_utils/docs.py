@@ -1112,14 +1112,18 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
 
 # second_level_confounds
 docdict["second_level_confounds"] = """
-confounds : :obj:`pandas.DataFrame` or None, default=None
-    Must contain a ``subject_label`` column.
+confounds : :obj:`str`, :class:`pathlib.Path`, \
+        :class:`pandas.DataFrame` or ``None``, default=None
+    If given, contains at least two columns:
+    ``subject_label`` and one confound.
     All other columns are considered as confounds and included in the model.
-    If ``design_matrix`` is provided then this argument is ignored.
+    There should be only one row per subject.
+    All subjects must have confounds specified.
+    If a :class:`pathlib.Path` or :obj:`str` is provided,
+    it is assumed to be the name of a csv or tsv file
+    containing confounds as columns, with a one-line header.
     The resulting second level design matrix uses the same column names
     as in the given :class:`~pandas.DataFrame` for confounds.
-    At least two columns are expected, ``subject_label``
-    and at least one confound.
 """
 
 # second_level_design_matrix
