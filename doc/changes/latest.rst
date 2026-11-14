@@ -64,6 +64,10 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` The ``confounds`` parameter of :func:`~nilearn.signal.clean` and :func:`~nilearn.image.clean_img` now also accepts polars dataframes (alone or in a list or tuple) (:gh:`6730` by `Rémi Gau`_).
+
+- :bdg-success:`API` The ``index`` parameter of :func:`~nilearn.image.index_img` now also accepts polars dataframes and series, as well as pandas dataframes for surface images. Dataframes passed as ``index`` must have a single column: they used to be flattened, which gave an index longer than the image (:gh:`6730` by `Rémi Gau`_).
+
 - :bdg-primary:`Doc` Add privacy-friendly page view analytics with `GoatCounter <https://www.goatcounter.com/>`_ to the documentation website (:gh:`6393` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
@@ -86,6 +90,8 @@ Enhancements
 
 Changes
 -------
+
+- :bdg-secondary:`Maint` `narwhals <https://narwhals-dev.github.io/narwhals/>`_ (version 2.0.1 or higher) is now a required dependency of Nilearn. It will be used to support dataframes from other libraries than pandas (for example polars) in the public API (:gh:`6730` by `Rémi Gau`_).
 
 
 - :bdg-danger:`Deprecation` The ``return_label_maps`` parameter of :func:`~reporting.get_clusters_table` is deprecated and will be removed in version 0.17.0, when cluster label maps will always be returned together with the table (:gh:`6376` by `Mohammad Sadeghi Hardengi`_).

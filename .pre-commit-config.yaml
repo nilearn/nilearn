@@ -177,4 +177,4 @@ repos:
     -   id: pyrefly-check
         name: Pyrefly
         pass_filenames: false
-        additional_dependencies: [numpy>=1.26.0, nibabel>=5.2.0, requests>=2.33.0, pandas-stubs, lxml-stubs, types-requests]
+        additional_dependencies: [narwhals>=2.0.1, numpy>=1.26.0, nibabel>=5.2.0, requests>=2.33.0, pandas-stubs, lxml-stubs, types-requests]

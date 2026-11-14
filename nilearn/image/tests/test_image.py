@@ -1005,6 +1005,67 @@ def test_pd_index_img(rng, img_4d_rand_eye):
     assert_array_equal(get_data(np_index_img), get_data(pd_index_img))
 
 
+@pytest.mark.parametrize("as_series", [True, False])
+def test_index_img_dataframe(
+    rng, img_4d_rand_eye, to_dataframe_backend, as_series
+):
+    """Check boolean indices in a dataframe or series \
+        of each library (polars, pandas, ...) \
+    give the same result as a numpy array on volume image.
+    """
+    arr = rng.uniform(size=img_4d_rand_eye.shape[3]) > 0.5
+    index = to_dataframe_backend(pd.DataFrame({"arr": arr}))
+    if as_series:
+        index = index["arr"]
+
+    expected = index_img(img_4d_rand_eye, arr)
+    result = index_img(img_4d_rand_eye, index)
+
+    assert_array_equal(get_data(result), get_data(expected))
+
+
+@pytest.mark.parametrize("as_series", [True, False])
+def test_index_img_surface_dataframe(
+    surf_img_2d, to_dataframe_backend, as_series
+):
+    """Check indices in a dataframe or series \
+        of each library (polars, pandas, ...) \
+    give the same result as a numpy array on surface images.
+    """
+    input_img = surf_img_2d(8)
+    arr = (np.arange(8) % 3) == 1
+    index = to_dataframe_backend(pd.DataFrame({"arr": arr}))
+    if as_series:
+        index = index["arr"]
+
+    expected = index_img(input_img, arr)
+    result = index_img(input_img, index)
+
+    assert_surface_image_equal(result, expected)
+
+
+@pytest.mark.parametrize("data_type", ["volume", "surface"])
+def test_index_img_dataframe_several_columns_error(
+    img_4d_rand_eye, surf_img_2d, to_dataframe_backend, data_type
+):
+    """Check dataframes with more than one column are rejected.
+
+    Flattening them would give an index longer than the image.
+    """
+    img = (
+        img_4d_rand_eye
+        if data_type == "volume"
+        else surf_img_2d(img_4d_rand_eye.shape[3])
+    )
+    n_samples = img.shape[-1]
+    index = to_dataframe_backend(
+        pd.DataFrame({"a": [True] * n_samples, "b": [False] * n_samples})
+    )
+
+    with pytest.raises(ValueError, match="must have a single column"):
+        index_img(img, index)
+
+
 def test_iter_img_3d_imag_error(affine_eye):
     img_3d = Nifti1Image(np.ones((3, 4, 5)), affine_eye)
     expected_error_msg = (
@@ -1958,6 +2019,31 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     assert_almost_equal(get_data(data_img_), get_data(data_img_mask_))
 
 
+@pytest.mark.parametrize("data_type", ["volume", "surface"])
+def test_clean_img_confounds_dataframe(
+    rng, img_4d_rand_eye, surf_img_2d, to_dataframe_backend, data_type
+):
+    """Check confounds as a dataframe of each library (polars, pandas, ...) \
+    give the same result as an array, for volume and surface images.
+    """
+    if data_type == "volume":
+        img = img_4d_rand_eye
+        data_getter = get_data
+    else:
+        img = surf_img_2d(img_4d_rand_eye.shape[3])
+        data_getter = get_surface_data
+
+    confounds = rng.standard_normal((img.shape[-1], 2))
+    confounds_df = to_dataframe_backend(
+        pd.DataFrame(confounds, columns=["a", "b"])
+    )
+
+    expected = clean_img(img, standardize=None, confounds=confounds)
+    result = clean_img(img, standardize=None, confounds=confounds_df)
+
+    assert_array_almost_equal(data_getter(result), data_getter(expected))
+
+
 def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
     """Test clean on surface image.
 
@@ -2817,7 +2903,6 @@ class PhonyNiimage(spatialimages.SpatialImage):
         return self.data.shape
 
 
-@pytest.mark.ai_generated
 def test_check_niimg_4d_phony_image():
     """Test a Niimg-like object that does not hold a shape attribute."""
     phony_img = PhonyNiimage()

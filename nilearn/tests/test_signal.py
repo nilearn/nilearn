@@ -1010,6 +1010,49 @@ def test_clean_warning(signals):
         )
 
 
+def test_clean_confounds_dataframe(signals, confounds, to_dataframe_backend):
+    """Check confounds as a dataframe of each library (polars, pandas, ...) \
+    give the same result as an array.
+    """
+    confounds_df = to_dataframe_backend(
+        DataFrame(
+            confounds, columns=[f"c{i}" for i in range(confounds.shape[1])]
+        )
+    )
+
+    expected = clean(
+        signals, detrend=False, standardize=None, confounds=confounds
+    )
+    result = clean(
+        signals, detrend=False, standardize=None, confounds=confounds_df
+    )
+
+    assert_almost_equal(result, expected)
+
+
+@pytest.mark.parametrize("container", [list, tuple])
+def test_clean_confounds_collection_of_dataframes(
+    signals, confounds, to_dataframe_backend, container
+):
+    """Check a list or tuple of dataframes \
+        of each library (polars, pandas, ...) \
+    gives the same result as all confounds in a single array.
+    """
+    confounds_dfs = container(
+        to_dataframe_backend(DataFrame(block, columns=["a", "b"]))
+        for block in (confounds[:, :2], confounds[:, 2:4])
+    )
+
+    expected = clean(
+        signals, detrend=False, standardize=None, confounds=confounds[:, :4]
+    )
+    result = clean(
+        signals, detrend=False, standardize=None, confounds=confounds_dfs
+    )
+
+    assert_almost_equal(result, expected)
+
+
 def test_clean_confounds_are_removed(signals, confounds):
     """Check that confounders effects are effectively removed.
 
