@@ -530,7 +530,7 @@ def test_flm_generate_report_surface_data_error(
         smoothing_fwhm=None,
     )
     events = basic_paradigm()
-    model.fit(surf_img_2d(9), events=events)
+    model.fit(surf_img_2d(30), events=events)
 
     with pytest.raises(
         TypeError, match="'bg_img' must a SurfaceImage instance"

@@ -720,6 +720,31 @@ def test_crop_img_threshold_tolerance_2():
     assert cropped_img.shape == (1 + 2 + 2, 4 + 2, 3 + 2)
 
 
+@pytest.mark.parametrize("dtype", [np.uint8, np.int8])
+def test_crop_img_integer_data_no_overflow(affine_eye, dtype):
+    """Check that cropping integer images does not overflow.
+
+    Negating the minimum of (unsigned) integer data used to overflow
+    and lead to a wrong infinity norm.
+    """
+    data = np.full((10, 10, 10), 3, dtype=dtype)
+    data[3:6, 3:6, 3:6] = 5
+    if dtype == np.int8:
+        data[0, 0, 0] = -128
+        data[3:6, 3:6, 3:6] = 100
+    img = Nifti1Image(data, affine=affine_eye)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        cropped_img = crop_img(img, rtol=0.7, pad=False)
+
+    if dtype == np.uint8:
+        assert cropped_img.shape == (3, 3, 3)
+    else:
+        # the -128 voxel at the origin must be kept
+        assert cropped_img.shape == (6, 6, 6)
+
+
 @pytest.mark.parametrize("pad", [True, False])
 def test_crop_image_empty_image(affine_eye, pad):
     """Test nilearn.image.image.crop_img with empty image specified.
