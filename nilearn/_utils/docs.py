@@ -323,8 +323,8 @@ confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
     Array must have shape must be (instant number, confound number),
     or just (instant number,).
 
-    If a or :class:`pathlib.Path`
-    :obj:`str` is provided, it is assumed to be the name of a csv file
+    If a :obj:`str` or :class:`pathlib.Path` is provided,
+    it is assumed to be the path to a csv or tsv file
     containing signals as columns, with an optional one-line header.
 
     If a list is provided, all confounds are removed from the input
@@ -334,6 +334,37 @@ confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
     to be included in the regression model of the respective image.
     The number of rows must match the number of volumes in the
     respective image.
+"""
+
+docdict["confounds_connectome"] = """
+confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
+            :class:`pandas.DataFrame`, None,  \
+            or :obj:`list` or :obj:`tuple` of :class:`numpy.ndarray`, \
+            :obj:`str`, :class:`pathlib.Path`, :class:`pandas.DataFrame`, \
+            default=None
+    Confounds to be regressed out of the vectorized connectivity
+    matrices across subjects.
+    Only takes effect when ``vectorize=True``.
+    This parameter is passed to :func:`nilearn.signal.clean`.
+    Please see the related documentation for details.
+
+    Array must have shape (n_subjects, n_confounds),
+    or just (n_subjects,).
+
+    If a :obj:`str` or :class:`pathlib.Path` is provided,
+    it is assumed to be the path to a csv or tsv file
+    with one row per subject and confounds as columns,
+    with an optional one-line header.
+
+    If a list is provided, all confounds are removed from the input
+    signal, as if all were in the same array.
+
+    For dataframes, each column corresponds to a confound variable
+    and each row to a subject.
+
+    .. nilearn_versionchanged:: 0.15.0
+
+        Added support for csv and tsv files.
 """
 
 docdict["confounds_multi"] = """

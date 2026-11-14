@@ -1,7 +1,9 @@
 """Connectivity matrices."""
 
 import warnings
+from collections.abc import Sequence
 from math import floor, sqrt
+from pathlib import Path
 from typing import TYPE_CHECKING, Self
 
 import numpy as np
@@ -17,7 +19,11 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level, log
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_parameter_in_allowed,
+)
+from nilearn.nilearn_typing import SingleConfound
 
 
 def _check_square(matrix: np.ndarray) -> None:
@@ -499,7 +505,10 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         self.verbose = verbose
 
     def _check_input(
-        self, X, confounds: pd.DataFrame | np.ndarray | None = None, reset=True
+        self,
+        X,
+        confounds: SingleConfound | Sequence[SingleConfound] | None = None,
+        reset=True,
     ):
         """Run several checks on input and confounds.
 
@@ -530,20 +539,23 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         for x in X:
             validate_data(self, x, reset=reset, accept_sparse=False)
 
-        if confounds is not None:
-            if not hasattr(confounds, "__iter__"):
-                raise TypeError(
-                    "'confounds' input argument must be an iterable. "
-                    f"You provided {confounds.__class__}"
-                )
-            if not self.vectorize:
-                error_message = (
-                    "'confounds' are provided but vectorize=False. "
-                    "Confounds are only cleaned on vectorized matrices "
-                    "as second level connectome regression "
-                    "but not on symmetric matrices."
-                )
-                raise ValueError(error_message)
+        if confounds is None:
+            return
+
+        check_is_of_allowed_type(
+            confounds,
+            (list, tuple, str, Path, np.ndarray, pd.DataFrame),
+            "confounds",
+        )
+
+        if not self.vectorize:
+            error_message = (
+                "'confounds' are provided but vectorize=False. "
+                "Confounds are only cleaned on vectorized matrices "
+                "as second level connectome regression "
+                "but not on symmetric matrices."
+            )
+            raise ValueError(error_message)
 
     @fill_doc
     def fit(self, X, y: None = None) -> Self:
@@ -573,7 +585,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         X,
         do_transform=False,
         do_fit=False,
-        confounds: pd.DataFrame | np.ndarray | None = None,
+        confounds: SingleConfound | Sequence[SingleConfound] | None = None,
     ):
         """Avoid duplication of computation."""
         if not hasattr(X, "__iter__"):
@@ -694,7 +706,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         self,
         X,
         y: None = None,
-        confounds: pd.DataFrame | np.ndarray | None = None,
+        confounds: SingleConfound | Sequence[SingleConfound] | None = None,
     ):
         """Fit the covariance estimator to the given time series \
         for each subject. \
@@ -709,12 +721,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
 
         %(y_dummy)s
 
-        confounds : np.ndarray with shape (n_samples) or \
-                    (n_samples, n_confounds), or pandas DataFrame, default=None
-            Confounds to be cleaned on the vectorized matrices. Only takes
-            into effect when vetorize=True.
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
+        %(confounds_connectome)s
 
         Returns
         -------
@@ -729,7 +736,11 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             X, do_fit=True, do_transform=True, confounds=confounds
         )
 
-    def transform(self, X, confounds: pd.DataFrame | np.ndarray | None = None):
+    def transform(
+        self,
+        X,
+        confounds: SingleConfound | Sequence[SingleConfound] | None = None,
+    ):
         """Apply transform to covariances matrices to get the connectivity \
         matrices for the chosen kind.
 
@@ -740,12 +751,7 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             Each :class:`numpy.ndarray` represents a subject's time series.
             The number of samples may differ from one subject to another.
 
-        confounds : numpy.ndarray with shape (n_samples) or \
-                    (n_samples, n_confounds), default=None
-            Confounds to be cleaned on the vectorized matrices. Only takes
-            into effect when vetorize=True.
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
+        %(confounds_connectome)s
 
         Returns
         -------
