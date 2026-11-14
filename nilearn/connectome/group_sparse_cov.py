@@ -237,30 +237,16 @@ def _group_sparse_covariance_zero_alpha(
     max_iter,
     tol,
     probe_function=None,
-    debug=False,
 ):
     """Compute precision matrices for unregularized case alpha=0."""
     n_subjects = emp_covs.shape[-1]
     omega = np.empty_like(emp_covs, order="F")
     for k in range(n_subjects):
-        inv_cov = scipy.linalg.inv(emp_covs[..., k])
-        omega[..., k] = (inv_cov + inv_cov.T) / 2
-        if debug:
-            assert is_spd(omega[..., k])
+        omega[..., k] = scipy.linalg.inv(emp_covs[..., k])
 
     if probe_function is not None:
         probe_function(
-            emp_covs, n_samples, alpha, max_iter, tol, -1, omega, None
-        )
-        probe_function(
-            emp_covs,
-            n_samples,
-            alpha,
-            max_iter,
-            tol,
-            0,
-            omega,
-            np.zeros_like(omega),
+            emp_covs, n_samples, alpha, max_iter, tol, 0, omega, None
         )
 
     return omega
@@ -297,7 +283,6 @@ def _group_sparse_covariance(
             max_iter,
             tol,
             probe_function=probe_function,
-            debug=debug,
         )
 
     return _group_sparse_covariance_iterative(
