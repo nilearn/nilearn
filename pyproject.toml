@@ -369,6 +369,8 @@ filterwarnings = [
     # ignoring warnings from pytest-reporter-html1 when rendering docstrings
     # with docutils>=0.22 in the HTML test report
     'ignore:Argument "writer_name" will be removed:PendingDeprecationWarning'
+    # PyparsingDeprecationWarning is ignored in nilearn/conftest.py
+    # only when pyparsing is installed and defines it
 ]
 junit_family = "xunit2"
 log_cli_level = "INFO"
