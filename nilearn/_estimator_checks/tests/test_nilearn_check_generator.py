@@ -228,7 +228,6 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
     # Region estimators: ReNA, HierarchicalKMeans
     [(e, COMMON_CHECKS) for e in [ReNA, HierarchicalKMeans]],
 )
-@pytest.mark.ai_generated
 def test_nilearn_check_generator_common_checks(estimator, expected_checks):
     """Test nilearn._estimator_checks.nilearn_checks.nilearn_check_generator
     for correctness of returned checks for each estimator.
