@@ -129,6 +129,9 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
 
     memory_ : joblib memory cache
 
+    region_atlas_ : :obj:`nibabel.nifti1.Nifti1Image`
+        Regions definition as labels after applying the mask (if any).
+
     See Also
     --------
     nilearn.maskers.NiftiMasker
