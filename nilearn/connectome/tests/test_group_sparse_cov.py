@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import scipy.linalg
 from sklearn.model_selection import KFold
 
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
@@ -223,3 +224,14 @@ def test_group_sparse_covariance_alpha_zero(rng):
 
     group_sparse_covariance(signals, alpha=0.0, probe_function=probe)
     assert len(probe_calls) == 1
+
+    # Test with singular/rank-deficient covariance (e.g. constant zero feature)
+    singular_signals = [s.copy() for s in signals]
+    for s in singular_signals:
+        s[:, 0] = 0.0
+    emp_covs_sing, omega_sing = group_sparse_covariance(
+        singular_signals, alpha=0.0
+    )
+    for k in range(3):
+        pinv_cov = scipy.linalg.pinv(emp_covs_sing[..., k])
+        np.testing.assert_allclose(omega_sing[..., k], pinv_cov, atol=1e-10)

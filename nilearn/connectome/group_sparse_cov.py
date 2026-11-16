@@ -242,7 +242,7 @@ def _group_sparse_covariance_zero_alpha(
     n_subjects = emp_covs.shape[-1]
     omega = np.empty_like(emp_covs, order="F")
     for k in range(n_subjects):
-        omega[..., k] = scipy.linalg.inv(emp_covs[..., k])
+        omega[..., k] = scipy.linalg.pinv(emp_covs[..., k])
 
     if probe_function is not None:
         probe_function(
