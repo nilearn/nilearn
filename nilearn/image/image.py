@@ -1719,10 +1719,10 @@ def threshold_img(
 
 def _threshold_img_volume(
     img: NiimgLike,
-    threshold: float | int | str,
-    cluster_threshold: float | int = 0,
+    threshold: float | str,
+    cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = True,
-    mask_img: NiimgLike | None = None,
+    mask_img: SurfaceImage | NiimgLike | None = None,
     copy: bool = True,
     copy_header: bool = False,
 ) -> Nifti1Image:
@@ -1737,6 +1737,8 @@ def _threshold_img_volume(
 
     if mask_img is not None:
         check_compatibility_mask_and_images(mask_img, img)
+        if TYPE_CHECKING:
+            assert not isinstance(mask_img, SurfaceImage)
         mask_img = check_niimg_3d(mask_img)
         if not check_same_fov(img, mask_img):
             mask_img = resample_img(
@@ -1776,10 +1778,10 @@ def _threshold_img_volume(
 
 def _threshold_img_surface(
     img: SurfaceImage,
-    threshold: float | int | str,
-    cluster_threshold: float | int = 0,
+    threshold: float | str,
+    cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = True,
-    mask_img: SurfaceImage | None = None,
+    mask_img: SurfaceImage | NiimgLike | None = None,
     copy: bool = True,
 ) -> SurfaceImage:
     """Handle thresholding for SurfaceImage objects."""
@@ -1792,6 +1794,8 @@ def _threshold_img_surface(
 
     if mask_img is not None:
         check_compatibility_mask_and_images(mask_img, img)
+        if TYPE_CHECKING:
+            assert isinstance(mask_img, SurfaceImage)
         check_polymesh_equal(mask_img.mesh, img.mesh)
         mask_img, _ = load_mask_img(mask_img)
         mask_data = get_surface_data(mask_img)
