@@ -23,6 +23,7 @@ import pandas as pd
 from sklearn.utils import Bunch
 
 from nilearn._base import PACKAGE_DIRECTORY, documentation_url
+from nilearn.nilearn_typing import TypedBunch
 
 ##############################################################################
 #
@@ -175,7 +176,8 @@ logistic = "Logistic regression"
 rc = "Ridge classifier"
 dc = "Dummy classifier with stratified strategy"
 
-
+# TODO (sklearn >= 1.10)
+# update the sections below for logistic and logistic_l1
 docdict["classifier_options"] = f"""
 
     - ``"svc"``: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
@@ -204,6 +206,9 @@ docdict["classifier_options"] = f"""
 
         logistic = LogisticRegressionCV(l1_ratios=(0,), solver="liblinear")
 
+        # with sklearn >= 1.10
+        logistic = LogisticRegressionCV(l1_ratios=(0,), solver="newton-cd")
+
     - ``"logistic_l1"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
         with L1 penalty.
@@ -211,6 +216,9 @@ docdict["classifier_options"] = f"""
     .. code-block:: python
 
         logistic_l1 = LogisticRegressionCV(l1_ratios=(1,), solver="liblinear")
+
+        # with sklearn >= 1.10
+        logistic_l1 = LogisticRegressionCV(l1_ratios=(1,), solver="newton-cd")
 
     - ``"logistic_l2"``: \
         :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -879,6 +887,15 @@ n_subjects : :obj:`int`, :obj:`list` or :obj:`tuple` of :obj:`int`, or None
     Number of subjects to load, or their one-based indices.
     If ``None`` is given, all available subjects are loaded.
     An empty list or tuple is not allowed.
+"""
+
+# noise_model
+docdict["noise_model"] = """
+noise_model : {'ar(N)', 'ols'}, default='ar1'
+    The temporal variance model.
+    To specify the order of an autoregressive model
+    place the order after the characters ``ar``,
+    for example to specify a third order model use ``ar3``.
 """
 
 # opening
@@ -1992,7 +2009,7 @@ def fill_doc(f: Callable) -> Callable:
 # It must therefore not require downloading any data.
 
 
-DATASET_DESCRIPTIONS: dict[str, Bunch] = {
+DATASET_DESCRIPTIONS: dict[str, TypedBunch] = {
     "aal_atlas": Bunch(
         content=Bunch(
             lut=Bunch(type=pd.DataFrame, desc=lut),
@@ -2059,10 +2076,12 @@ DATASET_DESCRIPTIONS: dict[str, Bunch] = {
 }
 
 
-def _fill_content_from_json(content: Bunch, json_file: str) -> Bunch:
+def _fill_content_from_json(content: TypedBunch, json_file: str) -> TypedBunch:
     # import some packages that are needed
     # for the eval below
     # to turn string into an actual type
+    import pathlib  # noqa : F401
+
     import nibabel  # noqa : F401
     import numpy as np  # noqa : F401
 
@@ -2244,10 +2263,10 @@ def check_content_types(data, content) -> list[str]:
 
     Parameters
     ----------
-    data : :obj:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Data returned by a fetcher.
 
-    content : :obj:`sklearn.utils.Bunch`
+    content : :class:`sklearn.utils.Bunch`
         Content of the description of the data:
         see ``DATASET_DESCRIPTIONS``.
 

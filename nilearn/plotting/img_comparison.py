@@ -17,7 +17,10 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
 from nilearn.image import check_niimg_3d
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.nilearn_typing import ColorBar, NiimgLike, OutputFile, Title
@@ -491,6 +494,11 @@ def _sanitize_masker(masker, image_type, ref_img):
         else:
             masker = SurfaceMasker(standardize=None)
 
+    check_is_of_allowed_type(
+        masker,
+        (*get_args(NiimgLike), NiftiMasker, SurfaceImage, SurfaceMasker),
+        "masker",
+    )
     check_compatibility_mask_and_images(masker, ref_img)
 
     if isinstance(masker, NiimgLike):

@@ -1,6 +1,6 @@
 """
-Decoding with FREM: face vs house vs chair object recognition
-=============================================================
+Decoding with fast ensembling of regularized models
+===================================================
 
 This example uses fast ensembling of regularized models (FREM) to decode
 a face vs house vs chair discrimination task
@@ -12,6 +12,10 @@ thus returning a very robust decoder
 at a lower computational cost than other spatially regularized methods.
 
 To have more details, see: :ref:`frem`.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
 """
 
 # %%

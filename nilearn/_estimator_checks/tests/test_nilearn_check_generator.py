@@ -13,7 +13,6 @@ from nilearn._estimator_checks.nilearn_check_generator import (
     IMG_INPUT_CLASSIFIER_CHECKS,
     IMG_INPUT_COMMON_CHECKS,
     IMG_INPUT_REGRESSOR_CHECKS,
-    IMG_INPUT_REQUIRES_Y,
     MULTI_MASKER_CHECKS,
     NON_MULTI_MASKER_CHECKS,
     SURFACE_INPUT_MASKER_CHECKS,
@@ -189,8 +188,7 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             e,
             COMMON_CHECKS
             + IMG_INPUT_COMMON_CHECKS
-            + IMG_INPUT_CLASSIFIER_CHECKS
-            + IMG_INPUT_REQUIRES_Y,
+            + IMG_INPUT_CLASSIFIER_CHECKS,
         )
         for e in DECODING_CLASSIFIERS
     ]
@@ -200,8 +198,7 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
             e,
             COMMON_CHECKS
             + IMG_INPUT_COMMON_CHECKS
-            + IMG_INPUT_REGRESSOR_CHECKS
-            + IMG_INPUT_REQUIRES_Y,
+            + IMG_INPUT_REGRESSOR_CHECKS,
         )
         for e in DECODING_REGRESSORS
     ]

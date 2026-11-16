@@ -210,7 +210,7 @@ def img_to_signals_labels(
     labels_img,
     mask_img=None,
     background_label=0,
-    order="F",
+    order: Literal["C", "F"] = "F",
     strategy="mean",
     n_jobs=1,
 ) -> tuple[np.ndarray, list, Nifti1Image]:

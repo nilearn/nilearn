@@ -116,7 +116,6 @@ def main(args=sys.argv) -> None:
 
         _fetch(datasets.fetch_haxby)
         _fetch(datasets.fetch_language_localizer_demo_dataset)
-        _fetch(datasets.fetch_localizer_button_task)
         for contrast, n_subjects in zip(
             [
                 "calculation (auditory and visual cue)",
@@ -135,14 +134,13 @@ def main(args=sys.argv) -> None:
             )
         _fetch(
             datasets.fetch_neurovault_ids,
-            image_ids=(151, 3041, 3042, 2676, 2675, 2818, 2834),
+            image_ids=(151, 3041, 3042, 2676, 2675, 2818, 2834, 32980),
         )
         _fetch(
             datasets.fetch_neurovault,
             max_images=30,
             fetch_neurosynth_words=True,
         )
-        _fetch(datasets.fetch_neurovault_auditory_computation_task)
         _fetch(
             datasets.fetch_megatrawls_netmats,
             dimensionality=300,

@@ -12,7 +12,7 @@ from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
 
-from nilearn._utils.versions import SKLEARN_GTE_1_8
+from nilearn._utils.versions import SKLEARN_GT_1_9, SKLEARN_GTE_1_8
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     SpaceNetClassifier,
@@ -324,6 +324,13 @@ def test_graph_net_classifier_score():
     assert accuracy == accuracy_score(y, gnc.predict(X_))
 
 
+@pytest.mark.skipif(
+    SKLEARN_GT_1_9,
+    reason=(
+        "NewtonCDSolver does not have a fallback "
+        "for non-zero L1 penalties for LogisticRegression"
+    ),
+)
 def test_log_reg_vs_graph_net_two_classes_iris(
     C=0.01, tol=1e-10, zero_thr=1e-4
 ):
@@ -352,7 +359,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     ).fit(X_, y)
 
     # TODO (sklearn >= 1.8)
-    # drop the else block
+    # remove else block
     if SKLEARN_GTE_1_8:
         sklogreg = LogisticRegression(
             l1_ratio=1, fit_intercept=True, solver="liblinear", tol=tol, C=C

@@ -3,7 +3,6 @@ import pytest
 from numpy.testing import assert_array_almost_equal
 
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn._utils.helpers import is_windows_platform
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
     HierarchicalKMeans,
@@ -37,7 +36,6 @@ def test_adjust_small_clusters(test_list, n_clusters):
         assert isinstance(a, (int, np.integer))
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_hierarchical_k_means():
     """Test that hierarchical_k_means recovers the expected cluster labels."""
     X = [[10, -10, 30], [12, -8, 24]]
@@ -99,7 +97,6 @@ def test_error_n_clusters(n_clusters):
         HierarchicalKMeans(n_clusters=n_clusters).fit(X)
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_scaling():
     """Test that scaling weights inverse_transform output by cluster size."""
     n_samples = 15
@@ -128,7 +125,6 @@ def test_scaling():
     assert_array_almost_equal(X_compress, X_compress_scaled)
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.parametrize("n_clusters", [2, 4, 5])
 def test_surface(
@@ -156,7 +152,6 @@ def test_surface(
     assert X_inverse.shape == X.shape
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("img_type", ["surface", "volume"])
 def test_n_clusters_warning(img_type, rng):
     """Test that HierarchicalKMeans warns when n_clusters exceeds features."""

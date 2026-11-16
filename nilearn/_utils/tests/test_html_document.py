@@ -1,4 +1,5 @@
 import time
+import weakref
 import webbrowser
 from unittest.mock import Mock
 
@@ -79,7 +80,14 @@ def _open_one_view():
 
 
 @pytest.mark.thread_unsafe
-def test_open_view_warning():
+def test_open_view_warning(monkeypatch):
+    # make sure views created by other tests are not counted
+    # and that the global threshold is restored after the test
+    monkeypatch.setattr(
+        html_document.HTMLDocument, "_all_open_html_repr", weakref.WeakSet()
+    )
+    monkeypatch.setattr(html_document, "MAX_IMG_VIEWS_BEFORE_WARNING", 10)
+
     # opening many views (without deleting the SurfaceView objects)
     # should raise a warning about memory usage
     with pytest.warns(UserWarning):

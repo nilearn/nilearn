@@ -10,6 +10,8 @@
 
 .. _Aina Frau-Pascual: https://github.com/ainafp
 
+.. _Akaash P: https://github.com/theknuckle
+
 .. _Alex Rothberg: https://github.com/cancan101
 
 .. _Alexandre Abadie: https://github.com/aabadie
@@ -358,6 +360,8 @@
 .. _Sami Jawhar: https://github.com/sjawhar
 
 .. _Sanjana Soni: https://github.com/isha822
+
+.. _Siddhardha Nanda: https://github.com/SID-6921
 
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
