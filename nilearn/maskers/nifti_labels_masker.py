@@ -540,9 +540,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return self
 
-    def _resample_at_fit(
-        self, imgs_: Nifti1Image | None
-    ) -> Nifti1Image | None:
+    def _resample_at_fit(self, imgs_):
         """Handle resampling of labels and mask at fit time."""
         if self.resampling_target is None:
             images = {"labels": self.labels_img_}
@@ -553,7 +551,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             check_same_fov(raise_error=True, **images)
             return self.labels_img_
 
-        ref_img: Nifti1Image | None = None
+        ref_img = None
         if self.resampling_target == "data":
             if imgs_ is not None:
                 ref_img = imgs_
@@ -598,7 +596,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return ref_img
 
-    def _apply_mask_to_labels(self, ref_img: Nifti1Image | None) -> None:
+    def _apply_mask_to_labels(self, ref_img):
         """Apply mask_img_ to labels_img_ if present on reference grid."""
         if self.mask_img_ is None or ref_img is None:
             self.region_atlas_ = self.labels_img_
@@ -634,7 +632,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             labels_data.astype(np.int32), self.labels_img_.affine
         )
 
-    def _filter_lut_to_surviving_labels(self) -> None:
+    def _filter_lut_to_surviving_labels(self):
         """Filter and order _lut_ based on surviving labels in atlas."""
         labels_surviving = set(np.unique(safe_get_data(self.region_atlas_)))
         surviving_non_bg = [
@@ -655,7 +653,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             filtered_lut.set_index("index").loc[desired_order].reset_index()
         )
 
-    def _set_report_data_at_fit(self, imgs: Any) -> None:
+    def _set_report_data_at_fit(self, imgs):
         """Initialize reporting data at fit time."""
         self._report_content["reports_at_fit_time"] = self.reports
         if not self.reports:
