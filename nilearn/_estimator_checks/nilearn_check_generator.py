@@ -80,7 +80,7 @@ from nilearn._estimator_checks.nilearn_checks import (
     check_verbosity_embedded_masker,
     check_warning_embedded_masker,
 )
-from nilearn._estimator_checks.utils import accepts_image, clone, requires_y
+from nilearn._estimator_checks.utils import accepts_image, clone
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.utils.tags import (
@@ -122,6 +122,8 @@ IMG_INPUT_COMMON_CHECKS = [
     check_nilearn_methods_sample_order_invariance,
     check_img_estimator_clean_dtype,
     check_img_estimator_dtypes_inverse_transform,
+    check_img_estimator_requires_y_none,
+    check_inputs_length,
 ]
 
 # Checks for classifiers which accept volume or surface image as input
@@ -141,13 +143,6 @@ IMG_INPUT_CLASSIFIER_CHECKS = [
 IMG_INPUT_REGRESSOR_CHECKS = [
     *IMG_INPUT_CLASSIFIER_CHECKS,
     check_img_regressor_no_decision_function,
-]
-
-# Checks for estimators that accept volume or surface image as input and
-# require y parameter for fit
-IMG_INPUT_REQUIRES_Y = [
-    check_img_estimator_requires_y_none,
-    check_inputs_length,
 ]
 
 # Checks that apply to all maskers
@@ -239,10 +234,6 @@ CHECK_SELECTOR = [
     (
         lambda e: accepts_image(e) and is_regressor(e),
         IMG_INPUT_REGRESSOR_CHECKS,
-    ),
-    (
-        lambda e: accepts_image(e) and requires_y(e),
-        IMG_INPUT_REQUIRES_Y,
     ),
     # ----------MASKERS----------
     (lambda e: is_masker(e) and accepts_volume(e), VOLUME_INPUT_MASKER_CHECKS),

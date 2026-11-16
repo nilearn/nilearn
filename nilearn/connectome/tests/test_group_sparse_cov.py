@@ -10,6 +10,9 @@ from nilearn.connectome.group_sparse_cov import (
 )
 
 
+@pytest.mark.filterwarnings(
+    "ignore:.*Input signals do not all have unit variance.*:UserWarning"
+)
 def test_group_sparse_covariance(rng):
     """Test that group_sparse_covariance's cost decreases without debug.
 
@@ -38,6 +41,9 @@ def test_group_sparse_covariance(rng):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.filterwarnings(
+    "ignore:.*Input signals do not all have unit variance.*:UserWarning"
+)
 @pytest.mark.parametrize("duality_gap", [True, False])
 def test_group_sparse_covariance_with_probe_function(rng, duality_gap):
     """Test that the probe records a decreasing objective over iterations."""
@@ -101,6 +107,9 @@ def test_group_sparse_covariance_with_probe_function(rng, duality_gap):
     assert omega.shape == (10, 10, 5)
 
 
+@pytest.mark.filterwarnings(
+    "ignore:.*Input signals do not all have unit variance.*:UserWarning"
+)
 def test_group_sparse_covariance_check_consistency_between_classes(rng):
     """Test that GroupSparseCovarianceCV and GroupSparseCovariance agree."""
     signals, _, _ = generate_group_sparse_gaussian_graphs(
@@ -151,6 +160,9 @@ def test_group_sparse_covariance_errors(rng):
         group_sparse_covariance([np.ones((2, 2)), np.ones((2, 3))], alpha)
 
 
+@pytest.mark.filterwarnings(
+    "ignore:.*Input signals do not all have unit variance.*:UserWarning"
+)
 @pytest.mark.parametrize("cv", [None, 10, KFold(n_splits=4)])
 @pytest.mark.parametrize("alphas", [3, 5])
 @pytest.mark.parametrize("n_refinements", [3, 5])
