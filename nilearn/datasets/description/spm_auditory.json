@@ -1,0 +1,18 @@
+{
+    "anat": {
+        "type": "list[str]",
+        "desc": "Full path to 3D nifti image of the anatomical image."
+    },
+    "func": {
+        "type": "list[str]",
+        "desc": "List of full paths to 4D nifti image for the functional image."
+    },
+    "events": {
+        "type": "str",
+        "desc": "Full path to a TSV file describing the paradigm."
+    },
+    "t_r": {
+        "type": "float",
+        "desc": "Repetition time in seconds."
+    }
+}

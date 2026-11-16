@@ -20,7 +20,7 @@ underlying routine that extract masks from EPI
     This example uses:
 
     - the :ref:`development fMRI dataset <development_dataset>`
-    - the :ref:`Miyawaki 2008 dataset <miyawaki_dataset>`
+    - the :ref:`Miyawaki 2008 dataset <miyawaki2008>`
 """
 # %%
 # Computing a mask from the background

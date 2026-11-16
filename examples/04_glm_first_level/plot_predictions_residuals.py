@@ -11,7 +11,7 @@ which is useful to assess the quality of the model fit.
 
 .. admonition:: dataset
 
-    This example uses the :ref:`SPM auditory dataset <spm_auditory_dataset>`.
+    This example uses the :ref:`SPM auditory dataset <spm_auditory>`.
 """
 
 import pandas as pd

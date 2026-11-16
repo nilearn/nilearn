@@ -1,4 +1,4 @@
-.. _spm_auditory_dataset:
+.. _spm_auditory:
 
 SPM auditory dataset
 ====================
@@ -34,21 +34,12 @@ See :footcite:t:`spm_auditory`.
 
 Content
 -------
-    :'func': Paths to functional images
-    :'anat': Path to anat image
-    :'events': Path to events.tsv
-    :'description': Data description
+.. nilearn_dataset_content:: spm_auditory
 
 References
 ----------
-
 .. footbibliography::
 
 License
 -------
-The purpose was to explore new equipment and techniques.
-As such it has not been formally written up,
-and is freely available for personal education and evaluation purposes.
-Those wishing to use these data for other purposes,
-including published evaluation of methods,
-should contact the methods group at the Wellcome Department of Cognitive Neurology.
+.. nilearn_dataset_license:: spm_auditory

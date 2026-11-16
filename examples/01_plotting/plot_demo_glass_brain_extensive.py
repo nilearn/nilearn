@@ -15,11 +15,7 @@ in Nilearn.
 
 .. admonition:: dataset
 
-    This example uses a sample motor activation statistical map (`image 10426
-    <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
-    <neurovault_dataset>`).
-    Also, see :func:`~nilearn.datasets.load_sample_motor_activation_image`
-    for details about the plotting data and associated meta-data.
+    This example uses a :ref:`sample motor activation statistical map`.
 """
 
 # %%

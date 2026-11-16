@@ -8,10 +8,8 @@ Here we discover how to work with 3D and 4D niimgs.
 
     This example uses:
 
-    - the :ref:`Smith 2009 atlas <smith_2009_atlas>`
-    - a sample motor activation statistical map (`image 10426
-      <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
-      <neurovault_dataset>`)
+    - the :ref:`Smith 2009 atlas <smith_2009_atlas>`,
+    - a :ref:`sample motor activation statistical map`.
 """
 
 # %%
