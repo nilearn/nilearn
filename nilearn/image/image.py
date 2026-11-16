@@ -12,7 +12,13 @@ import warnings
 from collections.abc import Iterable, Iterator
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, TypeGuard, get_args, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Literal,
+    TypeGuard,
+    overload,
+)
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -1685,12 +1691,6 @@ def threshold_img(
     """
     check_params(locals())
 
-    if not isinstance(img, (*get_args(NiimgLike), SurfaceImage)):
-        raise TypeError(
-            "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {img.__class__.__name__}."
-        )
-
     if isinstance(img, NiimgLike):
         return _threshold_img_volume(
             img=img,
@@ -1701,26 +1701,31 @@ def threshold_img(
             copy=copy,
             copy_header=copy_header,
         )
-
-    return _threshold_img_surface(
-        img=img,
-        threshold=threshold,
-        cluster_threshold=cluster_threshold,
-        two_sided=two_sided,
-        mask_img=mask_img,
-        copy=copy,
-    )
+    elif isinstance(img, SurfaceImage):
+        return _threshold_img_surface(
+            img=img,
+            threshold=threshold,
+            cluster_threshold=cluster_threshold,
+            two_sided=two_sided,
+            mask_img=mask_img,
+            copy=copy,
+        )
+    else:
+        raise TypeError(
+            "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
+            f"Got {img.__class__.__name__}."
+        )
 
 
 def _threshold_img_volume(
-    img,
-    threshold,
-    cluster_threshold=0,
-    two_sided=True,
-    mask_img=None,
-    copy=True,
-    copy_header=False,
-):
+    img: NiimgLike,
+    threshold: float | int | str,
+    cluster_threshold: float | int = 0,
+    two_sided: bool = True,
+    mask_img: NiimgLike | None = None,
+    copy: bool = True,
+    copy_header: bool = False,
+) -> Nifti1Image:
     """Handle thresholding for volume (Niimg-like) images."""
     from nilearn.image.resampling import resample_img
     from nilearn.masking import load_mask_img
@@ -1770,13 +1775,13 @@ def _threshold_img_volume(
 
 
 def _threshold_img_surface(
-    img,
-    threshold,
-    cluster_threshold=0,
-    two_sided=True,
-    mask_img=None,
-    copy=True,
-):
+    img: SurfaceImage,
+    threshold: float | int | str,
+    cluster_threshold: float | int = 0,
+    two_sided: bool = True,
+    mask_img: SurfaceImage | None = None,
+    copy: bool = True,
+) -> SurfaceImage:
     """Handle thresholding for SurfaceImage objects."""
     from nilearn.masking import load_mask_img
 
