@@ -90,7 +90,6 @@ def _one_mesh_info(
     This computes the dictionary that gets inserted in the web page,
     which contains the encoded mesh, colors, min and max values, and
     background color.
-
     """
     info: dict[str, Any] = {}
 
@@ -118,7 +117,6 @@ def _one_mesh_info(
         info["bg_map"] = "null"
 
     info["bg_color"] = "[0, 0, 0, 1]" if black_bg else "[1, 1, 1, 1]"
-    info["bg_theme"] = "black" if black_bg else "white"
 
     info["colorbar"] = str(colorbar_kwargs.get("colorbar", True)).lower()
     info["font_size"] = str(title_fontsize) + "px"

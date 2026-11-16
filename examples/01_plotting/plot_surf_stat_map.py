@@ -25,8 +25,13 @@ to plot the resulting statistical map on the pial surface.
 
     See :ref:`plotting` for more details on plotting tools.
 
-See the :ref:`dataset description <nki_dataset>`
-for more information on the data used in this example.
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Destrieux atlas <destrieux_2009_atlas>`
+    - the :ref:`fsaverage template <fsaverage>`
+    - the :ref:`NKI enhanced surface dataset <nki_dataset>`
 """
 
 # %%
@@ -58,7 +63,7 @@ destrieux = fetch_atlas_surf_destrieux()
 # Create a surface image instance
 # with the Destrieux parcellation
 destrieux_atlas = SurfaceImage(
-    mesh=fsaverage_meshes["pial"],
+    mesh=fsaverage_meshes.pial,
     data={
         "left": destrieux.map_left,
         "right": destrieux.map_right,
@@ -70,6 +75,8 @@ print(f"{fsaverage_meshes['pial'].parts['left']=}")
 
 # The fsaverage data contains SurfaceImage instances with meshes and data
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
+
+# %%
 print(f"{fsaverage_sulcal=}")
 print(f"{fsaverage_sulcal.mesh=}")
 print(f"{fsaverage_sulcal.data=}")
@@ -251,15 +258,14 @@ plot_surf_stat_map(
 show()
 
 # %%
-# The plots can be saved to file,
-# in which case the display is closed after creating the figure
+# The plots can be saved to file.
 from pathlib import Path
 
 output_dir = Path.cwd() / "results" / "plot_surf_stat_map"
 output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
 
-plot_surf_stat_map(
+fig = plot_surf_stat_map(
     surf_mesh=fsaverage_meshes["inflated"],
     stat_map=stat_map_surf,
     hemi=hemisphere,
@@ -269,6 +275,7 @@ plot_surf_stat_map(
     output_file=output_dir / "plot_surf_stat_map.png",
     cmap="bwr",
 )
+
 
 # %%
 # References

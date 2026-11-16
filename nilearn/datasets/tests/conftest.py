@@ -25,7 +25,6 @@ responses it should return for specific URLs.
 To make sure tests don't rely on previously existing data and don't write
 outside of temporary directories, this module also adds fixtures to patch the
 home directory and other default nilearn data directories.
-
 """
 
 import fnmatch
@@ -53,7 +52,6 @@ def temp_nilearn_data_dir(tmp_path_factory, monkeypatch) -> None:
 
     This fixture uses 'autouse' and is imported in conftest.py to make sure it
     is used by every test, even those that do not explicitly ask for it.
-
     """
     home_dir = tmp_path_factory.mktemp("temp_nilearn_home")
     monkeypatch.setenv("HOME", str(home_dir))
@@ -82,7 +80,6 @@ def request_mocker(monkeypatch) -> "Sender":
 
     This fixture uses 'autouse' and is imported in conftest.py to make sure it
     is used by every test, even those that do not explicitly ask for it.
-
     """
     sender = Sender()
     monkeypatch.setattr("requests.sessions.Session.send", sender)
@@ -95,7 +92,6 @@ class Response:
 
     This class mocks requests.Response. It does not implement the full
     interface; only the parts used by nilearn functions.
-
     """
 
     is_mock = True
@@ -158,7 +154,8 @@ class Sender:
     url_mapping is used.
 
     Specifying keys
-    ---------------
+    ...............
+
     Keys of url_mapping can be:
 
     - a `str`: it is used as a glob pattern, matched against the url with
@@ -209,7 +206,7 @@ class Sender:
     empty content is returned.
 
     Specifying values
-    -----------------
+    .................
 
     Once a key matches, the corresponding value is used to build a response.
     The value can be:
@@ -240,10 +237,10 @@ class Sender:
     details in their docstrings.
 
     Inspecting history
-    ------------------
+    ..................
+
     Senders record all sent requests in `sent_requests`, the visited urls in
     `visited_urls`, and the number of sent requests in `url_count`
-
     """
 
     is_mock = True

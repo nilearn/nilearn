@@ -90,6 +90,17 @@ def test_transfer_deprecated_param_vals():
     assert actual_output == expected_output
 
 
+def test_transfer_deprecated_param_none_value():
+    replacement_params = {"deprecated_param": "replacement_param"}
+
+    actual_output = transfer_deprecated_param_vals(
+        replacement_params,
+        {"deprecated_param": None},
+    )
+
+    assert actual_output == {"replacement_param": None}
+
+
 @pytest.mark.thread_unsafe
 def test_future_warn_deprecated_params():
     """Check that the correct warning is displayed."""

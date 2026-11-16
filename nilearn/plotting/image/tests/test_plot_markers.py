@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearn.plotting.plot_markers`."""
+"""Test for :func:`nilearn.plotting.plot_markers`."""
 
 # ruff: noqa: ARG001
 
@@ -50,7 +50,7 @@ def test_plot_markers_node_sizes(matplotlib_pyplot, node_size, coords):
 def test_plot_markers_node_sizes_lyrz_display(
     matplotlib_pyplot, node_size, coords
 ):
-    """Tests for plot_markers and 'lyrz' display mode.
+    """Test for plot_markers and 'lyrz' display mode.
 
     Tests that markers are plotted with the requested size
     with display_mode='lyrz'. (See issue #3012 and PR #3013).
@@ -145,7 +145,7 @@ def test_plot_markers_node_kwargs(matplotlib_pyplot, coords):
     ],
 )
 def test_plot_markers_dimension_mismatch(matplotlib_pyplot, matrix, coords):
-    """Tests that an error is raised in plot_markers \
+    """Test that an error is raised in plot_markers \
        when the length of node_values mismatches with node_coords.
     """
     with pytest.raises(ValueError, match="Dimension mismatch"):
@@ -155,7 +155,7 @@ def test_plot_markers_dimension_mismatch(matplotlib_pyplot, matrix, coords):
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("vmin,vmax", [(5, None), (None, 0)])
 def test_plot_markers_bound_error(matplotlib_pyplot, vmin, vmax, coords):
-    """Tests that a ValueError is raised when vmin and vmax \
+    """Test that a ValueError is raised when vmin and vmax \
        have inconsistent values.
     """
     with pytest.raises(ValueError):
@@ -169,14 +169,14 @@ def test_plot_markers_bound_error(matplotlib_pyplot, vmin, vmax, coords):
 
 
 def test_plot_markers_node_values_errors(matplotlib_pyplot, coords):
-    """Tests that a TypeError is raised when node_values is wrong type."""
+    """Test that a TypeError is raised when node_values is wrong type."""
     with pytest.raises(TypeError):
         plot_markers(["1", "2", "3", "4"], coords, display_mode="x")
 
 
 @pytest.mark.thread_unsafe
 def test_plot_markers_threshold_errors(matplotlib_pyplot, coords):
-    """Tests that a ValueError is raised when node_threshold is \
+    """Test that a ValueError is raised when node_threshold is \
        higher than the max node_value.
     """
     with pytest.raises(ValueError, match="Provided 'node_threshold' value"):

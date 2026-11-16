@@ -1,8 +1,26 @@
 """Transformer for computing ROI signals of multiple 4D images."""
 
+from typing import Any, Literal
+
 from nilearn._utils.docs import fill_doc
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.nifti_maps_masker import NiftiMapsMasker
+from nilearn.nilearn_typing import (
+    ColormapLike,
+    Detrend,
+    DType,
+    HighPass,
+    LowPass,
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    NJobs,
+    SmoothingFwhm,
+    Standardize,
+    StandardizeConfounds,
+    Tr,
+    Verbose,
+)
 
 
 @fill_doc
@@ -42,7 +60,7 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_false)s
+    %(standardize_none)s
 
     %(standardize_confounds)s
 
@@ -74,8 +92,6 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
           resampled to the shape and affine of ``maps_img``
         - ``None`` means no resampling: if shapes and affines do not match,
           a :obj:`ValueError` is raised.
-
-    %(keep_masked_maps)s
 
     %(memory)s
 
@@ -111,45 +127,43 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
 
         .. nilearn_versionadded:: 0.9.2
 
-    Notes
-    -----
-    If resampling_target is set to "maps", every 3D image processed by
-    transform() will be resampled to the shape of maps_img. It may lead to a
-    very large memory consumption if the voxel number in maps_img is large.
-
     See Also
     --------
     nilearn.maskers.NiftiMasker
     nilearn.maskers.NiftiLabelsMasker
     nilearn.maskers.NiftiMapsMasker
 
+    Notes
+    -----
+    If resampling_target is set to "maps", every 3D image processed by
+    transform() will be resampled to the shape of maps_img. It may lead to a
+    very large memory consumption if the voxel number in maps_img is large.
     """
 
     # memory and memory_level are used by CacheMixin.
 
     def __init__(
         self,
-        maps_img=None,
-        mask_img=None,
-        allow_overlap=True,
-        smoothing_fwhm=None,
-        standardize=False,
-        standardize_confounds=True,
-        high_variance_confounds=False,
-        detrend=False,
-        low_pass=None,
-        high_pass=None,
-        t_r=None,
-        dtype=None,
-        resampling_target="data",
-        keep_masked_maps=False,
-        memory=None,
-        memory_level=0,
-        verbose=0,
-        reports=True,
-        cmap="CMRmap_r",
-        n_jobs=1,
-        clean_args=None,
+        maps_img: NiimgLike | None = None,
+        mask_img: NiimgLike | None = None,
+        allow_overlap: bool = True,
+        smoothing_fwhm: SmoothingFwhm = None,
+        standardize: Standardize = None,
+        standardize_confounds: StandardizeConfounds = True,
+        high_variance_confounds: bool = False,
+        detrend: Detrend = False,
+        low_pass: LowPass = None,
+        high_pass: HighPass = None,
+        t_r: Tr = None,
+        dtype: DType = None,
+        resampling_target: Literal["data", "mask", "maps"] | None = "data",
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 0,
+        verbose: Verbose = 0,
+        reports: bool = True,
+        cmap: ColormapLike = "CMRmap_r",
+        n_jobs: NJobs = 1,
+        clean_args: dict[str, Any] | None = None,
     ):
         self.n_jobs = n_jobs
         super().__init__(
@@ -169,7 +183,6 @@ class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
-            keep_masked_maps=keep_masked_maps,
             reports=reports,
             cmap=cmap,
             clean_args=clean_args,

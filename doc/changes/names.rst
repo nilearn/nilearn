@@ -4,9 +4,13 @@
     please edit CITATION.cff and run maint_tools/citation_cff_maint.py.
 
 
+.. _Achintya Singh: https://github.com/Achintyasingh412
+
 .. _Ahmad Chamma: https://github.com/achamma723
 
 .. _Aina Frau-Pascual: https://github.com/ainafp
+
+.. _Akaash P: https://github.com/theknuckle
 
 .. _Alex Rothberg: https://github.com/cancan101
 
@@ -37,6 +41,8 @@
 
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
 
+.. _Aniket Singh Yadav: https://github.com/Aniketsy
+
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
 
 .. _Anton Karpov: https://github.com/karpovantonme
@@ -62,6 +68,8 @@
 .. _Binh Nguyen: https://tbng.github.io/
 
 .. _Caglar Cakan: https://github.com/caglorithm
+
+.. _Cedric Conday: https://github.com/CedricConday
 
 .. _Chloe Hampson: https://github.com/chlohamp
 
@@ -98,6 +106,8 @@
 .. _Derek Pisner: https://github.com/dPys
 
 .. _Dimitri Papadopoulos Orfanos: https://github.com/DimitriPapadopoulos
+
+.. _Donncha O'Toole: https://github.com/dnncha
 
 .. _Elizabeth DuPre: https://elizabeth-dupre.com/
 
@@ -137,6 +147,8 @@
 
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
+.. _Hariom Patidar: https://github.com/HariomPtdr
+
 .. _Himanshu Aggarwal: https://github.com/man-shu
 
 .. _Hugo Delhaye: https://github.com/HugoDelhaye
@@ -144,6 +156,8 @@
 .. _Ian Abenes: https://github.com/boredStats
 
 .. _Idrissa Traore: https://github.com/badrinini
+
+.. _Ishaan Gupta: https://github.com/guptaishaan
 
 .. _Jake Vogel: https://github.com/illdopejake
 
@@ -162,6 +176,8 @@
 .. _Jean Kossaifi: https://jeankossaifi.com/
 
 .. _Jean-Rémi King: https://github.com/kingjr
+
+.. _Jeffrey Cooney: https://github.com/jdotc1
 
 .. _Jelle Roelof Dalenberg: https://github.com/jrdalenberg
 
@@ -311,6 +327,8 @@
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
+.. _Reyyi Shreyas: https://github.com/reyyishreyas
+
 .. _Rishika Kapil: https://github.com/RishikaKaps
 
 .. _Robert Luke: https://github.com/rob-luke
@@ -342,6 +360,8 @@
 .. _Sami Jawhar: https://github.com/sjawhar
 
 .. _Sanjana Soni: https://github.com/isha822
+
+.. _Siddhardha Nanda: https://github.com/SID-6921
 
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
@@ -377,6 +397,8 @@
 
 .. _Vasco Diogo: https://github.com/vascosa
 
+.. _Venish Paneliya: https://github.com/VenishPaneliya
+
 .. _Victoria Shevchenko: https://github.com/victoris93
 
 .. _Victoria McCray: https://github.com/victoriamccray
@@ -384,6 +406,8 @@
 .. _Vincent Michel: https://github.com/vmichel
 
 .. _Virgile Fritsch: https://github.com/VirgileFritsch
+
+.. _Wolfgang Aura: https://github.com/wolfgang-aura
 
 .. _Xichun Xu: https://github.com/XichunXu
 

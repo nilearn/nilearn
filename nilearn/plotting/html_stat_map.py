@@ -33,7 +33,7 @@ from nilearn.image import (
     resample_img,
     resample_to_img,
 )
-from nilearn.nilearn_typing import Threshold
+from nilearn.nilearn_typing import BlackBg, Threshold, Vmax, Vmin
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
@@ -59,7 +59,6 @@ def _data_to_sprite(
         size is (M x nz) x (N x ny), where M and N are computed to be roughly
         equal. All slices are pasted together row by row, from top left to
         bottom right. The last row is completed with empty slices.
-
     """
     nx, ny, nz = data.shape
     nrows = int(np.ceil(np.sqrt(nx)))
@@ -108,7 +107,6 @@ def _threshold_data(data: np.ndarray, threshold: Any = None):
 
     threshold : :obj:`float`
         Updated threshold value.
-
     """
     # If threshold is None, do nothing
     if threshold is None:
@@ -179,7 +177,6 @@ def _save_sprite(
     -------
     sprite : :class:`numpy.ndarray`
         Returned sprite.
-
     """
     # Create sprite
     sprite = _data_to_sprite(data, radiological)
@@ -260,7 +257,7 @@ def load_bg_img(
     stat_map_img,
     bg_img: Any = "MNI152",
     black_bg: bool | Literal["auto"] = "auto",
-    dim="auto",
+    dim: float | Literal["auto"] = "auto",
 ):
     """Load and resample bg_img in an isotropic resolution, \
     with a positive diagonal affine matrix.
@@ -407,6 +404,21 @@ def _json_view_params(
     if type(vmax).__module__ == "numpy":
         vmax = vmax.tolist()  # json does not deal with numpy array
 
+    # ``cut_slices`` is already a 0-based voxel index and the viewer draws the
+    # sprite tile at ``numSlice`` itself, so that index is what must be sent.
+    # The viewer does read coordinates out as ``affine @ [numSlice + 1, ...]``
+    # (see brainsprite.min.js), so the affine carries a -1 shift to cancel it;
+    # otherwise the label describes the slice next to the one on screen.
+    # Round the way the viewer does: ``Math.round`` breaks ties upwards whereas
+    # Python's ``round`` breaks them to even, which would leave a cut landing
+    # exactly between two slices on the same slice as before this fix.
+    x_slice, y_slice, z_slice = (
+        int(np.floor(c + 0.5)) for c in cut_slices[:3]
+    )
+    readout_shift = np.eye(4)
+    readout_shift[:3, 3] = -1.0
+    affine = affine @ readout_shift
+
     params = {
         "canvas": html_ids["canvas"],
         "sprite": html_ids["sprite"],
@@ -424,9 +436,9 @@ def _json_view_params(
         "title": title,
         "flagValue": value,
         "numSlice": {
-            "X": cut_slices[0] - 1,
-            "Y": cut_slices[1] - 1,
-            "Z": cut_slices[2] - 1,
+            "X": x_slice,
+            "Y": y_slice,
+            "Z": z_slice,
         },
         "radiological": radiological,
         "showLR": show_lr,
@@ -614,12 +626,12 @@ def view_img(
     threshold=1e-6,
     annotate=True,
     draw_cross=True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     cmap=DEFAULT_DIVERGING_CMAP,
-    symmetric_cmap=True,
-    dim="auto",
-    vmax=None,
-    vmin=None,
+    symmetric_cmap: bool = True,
+    dim: float | Literal["auto"] = "auto",
+    vmax: Vmax = None,
+    vmin: Vmin = None,
     resampling_interpolation="continuous",
     width_view=600,
     opacity=1,
@@ -728,7 +740,6 @@ def view_img(
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
-
     """
     check_params(locals())
 
@@ -767,12 +778,12 @@ def create_brainsprite(
     threshold=1e-6,
     annotate=True,
     draw_cross=True,
-    black_bg="auto",
+    black_bg: BlackBg = "auto",
     cmap=DEFAULT_DIVERGING_CMAP,
-    symmetric_cmap=True,
-    dim="auto",
-    vmax=None,
-    vmin=None,
+    symmetric_cmap: bool = True,
+    dim: float | Literal["auto"] = "auto",
+    vmax: Vmax = None,
+    vmin: Vmin = None,
     resampling_interpolation="continuous",
     opacity=1,
     radiological=False,

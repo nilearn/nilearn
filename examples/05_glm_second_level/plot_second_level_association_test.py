@@ -4,10 +4,14 @@ Example of generic design in second-level models
 
 This example shows the results obtained in a group analysis using a more
 complex contrast than a one- or two-sample t test.
-We use the [left button press (auditory cue)] task from the Localizer
-dataset and seek association between the contrast values and a variate
-that measures the speed of pseudo-word reading. No confounding variate
-is included in the model.
+
+.. admonition:: dataset
+
+    TWe use the ``left button press (auditory cue)`` task
+    from the :ref:`Brainomics Localizer dataset <brainomics_maps>`
+    and seek association between the contrast values and a variate
+    that measures the speed of pseudo-word reading.
+    No confounding variate is included in the model.
 """
 
 # %%
@@ -141,6 +145,7 @@ neg_log_pvals_permuted_ols_unmasked = non_parametric_inference(
     mask=None,
     smoothing_fwhm=5.0,
     n_jobs=2,
+    random_state=0,  # to ensure reproducible results
     verbose=1,
 )
 

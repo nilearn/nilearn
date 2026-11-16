@@ -146,13 +146,34 @@ Each PR must add an entry to `doc/changes/latest.rst` with a badge, PR link, and
 - :bdg-danger:`Deprecation`
 - :bdg-dark:`Code`
 
+If this is a first contribution, add authors details ONLY in the CITATION.CFF file
+in the root of the repository.
+
 ## GitHub
+
+## Issues
+
+When reporting a bug,
+rely on the .github/ISSUE_TEMPLATE/bug.yml template.
+When reporting the steps and code to reproduce bug
+rely only the 'user facing' part of the public API
+(mentioned only in `__init__.py` files).
 
 ### Pull requests
 
-Pull requests can only be opened if there is already an existing issue
-referencing the bug the PR is trying to fix
-or the enhancement the PR is trying to implement.
+Pull requests can only be opened if:
+
+- there is already an existing issue
+  referencing the bug the PR is trying to fix
+  or the enhancement the PR is trying to implement,
+
+- the issue has not been assigned to someone else,
+
+- there is no PR already associated with that issue that already tackles the problem,
+
+- the issue has been assigned to you by a member of the dev team:
+  you can request the issue to be assigned to you by notifying the dev team
+  by adding `@nilearn/triaging` in one of your comments.
 
 The top comment of the PR must use the PR template: `.github/pull_request_template.md`
 and mention that an agent / LLM was used to generate the PR.

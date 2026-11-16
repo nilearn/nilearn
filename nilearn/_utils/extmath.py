@@ -25,7 +25,6 @@ def fast_abs_percentile(data: np.ndarray, percentile=80) -> np.ndarray:
     -----
     This is a faster, and less accurate version of
     scipy.stats.scoreatpercentile(np.abs(data), percentile)
-
     """
     if hasattr(data, "mask"):
         # Catter for masked arrays
@@ -56,7 +55,6 @@ def is_spd(M: np.ndarray, decimal: int = 15) -> bool:
     -------
     answer : :obj:`bool`
         True if matrix is symmetric positive definite, False otherwise.
-
     """
     if not np.allclose(M, M.T, atol=0, rtol=10**-decimal):
         logger.log(f"matrix not symmetric to {decimal:d} decimals", verbose=1)

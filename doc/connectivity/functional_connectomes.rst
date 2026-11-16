@@ -64,7 +64,9 @@ nilearn, it is a processing object that is created by specifying all
 the important parameters, but not the data::
 
     from nilearn.maskers import NiftiLabelsMasker
-    masker = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True)
+    masker = NiftiLabelsMasker(
+        labels_img=atlas_filename, standardize="zscore_sample"
+    )
 
 The Nifti data can then be turned to time-series by calling the
 :meth:`NiftiLabelsMasker.fit_transform` method, that takes either
@@ -122,7 +124,7 @@ sets of noise components and one can fine tune each of the parameters.
      set of confounds. (Note: only ``simple`` and ``scrubbing`` are applicable
      to the brain development dataset).
 
-   * :class:`nilearn.connectome.ConnectivityMeasure` can be used to compute
+   * :class:`~nilearn.connectome.ConnectivityMeasure` can be used to compute
      a correlation matrix (check the shape of your matrices).
 
    * :func:`matplotlib.pyplot.imshow` can show a correlation matrix.
@@ -167,7 +169,9 @@ a :term:`probabilistic atlas` can be done with a "masker" object:  the
 specifying the important parameters, in particular the atlas::
 
     from nilearn.maskers import NiftiMapsMasker
-    masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True)
+    masker = NiftiMapsMasker(
+        maps_img=atlas_filename, standardize="zscore_sample"
+    )
 
 The ``fit_transform`` method turns filenames or `NiftiImage objects
 <https://nipy.org/nibabel/nibabel_images.html>`_ to time series::

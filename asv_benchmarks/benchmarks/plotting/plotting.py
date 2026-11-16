@@ -18,7 +18,7 @@ from nilearn.plotting import (
     plot_surf_stat_map,
 )
 
-from ..utils import _rng, generate_fake_fmri
+from .._utils import _rng, generate_fake_fmri
 
 PLOTTING_FUNCS_3D = [
     plot_img,

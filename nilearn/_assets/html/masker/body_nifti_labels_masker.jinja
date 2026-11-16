@@ -4,21 +4,19 @@
     <div class="pure-g">
         <div class="pure-u-1 pure-u-md-2-3">
             {% if not has_plotting_engine %}
-
                 {% include "html/partials/missing_plotting_engine.jinja" %}
 
-            {% elif content or engine == "brainsprite" %}
+            {% elif figures[0] or engine == "brainsprite" %}
                 {% if engine == "matplotlib" %}
                     <div class="image">
                         <img class="pure-img"
                              width="100%"
-                             src="data:image/svg+xml;base64,{{ content }}"
+                             src="data:image/svg+xml;base64,{{ figures[0] }}"
                              alt="image" />
                     </div>
                 {% elif engine == "brainsprite" %}
 
                     {% include "html/partials/brainsprite.jinja" %}
-
                 {% endif %}
             {% endif %}
         </div>

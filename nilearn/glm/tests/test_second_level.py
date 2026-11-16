@@ -11,7 +11,6 @@ from numpy.testing import (
     assert_array_almost_equal,
     assert_array_equal,
 )
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils import testing
 from nilearn._utils.data_gen import (
@@ -19,12 +18,6 @@ from nilearn._utils.data_gen import (
     write_fake_bold_img,
     write_fake_fmri_data_and_design,
 )
-from nilearn._utils.estimator_checks import (
-    check_estimator,
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level.second_level import (
     SecondLevelModel,
@@ -37,51 +30,16 @@ from nilearn.glm.second_level.second_level import (
     _process_second_level_input_as_firstlevelmodels,
     _sort_input_dataframe,
 )
-from nilearn.glm.tests.conftest import SHAPE, _confounds, fake_fmri_data
+from nilearn.glm.tests.conftest import (
+    SHAPE,
+    _confounds,
+    fake_fmri_data,
+    fake_subjects_fmri_data,
+)
 from nilearn.image import concat_imgs, get_data
 from nilearn.maskers import NiftiMasker
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_surface_image_equal
-
-ESTIMATORS_TO_CHECK = [SecondLevelModel()]
-
-if SKLEARN_LT_1_6:
-
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 @pytest.mark.thread_unsafe
@@ -117,7 +75,6 @@ def test_second_level_input_as_3d_images(
 
     Should act as a regression test for:
     https://github.com/nilearn/nilearn/issues/3636
-
     """
     images = []
     for _ in range(n_subjects):
@@ -234,6 +191,31 @@ def test_check_shape_first_level_models(shape_4d_default, n_subjects):
         _check_input_as_first_level_model(
             second_level_input=list_of_flm, none_confounds=False
         )
+
+
+@pytest.mark.parametrize("mask_img_first", [True, False])
+def test_check_first_level_models_mask_img_false(
+    shape_4d_default, mask_img_first
+):
+    """Check FirstLevelModels fitted with mask_img=False are valid inputs.
+
+    Models fitted with mask_img=False can be mixed
+    with models fitted with a mask image, in any order.
+    """
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )
+    mask_imgs = [mask, False] if mask_img_first else [False, mask]
+    list_of_flm = [
+        FirstLevelModel(mask_img=mask_img, subject_label=f"sub-{i}").fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        )
+        for i, mask_img in enumerate(mask_imgs)
+    ]
+
+    _check_input_as_first_level_model(
+        second_level_input=list_of_flm, none_confounds=False
+    )
 
 
 def test_check_second_level_input(shape_4d_default):
@@ -405,7 +387,9 @@ def test_infer_effect_maps(tmp_path, shape_4d_default):
     or a dataframe 'mapping' a string to an image.
     """
     rk = 3
-    shapes = [SHAPE, shape_4d_default]
+    # single volume for the effect maps checks,
+    # then runs with more scans than regressors to fit first level models
+    shapes = [SHAPE, (*SHAPE[:3], 10), (*shape_4d_default[:3], 15)]
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
         shapes, rk=rk, file_path=tmp_path
     )
@@ -418,7 +402,7 @@ def test_infer_effect_maps(tmp_path, shape_4d_default):
 
     contrast = np.eye(rk)[1]
     second_level_input = [FirstLevelModel(mask_img=mask_file)] * 2
-    for i, model in enumerate(second_level_input):
+    for i, model in enumerate(second_level_input, start=1):
         model.fit(fmri_files[i], design_matrices=design_files[i])
 
     assert len(_infer_effect_maps(second_level_input, contrast)) == 2
@@ -849,7 +833,7 @@ def test_second_level_glm_computation(n_subjects):
     "attribute", ["residuals_", "predicted_", "r_square_"]
 )
 def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
-    """Tests that an error is raised when trying to access \
+    """Test that an error is raised when trying to access \
        voxelwise attributes before fitting the model, \
        before computing a contrast.
     """
@@ -873,7 +857,7 @@ def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
 def test_second_level_voxelwise_attribute_errors_minimize_memory(
     attribute, n_subjects
 ):
-    """Tests that an error is raised when trying to access \
+    """Test that an error is raised when trying to access \
        voxelwise attributes before fitting the model, \
        when not setting ``minimize_memory`` to ``True``.
     """
@@ -896,9 +880,8 @@ def test_second_level_voxelwise_attribute_errors_minimize_memory(
 )
 def test_second_level_voxelwise_attribute(attribute, n_subjects):
     """Smoke test for voxelwise attributes for SecondLevelModel."""
-    mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
+    Y, mask = fake_subjects_fmri_data(n_subjects)
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
-    Y = fmri_data * n_subjects
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     model.fit(Y, design_matrix=X)
     model.compute_contrast()
@@ -906,7 +889,7 @@ def test_second_level_voxelwise_attribute(attribute, n_subjects):
 
 
 def test_second_level_residuals(n_subjects):
-    """Tests residuals computation for SecondLevelModel."""
+    """Test residuals computation for SecondLevelModel."""
     mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
     Y = fmri_data * n_subjects

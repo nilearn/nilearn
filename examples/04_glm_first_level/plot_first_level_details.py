@@ -16,10 +16,12 @@ should first run the
 tutorial to get a bit more familiar with the base concepts,
 and only then run this tutorial example.
 
-.. seealso::
+.. admonition:: dataset
 
-    For more information about the dataset
-    see its :ref:`description <localizer_first_level_dataset>`.
+    This example uses:
+
+    - the :ref:`ICBM 152 template <icbm152_2009>`
+    - the :ref:`localizer first level dataset <localizer_first_level>`
 """
 
 # %%
@@ -80,12 +82,15 @@ events
 # ---------------------
 #
 # First we specify a linear model.
-# The .fit() functionality of FirstLevelModel function creates the design
-# matrix and the beta maps.
+# The ``.fit()`` functionality of FirstLevelModel function
+# creates the design matrix and the beta maps.
+# We instantiate the model with ``minimize_memory=False``
+# because this is required to use ``plot_predicted_signal_and_residuals``
+# to visualize the residuals time series.
 #
 from nilearn.glm.first_level import FirstLevelModel
 
-first_level_model = FirstLevelModel(t_r)
+first_level_model = FirstLevelModel(t_r, minimize_memory=False)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 
@@ -199,6 +204,7 @@ from nilearn import plotting
 
 def plot_contrast(first_level_model):
     """Specify, estimate and plot the main contrasts \
+        and reresidual time series \
         for given a first model.
     """
     design_matrix = first_level_model.design_matrices_[0]
@@ -220,12 +226,20 @@ def plot_contrast(first_level_model):
             cut_coords=1,
         )
 
+    # Note that the coordinates were chosen
+    # to be apprximately in the middle of the main cluster
+    # of the main effect on a F contrast of the first model of this example.
+    first_level_model.plot_predicted_signal_and_residuals(
+        coords=[((-60.0, -15.0, 3.0))]
+    )
+
 
 # %%
 # Let's run the model and look at the outcome.
 
 plot_contrast(first_level_model)
 plt.show()
+
 
 # %%
 # Changing the drift model
@@ -243,7 +257,9 @@ plt.show()
 # 1/64 Hz ~ 0.016 Hz. Note that the design matrix has more columns to model
 # drifts in the data.
 
-first_level_model = FirstLevelModel(t_r, high_pass=0.016)
+first_level_model = FirstLevelModel(
+    t_r, high_pass=0.016, minimize_memory=False
+)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
@@ -260,7 +276,9 @@ plt.show()
 # Another solution is to remove these drift terms. Maybe they're simply
 # useless. This is done by setting drift_model to None.
 
-first_level_model = FirstLevelModel(t_r, drift_model=None)
+first_level_model = FirstLevelModel(
+    t_r, drift_model=None, minimize_memory=False
+)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
@@ -277,7 +295,7 @@ plt.show()
 # Let's take a basis of 5 polynomials.
 
 first_level_model = FirstLevelModel(
-    t_r, drift_model="polynomial", drift_order=5
+    t_r, drift_model="polynomial", drift_order=5, minimize_memory=False
 )
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
@@ -299,7 +317,9 @@ plt.show()
 # so-called Glover hrf) for the so-called canonical model of SPM
 # --which has a slightly weaker undershoot component.
 
-first_level_model = FirstLevelModel(t_r, hrf_model="spm")
+first_level_model = FirstLevelModel(
+    t_r, hrf_model="spm", minimize_memory=False
+)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
@@ -322,7 +342,9 @@ plt.show()
 # decrease the estimated variance and enhance the statistical significance of
 # the effect. Is that the case?
 
-first_level_model = FirstLevelModel(t_r, hrf_model="spm + derivative")
+first_level_model = FirstLevelModel(
+    t_r, hrf_model="spm + derivative", minimize_memory=False
+)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
@@ -353,7 +375,10 @@ plt.show()
 # acquisition, but the middle of it.
 
 first_level_model = FirstLevelModel(
-    t_r, hrf_model="spm + derivative", slice_time_ref=0.5
+    t_r,
+    hrf_model="spm + derivative",
+    slice_time_ref=0.5,
+    minimize_memory=False,
 )
 first_level_model = first_level_model.fit(fmri_img, events=events)
 z_map = first_level_model.compute_contrast(contrast_val, output_type="z_score")
@@ -376,7 +401,10 @@ plt.show()
 #
 
 first_level_model = FirstLevelModel(
-    t_r, slice_time_ref=0.5, hrf_model="spm + derivative + dispersion"
+    t_r,
+    slice_time_ref=0.5,
+    hrf_model="spm + derivative + dispersion",
+    minimize_memory=False,
 )
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
@@ -404,7 +432,11 @@ plt.show()
 # and explicitly set the noise model to be ar(1).
 
 first_level_model = FirstLevelModel(
-    t_r, slice_time_ref=0.5, hrf_model="spm + derivative", noise_model="ar1"
+    t_r,
+    slice_time_ref=0.5,
+    hrf_model="spm + derivative",
+    noise_model="ar1",
+    minimize_memory=False,
 )
 first_level_model = first_level_model.fit(fmri_img, events=events)
 plot_contrast(first_level_model)
@@ -416,7 +448,11 @@ plt.show()
 # relative to the ar(1) model.
 
 first_level_model = FirstLevelModel(
-    t_r, slice_time_ref=0.5, hrf_model="spm + derivative", noise_model="ols"
+    t_r,
+    slice_time_ref=0.5,
+    hrf_model="spm + derivative",
+    noise_model="ols",
+    minimize_memory=False,
 )
 first_level_model = first_level_model.fit(fmri_img, events=events)
 plot_contrast(first_level_model)
@@ -430,7 +466,11 @@ plt.show()
 # account for greater temporal complexity in the noise structure.
 
 first_level_model = FirstLevelModel(
-    t_r, slice_time_ref=0.5, hrf_model="spm + derivative", noise_model="ar3"
+    t_r,
+    slice_time_ref=0.5,
+    hrf_model="spm + derivative",
+    noise_model="ar3",
+    minimize_memory=False,
 )
 first_level_model = first_level_model.fit(fmri_img, events=events)
 plot_contrast(first_level_model)
@@ -460,7 +500,10 @@ from nilearn.image import high_variance_confounds
 
 confounds = pd.DataFrame(high_variance_confounds(fmri_img, percentile=1))
 first_level_model = FirstLevelModel(
-    t_r, hrf_model="spm + derivative", slice_time_ref=0.5
+    t_r,
+    hrf_model="spm + derivative",
+    slice_time_ref=0.5,
+    minimize_memory=False,
 )
 first_level_model = first_level_model.fit(
     fmri_img, events=events, confounds=confounds
@@ -495,7 +538,10 @@ plt.show()
 
 sample_masks = np.arange(events.shape[0])[50:]
 first_level_model = FirstLevelModel(
-    t_r, hrf_model="spm + derivative", slice_time_ref=0.5
+    t_r,
+    hrf_model="spm + derivative",
+    slice_time_ref=0.5,
+    minimize_memory=False,
 )
 first_level_model = first_level_model.fit(
     fmri_img, events=events, sample_masks=sample_masks
@@ -520,7 +566,11 @@ plt.show()
 # :term:`full-width at half maximum<FWHM>` (:term:`FWHM`).
 
 first_level_model = FirstLevelModel(
-    t_r, hrf_model="spm + derivative", smoothing_fwhm=5, slice_time_ref=0.5
+    t_r,
+    hrf_model="spm + derivative",
+    smoothing_fwhm=5,
+    slice_time_ref=0.5,
+    minimize_memory=False,
 ).fit(fmri_img, events=events, confounds=confounds)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
@@ -579,6 +629,7 @@ first_level_model = FirstLevelModel(
     smoothing_fwhm=5,
     slice_time_ref=0.5,
     mask_img=resampled_icbm_mask,
+    minimize_memory=False,
 ).fit(fmri_img, events=events, confounds=confounds)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)

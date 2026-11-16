@@ -5,12 +5,12 @@ Utilities for masking and dimension reduction of group data
 
 import glob
 import inspect
-import itertools
 import warnings
+from collections.abc import Sequence
 from math import ceil
 from pathlib import Path
 from string import Template
-from typing import get_args
+from typing import Literal, Self, get_args
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -31,10 +31,10 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
+    check_n_confounds_match_n_images,
     check_params,
 )
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import check_niimg
 from nilearn.maskers import (
     MultiNiftiMasker,
@@ -45,9 +45,10 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers.masker_validation import check_embedded_masker
-from nilearn.nilearn_typing import NiimgLike
+from nilearn.nilearn_typing import NiimgLike, SingleConfound
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
+from nilearn.utils.tags import InputTags
 
 
 def _warn_ignored_surface_masker_params(estimator) -> None:
@@ -99,7 +100,7 @@ def _fast_svd(X, n_components, random_state=None):
     X : array, shape (n_samples, n_features)
         The data to decompose
 
-    n_components : integer
+    n_components : :obj:`int`
         The order of the dimensionality of the truncated SVD
 
     %(random_state)s
@@ -108,14 +109,13 @@ def _fast_svd(X, n_components, random_state=None):
     Returns
     -------
     U : array, shape (n_samples, n_components)
-        The first matrix of the truncated svd
+        The first matrix of the truncated svd.
 
     S : array, shape (n_components)
-        The second matrix of the truncated svd
+        The second matrix of the truncated svd.
 
     V : array, shape (n_components, n_features)
-        The last matrix of the truncated svd
-
+        The last matrix of the truncated svd.
     """
     random_state = check_random_state(random_state)
     # Small problem, just call full PCA
@@ -154,7 +154,7 @@ def _fast_svd(X, n_components, random_state=None):
 def _mask_and_reduce(
     masker,
     imgs,
-    confounds=None,
+    confounds: Sequence[SingleConfound | None],
     reduction_ratio="auto",
     n_components=None,
     random_state=None,
@@ -179,10 +179,10 @@ def _mask_and_reduce(
         See :ref:`extracting_data`.
         List of subject data to mask, reduce and stack.
 
-    confounds : CSV file path, numpy ndarray, pandas DataFrame, or None \
-            default=None
-        This parameter is passed to signal.clean. Please see the
-        corresponding documentation for details.
+    confounds : list or tuple of CSV file path, \
+                numpy ndarray, pandas DataFrame, or None
+        This parameter is passed to signal.clean.
+        Please see the corresponding documentation for details.
 
     reduction_ratio : 'auto' or float between 0.0 and 1.0, default='auto'
         - Between 0.0 or 1.0 : controls data reduction in the temporal domain,
@@ -190,13 +190,13 @@ def _mask_and_reduce(
         - if set to ``'auto'``, estimator will set the number of components per
           reduced session to be ``n_components``.
 
-    n_components : integer or None, default=None
+    n_components : :obj:`int` or None, default=None
         Number of components per subject to be extracted by dimension reduction
 
     %(random_state)s
         default=0
 
-    n_jobs : integer, default=1
+    n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
@@ -204,7 +204,6 @@ def _mask_and_reduce(
     -------
     data : ndarray or memorymap
         Concatenation of reduced data.
-
     """
     if not hasattr(imgs, "__iter__"):
         imgs = [imgs]
@@ -223,9 +222,6 @@ def _mask_and_reduce(
                 "Reduction ratio should be between 0.0 and 1.0, "
                 f"got {reduction_ratio:.2f}"
             )
-
-    if confounds is None:
-        confounds = itertools.repeat(confounds)
 
     if reduction_ratio == "auto":
         n_samples = n_components
@@ -272,13 +268,16 @@ def _mask_and_reduce(
 def _mask_and_reduce_single(
     masker,
     img,
-    confound,
+    confound: SingleConfound
+    | list[SingleConfound]
+    | tuple[SingleConfound]
+    | None,
     reduction_ratio=None,
     n_samples=None,
     random_state=None,
 ):
     """Implement multiprocessing from MaskReducer."""
-    if confound is not None and not isinstance(confound, list):
+    if confound is not None and not isinstance(confound, (list, tuple)):
         confound = [confound]
     this_data = masker.transform(img, confound)
     this_data = np.atleast_2d(this_data)
@@ -313,7 +312,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
     Parameters
     ----------
-    n_components : int, default=20
+    n_components : :obj:`int`, default=20
         Number of components to extract,
         for each 4D-Niimage or each 2D surface image
 
@@ -323,7 +322,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
 
     %(smoothing_fwhm)s
 
-    %(standardize_true)s
+    %(standardize_zscore)s
 
     standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
@@ -383,11 +382,11 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         If a string is given, it is the path to the caching directory.
         If ``None`` is passed will default to ``Memory(location=None)``.
 
-    memory_level : integer, default=0
+    memory_level : :obj:`int`, default=0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    n_jobs : integer, default=1
+    n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
@@ -402,7 +401,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         random_state=None,
         mask=None,
         smoothing_fwhm=None,
-        standardize=True,
+        standardize="zscore_sample",
         standardize_confounds=True,
         detrend=True,
         low_pass=None,
@@ -445,14 +444,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(surf_img=True, niimg_like=True)
-
-        from nilearn._utils.tags import InputTags
-
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=True, niimg_like=True)
         return tags
@@ -470,23 +461,51 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
                 "mask",
             )
 
+    def _sanitize_confounds(
+        self,
+        confounds: SingleConfound | Sequence[SingleConfound | None] | None,
+        imgs,
+    ) -> Sequence[SingleConfound | None]:
+        confounds_sequence: Sequence[SingleConfound | None]
+        if confounds is None:
+            confounds_sequence = [None] * len(imgs)
+        elif isinstance(confounds, Sequence) and not isinstance(
+            confounds, str
+        ):
+            confounds_sequence = confounds
+        else:
+            confounds_sequence = [confounds]
+        check_n_confounds_match_n_images(confounds_sequence, imgs)
+        return confounds_sequence
+
     @fill_doc
-    def fit(self, imgs, y=None, confounds=None):
+    def fit(
+        self,
+        imgs,
+        y: None = None,
+        confounds: SingleConfound
+        | Sequence[SingleConfound | None]
+        | None = None,
+    ) -> Self:
         """Compute the mask and the components across subjects.
 
         Parameters
         ----------
-        imgs : :obj:`list` of Niimg-like objects or \
-               list of :obj:`~nilearn.surface.SurfaceImage`
+        imgs : Niimg-like objects or :obj:`~nilearn.surface.SurfaceImage`, \
+               :obj:`list` of Niimg-like objects or \
+               list or tuple of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
-            Data on which the mask is calculated. If this is a list,
+            Data on which the mask is calculated.
+            If this is a list,
             the affine (for Niimg-like objects) and mesh (for SurfaceImages)
             is considered the same for all
 
         %(y_dummy)s
 
-        confounds : :obj:`list` of CSV file paths, numpy.ndarrays \
-                or pandas DataFrames or None, default=None.
+        confounds : str or pathlib.Path to CSV file paths, \
+                numpy.ndarrays or pandas DataFrames or \
+                list or tuple of str or pathlib.Path to CSV file paths, \
+                numpy.ndarrays or pandas DataFrames or None, default=None.
             This parameter is passed to nilearn.signal.clean.
             Please see the related documentation for details.
             Should match with the list of imgs given.
@@ -496,7 +515,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         self : object
             Returns the instance itself. Contains attributes listed
             at the object level.
-
         """
         del y
         # Base fit for decomposition estimators : compute the embedded masker
@@ -524,16 +542,13 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
                 "an empty list was given."
             )
 
-        if confounds is not None and len(confounds) != len(imgs):
-            raise ValueError(
-                f"Number of confounds ({len(confounds)=}) "
-                f"must match number of images ({len(imgs)=})."
-            )
+        confounds = self._sanitize_confounds(confounds, imgs)
 
         self._fit_cache()
 
         self._validate_mask()
 
+        masker_type: Literal["nii", "surface", "multi_nii", "multi_surface"]
         masker_type = "multi_nii"
         if self.mask is not None:
             if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)):
@@ -624,28 +639,37 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
     def __sklearn_is_fitted__(self) -> bool:
         return hasattr(self, "components_")
 
-    def transform(self, imgs, confounds=None):
+    def transform(
+        self,
+        imgs,
+        confounds: SingleConfound
+        | Sequence[SingleConfound | None]
+        | None = None,
+    ):
         """Project the data into a reduced representation.
 
         Parameters
         ----------
-        imgs : iterable of Niimg-like objects or \
-               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`
+        imgs :  Niimg-like objects or :obj:`~nilearn.surface.SurfaceImage`, \
+               :obj:`list` of Niimg-like objects or \
+               list or tuple of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data to be projected
 
-        confounds : CSV file path or numpy.ndarray \
-                or pandas DataFrame or None, default=None
-            This parameter is passed to nilearn.signal.clean. Please see the
-            related documentation for details
+        confounds : str or pathlib.Path to CSV file paths, \
+                numpy.ndarrays or pandas DataFrames or \
+                list or tuple of: str or pathlib.Path to CSV file paths, \
+                numpy.ndarrays or pandas DataFrames or None, default=None.
+            This parameter is passed to nilearn.signal.clean.
+            Please see the related documentation for details.
+            Should match with the list of imgs given.
 
         Returns
         -------
         loadings : :obj:`list` of 2D ndarray,
             For each subject, each sample, loadings for each decomposition
             components
-            shape: number of subjects * (number of scans, number of regions)
-
+            shape: number of subjects * (number of scans, number of regions).
         """
         check_is_fitted(self)
 
@@ -656,13 +680,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         if isinstance(imgs, (SurfaceImage, Nifti1Image)):
             imgs = [imgs]
 
-        if confounds is None:
-            confounds = list(itertools.repeat(None, len(imgs)))
-        elif len(confounds) != len(imgs):
-            raise ValueError(
-                f"Number of confounds ({len(confounds)=}) "
-                f"must match number of images ({len(imgs)=})."
-            )
+        confounds = self._sanitize_confounds(confounds, imgs)
 
         return [
             self.maps_masker_.transform(img, confounds=confound)
@@ -684,7 +702,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
             :class:`~nilearn.surface.SurfaceImage`
 
         For each loading, reconstructed Nifti1Image or SurfaceImage.
-
         """
         check_is_fitted(self)
 
@@ -715,24 +732,36 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         )
 
     @fill_doc
-    def score(self, imgs, y=None, confounds=None, per_component=False):
+    def score(
+        self,
+        imgs,
+        y: None = None,
+        confounds: SingleConfound
+        | Sequence[SingleConfound | None]
+        | None = None,
+        per_component: bool = False,
+    ):
         """Score function based on explained variance on imgs.
 
         Should only be used by DecompositionEstimator derived classes
 
         Parameters
         ----------
-        imgs : iterable of Niimg-like objects or \
-               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`
+        imgs :  Niimg-like objects or :obj:`~nilearn.surface.SurfaceImage`, \
+               :obj:`list` of Niimg-like objects or \
+               list or tuple of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data to be scored
 
         %(y_dummy)s
 
-        confounds : CSV file path or numpy.ndarray \
-                or pandas DataFrame or None, default=None
-            This parameter is passed to nilearn.signal.clean. Please see the
-            related documentation for details
+        confounds : str or pathlib.Path to CSV file paths, \
+                numpy.ndarrays or pandas DataFrames or \
+                list or tuple of str or pathlib.Path to CSV file paths, \
+                numpy.ndarrays or pandas DataFrames or None, default=None.
+            This parameter is passed to nilearn.signal.clean.
+            Please see the related documentation for details.
+            Should match with the list of imgs given.
 
         per_component : :obj:`bool`, default=False
             Specify whether the explained variance ratio is desired for each
@@ -743,11 +772,15 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, NilearnBaseEstimator):
         score : :obj:`float`
             Holds the score for each subjects. Score is two dimensional
             if per_component is True. First dimension
-            is squeezed if the number of subjects is one
-
+            is squeezed if the number of subjects is one.
         """
         del y
         check_is_fitted(self)
+
+        if isinstance(imgs, (SurfaceImage, Nifti1Image)):
+            imgs = [imgs]
+
+        confounds = self._sanitize_confounds(confounds, imgs)
 
         data = _mask_and_reduce(
             self.masker_,
@@ -788,7 +821,6 @@ def _explained_variance(X, components, per_component=True):
     score : ndarray
         Holds the score for each subjects. score is two dimensional if
         per_component = True.
-
     """
     full_var = np.var(X)
     n_components = components.shape[0]

@@ -13,7 +13,7 @@ Enhancements
 
 - :bdg-success:`API` Classes :class:`~decomposition.CanICA` and :class:`~decomposition.DictLearning` have a new attribute ``components_img_`` providing directly the components learned as a :class:`~nibabel.nifti1.Nifti1Image`. This avoids the step of unmasking the attribute ``components_`` which is true for older versions (:gh:`1536` by `Kamalakar Reddy Daddy`_).
 
-- :bdg-success:`API` New class :class:`nilearn.regions.Parcellations` for learning brain parcellations on :term:`fMRI` data (:gh:`1370` by `Kamalakar Reddy Daddy`_).
+- :bdg-success:`API` New class :class:`~regions.Parcellations` for learning brain parcellations on :term:`fMRI` data (:gh:`1370` by `Kamalakar Reddy Daddy`_).
 
 - :bdg-success:`API` Add optional reordering of the matrix using a argument ``reorder`` with function :func:`~plotting.plot_matrix`.
 

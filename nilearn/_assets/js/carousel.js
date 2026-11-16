@@ -7,8 +7,9 @@ class Carousel { // eslint-disable-line no-unused-vars
      * @param {string} uid - A unique identifier for the masker report.
      * @param {number[]} displayedObjects - An array of IDs to cycle through.
      * @param {boolean} [isSphere=false] - Determines whether the carousel operates on sphere masker.
+     * @param {string[]} [nameObjects=[]] - An array of names: one for each object of displayedObjects.
      */
-  constructor (uid, displayedObjects, isSphere = false) {
+  constructor (uid, displayedObjects, isSphere = false, nameObjects = []) {
     /** @private {string} */
     this.uid = uid
 
@@ -23,6 +24,9 @@ class Carousel { // eslint-disable-line no-unused-vars
 
     /** @private {boolean} */
     this.isSphere = isSphere
+
+    /** @private {array of string} */
+    this.nameObjects = nameObjects
 
     this.init()
   }
@@ -67,7 +71,7 @@ class Carousel { // eslint-disable-line no-unused-vars
         if (index === 0) {
           compElement.innerHTML = 'All Spheres'
         } else {
-          compElement.innerHTML = 'Sphere ' + this.displayedObjects[index]
+          compElement.innerHTML = this.nameObjects[index]
         }
       }
     }

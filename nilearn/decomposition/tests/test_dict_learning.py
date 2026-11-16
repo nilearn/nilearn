@@ -37,7 +37,6 @@ def test_check_values_epoch_argument_smoke(
         mask=decomposition_mask_img,
         n_epochs=n_epochs,
         smoothing_fwhm=None,
-        standardize="zscore_sample",
         alpha=1,
     )
     dict_learning.fit(canica_data)
@@ -45,6 +44,7 @@ def test_check_values_epoch_argument_smoke(
     check_decomposition_estimator(dict_learning, data_type)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_dict_learning(
     decomposition_mask_img, canica_components, canica_data, data_type
@@ -66,7 +66,6 @@ def test_dict_learning(
         dict_init=dict_init,
         mask=decomposition_mask_img,
         smoothing_fwhm=smoothing_fwhm,
-        standardize="zscore_sample",
         alpha=1,
     )
 
@@ -76,7 +75,6 @@ def test_dict_learning(
         mask=decomposition_mask_img,
         n_epochs=10,
         smoothing_fwhm=smoothing_fwhm,
-        standardize="zscore_sample",
         alpha=1,
     )
     maps = {}
@@ -122,7 +120,6 @@ def test_component_sign(
         random_state=RANDOM_STATE,
         mask=decomposition_mask_img,
         smoothing_fwhm=None,
-        standardize="zscore_sample",
         alpha=1,
     )
     dict_learning.fit(canica_data)

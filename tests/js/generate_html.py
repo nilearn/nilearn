@@ -19,7 +19,8 @@ from nilearn.plotting import (
 )
 from nilearn.surface import SurfaceImage
 
-output_path = Path(__file__).parent
+output_path = Path(__file__).parent / "generated" / "html"
+output_path.mkdir(parents=True, exist_ok=True)
 
 WIDTH = 1200
 HEIGHT = 800
@@ -27,6 +28,10 @@ HEIGHT = 800
 fig = view_img(load_sample_motor_activation_image())
 fig.resize(WIDTH, HEIGHT)
 fig.save_as_html(output_path / "view_img.html")
+
+fig = view_img(load_sample_motor_activation_image(), radiological=True)
+fig.resize(WIDTH, HEIGHT)
+fig.save_as_html(output_path / "view_img_radio.html")
 
 fig = view_surf(surf_map=load_fsaverage_data())
 fig.resize(WIDTH, HEIGHT)

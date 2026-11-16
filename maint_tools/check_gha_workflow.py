@@ -1,11 +1,14 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#    "requests",
+#    "rich",
+#    "pandas",
+#    "plotly",
+#    "kaleido",
+# ]
+# ///
 """Collects and plot run time of jobs in a GHA workflow.
-
-Requires:
-- requests
-- rich
-- pandas
-- plotly
-- kaleido
 
 For a given github action workflow:
 - ping the github API to collect the start and end time
@@ -31,7 +34,7 @@ You can either:
   This is the way to do it when using this script in continuous integration.
 
 USAGE
------
+.....
 
 .. code-block:: bash
 
@@ -83,8 +86,10 @@ EXPECTED_PYTHON_VERSIONS = [
     "3.12",
     "3.13",
     "3.14",
+    "3.15",
     "3.13t",
     "3.14t",
+    "3.15t",
 ]
 
 DO_TEST = True
@@ -323,7 +328,7 @@ def _get_auth(username: str, token_file: Path) -> tuple[str, str] | None:
     token = None
 
     if token_file.exists():
-        with token_file.open() as f:
+        with token_file.open(encoding="utf-8") as f:
             token = f.read().strip()
     else:
         warnings.warn(f"Token file not found.\n{token_file!s}", stacklevel=4)

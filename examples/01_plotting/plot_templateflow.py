@@ -1,5 +1,4 @@
 """
-
 Using brain templates from TemplateFlow
 =======================================
 
@@ -12,13 +11,16 @@ in order to make surface plots.
 Then, we see how to get the proper template
 for the Harvard-Oxford volumetric atlas.
 
-.. admonition:: Datasets used in this example
+.. admonition:: dataset
 
-    - :ref:`harvard_oxford_atlas`
+   This example uses:
 
-    - The `Desikan-Killiany atlas <https://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation>`_
-
+   - the :ref:`Harvard-Oxford atlas <harvard_oxford_atlas>`
+   - the :ref:`fsaverage template <fsaverage>`
+   - the `Desikan-Killiany atlas <https://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation>`_
+     from TemplateFlow
 """
+
 
 # %%
 # Fetch DK Surface template
@@ -66,11 +68,11 @@ print(fetched_files)
 # for the 3k and 10k densities.
 
 used_densities = ["3k", "10k"]
-# uncomment the following line in case you want to see all densities
+# uncomment the following line to use all densities
 # used_densities = ["3k", "10k", "41k", "164k"]
 
 desikan_dict = {}
-for density in ["3k", "10k"]:
+for density in used_densities:
     mesh = {}
     data = {}
     for hemi in ["left", "right"]:
@@ -133,7 +135,7 @@ lut = tflow.get(
     extension="tsv",
 )
 
-for ax, density in zip(axes, ["3k", "10k"], strict=True):
+for ax, density in zip(axes, used_densities, strict=True):
     desikan = desikan_dict[density]
     sulcal_depth_map = load_fsaverage_data(
         mesh=fs_density[density], data_type="sulcal"
@@ -176,7 +178,7 @@ harvard_oxford_sub = fetch_atlas_harvard_oxford("sub-maxprob-thr25-1mm")
 
 
 plot_roi(
-    harvard_oxford_sub.filename,
+    harvard_oxford_sub.maps,
     title="Harvard-Oxford atlas | sub-cortical | ICBM152 2009",
     **plotting_params,
 )
@@ -190,12 +192,11 @@ print(f"Harvard-Oxford atlas template: {harvard_oxford_sub.template}")
 # %%
 # Getting a template
 # ------------------
-# If you want to visualize the Harvard-Oxford atlas
-# on the template it was originally defined,
-# you can get it from TemplateFlow.
+# The Harvard-Oxford atlas can be visualized on its original
+# template by fetching it from TemplateFlow.
 # This template is the default template used by FSL,
 # and its unique identifier within TemplateFlow
-# is`MNI152NLin6Asym`.
+# is `MNI152NLin6Asym`.
 
 template = "MNI152NLin6Asym"
 resolution = "01"
@@ -211,7 +212,7 @@ MNI152NLin6Asym_template_img = tflow.get(
 print(f"{MNI152NLin6Asym_template_img=}")
 
 plot_roi(
-    harvard_oxford_sub.filename,
+    harvard_oxford_sub.maps,
     title="Harvard-Oxford atlas | sub-cortical | MNI152NLin6Asym",
     bg_img=MNI152NLin6Asym_template_img,
     **plotting_params,

@@ -24,7 +24,7 @@ Fixes
 
 - :bdg-dark:`Code` Fixed deprecations ``set_axis_bgcolor`` related to matplotlib in plotting functions.
 
-- :bdg-dark:`Code` Fixed bug related to not accepting a list of arrays as an input to unmask, in :mod:`nilearn.masking` module.
+- :bdg-dark:`Code` Fixed bug related to not accepting a list of arrays as an input to unmask, in :mod:`~nilearn.masking` module.
 
 - :bdg-secondary:`Maint` Fixed bunch of CircleCI documentation build failures.
 

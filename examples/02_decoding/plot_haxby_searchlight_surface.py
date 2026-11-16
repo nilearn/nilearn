@@ -14,6 +14,13 @@ as described in :footcite:t:`Chen2011`.
     to allow for such projection.
     It is done in this example for pedagogical reasons
     to show "how to do it".
+
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Haxby dataset <haxby_dataset>`
+    - the :ref:`fsaverage template <fsaverage>`
 """
 
 # %%
@@ -23,7 +30,7 @@ import pandas as pd
 
 from nilearn.datasets import fetch_haxby
 
-# We fetch 2nd subject from haxby datasets (which is default)
+# We fetch 2nd subject from the Haxby datasets (which is default)
 haxby_dataset = fetch_haxby()
 
 fmri_filename = haxby_dataset.func[0]

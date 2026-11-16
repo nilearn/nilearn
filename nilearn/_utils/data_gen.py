@@ -65,7 +65,6 @@ def generate_mni_space_img(
 
     mask_img : Niimg-like object
         Generated mask in MNI space.
-
     """
     mask_img = load_mni152_brain_mask(resolution=res)
     masker = NiftiMasker(mask_img).fit()
@@ -106,7 +105,6 @@ def generate_timeseries(
     -------
     :obj:`numpy.ndarray` of shape (n_timepoints, n_features)
         Generated time series.
-
     """
     rng = np.random.default_rng(rand_gen)
     return rng.standard_normal((n_timepoints, n_features))
@@ -149,9 +147,8 @@ def generate_regions_ts(
     Returns
     -------
     regions : :obj:`numpy.ndarray`
-        Regions, represented as signals.
-        shape (n_features, n_regions)
-
+        Regions, represented as signals
+        with shape (n_features, n_regions).
     """
     if window is None:
         window = "boxcar"
@@ -233,7 +230,6 @@ def generate_maps(
 
     mask_img : Niimg-like object
         3D mask giving non-zero voxels.
-
     """
     if affine is None:
         affine = np.eye(4)
@@ -288,7 +284,6 @@ def generate_labeled_regions(
     -------
     Nifti1Image
         Data has shape "shape", containing region labels.
-
     """
     if affine is None:
         affine = np.eye(4)
@@ -392,8 +387,8 @@ def generate_fake_fmri(
     Returns
     -------
     Niimg-like object
-        Fake fmri signal.
-        shape: shape + (length,)
+        Fake fmri signal
+        with shape: shape + (length,).
 
     Niimg-like object
         Mask giving non-zero voxels.
@@ -402,7 +397,6 @@ def generate_fake_fmri(
         Classification or regression target.
         A 1D array with one element for each time point.
         Returned only if ``n_blocks`` is not None.
-
     """
     if affine is None:
         affine = np.eye(4)
@@ -506,14 +500,12 @@ def generate_fake_fmri_data_and_design(
     fmri_data : :obj:`list`
         A 4D volume represented by a list of 3D Niimg-like objects.
 
-    design_matrices : :obj:`list`
-        A list of pd.DataFrame
-
+    design_matrices : :obj:`list` of pandas DataFrame
     """
     if affine is None:
         affine = np.eye(4)
-    fmri_data = []
-    design_matrices = []
+    fmri_data: list[Nifti1Image] = []
+    design_matrices: list[pd.DataFrame] = []
 
     rng = np.random.default_rng(rand_gen)
 
@@ -574,7 +566,6 @@ def write_fake_fmri_data_and_design(
     See Also
     --------
     nilearn._utils.data_gen.generate_fake_fmri_data_and_design
-
     """
     file_path = Path.cwd() if file_path is None else Path(file_path)
 
@@ -620,7 +611,6 @@ def _write_fake_bold_gifti(
     -------
     file_path : :obj:`str`
         Output file path.
-
     """
     rng = np.random.default_rng(rand_gen)
     data = rng.standard_normal((n_time_points, n_vertices))
@@ -663,7 +653,6 @@ def write_fake_bold_img(
     -------
     file_path : :obj:`str`
         Output file path.
-
     """
     if affine is None:
         affine = np.eye(4)
@@ -709,7 +698,6 @@ def _generate_signals_from_precisions(
     signals : :obj:`list` of :obj:`numpy.ndarray`
         Output signals. signals[n] corresponds to precisions[n], and has shape
         (sample number, precisions[n].shape[0]).
-
     """
     rng = np.random.default_rng(rand_gen)
 
@@ -773,7 +761,6 @@ def generate_group_sparse_gaussian_graphs(
     topology : :obj:`numpy.ndarray`
         Binary array giving the graph topology used for generating covariances
         and signals.
-
     """
     rng = np.random.default_rng(rand_gen)
     # Generate topology (upper triangular binary matrix, with zeros on the
@@ -847,7 +834,6 @@ def basic_paradigm(
     -------
     events : pd.DataFrame
         Basic experimental paradigm with events data.
-
     """
     conditions = [
         "c 0",
@@ -892,7 +878,6 @@ def _basic_confounds(length, rand_gen: RandomStateOrGen = 0):
         'csf', 'white_matter', 'global_signal'
         'rot_x', 'rot_y', 'rot_z',
         'trans_x', 'trans_y', 'trans_z'.
-
     """
     rng = np.random.default_rng(rand_gen)
     columns = [
@@ -1024,10 +1009,10 @@ def create_fake_bids_dataset(
 
     Parameters
     ----------
-    base_dir : :obj:`str` or :obj:`pathlib.Path` (Absolute path). \
-        default=pathlib.Path()
+    base_dir : :obj:`str` or :obj:`pathlib.Path` (Absolute path), default=None
         Absolute directory path in which to create the fake :term:`BIDS`
         dataset dir.
+        If ``None`` is passed, the current working directory is used.
 
     n_sub : :obj:`int`, default=10
         Number of subjects to be simulated in the dataset.
@@ -1038,16 +1023,18 @@ def create_fake_bids_dataset(
         Specifying n_ses=0 will only produce runs and files without the
         optional session field.
 
-    tasks : :obj:`list` of :obj:`str`, default=["localizer", "main"]
+    tasks : :obj:`list` of :obj:`str`, default=None
         List of tasks to be simulated in the dataset.
+        If ``None`` is passed, ``["localizer", "main"]`` is used.
 
-    n_runs : :obj:`list` of :obj:`int`, default=[1, 3]
+    n_runs : :obj:`list` of :obj:`int`, default=None
         Number of runs to create, where each element indicates the
         number of runs for the corresponding task.
         The length of this list must match the number of items in ``tasks``.
         Each run creates 100 volumes.
         Files will be generated without run entity
         if a value is equal to 0 or less.
+        If ``None`` is passed, ``[1, 3]`` is used.
 
     with_derivatives : :obj:`bool`, default=True
         In the case derivatives are included, they come with two spaces and
@@ -1096,7 +1083,6 @@ def create_fake_bids_dataset(
     Notes
     -----
         Creates a directory with dummy files.
-
     """
     rng = np.random.default_rng(rand_gen)
 
@@ -1236,7 +1222,6 @@ def _mock_bids_dataset(
 
     rand_gen : :obj:`int`, :obj:`numpy.random.RandomState` \
         or :obj:`numpy.random.Generator`
-
     """
     bids_path.mkdir(parents=True, exist_ok=True)
 
@@ -1408,7 +1393,6 @@ def _listify(n):
     Returns
     -------
     List of labels : :obj:`list` of :obj:`str`
-
     """
     return [""] if n <= 0 else [f"{label:02}" for label in range(1, n + 1)]
 
@@ -1438,7 +1422,6 @@ def _init_fields(subject, session, task, run):
     See Also
     --------
     create_bids_filename
-
     """
     fields = {
         "suffix": "bold",
@@ -1497,7 +1480,6 @@ def _write_bids_raw_func(
 
     rand_gen : :obj:`int`, :obj:`numpy.random.RandomState` \
         or :obj:`numpy.random.Generator`
-
     """
     n_time_points = 30
     bold_path = func_path / create_bids_filename(fields)
@@ -1564,6 +1546,9 @@ def _write_bids_derivative_func(
     spaces : :obj:`list` of :obj:`str` or None, default=None
         Defaults to ``("MNI", "T1w")``
     """
+    if spaces is None:
+        spaces = ("MNI", "T1w")
+
     n_time_points = 30
 
     if confounds_tag is not None:

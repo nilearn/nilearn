@@ -37,6 +37,11 @@ def get_data_dirs(data_dir: DataDir = None) -> list[str]:
     4. the user environment variable NILEARN_DATA
     5. nilearn_data in the user home folder
 
+    Examples
+    --------
+    >>> from nilearn.datasets import get_data_dirs
+    >>> directories = get_data_dirs()
+    >>> print(directories)  # doctest: +SKIP
     """
     check_params(locals())
 

@@ -43,17 +43,20 @@ However, when the fMRI image is loaded once and then passed to
 multiple times. We will see that this can already be a significant
 improvement over the naive usage of :class:`~nilearn.maskers.NiftiMasker` with
 file paths.
-"""
 
+.. admonition:: dataset
+
+   This example uses:
+
+   - the :ref:`ADHD dataset <adhd_dataset>`
+   - the :ref:`BASC multiscale atlas <basc_multiscale_2015_atlas>`
+"""
 # %%
 # Create a large fMRI image
 # -------------------------
 # Here we will create a "large" fMRI image by fetching 6 subjects'
-# fMRI images via the :func:`~nilearn.datasets.fetch_adhd`
-# function, concatenating them and then saving to a file.
-#
-# For more information
-# see the :ref:`dataset description <adhd_dataset>`.
+# fMRI images via the :func:`~nilearn.datasets.fetch_adhd` function,
+# concatenating them and then saving to a file.
 #
 
 from pathlib import Path
@@ -84,9 +87,7 @@ fmri_path, n_timepoints = create_large_fmri(N_SUBJECTS)
 # %%
 # Create a set of binary masks
 # ----------------------------
-# We will now create 4 binary masks from a brain atlas. Here we will use the
-# multiscale functional brain parcellations via the
-# :func:`~nilearn.datasets.fetch_atlas_basc_multiscale_2015` function.
+# We will now create 4 binary masks from BASC multiscale atlas.
 # We will fetch a 64-region version of this atlas and then create separate
 # binary masks for the first 4 regions.
 #
@@ -130,7 +131,7 @@ mask_paths = create_masks(fmri_path, N_REGIONS)
 # This is the most user-friendly way to extract data from an fMRI image as it
 # makes it easy to standardize, smooth, detrend, etc. the data.
 #
-# We will first wrap the :func:`nilearn.maskers.NiftiMasker.fit_transform`
+# We will first wrap the :meth:`~nilearn.maskers.NiftiMasker.fit_transform`
 # within a function so that it is more readable and easier to use.
 # We will then define another function that would mask the fMRI image using
 # multiple masks in parallel using the :mod:`joblib` package. As mentioned

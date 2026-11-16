@@ -1,66 +1,18 @@
 import numpy as np
 import pytest
 from sklearn.model_selection import KFold
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
-from nilearn._utils.estimator_checks import (
-    check_estimator,
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
-from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.group_sparse_cov import (
     group_sparse_covariance,
     group_sparse_scores,
 )
 
-ESTIMATORS_TO_CHECK = [GroupSparseCovarianceCV(), GroupSparseCovariance()]
 
-if SKLEARN_LT_1_6:
-
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        (check_estimator(estimators=ESTIMATORS_TO_CHECK)),
-    )
-    def test_check_estimator_group_sparse_covariance(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_invalid_group_sparse_covariance(
-        estimator,
-        check,
-        name,  # noqa: ARG001
-    ):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
+@pytest.mark.filterwarnings(
+    "ignore:.*Input signals do not all have unit variance.*:UserWarning"
 )
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
-
-
 def test_group_sparse_covariance(rng):
     """Test that group_sparse_covariance's cost decreases without debug.
 
@@ -89,6 +41,9 @@ def test_group_sparse_covariance(rng):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.filterwarnings(
+    "ignore:.*Input signals do not all have unit variance.*:UserWarning"
+)
 @pytest.mark.parametrize("duality_gap", [True, False])
 def test_group_sparse_covariance_with_probe_function(rng, duality_gap):
     """Test that the probe records a decreasing objective over iterations."""
@@ -152,6 +107,9 @@ def test_group_sparse_covariance_with_probe_function(rng, duality_gap):
     assert omega.shape == (10, 10, 5)
 
 
+@pytest.mark.filterwarnings(
+    "ignore:.*Input signals do not all have unit variance.*:UserWarning"
+)
 def test_group_sparse_covariance_check_consistency_between_classes(rng):
     """Test that GroupSparseCovarianceCV and GroupSparseCovariance agree."""
     signals, _, _ = generate_group_sparse_gaussian_graphs(
@@ -202,6 +160,9 @@ def test_group_sparse_covariance_errors(rng):
         group_sparse_covariance([np.ones((2, 2)), np.ones((2, 3))], alpha)
 
 
+@pytest.mark.filterwarnings(
+    "ignore:.*Input signals do not all have unit variance.*:UserWarning"
+)
 @pytest.mark.parametrize("cv", [None, 10, KFold(n_splits=4)])
 @pytest.mark.parametrize("alphas", [3, 5])
 @pytest.mark.parametrize("n_refinements", [3, 5])

@@ -16,19 +16,22 @@ numpy array, corresponding to the data inside the mask.
     :ref:`for a similar example using cortical surface input data
     <sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
 
+.. admonition:: dataset
+
+    This example uses the :ref:`development fMRI dataset
+    <development_dataset>`.
 """
 
 # %%
 # Getting the data
 # ----------------
 #
-# We will work with the first subject
-# of the brain development :term:`fMRI` data set.
-# dataset.func is a list of filenames. We select the 1st (0-based)
-# subject by indexing with [0]).
-from nilearn import datasets, plotting
+# We will work with the first subject of dataset.
+# dataset.func is a list of filenames.
+# We select the 1st (0-based) subject by indexing with [0]).
+from nilearn.datasets import fetch_development_fmri
 
-dataset = datasets.fetch_development_fmri(n_subjects=1)
+dataset = fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 confound_filename = dataset.confounds[0]
 
@@ -49,7 +52,7 @@ print(confound_filename)
 #
 # We will be working with one seed sphere in the Posterior Cingulate Cortex
 # (PCC), considered part of the Default Mode Network.
-pcc_coords = [(0, -52, 18)]
+pcc_coords = (0, -52, 18)
 
 # %%
 # We use :class:`~nilearn.maskers.NiftiSpheresMasker` to extract the
@@ -66,6 +69,7 @@ seed_masker = NiftiSpheresMasker(
     radius=8,
     detrend=True,
     standardize_confounds=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
     t_r=dataset.t_r,
@@ -92,6 +96,7 @@ brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
     standardize_confounds=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
     t_r=dataset.t_r,
@@ -178,18 +183,20 @@ print(
 # we need to create an in memory Nifti image object.
 # Furthermore, we can display the location of the seed with a sphere and
 # set the cross to the center of the seed region of interest.
+from nilearn.plotting import plot_stat_map
+
 seed_to_voxel_correlations_img = brain_masker.inverse_transform(
     seed_to_voxel_correlations.T
 )
-display = plotting.plot_stat_map(
+display = plot_stat_map(
     seed_to_voxel_correlations_img,
     threshold=0.5,
     vmax=1,
-    cut_coords=pcc_coords[0],
+    cut_coords=pcc_coords,
     title="Seed-to-voxel correlation (PCC seed)",
 )
 display.add_markers(
-    marker_coords=pcc_coords, marker_color="g", marker_size=300
+    marker_coords=[pcc_coords], marker_color="g", marker_size=300
 )
 # At last, we save the plot as pdf.
 from pathlib import Path

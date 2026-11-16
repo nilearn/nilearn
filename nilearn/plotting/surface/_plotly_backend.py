@@ -243,7 +243,7 @@ def _plot_surf(
     hemi=DEFAULT_HEMI,
     view=None,
     cmap=None,
-    symmetric_cmap=None,
+    symmetric_cmap: bool | None = None,
     colorbar=True,
     avg_method=None,
     threshold=None,
@@ -379,7 +379,6 @@ def _one_mesh_info(
     This computes the dictionary that gets inserted in the web page,
     which contains the encoded mesh, colors, min and max values, and
     background color.
-
     """
     info: dict[str, Any] = {}
 

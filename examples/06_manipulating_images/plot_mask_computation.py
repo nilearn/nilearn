@@ -15,8 +15,13 @@ In addition, we show here how to tweak the different parameters of the
 underlying routine that extract masks from EPI
 :func:`~nilearn.masking.compute_epi_mask`.
 
-"""
+.. admonition:: dataset
 
+    This example uses:
+
+    - the :ref:`development fMRI dataset <development_dataset>`
+    - the :ref:`Miyawaki 2008 dataset <miyawaki_dataset>`
+"""
 # %%
 # Computing a mask from the background
 # ------------------------------------
@@ -179,7 +184,7 @@ report
 # Generate mask with a high lower cutoff
 # --------------------------------------
 #
-# The NiftiMasker calls the :func:`nilearn.masking.compute_epi_mask` function
+# The NiftiMasker calls the :func:`~nilearn.masking.compute_epi_mask` function
 # to compute the mask from the EPI.
 # It has two important parameters: ``lower_cutoff`` and ``upper_cutoff``.
 # These set the grey-value bounds

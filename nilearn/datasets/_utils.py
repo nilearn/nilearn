@@ -20,13 +20,18 @@ import pandas as pd
 import requests
 
 from nilearn._utils import logger
-from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level, readable_time
+from nilearn._utils.docs import (
+    fill_doc,
+    render_description_directives,
+)
+from nilearn._utils.logger import _has_rich, find_stack_level, readable_time
 from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
     check_parameter_in_allowed,
     check_params,
 )
 from nilearn.datasets.utils import get_data_dirs
+from nilearn.nilearn_typing import NSubject, Verbose
 
 _REQUESTS_TIMEOUT = (15.1, 61)
 PACKAGE_DIRECTORY = Path(__file__).absolute().parent
@@ -46,6 +51,39 @@ ALLOWED_MESH_TYPES = {
     "sphere",
     "flat",
 }
+
+
+def _validate_subjects(
+    n_subjects: NSubject,
+    max_subjects: int,
+    *,
+    warning_message: str | None = None,
+) -> tuple[int, ...]:
+    """Validate and normalize a dataset subject selection."""
+    check_params({"n_subjects": n_subjects})
+
+    if n_subjects is None:
+        return tuple(range(max_subjects))
+
+    if isinstance(n_subjects, (list, tuple)):
+        if not n_subjects:
+            raise ValueError("'n_subjects' cannot be an empty list or tuple.")
+        for subject_id in n_subjects:
+            check_is_of_allowed_type(subject_id, int, "subject id")
+            check_parameter_in_allowed(
+                subject_id, range(1, max_subjects + 1), "subject id"
+            )
+        return tuple(subject_id - 1 for subject_id in n_subjects)
+
+    if n_subjects < 1:
+        raise ValueError("'n_subjects' must be greater than zero.")
+
+    if n_subjects <= max_subjects:
+        return tuple(range(n_subjects))
+
+    if warning_message is not None:
+        warnings.warn(warning_message, stacklevel=find_stack_level())
+    return tuple(range(max_subjects))
 
 
 def md5_hash(string):
@@ -70,7 +108,7 @@ def _md5_sum_file(path):
 
 def read_md5_sum_file(path):
     """Read a MD5 checksum file and returns hashes as a dictionary."""
-    with Path(path).open() as f:
+    with Path(path).open(encoding="utf-8") as f:
         hashes = {}
         while True:
             line = f.readline()
@@ -104,7 +142,6 @@ def _chunk_report_(
         If not resuming, set to zero.
 
     %(verbose)s
-
     """
     if not total_size:
         logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.", verbose)
@@ -134,12 +171,16 @@ def _chunk_read_(
     response,
     local_file,
     chunk_size=8192,
-    report_hook=None,
+    report_hook: bool = False,
     initial_size=0,
     total_size=None,
-    verbose=1,
+    verbose: Verbose = 1,
 ) -> None:
     """Download a file chunk by chunk and show advancement.
+
+    If ``rich`` is installed, a :class:`rich.progress.Progress` bar is
+    used to display advancement. Otherwise, a fallback text-based report
+    is printed instead (see :func:`_chunk_report_`).
 
     Parameters
     ----------
@@ -152,8 +193,8 @@ def _chunk_read_(
     chunk_size : int, default=8192
         Size of downloaded chunks.
 
-    report_hook : :obj:`bool` or None, default=None
-        Whether or not to show downloading advancement. default=None
+    report_hook : :obj:`bool`, default=False
+        Whether or not to show downloading advancement.
 
     initial_size : int, default=0
         If resuming, indicate the initial size of the file.
@@ -167,7 +208,6 @@ def _chunk_read_(
     -------
     data : :obj:`str`
         The downloaded file.
-
     """
     try:
         if total_size is None:
@@ -185,25 +225,68 @@ def _chunk_read_(
             msg_level=3,
         )
         total_size = None
+
+    task_id = None
+    use_rich = report_hook and _has_rich()
+    if use_rich:
+        from rich.progress import (
+            BarColumn,
+            DownloadColumn,
+            Progress,
+            TextColumn,
+            TimeRemainingColumn,
+            TransferSpeedColumn,
+        )
+
+        description = Path(getattr(local_file, "name", "")).name
+        description = description.removesuffix(".part") or "file"
+        progress = Progress(
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            DownloadColumn(),
+            TransferSpeedColumn(),
+            TimeRemainingColumn(),
+        )
+        task_id = progress.add_task(
+            f"Downloading {description}",
+            total=total_size,
+            completed=initial_size,
+        )
+
     bytes_so_far = initial_size
 
     t0 = time_last_display = time.time()
-    for chunk in response.iter_content(chunk_size):
-        bytes_so_far += len(chunk)
-        time_last_read = time.time()
-        if (
-            report_hook
-            and
-            # Refresh report every second or when download is
-            # finished.
-            (time_last_read > time_last_display + 1.0 or not chunk)
-        ):
-            _chunk_report_(bytes_so_far, total_size, initial_size, t0, verbose)
-            time_last_display = time_last_read
-        if chunk:
-            local_file.write(chunk)
-        else:
-            break
+
+    try:
+        # Start the progress bar in the try block
+        # so it is always stopped:
+        # otherwise the progress bar stays as the active live display
+        # and all subsequent downloads fail.
+        if use_rich:
+            progress.start()  # type: ignore[unbound-name]
+        for chunk in response.iter_content(chunk_size):
+            bytes_so_far += len(chunk)
+
+            if use_rich:
+                progress.update(task_id, completed=bytes_so_far)
+
+            elif report_hook:
+                time_last_read = time.time()
+                # Refresh report every second or when download is finished.
+                if time_last_read > time_last_display + 1.0 or not chunk:
+                    _chunk_report_(
+                        bytes_so_far, total_size, initial_size, t0, verbose
+                    )
+                    time_last_display = time_last_read
+
+            if chunk:
+                local_file.write(chunk)
+            else:
+                break
+
+    finally:
+        if use_rich:
+            progress.stop()
 
 
 @fill_doc
@@ -219,7 +302,7 @@ def get_dataset_dir(
 
     %(data_dir)s
 
-    default_paths : :obj:`list` of string or None, default=None
+    default_paths : :obj:`list` of :obj:`str` or None, default=None
         Default system paths in which the dataset may already have been
         installed by a third party software. They will be checked first.
 
@@ -240,7 +323,6 @@ def get_dataset_dir(
     3. the global environment variable NILEARN_SHARED_DATA
     4. the user environment variable NILEARN_DATA
     5. nilearn_data in the user home folder
-
     """
     paths = []
     # Search possible data-specific system paths
@@ -331,9 +413,7 @@ def _is_within_directory(directory, target):
     abs_directory = Path(directory).resolve().absolute()
     abs_target = Path(target).resolve().absolute()
 
-    prefix = os.path.commonprefix([abs_directory, abs_target])
-
-    return prefix == str(abs_directory)
+    return abs_target.is_relative_to(abs_directory)
 
 
 def _safe_extract(tar, path=".", members=None, *, numeric_owner=False) -> None:
@@ -371,7 +451,6 @@ def uncompress_file(file_, delete_archive=True, verbose=1) -> None:
     Notes
     -----
     This handles zip, tar, gzip and bzip files only.
-
     """
     logger.log(f"Extracting data from {file_}...", verbose=verbose)
 
@@ -434,11 +513,11 @@ def _filter_column(array, col: str, criteria):
     col : :obj:`str`
         Name of the column.
 
-    criteria : integer (or float), pair of integers, string or list of these
+    criteria : :obj:`int` (or float), pair of integers,
+               :obj:`str` or list of these
         if integer, select elements in column matching integer
         if a tuple, select elements between the limits given by the tuple
         if a string, select elements that match the string
-
     """
     # Raise an error if the column does not exist. This is the only way to
     # test it across all possible types (pandas, recarray...)
@@ -494,7 +573,6 @@ def filter_columns(array, filters, combination="and"):
     combination : :obj:`str` {'and', 'or'}, default='and'
         String describing the combination operator. Possible values are "and"
         and "or".
-
     """
     check_parameter_in_allowed(combination, ["and", "or"], "combination")
     if combination == "and":
@@ -513,8 +591,11 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
     def send(
         self,
         request,
+        stream=False,  # noqa: ARG002
         timeout=None,
-        **kwargs,  # noqa: ARG002
+        verify=True,  # noqa: ARG002
+        cert=None,  # noqa: ARG002
+        proxies=None,  # noqa: ARG002
     ):
         with contextlib.suppress(Exception):
             timeout, _ = timeout
@@ -543,7 +624,7 @@ def fetch_single_file(
     md5sum=None,
     username=None,
     password=None,
-    verbose=1,
+    verbose: Verbose = 1,
     session=None,
 ):
     """Load requested file, downloading it if needed or requested.
@@ -582,7 +663,6 @@ def fetch_single_file(
     -----
     If, for any reason, the download procedure fails, all downloaded files are
     removed.
-
     """
     if session is None:
         with requests.Session() as sess:
@@ -661,7 +741,7 @@ def fetch_single_file(
                         _chunk_read_(
                             resp,
                             fh,
-                            report_hook=(verbose > 0),
+                            report_hook=bool(verbose > 0),
                             initial_size=initial_size,
                             verbose=verbose,
                         )
@@ -693,7 +773,7 @@ def fetch_single_file(
                     _chunk_read_(
                         resp,
                         fh,
-                        report_hook=(verbose > 0),
+                        report_hook=bool(verbose > 0),
                         initial_size=initial_size,
                         verbose=verbose,
                     )
@@ -723,10 +803,12 @@ def fetch_single_file(
 def get_dataset_descr(ds_name: str) -> str:
     """Return the description of a dataset."""
     try:
+        # read in text mode to normalize line endings across platforms
+        # (CRLF on windows)
         with (PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst").open(
-            "rb"
+            encoding="utf-8"
         ) as rst_file:
-            descr = rst_file.read().decode("utf-8")
+            descr = rst_file.read()
     except OSError:
         descr = ""
 
@@ -736,7 +818,7 @@ def get_dataset_descr(ds_name: str) -> str:
             stacklevel=find_stack_level(),
         )
 
-    return str(descr)
+    return render_description_directives(str(descr))
 
 
 def movetree(src, dst) -> None:
@@ -790,7 +872,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     ----------
     %(data_dir)s
 
-    files : :obj:`list` of (string, string, dict)
+    files : :obj:`list` of (:obj:`str`, :obj:`str`, dict)
         List of files and their corresponding url with dictionary that contains
         options regarding the files. Eg. (file_path, url, opt). If a file_path
         is not found in data_dir, as in data_dir/file_path the download will
@@ -812,7 +894,6 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     -------
     files : :obj:`list` of string
         Absolute paths of downloaded files on disk.
-
     """
     check_params(locals())
 
@@ -945,7 +1026,6 @@ def tree(path, pattern=None, dictionary=False):
 
     dictionary : :obj:`bool`, default=False
         If True, the function will return a dict instead of a list.
-
     """
     path = Path(path)
     files = []
