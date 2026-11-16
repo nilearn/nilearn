@@ -506,6 +506,56 @@ def test_plot_surf_colorbar_no_overlapping_ticks():
     return plot_surf(surf_map=surf_img, title="fsaverage thickness")
 
 
+@pytest.mark.ai_generated
+@pytest.mark.mpl_image_compare(tolerance=5)
+@mpl.rc_context({"axes.autolimit_mode": "data"})
+@pytest.mark.parametrize("hemi", ["left", "right"])
+def test_plot_surf_flat_aspect_ratio(hemi):
+    """Check flat maps are displayed with their true aspect ratio.
+
+    Regression test for https://github.com/nilearn/nilearn/pull/4184
+    """
+    surf_img = load_fsaverage_data(
+        mesh="fsaverage5", mesh_type="flat", data_type="sulcal"
+    )
+    return plot_surf(
+        surf_img.mesh,
+        surf_img,
+        engine="matplotlib",
+        view="dorsal",
+        hemi=hemi,
+        title=f"fsaverage5 flat {hemi=}",
+    )
+
+
+@pytest.mark.ai_generated
+@pytest.mark.skipif(
+    not (is_plotly_installed() and is_kaleido_installed()),
+    reason="This test requires plotly and kaleido to be installed",
+)
+@pytest.mark.mpl_image_compare(
+    tolerance=5, savefig_kwargs={}, deterministic=False
+)
+@pytest.mark.parametrize("hemi", ["left", "right"])
+def test_plot_surf_flat_aspect_ratio_plotly(hemi):
+    """Check flat maps are displayed with their true aspect ratio \
+       with the plotly engine.
+
+    Regression test for https://github.com/nilearn/nilearn/pull/4184
+    """
+    surf_img = load_fsaverage_data(
+        mesh="fsaverage5", mesh_type="flat", data_type="sulcal"
+    )
+    return plot_surf(
+        surf_img.mesh,
+        surf_img,
+        engine="plotly",
+        view="dorsal",
+        hemi=hemi,
+        title=f"fsaverage5 flat {hemi=}",
+    )
+
+
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("bg_on_data", [True, False])
 @pytest.mark.parametrize("symmetric_cmap", [True, False])
