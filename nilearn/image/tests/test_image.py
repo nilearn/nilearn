@@ -1076,7 +1076,6 @@ def test_iter_surface_img(surf_img_2d):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.ai_generated
 def test_iter_img_surface_2d(surf_img_1d, surf_img_2d):
     """Return as is if surface image is 2D."""
     input = surf_img_2d(1)
@@ -2281,7 +2280,6 @@ def test_concat_imgs_surface(surf_img_2d):
         assert value.dtype == np.float16
 
 
-@pytest.mark.ai_generated
 def test_concat_imgs_surface_1d_input_unchanged(surf_img_1d):
     """Check concat_imgs does not modify the 1D surface images it is given."""
     n_vertices = surf_img_1d.shape[0]
