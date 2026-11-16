@@ -75,10 +75,30 @@ if not is_gil_enabled():
     )
 
 
-def pytest_configure(config):  # noqa: ARG001
-    """Use Agg so that no figures pop up."""
+def pytest_configure(config):
+    """Use Agg so that no figures pop up.
+
+    Also ignore pyparsing deprecation warnings we have no control over:
+    they come from older versions of our dependencies (e.g. matplotlib)
+    using newer pyparsing.
+    The filter is only added if pyparsing defines that warning class,
+    as pytest errors on categories it cannot import.
+    """
     if matplotlib is not None:
         matplotlib.use("Agg", force=True)
+
+    # TODO: warnings are only thrown when testing oldest supported versions
+    # of our dependencies (matplotlib),
+    # so this ignore could be removed in the future
+    try:
+        from pyparsing import PyparsingDeprecationWarning  # noqa: F401
+    except ImportError:
+        pass
+    else:
+        config.addinivalue_line(
+            "filterwarnings",
+            "ignore::pyparsing.PyparsingDeprecationWarning",
+        )
 
 
 def pytest_collection_modifyitems(items):
