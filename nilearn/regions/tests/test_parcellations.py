@@ -397,6 +397,11 @@ def surface_img_for_parcellation(rng, n_samples) -> SurfaceImage:
     return SurfaceImage(mesh=mesh, data=data)
 
 
+# surface masks span 2 hemispheres: connectivity has several components
+@pytest.mark.filterwarnings(
+    "ignore:the number of connected components:UserWarning"
+)
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcels", [5, 9])
 def test_all_methods_with_surface(
@@ -416,6 +421,11 @@ def test_all_methods_with_surface(
     assert X_inverse.shape == surface_img_for_parcellation.shape
 
 
+# surface masks span 2 hemispheres: connectivity has several components
+@pytest.mark.filterwarnings(
+    "ignore:the number of connected components:UserWarning"
+)
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("method", METHODS)
 def test_with_surface_and_confounds(
     method, rng, surface_img_for_parcellation, n_samples
@@ -436,6 +446,11 @@ def test_with_surface_and_confounds(
     assert X_transformed.shape == (n_samples, n_parcels)
 
 
+# surface masks span 2 hemispheres: connectivity has several components
+@pytest.mark.filterwarnings(
+    "ignore:the number of connected components:UserWarning"
+)
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("method", METHODS)
 def test_with_multi_surface(method, surface_img_for_parcellation, n_samples):
     """Test if parcellation works with surface data from multiple
@@ -449,6 +464,11 @@ def test_with_multi_surface(method, surface_img_for_parcellation, n_samples):
     assert len(X_transformed) == 3
 
 
+# surface masks span 2 hemispheres: connectivity has several components
+@pytest.mark.filterwarnings(
+    "ignore:the number of connected components:UserWarning"
+)
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("method", METHODS)
 def test_with_surface_mask(method, surface_img_for_parcellation, n_samples):
     """Test if parcellation works with surface data and a mask."""

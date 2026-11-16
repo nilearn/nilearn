@@ -241,7 +241,8 @@ def skip_if(*conditions):
     def decorator(check_func):
 
         @wraps(check_func)
-        def wrapper(estimator):
+        def wrapper(*args, **kwargs):
+            estimator = args[0]
             for condition in conditions:
                 if isinstance(condition, tuple):
                     condition, reason = condition
@@ -253,8 +254,8 @@ def skip_if(*conditions):
                         f"'{estimator.__class__.__name__}'. "
                         f"{reason}"
                     )
-                    return estimator
-            return check_func(estimator)
+                    return None
+            return check_func(*args, **kwargs)
 
         return wrapper
 
@@ -267,7 +268,8 @@ def skip_if_not(*conditions):
     def decorator(check_func):
 
         @wraps(check_func)
-        def wrapper(estimator):
+        def wrapper(*args, **kwargs):
+            estimator = args[0]
             for condition in conditions:
                 if isinstance(condition, tuple):
                     condition, reason = condition
@@ -279,8 +281,8 @@ def skip_if_not(*conditions):
                         f"'{estimator.__class__.__name__}'. "
                         f"{reason}"
                     )
-                    return estimator
-            return check_func(estimator)
+                    return None
+            return check_func(*args, **kwargs)
 
         return wrapper
 
@@ -299,14 +301,15 @@ def xfail_if_not_gil(classes=None):
     def decorator(check_func):
 
         @wraps(check_func)
-        def wrapper(estimator):
+        def wrapper(*args, **kwargs):
+            estimator = args[0]
             if not is_gil_enabled() and (
                 classes is None
                 or (classes and isinstance(estimator, tuple(classes)))
             ):
                 pytest.xfail("May fail without the GIL")
             else:
-                return check_func(estimator)
+                return check_func(*args, **kwargs)
 
         return wrapper
 

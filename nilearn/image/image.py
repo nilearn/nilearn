@@ -784,7 +784,8 @@ def crop_img(
 
     img = check_niimg(img)
     data = _get_data(img)
-    infinity_norm = max(-data.min(), data.max())
+    # cast to float to avoid overflow with (unsigned) integer data
+    infinity_norm = max(-float(data.min()), float(data.max()))
     passes_threshold = np.logical_or(
         data < -rtol * infinity_norm, data > rtol * infinity_norm
     )
