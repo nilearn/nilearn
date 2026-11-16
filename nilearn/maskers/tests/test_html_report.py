@@ -699,7 +699,10 @@ def test_generate_report_unsupported_engine(masker_class, engine):
     when engine is not supported by the masker.
     """
     masker = masker_class()
-    with pytest.warns(UserWarning, match="Falling back to 'matplotlib'"):
+    with (
+        pytest.warns(UserWarning, match="Falling back to 'matplotlib'"),
+        pytest.warns(UserWarning, match="This estimator has not been fit yet"),
+    ):
         masker.generate_report(engine=engine)
     assert masker._report_content["engine"] == "matplotlib"
 

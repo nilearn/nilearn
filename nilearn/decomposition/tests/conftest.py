@@ -36,6 +36,12 @@ def suppress_specific_decomposition_warning() -> Generator[None, None, None]:
             "ignore",
             category=ConvergenceWarning,
         )
+        # the masker fixture mask and the images have different shapes
+        warnings.filterwarnings(
+            "ignore",
+            message="imgs are being resampled to the mask_img resolution",
+            category=UserWarning,
+        )
         yield
 
 
