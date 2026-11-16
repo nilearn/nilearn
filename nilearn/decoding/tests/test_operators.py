@@ -8,6 +8,7 @@ from nilearn.decoding._proximal_operators import prox_l1, prox_tvl1
 
 
 def test_prox_l1_nonexpansiveness(rng, n_features=10):
+    """Test that prox_l1 is strongly non-expansive."""
     x = rng.standard_normal((n_features, 1))
     tau = 0.3
     s = prox_l1(x.copy(), tau)
@@ -16,7 +17,7 @@ def test_prox_l1_nonexpansiveness(rng, n_features=10):
     # We should have ||s(a) - s(b)||^2 <= ||a - b||^2 - ||p(a) - p(b)||^2
     # for all a and b (this is strong non-expansiveness
     for (a, b), (pa, pb), (sa, sb) in zip(
-        *[itertools.product(z[0], z[0]) for z in [x, p, s]]
+        *[itertools.product(z[0], z[0]) for z in [x, p, s]], strict=False
     ):
         assert (sa - sb) ** 2 <= (a - b) ** 2 - (pa - pb) ** 2
 
@@ -24,8 +25,9 @@ def test_prox_l1_nonexpansiveness(rng, n_features=10):
 @pytest.mark.parametrize("ndim", range(3, 4))
 @pytest.mark.parametrize("weight", np.logspace(-10, 10, num=10))
 def test_prox_tvl1_approximates_prox_l1_for_lasso(
-    rng, ndim, weight, size=15, random_state=42, decimal=4, dgap_tol=1e-7
+    rng, ndim, weight, size=15, decimal=4, dgap_tol=1e-7
 ):
+    """Test that prox_tvl1 approximates prox_l1 in the pure LASSO case."""
     l1_ratio = 1.0  # pure LASSO
 
     shape = [size] * ndim
@@ -45,3 +47,29 @@ def test_prox_tvl1_approximates_prox_l1_for_lasso(
 
     # results should be close in l-infinity norm
     assert_almost_equal(np.abs(a - b).max(), 0.0, decimal=decimal)
+
+
+@pytest.mark.parametrize("verbose", [0, 1])
+def test_prox_tvl1_verbose(rng, verbose):
+    """Test that prox_tvl1 runs with different verbosity levels."""
+    l1_ratio = 1.0  # pure LASSO
+
+    size = 15
+    dgap_tol = 1e-7
+    ndim = 3
+    weight = -10
+
+    shape = [size] * ndim
+    z = rng.standard_normal(shape)
+
+    prox_tvl1(
+        z.copy(),
+        weight=weight,
+        l1_ratio=l1_ratio,
+        dgap_tol=dgap_tol,
+        max_iter=10,
+        val_min=-np.inf,
+        val_max=np.inf,
+        verbose=verbose,
+        x_tol=1e-7,
+    )

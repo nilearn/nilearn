@@ -4,23 +4,22 @@ import json
 
 import numpy as np
 from matplotlib import cm as mpl_cm
-from scipy import sparse
+from scipy.sparse import coo_array
 
-from nilearn.plotting.html_document import HTMLDocument
-
-from .. import datasets
-from . import cm
-from .js_plotting_utils import (
-    add_js_lib,
-    colorscale,
-    encode,
-    get_html_template,
-    mesh_to_plotly,
-    to_color_strings,
+from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._assets import get_template
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
 )
+from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.plotting._engine_utils import colorscale, to_color_strings
+from nilearn.plotting.js_plotting_utils import encode, mesh_to_plotly
 
 
-class ConnectomeView(HTMLDocument):  # noqa E101
+class ConnectomeView(HTMLDocument):  # noqa: D101
     pass
 
 
@@ -29,27 +28,24 @@ def _encode_coordinates(coords, prefix):
 
     Parameters
     ----------
-    coords : ndarray, shape=(n_nodes, 3)
+    coords : :class:`numpy.ndarray` of shape=(n_nodes, 3)
         The coordinates of the nodes in MNI space.
 
-    prefix : str
+    prefix : :obj:`str`
         Prefix for the key value in the returned dict.
         Schema is {prefix}{x|y|z}
 
     Returns
     -------
-    coordinates : dict
-        Dictionary containing base64 values for each axis
+    coordinates : :obj:`dict`
+        Dictionary containing base64 values for each axis.
     """
-    coordinates = {}
-
     coords = np.asarray(coords, dtype="<f4")
     marker_x, marker_y, marker_z = coords.T
-    for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]:
-        coordinates[f"{prefix}{cname}"] = encode(
-            np.asarray(coord, dtype="<f4")
-        )
-
+    coordinates = {
+        f"{prefix}{cname}": encode(np.asarray(coord, dtype="<f4"))
+        for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]
+    }
     return coordinates
 
 
@@ -95,13 +91,13 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
     marker_color : color or sequence of colors, default='auto'
         Color(s) of the nodes.
 
-    number_of_nodes : int
+    number_of_nodes : :obj:`int`
         Number of nodes in the view
 
     Returns
     -------
-    markers_colors: list
-        List of `number_of_nodes` colors as hexadecimal values
+    markers_colors : :obj:`list`
+        List of `number_of_nodes` colors as hexadecimal values.
     """
     if isinstance(marker_color, str) and marker_color == "auto":
         colors = mpl_cm.viridis(np.linspace(0, 1, number_of_nodes))
@@ -113,6 +109,7 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
     return to_color_strings(colors)
 
 
+@fill_doc
 def _prepare_lines_metadata(
     adjacency_matrix, coords, threshold, cmap, symmetric_cmap
 ):
@@ -120,33 +117,30 @@ def _prepare_lines_metadata(
 
     Parameters
     ----------
-    adjacency_matrix : ndarray, shape=(n_nodes, n_nodes)
+    adjacency_matrix : :class:`np.ndarray`, shape=(n_nodes, n_nodes)
         The weights of the edges.
 
-    coords : ndarray, shape=(n_nodes, 3)
+    coords : :class:`np.ndarray`, shape=(n_nodes, 3)
         The coordinates of the nodes in MNI space.
 
-    threshold : str, number or None, optional
+    threshold : :obj:`str`, number or None
         If None, no thresholding.
         If it is a number only connections of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%", and only connections of amplitude above the
+        e.g. "25.3%%", and only connections of amplitude above the
         given percentile will be shown.
 
-    cmap : str or matplotlib colormap, default=cm.bwr
-        Colormap to use.
+    %(cmap)s
 
-    symmetric_cmap : bool, default=True
+    symmetric_cmap : :obj:`bool`, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
 
     Returns
     -------
-    coordinates : dict
-        Dictionary containing base64 values for each axis
+    coordinates : :obj:`dict`
+        Dictionary containing base64 values for each axis.
     """
-    lines_metadata = {}
-
     adjacency_matrix = np.nan_to_num(adjacency_matrix, copy=True)
     colors = colorscale(
         cmap,
@@ -154,14 +148,16 @@ def _prepare_lines_metadata(
         threshold=threshold,
         symmetric_cmap=symmetric_cmap,
     )
-    lines_metadata["line_colorscale"] = colors["colors"]
-    lines_metadata["line_cmin"] = float(colors["vmin"])
-    lines_metadata["line_cmax"] = float(colors["vmax"])
+    lines_metadata = {
+        "line_colorscale": colors["colors"],
+        "line_cmin": float(colors["vmin"]),
+        "line_cmax": float(colors["vmax"]),
+    }
     if threshold is not None:
         adjacency_matrix[
             np.abs(adjacency_matrix) <= colors["abs_threshold"]
         ] = 0
-    s = sparse.coo_matrix(adjacency_matrix)
+    s = coo_array(adjacency_matrix)
     nodes = np.asarray([s.row, s.col], dtype=int).T
     edges = np.arange(len(nodes))
     path_edges, path_nodes = _prepare_line(edges, nodes)
@@ -202,7 +198,7 @@ def _get_connectome(
     threshold=None,
     marker_size=None,
     marker_color="auto",
-    cmap=cm.cold_hot,
+    cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cmap=True,
 ):
     lines_metadata = _prepare_lines_metadata(
@@ -226,32 +222,30 @@ def _get_connectome(
     }
 
 
-def _make_connectome_html(connectome_info, embed_js=True):
+def _make_connectome_html(connectome_info) -> ConnectomeView:
     plot_info = {"connectome": connectome_info}
-    mesh = datasets.fetch_surf_fsaverage()
+    mesh = fetch_surf_fsaverage()
     for hemi in ["pial_left", "pial_right"]:
         plot_info[hemi] = mesh_to_plotly(mesh[hemi])
-    as_json = json.dumps(plot_info)
-    as_html = get_html_template(
-        "connectome_plot_template.html"
-    ).safe_substitute(
-        {
-            "INSERT_CONNECTOME_JSON_HERE": as_json,
-            "INSERT_PAGE_TITLE_HERE": (
-                connectome_info["title"] or "Connectome plot"
-            ),
-        }
+
+    connectome_plot_tpl = get_template("html/plotting/connectome_plot.jinja")
+
+    html_view = connectome_plot_tpl.render(
+        page_title=connectome_info["title"] or "Connectome plot",
+        connectome_json=json.dumps(plot_info),
+        display_footer='style="display: none"',
     )
-    as_html = add_js_lib(as_html, embed_js=embed_js)
-    return ConnectomeView(as_html)
+
+    return ConnectomeView(html_view)
 
 
+@fill_doc
 def view_connectome(
     adjacency_matrix,
     node_coords,
     edge_threshold=None,
-    edge_cmap=cm.bwr,
-    symmetric_cmap=True,
+    edge_cmap=DEFAULT_DIVERGING_CMAP,
+    symmetric_cmap: bool = True,
     linewidth=6.0,
     node_color="auto",
     node_size=3.0,
@@ -260,54 +254,60 @@ def view_connectome(
     colorbar_fontsize=25,
     title=None,
     title_fontsize=25,
-):
+    node_labels=None,
+) -> ConnectomeView:
     """Insert a 3d plot of a connectome into an HTML page.
 
     Parameters
     ----------
-    adjacency_matrix : ndarray, shape=(n_nodes, n_nodes)
+    adjacency_matrix : :class:`numpy.ndarray` of shape=(n_nodes, n_nodes)
         The weights of the edges.
 
-    node_coords : ndarray, shape=(n_nodes, 3)
+    node_coords : :class:`numpy.ndarray` of shape=(n_nodes, 3)
         The coordinates of the nodes in :term:`MNI` space.
 
     node_color : color or sequence of colors, default='auto'
         Color(s) of the nodes.
 
-    edge_threshold : str, number or None, optional
+    edge_threshold : :obj:`str`, number or None, default=None
         If None, no thresholding.
         If it is a number only connections of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%", and only connections of amplitude above the
+        e.g. "25.3%%", and only the edges with a abs(value) above
         given percentile will be shown.
 
-    edge_cmap : str or matplotlib colormap, default=cm.bwr
+    edge_cmap : :obj:`str` or matplotlib colormap, default="RdBu_r"
         Colormap to use.
 
-    symmetric_cmap : bool, default=True
+    symmetric_cmap : :obj:`bool`, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
 
-    linewidth : float, default=6.0
+    linewidth : :obj:`float`, default=6.0
         Width of the lines that show connections.
 
-    node_size : float, default=3.0
+    node_size : :obj:`float`, default=3.0
         Size of the markers showing the seeds in pixels.
 
-    colorbar : bool, default=True
-        Add a colorbar.
+    %(colorbar)s
+        default=True
 
-    colorbar_height : float, default=0.5
+    colorbar_height : :obj:`float`, default=0.5
         Height of the colorbar, relative to the figure height.
 
-    colorbar_fontsize : int, default=25
+    colorbar_fontsize : :obj:`int`, default=25
         Fontsize of the colorbar tick labels.
 
-    title : str, optional
-        Title for the plot.
+    %(title)s
 
-    title_fontsize : int, default=25
+    title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
+
+    node_labels : :obj:`list` of :obj:`str` of len=(n_nodes)\
+        or None, default=None
+        Labels for the nodes.
+
+        .. nilearn_versionadded:: 0.14.0
 
     Returns
     -------
@@ -330,9 +330,10 @@ def view_connectome(
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
-
     """
+    check_params(locals())
     node_coords = np.asarray(node_coords)
+    n_nodes = node_coords.shape[0]
 
     connectome_info = _get_connectome(
         adjacency_matrix,
@@ -349,9 +350,22 @@ def view_connectome(
     connectome_info["cbar_fontsize"] = colorbar_fontsize
     connectome_info["title"] = title
     connectome_info["title_fontsize"] = title_fontsize
+
+    if node_labels is None:
+        node_labels = [""] * n_nodes
+    else:
+        check_is_of_allowed_type(node_labels, (list), "node_labels")
+        if len(node_labels) != n_nodes:
+            raise ValueError(
+                f"'node_labels' has {len(node_labels)} items, "
+                f"but {n_nodes} were expected."
+            )
+
+    connectome_info["marker_labels"] = node_labels
     return _make_connectome_html(connectome_info)
 
 
+@fill_doc
 def view_markers(
     marker_coords,
     marker_color="auto",
@@ -359,29 +373,30 @@ def view_markers(
     marker_labels=None,
     title=None,
     title_fontsize=25,
-):
+) -> ConnectomeView:
     """Insert a 3d plot of markers in a brain into an HTML page.
 
     Parameters
     ----------
-    marker_coords : ndarray, shape=(n_nodes, 3)
+    marker_coords : :class:`numpy.ndarray` of shape=(n_nodes, 3)
         The coordinates of the nodes in :term:`MNI` space.
 
-    marker_color : ndarray, shape=(n_nodes,), optional
+    marker_color : :class:`numpy.ndarray` of shape=(n_nodes,) or \
+        'auto', default='auto'
         colors of the markers: list of strings, hex rgb or rgba strings, rgb
-        triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
-        https://matplotlib.org/users/colors.html#specifying-colors)
+        triplets, or rgba triplets (see `formats accepted by matplotlib \
+        <https://matplotlib.org/stable/users/explain/colors/colors.html>`)
 
-    marker_size : float or array-like, default=5.0
+    marker_size : :obj:`float` or array-like, default=5.0
         Size of the markers showing the seeds in pixels.
 
-    marker_labels : list of str, shape=(n_nodes), optional
+    marker_labels : :obj:`list` of :obj:`str` of shape=(n_nodes)\
+                     or None, default=None
         Labels for the markers: list of strings
 
-    title : str, optional
-        Title for the plot.
+    %(title)s
 
-    title_fontsize : int, default=25
+    title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
     Returns
@@ -405,8 +420,9 @@ def view_markers(
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
-
     """
+    check_params(locals())
+
     marker_coords = np.asarray(marker_coords)
     if marker_color is None:
         marker_color = ["red" for _ in range(len(marker_coords))]

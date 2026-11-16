@@ -15,11 +15,22 @@ There are 3 different display types:
 
 A colorbar can optionally be added.
 
-The :func:`nilearn.plotting.plot_prob_atlas` function displays each map
+The :func:`~nilearn.plotting.plot_prob_atlas` function displays each map
 with each different color which are picked randomly from the colormap
 which is already defined.
 
 See :ref:`plotting` for more information to know how to tune the parameters.
+
+Check the :ref:`list of atlases <listing_probabilistic_atlases>`
+to know the ones that are shipped with Nilearn.
+
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Allen 2011 atlas <allen_2011_atlas>`
+    - the :ref:`Smith 2009 atlas <smith_2009_atlas>`
+    - the :ref:`ICBM 152 template <icbm152_2009>`
 """
 
 # %%
@@ -33,9 +44,7 @@ allen = datasets.fetch_atlas_allen_2011()
 icbm = datasets.fetch_icbm152_2009()
 
 # Smith ICA BrainMap 2009
-smith_bm20 = datasets.fetch_atlas_smith_2009(resting=False, dimension=20)[
-    "maps"
-]
+smith_bm20 = datasets.fetch_atlas_smith_2009(resting=False, dimension=20)
 
 # %%
 # Visualization
@@ -48,11 +57,10 @@ plotting.plot_prob_atlas(
     (icbm["wm"], icbm["gm"], icbm["csf"]), title="ICBM tissues"
 )
 
-# "filled_contours" example. An optional colorbar can be set.
+# "filled_contours" example.
 plotting.plot_prob_atlas(
-    smith_bm20,
-    title="Smith2009 20 Brainmap (with colorbar)",
-    colorbar=True,
+    smith_bm20.maps,
+    title="Smith2009 20 Brainmap",
 )
 
 plotting.show()
@@ -97,7 +105,7 @@ plotting.show()
 #     dim = 64
 #     res = 2
 #     difumo = datasets.fetch_atlas_difumo(
-#         dimension=dim, resolution_mm=res, legacy_format=False
+#         dimension=dim, resolution_mm=res,
 #     )
 #
 #     # Visualization

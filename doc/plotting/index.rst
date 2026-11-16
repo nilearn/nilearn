@@ -45,15 +45,15 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
      :scale: 50
 
-.. |plot_anat| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_003.png
+.. |plot_anat| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_004.png
      :target: ../auto_examples/01_plotting/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_004.png
+.. |plot_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_005.png
      :target: ../auto_examples/01_plotting/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_epi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_005.png
+.. |plot_epi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_006.png
      :target: ../auto_examples/01_plotting/plot_demo_plotting.html
      :scale: 50
 
@@ -140,9 +140,10 @@ different heuristics to find cutting coordinates.
 
    To avoid this, you must close the plot as follow:
 
-   .. code-block:: default
+   .. code-block:: python
 
      from nilearn import plotting
+
      display = plotting.plot_stat_map(img)
      display.close()
 
@@ -170,27 +171,23 @@ Different display modes
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_z_small| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_005.png
+.. |plot_xz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_005.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_xz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_006.png
+.. |plot_yx| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_006.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_yx| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_007.png
+.. |plot_yz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_007.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_yz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_008.png
+.. |plot_tiled| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_008.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_tiled| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_009.png
-     :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
-     :scale: 50
-
-.. |plot_mosaic| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_010.png
+.. |plot_mosaic| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_009.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 30
 
@@ -224,11 +221,6 @@ Different display modes
 |plot_y_small|     ``display_mode="y", cut_coords=1``
                    |hack|
                    Cutting in the y direction, with only 1 cut, that is
-                   automatically positioned
-
-|plot_z_small|     ``display_mode="z", cut_coords=1, colorbar=False``
-                   |hack|
-                   Cutting in the z direction, with only 1 cut, that is
                    automatically positioned
 
 |plot_xz|          ``display_mode="xz", cut_coords=[36, 60]``
@@ -279,13 +271,11 @@ image below
 
 .. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_colormaps_001.png
      :target: ../auto_examples/01_plotting/plot_colormaps.html
-     :scale: 50
 
 These colormaps can be used as any other matplotlib colormap.
 
 .. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_colormaps_002.png
      :target: ../auto_examples/01_plotting/plot_colormaps.html
-     :scale: 50
 
 
 .. _display_modules:
@@ -298,23 +288,23 @@ functions. Indeed, these return a display object, such as the
 :class:`nilearn.plotting.displays.OrthoSlicer`. This object represents the
 plot, and has methods to add overlays, contours or edge maps:
 
-.. code-block:: default
+.. code-block:: python
 
         display = plotting.plot_epi(...)
 
-.. |plot_edges| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_013.png
+.. |plot_edges| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_012.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_contours| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_014.png
+.. |plot_contours| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_013.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_fill| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_015.png
+.. |plot_fill| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_014.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_markers| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_016.png
+.. |plot_markers| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_015.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
@@ -382,18 +372,20 @@ To display the figure when running a script, you need to call
 :func:`nilearn.plotting.show` (this is just an alias to
 :func:`matplotlib.pyplot.show`):
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting
+
      plotting.show()
 
 The simplest way to output an image file from the plotting functions is
 to specify the ``output_file`` argument:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting
-     plotting.plot_stat_map(img, output_file='pretty_brain.png')
+
+     plotting.plot_stat_map(img, output_file="pretty_brain.png")
 
 In this case, the display is closed automatically and the plotting
 function returns None.
@@ -403,11 +395,12 @@ function returns None.
 The display object returned by the plotting function has a savefig method
 that can be used to save the plot to an image file:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting
+
      display = plotting.plot_stat_map(img)
-     display.savefig('pretty_brain.png')
+     display.savefig("pretty_brain.png")
      # Remember to close the display
      display.close()
 
@@ -419,7 +412,7 @@ Surface plotting
 Plotting functions required to plot surface data or statistical maps
 on a brain surface.
 
-.. versionadded:: 0.3
+.. nilearn_versionadded:: 0.3
 
 .. |plot_surf_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_surf_atlas_001.png
      :target: ../auto_examples/01_plotting/plot_surf_atlas.html
@@ -459,14 +452,14 @@ Nilearn also has functions for making interactive plots that can be
 seen in a web browser. There are two kinds of plots for which an
 interactive mode is available:
 
-    - :ref:`interactive-surface-plotting`
-    - :ref:`interactive-connectome-plotting`
+- :ref:`interactive-surface-plotting`
+- :ref:`interactive-connectome-plotting`
 
-.. versionadded:: 0.5
+.. nilearn_versionadded:: 0.5
 
    Interactive plotting is new in nilearn 0.5
 
-.. versionadded:: 0.9.0
+.. nilearn_versionadded:: 0.9.0
 
     Nilearn offers the possibility to select different plotting engines
     (either `matplotlib`_ or `plotly`_) for most surface plotting functions.
@@ -480,28 +473,30 @@ interactive mode is available:
 For 3D surface plots of statistical maps or surface atlases, you have different options
 depending on what you want to do and the packages you have installed.
 
-    - If you have `plotly`_ installed: Since Nilearn ``0.9.0``, it is possible to use
-      `plotly`_ as the plotting engine in most surface plotting functions of Nilearn like
-      :func:`plot_surf`, :func:`plot_surf_stat_map`, or :func:`plot_surf_roi`. By default
-      these functions use `matplotlib`_ as the plotting engine which results in
-      non-interactive plots. By setting ``engine='plotly'``, an interactive version of
-      these plots will be automatically opened in your web browser. In addition, if you
-      have `kaleido`_ installed, you can save the plots automatically to png files.
-      Finally, the `plotly`_ figure returned can be further customized in order to make
-      more elaborate plots.
+-    If you have `plotly`_ installed
 
-    - If you don't have `plotly`_:
+     Since Nilearn ``0.9.0``, it is possible to use
+     `plotly`_ as the plotting engine in most surface plotting functions of Nilearn like
+     :func:`plot_surf`, :func:`plot_surf_stat_map`, or :func:`plot_surf_roi`. By default
+     these functions use `matplotlib`_ as the plotting engine which results in
+     non-interactive plots. By setting ``engine='plotly'``, an interactive version of
+     these plots will be automatically opened in your web browser. In addition, if you
+     have `kaleido`_ installed, you can save the plots automatically to png files.
+     Finally, the `plotly`_ figure returned can be further customized in order to make
+     more elaborate plots.
 
-        - If you don't need to save the plots to png and want to interactively visualize
+-    If you don't have `plotly`_
+
+     -    If you don't need to save the plots to png and want to interactively visualize
           the surface, you can rely on ``view`` functions:
 
-            - :func:`view_img_on_surf` which takes as input a volume statistical map and
-              projects it on the cortical surface before making a 3D interactive plot.
+          -    :func:`view_img_on_surf` which takes as input a volume statistical map and
+               projects it on the cortical surface before making a 3D interactive plot.
 
-            - :func:`view_surf` which takes as input a surface map and a cortical mesh
-              and produces a 3D interactive plot on the cortical surface.
+          -    :func:`view_surf` which takes as input a surface map and a cortical mesh
+               and produces a 3D interactive plot on the cortical surface.
 
-        - The last option is to rely on surface plotting functions (:func:`plot_surf`,
+     -    The last option is to rely on surface plotting functions (:func:`plot_surf`,
           :func:`plot_surf_stat_map`, :func:`plot_surf_roi`...) with the default
           `matplotlib`_ plotting engine. In this case, you will be able to save to png
           but you will lose the interactivity of the plots.
@@ -512,11 +507,12 @@ depending on what you want to do and the packages you have installed.
 You can use :func:`view_img_on_surf` to display a 3D statistical map projected on the
 cortical surface:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting, datasets
-     img = datasets.fetch_localizer_button_task()['tmap']
-     view = plotting.view_img_on_surf(img, threshold='90%', surf_mesh='fsaverage')
+
+     img = datasets.fetch_localizer_button_task()["tmap"]
+     view = plotting.view_img_on_surf(img, threshold="90%", surf_mesh="fsaverage")
 
 If you are running a notebook, displaying ``view`` will embed an interactive
 plot (this is the case for all interactive plots produced by nilearn's "view"
@@ -526,7 +522,7 @@ functions):
 
 If you are not using a notebook, you can open the plot in a browser like this:
 
-.. code-block:: default
+.. code-block:: python
 
      view.open_in_browser()
 
@@ -537,7 +533,7 @@ This will open this 3D plot in your web browser:
 
 Or you can save it to an html file:
 
-.. code-block:: default
+.. code-block:: python
 
      view.save_as_html("surface_plot.html")
 
@@ -548,13 +544,18 @@ Or you can save it to an html file:
 You can use :func:`view_surf` to display a 3D surface statistical map over
 a cortical mesh:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting, datasets
+
      destrieux = datasets.fetch_atlas_surf_destrieux()
      fsaverage = datasets.fetch_surf_fsaverage()
-     view = plotting.view_surf(fsaverage['infl_left'], destrieux['map_left'],
-                               cmap='gist_ncar', symmetric_cmap=False)
+     view = plotting.view_surf(
+         fsaverage["infl_left"],
+         destrieux["map_left"],
+         cmap="gist_ncar",
+         symmetric_cmap=False,
+     )
      view.open_in_browser()
 
 
@@ -568,18 +569,24 @@ If you have `plotly`_ installed, you can also use :func:`plot_surf_stat_map` wit
 the ``engine`` parameter set to "plotly" to display a statistical map over a
 cortical mesh:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting, datasets, surface
+
      fsaverage = datasets.fetch_surf_fsaverage()
-     motor_images = datasets.fetch_neurovault_motor_task()
+     motor_images = datasets.load_sample_motor_activation_image()
      mesh = surface.load_surf_mesh(fsaverage.pial_right)
      map = surface.vol_to_surf(motor_images.images[0], mesh)
-     fig = plotting.plot_surf_stat_map(mesh, map, hemi='right',
-                                       view='lateral', colorbar=True,
-                                       threshold=1.2,
-                                       bg_map=fsaverage.sulc_right,
-                                       engine='plotly')
+     fig = plotting.plot_surf_stat_map(
+         mesh,
+         map,
+         hemi="right",
+         view="lateral",
+         colorbar=True,
+         threshold=1.2,
+         bg_map=fsaverage.sulc_right,
+         engine="plotly",
+     )
      fig.show()
 
 .. image:: ../images/plotly_plot_surf_stat_map.png
@@ -594,9 +601,9 @@ use :func:`view_markers`.
 
 :func:`view_connectome`: 3D plot of a connectome:
 
-.. code-block:: default
+.. code-block:: python
 
-     view = plotting.view_connectome(correlation_matrix, coords, edge_threshold='90%')
+     view = plotting.view_connectome(correlation_matrix, coords, edge_threshold="90%")
      view.open_in_browser()
 
 
@@ -610,12 +617,14 @@ use :func:`view_markers`.
 
 :func:`view_markers`: showing markers (e.g. seed locations) in 3D:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting
+
      dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
-     view = plotting.view_markers(dmn_coords, ['red', 'cyan', 'magenta', 'orange'],
-                                  marker_size=10)
+     view = plotting.view_markers(
+         dmn_coords, ["red", "cyan", "magenta", "orange"], marker_size=10
+     )
      view.open_in_browser()
 
 
@@ -629,13 +638,14 @@ Interactive visualization of statistical map slices
 
 :func:`view_img`: open stat map in a Brainsprite viewer (https://github.com/simexp/brainsprite.js):
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting, datasets
-     img = datasets.fetch_localizer_button_task()['tmap']
-     html_view = plotting.view_img(img, threshold=2, vmax=4,
-                                   cut_coords=[-42, -16, 52],
-                                   title="Motor contrast")
+
+     img = datasets.fetch_localizer_button_task()["tmap"]
+     html_view = plotting.view_img(
+         img, threshold=2, vmax=4, cut_coords=[-42, -16, 52], title="Motor contrast"
+     )
 
 in a Jupyter notebook, if ``html_view`` is not requested, the viewer will be inserted in the notebook:
 

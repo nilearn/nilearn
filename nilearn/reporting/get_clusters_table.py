@@ -1,14 +1,15 @@
-"""Implement plotting functions useful to report analysis results.
+"""Implement plotting functions useful to report analysis results."""
 
-Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
-"""
-
+import inspect
 import warnings
+from collections import OrderedDict
+from decimal import Decimal
 from string import ascii_lowercase
+from typing import Literal, cast, overload
 
-import nibabel as nib
 import numpy as np
 import pandas as pd
+from nibabel import Nifti1Image, affines
 from scipy.ndimage import (
     center_of_mass,
     generate_binary_structure,
@@ -17,10 +18,14 @@ from scipy.ndimage import (
     minimum_filter,
 )
 
-from nilearn._utils import check_niimg_3d
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn.image import new_img_like, threshold_img
+from nilearn._utils.param_validation import check_params
+from nilearn.image import check_niimg_3d, new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
+from nilearn.nilearn_typing import ClusterThreshold, NiimgLike, NonNullScalar
+from nilearn.surface.surface import SurfaceImage, find_surface_clusters
 
 
 def _local_max(data, affine, min_distance):
@@ -47,7 +52,6 @@ def _local_max(data, affine, min_distance):
 
     vals : `numpy.ndarray`
         (n_foci,) array of values from data at ijk.
-
     """
     ijk, vals = _identify_subpeaks(data)
     xyz, ijk, vals = _sort_subpeaks(ijk, vals, affine)
@@ -102,8 +106,12 @@ def _identify_subpeaks(data):
     )
     if np.any(subpeaks_outside_cluster):
         warnings.warn(
-            "Attention: At least one of the (sub)peaks falls outside of the "
-            "cluster body. Identifying the nearest in-cluster voxel."
+            (
+                "Attention: At least one of the (sub)peaks "
+                "falls outside of the cluster body. "
+                "Identifying the nearest in-cluster voxel."
+            ),
+            stacklevel=find_stack_level(),
         )
         # Replace centers of mass with their nearest neighbor points in the
         # corresponding clusters. Note this is also equivalent to computing the
@@ -137,7 +145,7 @@ def _cluster_nearest_neighbor(ijk, labels_index, labeled):
     labels = labeled[labeled > 0]
     clusters_ijk = np.array(labeled.nonzero()).T
     nbrs = np.zeros_like(ijk)
-    for ii, (lab, point) in enumerate(zip(labels_index, ijk)):
+    for ii, (lab, point) in enumerate(zip(labels_index, ijk, strict=False)):
         lab_ijk = clusters_ijk[labels == lab]
         dist = np.linalg.norm(lab_ijk - point, axis=1)
         nbrs[ii] = lab_ijk[np.argmin(dist)]
@@ -169,7 +177,7 @@ def _sort_subpeaks(ijk, vals, affine):
     order = (-vals).argsort()
     vals = vals[order]
     ijk = ijk[order, :]
-    xyz = nib.affines.apply_affine(affine, ijk)  # Convert to xyz in mm
+    xyz = affines.apply_affine(affine, ijk)  # Convert to xyz in mm
     return xyz, ijk, vals
 
 
@@ -185,7 +193,7 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
         The subpeak coordinates in ``xyz``, but converted to matrix indices.
     vals : 1D numpy.ndarray
         The statistical value associated with each subpeak in ``xyz``/``ijk``.
-    min_distance : float
+    min_distance : :obj:`float`
         The minimum distance between subpeaks, in millimeters.
 
     Returns
@@ -206,13 +214,61 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
     return ijk, vals
 
 
+# TODO (nilearn >= 0.17.0) simplify overloads
+@overload
 def get_clusters_table(
-    stat_img,
-    stat_threshold,
-    cluster_threshold=None,
-    two_sided=False,
-    min_distance=8.0,
-    return_label_maps=False,
+    stat_img: NiimgLike,
+    stat_threshold: NonNullScalar,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    min_distance: NonNullScalar = ...,
+    return_label_maps: Literal[False] = ...,
+) -> pd.DataFrame: ...
+
+
+@overload
+def get_clusters_table(
+    stat_img: NiimgLike,
+    stat_threshold: NonNullScalar,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    min_distance: NonNullScalar = ...,
+    return_label_maps: Literal[True] = ...,
+) -> tuple[pd.DataFrame, list[Nifti1Image]]: ...
+
+
+@overload
+def get_clusters_table(
+    stat_img: SurfaceImage,
+    stat_threshold: NonNullScalar,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    min_distance: NonNullScalar = ...,
+    return_label_maps: Literal[False] = ...,
+) -> pd.DataFrame: ...
+
+
+@overload
+def get_clusters_table(
+    stat_img: SurfaceImage,
+    stat_threshold: NonNullScalar,
+    cluster_threshold: ClusterThreshold = ...,
+    two_sided: bool = ...,
+    min_distance: NonNullScalar = ...,
+    return_label_maps: Literal[True] = ...,
+) -> tuple[pd.DataFrame, list[SurfaceImage]]: ...
+
+
+@fill_doc
+def get_clusters_table(  # numpydoc ignore=RT05
+    stat_img: NiimgLike | SurfaceImage,
+    stat_threshold: NonNullScalar,
+    cluster_threshold: ClusterThreshold = 0,
+    two_sided: bool = False,
+    min_distance: NonNullScalar = 8.0,
+    return_label_maps: bool = False,  # TODO (nilearn >= 0.17.0) remove
+) -> (
+    pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image] | list[SurfaceImage]]
 ):
     """Create pandas dataframe with img cluster statistics.
 
@@ -229,44 +285,64 @@ def get_clusters_table(
 
         This center of mass may, in some cases, appear outside of the cluster.
 
-        .. versionchanged:: 0.9.2
+        .. nilearn_versionchanged:: 0.9.2
             In this case, the cluster voxel nearest to the center of mass is
             reported.
 
+    .. seealso::
+
+        This function does not report any named anatomical location
+        for the clusters.
+        To get the names of the location of the clusters
+        according to one or several atlases,
+        we recommend using
+        the `atlasreader package <https://github.com/miykael/atlasreader>`_.
+
     Parameters
     ----------
-    stat_img : Niimg-like object
+    stat_img : Niimg-like object or :class:`~nilearn.surface.SurfaceImage`
        Statistical image to threshold and summarize.
 
-    stat_threshold : :obj:`float`
+    stat_threshold : :obj:`float` or :obj:`int`
         Cluster forming threshold. This value must be in the same scale as
         ``stat_img``.
 
-    cluster_threshold : :obj:`int` or None, default=None
-        Cluster size threshold, in :term:`voxels<voxel>`.
-        If None, then no cluster size threshold will be applied.
+    %(cluster_threshold)s
 
     two_sided : :obj:`bool`, default=False
         Whether to employ two-sided thresholding or to evaluate positive values
         only.
 
-    min_distance : :obj:`float`, default=8
+    min_distance : :obj:`float`, default=8.0
         Minimum distance between subpeaks, in millimeters.
 
         .. note::
             If two different clusters are closer than ``min_distance``, it can
             result in peaks closer than ``min_distance``.
 
+        .. note::
+            Not used for surface data.
+
     return_label_maps : :obj:`bool`, default=False
         Whether or not to additionally output cluster label map images.
 
-        .. versionadded:: 0.10.1
+        .. nilearn_versionadded:: 0.10.1
+
+        .. nilearn_deprecated:: 0.15.0dev
+
+            This parameter will be removed in version 0.17.0, when
+            :func:`~nilearn.reporting.get_clusters_table` will always return
+            the cluster label maps together with the table. Set
+            ``return_label_maps=True`` and update your code to unpack both
+            outputs to prepare for this change.
 
     Returns
     -------
-    df : :obj:`pandas.DataFrame`
-        Table with peaks and subpeaks from thresholded ``stat_img``.
-        The columns in this table include:
+    result_table : :obj:`pandas.DataFrame`
+
+        For volume data the dataframe contains
+        the peaks and subpeaks from thresholded ``stat_img``.
+        In this case, the columns in this table include:
 
         ================== ====================================================
         Cluster ID         The cluster number. Subpeaks have letters after the
@@ -280,40 +356,243 @@ def get_clusters_table(
                            in this column.
         ================== ====================================================
 
-    label_maps : :obj:`list`
-        Returned if return_label_maps=True
-        List of Niimg-like objects of cluster label maps.
-        If two_sided==True, first and second maps correspond
+        For surface data, the columns in this table include:
+
+        ======================= ===============================================
+        Cluster ID              The cluster number.
+        Hemisphere              The hemisphere in which the cluster is found.
+        Peak Stat               The statistical value associated
+                                with the cluster.
+                                The statistic type is dependent
+                                on the type of the statistical image.
+        Cluster Size (vertices) The size of the cluster, in vertices.
+        ======================= ===============================================
+
+    label_maps : :obj:`list` of  Niimg-like objects \
+                 or :class:`~nilearn.surface.SurfaceImage`
+        List of of cluster label maps.
+        Returned if ``return_label_maps=True``.
+        If ``two_sided==True``, first and second maps correspond
         to positive and negative tails.
 
-        .. versionadded:: 0.10.1
+        .. nilearn_versionadded:: 0.10.1
 
+    Examples
+    --------
+    >>> from nilearn.datasets import load_sample_motor_activation_image
+    >>> from nilearn.reporting import get_clusters_table
+    >>>
+    >>> img = load_sample_motor_activation_image()
+    >>> table, _ = get_clusters_table(img,
+    ...                               stat_threshold = 4,
+    ...                               cluster_threshold = 20,
+    ...                               two_sided = True,
+    ...                               return_label_maps = True,
+    ... )
+    >>> table.head()
+    Cluster   ID     X     Y     Z  Peak Stat Cluster Size (mm3)
+    0          1  42.0 -19.0  19.0   7.941345               7722
+    1         1a  33.0  -7.0  -2.0   7.905312
+    2         1b  42.0  -1.0  13.0   5.470704
+    3          2  39.0 -22.0  58.0   7.941345              36936
+    4         2a   6.0 -10.0  52.0   7.941345
     """
+    check_params(locals())
+
+    stat_img = threshold_img(
+        img=stat_img,
+        threshold=stat_threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=two_sided,
+    )
+
+    if not return_label_maps:
+        # TODO (nilearn >= 0.17.0) remove
+        warnings.warn(
+            (
+                'The "return_label_maps" parameter is deprecated. '
+                "In version 0.17.0, it will be removed and "
+                '"get_clusters_table" will always return the cluster label '
+                'maps together with the table. Set "return_label_maps" to '
+                "True and update your code to unpack both outputs to avoid "
+                "this warning."
+            ),
+            FutureWarning,
+            stacklevel=find_stack_level(),
+        )
+
+    if not isinstance(stat_img, SurfaceImage):
+        return _get_clusters_table_volume(
+            stat_img,
+            stat_threshold,
+            cluster_threshold=cluster_threshold,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            return_label_maps=return_label_maps,
+        )
+
+    parameters = dict(**inspect.signature(get_clusters_table).parameters)
+    if min_distance != parameters["min_distance"].default:
+        warnings.warn(
+            "The 'min_distance' parameter is not used for surface data "
+            "and will be ignored.",
+            stacklevel=find_stack_level(),
+        )
+
+    return _get_clusters_table_surface(
+        stat_img,
+        stat_threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=two_sided,
+        return_label_maps=return_label_maps,
+    )
+
+
+def _get_clusters_table_surface(
+    stat_img: SurfaceImage,
+    stat_threshold: NonNullScalar,
+    cluster_threshold: ClusterThreshold = 0,
+    two_sided: bool = False,
+    return_label_maps: bool = False,
+    offset: int = 1,
+) -> pd.DataFrame | tuple[pd.DataFrame, list[SurfaceImage]]:
+    """Generate cluster table for surface data.
+
+    When two_sided is True, this function calls itself recursively
+    for each tail.
+
+    Parameters
+    ----------
+    offset : int, default=1
+        Offset to add to cluster IDs.
+        Useful when calling recursively
+        for two-sided thresholding.
+
+    .. do not check for missing parameters in docstring
+
+    Notes
+    -----
+    For other parameters, see `get_clusters_table`.
+    """
+    data = {}
+    all_clusters = []
+    label_maps: list[SurfaceImage] = []
+
+    if not two_sided:
+        cols = [
+            "Cluster ID",
+            "Hemisphere",
+            "Peak Stat",
+            "Cluster Size (vertices)",
+        ]
+
+        for hemi in stat_img.data.parts:
+            clusters, labels = find_surface_clusters(
+                stat_img.mesh.parts[hemi],
+                stat_img.data.parts[hemi],
+                offset=offset,
+            )
+
+            peak_stat = []
+            for i in clusters["index"].tolist():
+                mask = labels == i
+                values = stat_img.data.parts[hemi][mask].ravel()
+
+                cluster_max = np.max(values)
+                peak_stat.append(cluster_max)
+
+            clusters["Peak Stat"] = peak_stat
+
+            clusters["Hemisphere"] = hemi
+            clusters = clusters.rename(
+                columns={
+                    "name": "Cluster ID",
+                    "size": "Cluster Size (vertices)",
+                }
+            )
+            clusters = clusters[cols]
+
+            all_clusters.append(clusters)
+
+            data[hemi] = labels
+
+            offset += len(clusters)
+
+        if offset == 1:
+            warnings.warn(
+                f"No clusters found for '{stat_threshold=}'.",
+                category=UserWarning,
+                stacklevel=find_stack_level(),
+            )
+
+        label_maps = [new_img_like(stat_img, data)]
+
+    else:
+        signs = [1, -1]
+        for sign in signs:
+            temp_stat_map = threshold_img(
+                img=stat_img,
+                threshold=stat_threshold * sign,
+                cluster_threshold=cluster_threshold,
+                two_sided=False,
+            )
+            clusters, label_map = cast(
+                tuple[pd.DataFrame, list[SurfaceImage]],
+                _get_clusters_table_surface(
+                    temp_stat_map,
+                    stat_threshold * sign,
+                    cluster_threshold=cluster_threshold,
+                    two_sided=False,
+                    return_label_maps=True,
+                    offset=offset,
+                ),
+            )
+
+            offset += len(clusters)
+
+            if len(all_clusters) == 0 or len(clusters) > 0:
+                all_clusters.append(clusters)
+
+            label_maps.append(label_map[0])
+
+    result_table = pd.concat(all_clusters, ignore_index=True)
+
+    if return_label_maps is True:
+        return (result_table, label_maps)
+
+    return result_table
+
+
+def _get_clusters_table_volume(
+    stat_img: Nifti1Image,
+    stat_threshold: NonNullScalar,
+    cluster_threshold: ClusterThreshold = 0,
+    two_sided: bool = False,
+    min_distance: NonNullScalar = 8.0,
+    return_label_maps: bool = False,
+) -> pd.DataFrame | tuple[pd.DataFrame, list[Nifti1Image]]:
+    """Generate cluster table for volume data.
+
+    For parameters, see `get_clusters_table`.
+    """
+    if min_distance <= 0:
+        raise ValueError("'min_distance' must be positive.")
+
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
-    # Replace None with 0
-    cluster_threshold = 0 if cluster_threshold is None else cluster_threshold
+
+    label_maps: list[Nifti1Image] = []
 
     # check that stat_img is niimg-like object and 3D
     stat_img = check_niimg_3d(stat_img)
     affine = stat_img.affine
     shape = stat_img.shape
 
-    # Apply threshold(s) to image
-    stat_img = threshold_img(
-        img=stat_img,
-        threshold=stat_threshold,
-        cluster_threshold=cluster_threshold,
-        two_sided=two_sided,
-        mask_img=None,
-        copy=True,
-    )
-
     # If cluster threshold is used, there is chance that stat_map will be
     # modified, therefore copy is needed
     stat_map = safe_get_data(
         stat_img,
         ensure_finite=True,
-        copy_data=(cluster_threshold is not None),
+        copy_data=(cluster_threshold != 0),
     )
 
     # Define array for 6-connectivity, aka NN1 or "faces"
@@ -321,35 +600,46 @@ def get_clusters_table(
 
     voxel_size = np.prod(stat_img.header.get_zooms())
 
+    clusters_found = False
     signs = [1, -1] if two_sided else [1]
-    no_clusters_found = True
-    rows = []
-    label_maps = []
+    rows: list = []
+
     for sign in signs:
+        offset = len(rows)
+
         # Flip map if necessary
         temp_stat_map = stat_map * sign
 
         # Binarize using cluster-defining threshold
-        binarized = temp_stat_map > stat_threshold
+        if not two_sided and stat_threshold < 0:
+            binarized = temp_stat_map < stat_threshold
+        else:
+            binarized = temp_stat_map > stat_threshold
         binarized = binarized.astype(int)
 
-        # If the stat threshold is too high simply return an empty dataframe
+        # If the stat threshold is too high
+        # simply return an empty dataframe
         if np.sum(binarized) == 0:
             warnings.warn(
-                "Attention: No clusters "
-                f'with stat {"higher" if sign == 1 else "lower"} '
+                "No clusters found "
+                f"with stat {'higher' if sign == 1 else 'lower'} "
                 f"than {stat_threshold * sign}",
                 category=UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             continue
 
         # Now re-label and create table
         label_map = label(binarized, bin_struct)[0]
-        clust_ids = sorted(list(np.unique(label_map)[1:]))
-        peak_vals = np.array(
-            [np.max(temp_stat_map * (label_map == c)) for c in clust_ids]
-        )
+        clust_ids = sorted(np.unique(label_map)[1:])
+        if not two_sided and stat_threshold < 0:
+            peak_vals = np.array(
+                [np.min(temp_stat_map * (label_map == c)) for c in clust_ids]
+            )
+        else:
+            peak_vals = np.array(
+                [np.max(temp_stat_map * (label_map == c)) for c in clust_ids]
+            )
         # Sort by descending max value
         clust_ids = [clust_ids[c] for c in (-peak_vals).argsort()]
 
@@ -365,6 +655,9 @@ def get_clusters_table(
         for c_id, c_val in enumerate(clust_ids):
             cluster_mask = label_map == c_val
             masked_data = temp_stat_map * cluster_mask
+            if not two_sided and stat_threshold < 0:
+                # in this we will want to find the local minima
+                masked_data *= -1
 
             cluster_size_mm = int(np.sum(cluster_mask) * voxel_size)
 
@@ -382,15 +675,14 @@ def get_clusters_table(
                     subpeak_ijk[:, 2],
                     stat_img.affine,
                 )
-            ).tolist()
-            subpeak_xyz = np.array(subpeak_xyz).T
+            ).T
 
             # Only report peak and, at most, top 3 subpeaks.
             n_subpeaks = np.min((len(subpeak_vals), 4))
             for subpeak in range(n_subpeaks):
                 if subpeak == 0:
                     row = [
-                        c_id + 1,
+                        c_id + offset + 1,
                         subpeak_xyz[subpeak, 0],
                         subpeak_xyz[subpeak, 1],
                         subpeak_xyz[subpeak, 2],
@@ -400,7 +692,9 @@ def get_clusters_table(
                 else:
                     # Subpeak naming convention is cluster num+letter:
                     # 1a, 1b, etc
-                    sp_id = f"{c_id + 1}{ascii_lowercase[subpeak - 1]}"
+                    sp_id = (
+                        f"{c_id + offset + 1}{ascii_lowercase[subpeak - 1]}"
+                    )
                     row = [
                         sp_id,
                         subpeak_xyz[subpeak, 0],
@@ -412,11 +706,84 @@ def get_clusters_table(
                 rows += [row]
 
         # If we reach this point, there are clusters in this sign
-        no_clusters_found = False
+        clusters_found = True
 
-    if no_clusters_found:
-        df = pd.DataFrame(columns=cols)
+    if clusters_found:
+        result_table = pd.DataFrame(columns=cols, data=rows)
     else:
-        df = pd.DataFrame(columns=cols, data=rows)
+        result_table = pd.DataFrame(columns=cols)
 
-    return (df, label_maps) if return_label_maps else df
+    return (result_table, label_maps) if return_label_maps else result_table
+
+
+@fill_doc
+def clustering_params_to_dataframe(
+    threshold,
+    cluster_threshold,
+    min_distance,
+    height_control,
+    alpha,
+    is_volume_glm,
+) -> pd.DataFrame:
+    """Create a Pandas DataFrame from the supplied arguments.
+
+    For use as part of the Cluster Table.
+
+    Parameters
+    ----------
+    threshold : :obj:`float`
+        Cluster forming threshold in same scale as `stat_img` (either a
+        p-value or z-scale value).
+
+    %(cluster_threshold)s
+
+    min_distance : :obj:`float`
+        For display purposes only.
+        Minimum distance between subpeaks in mm.
+
+    height_control : :obj:`str` or None
+        False positive control meaning of cluster forming
+        threshold: 'fpr' (default) or 'fdr' or 'bonferroni' or None
+
+    alpha : :obj:`float`
+        Number controlling the thresholding (either a p-value or q-value).
+        Its actual meaning depends on the height_control parameter.
+        This function translates alpha to a z-scale threshold.
+
+    is_volume_glm : :obj:`bool`
+        True if we are dealing with volume data.
+
+    Returns
+    -------
+    table_details : Pandas.DataFrame
+        Dataframe with clustering parameters.
+    """
+    check_params(locals())
+    table_details = OrderedDict()
+    threshold = np.around(threshold, 3)
+
+    if height_control:
+        table_details.update({"Height control": height_control})
+        # HTMLDocument.get_iframe() invoked in Python2 Jupyter Notebooks
+        # mishandles certain unicode characters
+        # & raises error due to greek alpha symbol.
+        # This is simpler than overloading the class using inheritance,
+        # especially given limited Python2 use at time of release.
+        if alpha < 0.001:
+            alpha = f"{Decimal(alpha):.2E}"
+        table_details.update({"\u03b1": alpha})
+        table_details.update({"Threshold (computed)": threshold})
+    else:
+        table_details.update({"Height control": "None"})
+        table_details.update({"Threshold Z": threshold})
+
+    if is_volume_glm:
+        table_details.update(
+            {"Cluster size threshold (voxels)": cluster_threshold}
+        )
+        table_details.update({"Minimum distance (mm)": min_distance})
+
+    return pd.DataFrame.from_dict(
+        table_details,
+        orient="index",
+    )

@@ -1,6 +1,6 @@
 """N-dimensional image manipulation."""
 
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
+from pathlib import Path
 
 import numpy as np
 from scipy.ndimage import label, maximum_filter
@@ -10,7 +10,7 @@ from scipy.ndimage import label, maximum_filter
 ###############################################################################
 
 
-def largest_connected_component(volume):
+def largest_connected_component(volume: np.ndarray) -> np.ndarray:
     """Return the largest connected component of a 3D array.
 
     Parameters
@@ -34,13 +34,8 @@ def largest_connected_component(volume):
     This function changes the existing byte-ordering information to new byte
     order, if the given volume has non-native data type. This operation
     is done inplace to avoid big-endian issues with scipy ndimage module.
-
     """
-    if (
-        hasattr(volume, "get_data")
-        or hasattr(volume, "get_fdata")
-        or isinstance(volume, str)
-    ):
+    if hasattr(volume, "get_fdata") or isinstance(volume, (str, Path)):
         raise ValueError(
             "Please enter a valid numpy array. For images use "
             "largest_connected_component_img."
@@ -48,7 +43,7 @@ def largest_connected_component(volume):
     # Get the new byteorder to handle issues like "Big-endian buffer not
     # supported on little-endian compiler" with scipy ndimage label.
     if not volume.dtype.isnative:
-        volume.dtype = volume.dtype.newbyteorder("N")
+        volume = volume.view(volume.dtype.newbyteorder("N"))
 
     # We use asarray to be able to work with masked arrays.
     volume = np.asarray(volume)
@@ -63,7 +58,7 @@ def largest_connected_component(volume):
     return labels == label_count.argmax()
 
 
-def get_border_data(data, border_size):
+def get_border_data(data: np.ndarray, border_size: int) -> np.ndarray:
     """Return the data at the border of an array."""
     return np.concatenate(
         [
@@ -78,12 +73,12 @@ def get_border_data(data, border_size):
 
 
 def peak_local_max(
-    image,
-    min_distance=10,
-    threshold_abs=0,
-    threshold_rel=0.1,
+    image: np.ndarray,
+    min_distance: int = 10,
+    threshold_abs: float = 0,
+    threshold_rel: float = 0.1,
     num_peaks=np.inf,
-):
+) -> np.ndarray:
     """Find peaks in an image, and return them \
     as coordinates or a boolean array.
 
@@ -101,10 +96,10 @@ def peak_local_max(
         `min_distance`). To find the maximum number of peaks, use
         `min_distance=1`.
 
-    threshold_abs : float, default=0
+    threshold_abs : :obj:`float`, default=0
         Minimum intensity of peaks.
 
-    threshold_rel : float, default=0.1
+    threshold_rel : :obj:`float`, default=0.1
         Minimum intensity of peaks calculated as `max(image) * threshold_rel`.
 
     num_peaks : int, default=np.inf
@@ -131,7 +126,6 @@ def peak_local_max(
     This code is mostly adapted from scikit image 0.11.3 release.
     Location of file in scikit image: peak_local_max function in
     skimage.feature.peak
-
     """
     out = np.zeros_like(image, dtype=bool)
 
@@ -154,7 +148,7 @@ def peak_local_max(
 
     if coordinates.shape[0] > num_peaks:
         intensities = image.flat[
-            np.ravel_multi_index(coordinates.transpose(), image.shape)
+            np.ravel_multi_index(tuple(coordinates.transpose()), image.shape)
         ]
         idx_maxsort = np.argsort(intensities)[::-1]
         coordinates = coordinates[idx_maxsort][:num_peaks]

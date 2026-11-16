@@ -4,12 +4,10 @@ This is a good initialization method for ICA.
 """
 
 import numpy as np
-from joblib import Memory
 from sklearn.utils.extmath import randomized_svd
 
-from nilearn._utils import fill_doc
-
-from ._base import _BaseDecomposition
+from nilearn._utils.docs import fill_doc
+from nilearn.decomposition._base import _BaseDecomposition
 
 
 @fill_doc
@@ -22,117 +20,91 @@ class _MultiPCA(_BaseDecomposition):
 
     Parameters
     ----------
-    n_components : int, default=20
+    n_components : :obj:`int`, default=20
         Number of components to extract.
 
-    do_cca : boolean, default=True
+    do_cca : :obj:`bool`, default=True
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
-    random_state : int or RandomState, optional
-        Pseudo number generator state used for random sampling.
+    %(random_state)s
+
     %(smoothing_fwhm)s
-    mask : Niimg-like object, instance of NiftiMasker
-        or MultiNiftiMasker, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters.
+
+    %(mask_decomposition)s
+
     %(mask_strategy)s
-
+        default='epi'.
         .. note::
-             Depending on this value, the mask will be computed from
-             :func:`nilearn.masking.compute_background_mask`,
-             :func:`nilearn.masking.compute_epi_mask`, or
-             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='epi'.
+          These strategies are only relevant for Nifti images and the parameter
+          is ignored for SurfaceImage objects.
 
-    mask_args : dict, optional
+    mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
-    standardize : boolean, default=False
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+    %(standardize_none)s
 
-    standardize_confounds : boolean, default=True
+    standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend : boolean, default=False
+    detrend : :obj:`bool`, default=False
         If detrend is True, the time-series will be detrended before
         components extraction.
 
-    target_affine : 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+    %(target_affine)s
 
-    target_shape : 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    low_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    %(target_shape)s
 
-    high_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    t_r : float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    %(low_pass)s
 
-    memory : instance of joblib.Memory or string, default=None
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(high_pass)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(t_r)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
+
+    memory : instance of joblib.Memory or :obj:`str`, default=None
         Used to cache the masking process.
         By default, no caching is done.
         If a string is given, it is the path to the caching directory.
         If ``None`` is passed will default to ``Memory(location=None)``.
 
-    memory_level : integer, default=0
+    memory_level : :obj:`int`, default=0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    n_jobs : integer, default=1
+    n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
-    verbose : integer, default=0
-        Indicate the level of verbosity. By default, nothing is printed.
+    %(verbose0)s
 
-    Attributes
-    ----------
-    masker_ : instance of MultiNiftiMasker
-        Masker used to filter and mask data as first step. If an instance of
-        MultiNiftiMasker is given in ``mask`` parameter,
-        this is a copy of it. Otherwise, a masker is created using the value
-        of ``mask`` and other NiftiMasker related parameters as initialization.
+    %(base_decomposition_fit_attributes)s
 
-    mask_img_ : Niimg-like object
-        See :ref:`extracting_data`.
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
-
-    components_ : 2D numpy array (n_components x n-voxels)
-        Array of masked extracted components.
-
-        .. note::
-
-            Use attribute ``components_img_`` rather than manually unmasking
-            ``components_`` with ``masker_`` attribute.
-
-    components_img_ : 4D Nifti image
-        4D image giving the extracted PCA components. Each 3D image is a
-        component.
-
-        .. versionadded:: 0.4.1
-
-    variance_ : numpy array (n_components,)
-        The amount of variance explained by each of the selected components.
-
+    %(multi_pca_fit_attributes)s
     """
 
     def __init__(
@@ -142,12 +114,13 @@ class _MultiPCA(_BaseDecomposition):
         smoothing_fwhm=None,
         do_cca=True,
         random_state=None,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
         detrend=False,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -157,13 +130,7 @@ class _MultiPCA(_BaseDecomposition):
         n_jobs=1,
         verbose=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
-        self.n_components = n_components
-        self.do_cca = do_cca
-
-        _BaseDecomposition.__init__(
-            self,
+        super().__init__(
             n_components=n_components,
             random_state=random_state,
             mask=mask,
@@ -174,6 +141,7 @@ class _MultiPCA(_BaseDecomposition):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             target_affine=target_affine,
             target_shape=target_shape,
             mask_strategy=mask_strategy,
@@ -184,8 +152,12 @@ class _MultiPCA(_BaseDecomposition):
             verbose=verbose,
         )
 
+        self.do_cca = do_cca
+
     def _raw_fit(self, data):
         """Process unmasked data directly."""
+        self._fit_cache()
+
         if self.do_cca:
             S = np.sqrt(np.sum(data**2, axis=1))
             S[S == 0] = 1

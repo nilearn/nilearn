@@ -1,14 +1,16 @@
 """
-Searchlight analysis of face vs house recognition
-=================================================
+Searchlight analysis
+====================
 
 Searchlight analysis requires fitting a classifier a large amount of
-times. As a result, it is an intrinsically slow method. In order to speed
-up computing, in this example, Searchlight is run only on one slice on
+times. As a result, it is an intrinsically slow method.
+In order to speed up computing, in this example,
+Searchlight is run only on one slice on
 the :term:`fMRI` (see the generated figures).
 
-.. include:: ../../../examples/masker_note.rst
+.. admonition:: dataset
 
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
 """
 
 # %%
@@ -16,11 +18,11 @@ the :term:`fMRI` (see the generated figures).
 # ------------------
 import pandas as pd
 
-from nilearn import datasets
+from nilearn.datasets import fetch_haxby
 from nilearn.image import get_data, load_img, new_img_like
 
-# We fetch 2nd subject from haxby datasets (which is default)
-haxby_dataset = datasets.fetch_haxby()
+# We fetch 2nd subject from the Haxby datasets (which is default)
+haxby_dataset = fetch_haxby()
 
 # print basic information on the dataset
 print(f"Anatomical nifti image (3D) is located at: {haxby_dataset.mask}")
@@ -63,24 +65,29 @@ process_mask_img = new_img_like(mask_img, process_mask)
 # %%
 # Searchlight computation
 # -----------------------
-
 # Make processing parallel
-# /!\ As each thread will print its progress, n_jobs > 1 could mess up the
+#
+# .. warning::
+#
+#     As each thread will print its progress, n_jobs > 1 could mess up the
 #     information output.
 n_jobs = 2
 
+# %%
 # Define the cross-validation scheme used for validation.
 # Here we use a KFold cross-validation on the run, which corresponds to
 # splitting the samples in 4 folds and make 4 runs using each fold as a test
 # set once and the others as learning sets
+#
+# The radius is the one of the Searchlight sphere that will scan the volume.
+#
 from sklearn.model_selection import KFold
+
+from nilearn.decoding import SearchLight
 
 cv = KFold(n_splits=4)
 
-import nilearn.decoding
-
-# The radius is the one of the Searchlight sphere that will scan the volume
-searchlight = nilearn.decoding.SearchLight(
+searchlight = SearchLight(
     mask_img,
     process_mask_img=process_mask_img,
     radius=5.6,
@@ -91,8 +98,44 @@ searchlight = nilearn.decoding.SearchLight(
 searchlight.fit(fmri_img, y)
 
 # %%
+# Visualization
+# -------------
+# After fitting the searchlight, we can access the searchlight scores
+# as a NIfTI image using the ``scores_img_`` attribute.
+scores_img = searchlight.scores_img_
+
+# %%
+# Use the :term:`fMRI` mean image as a surrogate of anatomical data
+from nilearn.image import mean_img
+
+mean_fmri = mean_img(fmri_img)
+
+# %%
+# Because scores are not a zero-center test statistics,
+# we cannot use plot_stat_map
+from nilearn.plotting import plot_img, plot_stat_map, show
+
+plot_img(
+    scores_img,
+    bg_img=mean_fmri,
+    title="Searchlight scores image",
+    display_mode="z",
+    cut_coords=[-9],
+    vmin=0.2,
+    vmax=0.9,
+    cmap="inferno",
+    threshold=0.2,
+    black_bg=True,
+    colorbar=True,
+)
+
+show()
+
+# %%
 # F-scores computation
 # --------------------
+from sklearn.feature_selection import f_classif
+
 from nilearn.maskers import NiftiMasker
 
 # For decoding, standardizing is often very important
@@ -102,41 +145,14 @@ nifti_masker = NiftiMasker(
     standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
+    verbose=1,
 )
 fmri_masked = nifti_masker.fit_transform(fmri_img)
-
-from sklearn.feature_selection import f_classif
 
 _, p_values = f_classif(fmri_masked, y)
 p_values = -np.log10(p_values)
 p_values[p_values > 10] = 10
 p_unmasked = get_data(nifti_masker.inverse_transform(p_values))
-
-# %%
-# Visualization
-# -------------
-# Use the :term:`fMRI` mean image as a surrogate of anatomical data
-from nilearn import image
-
-mean_fmri = image.mean_img(fmri_img)
-
-from nilearn.plotting import plot_img, plot_stat_map, show
-
-searchlight_img = new_img_like(mean_fmri, searchlight.scores_)
-
-# Because scores are not a zero-center test statistics, we cannot use
-# plot_stat_map
-plot_img(
-    searchlight_img,
-    bg_img=mean_fmri,
-    title="Searchlight",
-    display_mode="z",
-    cut_coords=[-9],
-    vmin=0.42,
-    cmap="hot",
-    threshold=0.2,
-    black_bg=True,
-)
 
 # F_score results
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
@@ -147,7 +163,7 @@ plot_stat_map(
     title="F-scores",
     display_mode="z",
     cut_coords=[-9],
-    colorbar=False,
+    cmap="inferno",
 )
 
 show()

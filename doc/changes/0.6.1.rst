@@ -1,10 +1,8 @@
 
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.6.1
-=====
+Version 0.6.1
+=============
 
 **Released January 2020**
 
@@ -23,6 +21,6 @@ Contributors
 
 The following people contributed to this release:
 
-    * `Elizabeth DuPre`_
-    * `Jerome Dockes`_
-    * `Kshitij Chawla`_
+* `Elizabeth DuPre`_
+* `Jerome Dockes`_
+* `Kshitij Chawla`_

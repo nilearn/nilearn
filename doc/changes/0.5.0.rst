@@ -1,10 +1,8 @@
 
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.5.0
-=====
+Version 0.5.0
+=============
 
 **Released November 2018**
 
@@ -46,7 +44,7 @@ NEW
 
 - :func:`~datasets.fetch_neurovault_auditory_computation_task`.
 
-- :func:`~datasets.fetch_neurovault_motor_task`.
+- ``nilearn.datasets.fetch_neurovault_motor_task``.
 
 
 ENHANCEMENTS
@@ -60,7 +58,7 @@ ENHANCEMENTS
 
 - :bdg-dark:`Code` A cleaner layout and improved navigation for the website, with a better introduction.
 
-- :bdg-dark:`Code` Dataset fetchers are now  more reliable, less verbose.
+- :bdg-dark:`Code` Dataset fetchers are now more reliable, less verbose.
 
 - :bdg-dark:`Code` Anaconda link in the installation documentation updated.
 
@@ -77,8 +75,8 @@ Changes
 
 Lots of changes and improvements. Detailed change list for each release follows.
 
-0.5.0 rc
-========
+Version 0.5.0 rc
+================
 
 Highlights
 ----------
@@ -122,8 +120,8 @@ The following people contributed to this release:
     * `Christian Horea`_ (1)
     * `Jerome Dockes`_ (7)
 
-0.5.0 beta
-==========
+Version 0.5.0 beta
+==================
 
 **Released October 2018**
 
@@ -215,8 +213,8 @@ The following people contributed to this release:
     * Yaroslav Halchenko (1)
     * dtyulman (1)
 
-0.5.0 alpha
-===========
+Version 0.5.0 alpha
+===================
 
 **Released August 2018**
 
@@ -240,13 +238,13 @@ Highlights
 Enhancements
 ------------
 
-- :bdg-success:`API` All ``NiftiMaskers`` now have a ``dtype`` argument. For now the default behaviour is to keep the same data type as the input data.
+- :bdg-success:`API` All ``NiftiMaskers`` now have a ``dtype`` argument. For now the default behavior is to keep the same data type as the input data.
 
 - :bdg-success:`API` New function :func:`~datasets.fetch_surf_fsaverage` to download either ``fsaverage`` or ``fsaverage5`` (Freesurfer cortical meshes).
 
 - :bdg-success:`API` New function :func:`~datasets.fetch_atlas_pauli_2017` to download a recent subcortical neuroimaging atlas.
 
-- :bdg-success:`API` New functions :func:`~datasets.fetch_neurovault_auditory_computation_task` and :func:`~datasets.fetch_neurovault_motor_task` for simple example data.
+- :bdg-success:`API` New functions :func:`~datasets.fetch_neurovault_auditory_computation_task` and ``nilearn.datasets.fetch_neurovault_motor_task`` for simple example data.
 
 - :bdg-info:`Plotting` Displays created by plotting functions can now add a scale bar to indicate the size in mm or cm (see :ref:`plotting`) (by `Oscar Esteban`_).
 
@@ -277,14 +275,14 @@ Contributors
 
 The following people contributed to this release:
 
-    * `Gael Varoquaux`_ (49)
-    * `Jerome Dockes`_ (180)
-    * `Kshitij Chawla`_ (57)
-    * `Sylvain Lan`_ (38)
-    * `Kamalakar Reddy Daddy`_ (36)
-    * `Gilles de Hollander`_ (10)
-    * `Bertrand Thirion`_ (4)
-    * MENUET Romuald (4)
-    * `Moritz Boos`_ (3)
-    * `Peer Herholz`_ (1)
-    * `Pierre Bellec`_ (1)
+* `Gael Varoquaux`_ (49)
+* `Jerome Dockes`_ (180)
+* `Kshitij Chawla`_ (57)
+* `Sylvain Lan`_ (38)
+* `Kamalakar Reddy Daddy`_ (36)
+* `Gilles de Hollander`_ (10)
+* `Bertrand Thirion`_ (4)
+* MENUET Romuald (4)
+* `Moritz Boos`_ (3)
+* `Peer Herholz`_ (1)
+* `Pierre Bellec`_ (1)

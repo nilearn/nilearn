@@ -1,17 +1,30 @@
 """
-A introduction tutorial to fMRI decoding
-========================================
+An introduction tutorial to fMRI decoding
+=========================================
 
 Here is a simple tutorial on decoding with nilearn.
-It reproduces the :footcite:t:`Haxby2001` study
-on a face vs cat discrimination task in a mask of the ventral stream.
 
 This tutorial is meant as an introduction to the various steps of a decoding
-analysis using Nilearn meta-estimator: :class:`nilearn.decoding.Decoder`
+analysis using Nilearn meta-estimator: :class:`~nilearn.decoding.Decoder`
 
-It is not a minimalistic example, as it strives to be didactic. It is not
+It is not a minimalistic example,
+as it strives to be didactic. It is not
 meant to be copied to analyze new data: many of the steps are unnecessary.
+
+.. admonition:: dataset
+
+    This example reproduces the :footcite:t:`Haxby2001` study
+    with the :ref:`Haxby dataset <haxby_dataset>`
+    on a face vs cat discrimination task in a mask of the ventral stream.
 """
+
+# We ignore some warnings that would otherwise
+# be thrown when reading images.
+import warnings
+
+warnings.filterwarnings(
+    "ignore", message="The provided image has no sform in its header."
+)
 
 # %%
 # Retrieve and load the :term:`fMRI` data from the Haxby study
@@ -20,7 +33,7 @@ meant to be copied to analyze new data: many of the steps are unnecessary.
 # First download the data
 # .......................
 #
-# The :func:`nilearn.datasets.fetch_haxby` function will download the
+# The :func:`~nilearn.datasets.fetch_haxby` function will download the
 # Haxby dataset if not present on the disk, in the nilearn data directory.
 # It can take a while to download about 310 Mo of data from the Internet.
 from nilearn import datasets
@@ -38,62 +51,66 @@ print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 # ...................................
 #
 # One way to visualize a :term:`fMRI` volume is
-# using :func:`nilearn.plotting.plot_epi`.
+# using :func:`~nilearn.plotting.plot_epi`.
 # We will visualize the previously fetched :term:`fMRI`
 # data from Haxby dataset.
 #
 # Because :term:`fMRI` data are 4D
 # (they consist of many 3D :term:`EPI` images),
-# we cannot plot them directly using :func:`nilearn.plotting.plot_epi`
+# we cannot plot them directly using :func:`~nilearn.plotting.plot_epi`
 # (which accepts just 3D input).
-# Here we are using :func:`nilearn.image.mean_img` to
+# Here we are using :func:`~nilearn.image.mean_img` to
 # extract a single 3D :term:`EPI` image from the :term:`fMRI` data.
 #
-from nilearn import plotting
 from nilearn.image import mean_img
+from nilearn.plotting import plot_epi, plot_roi, show
 
-plotting.view_img(mean_img(fmri_filename), threshold=None)
+plot_epi(mean_img(fmri_filename))
+
+show()
 
 # %%
 # Feature extraction: from :term:`fMRI` volumes to a data matrix
 # ..............................................................
 #
 # These are some really lovely images, but for machine learning
-# we need matrices to work with the actual data. Fortunately, the
-# :class:`nilearn.decoding.Decoder` object we will use later on can
-# automatically transform Nifti images into matrices.
-# All we have to do for now is define a mask filename.
+# we need matrices to work with the actual data.
+# Fortunately, the :class:`~nilearn.decoding.Decoder` object
+# we will use later on can automatically transform Nifti images into matrices.
 #
-# A mask of the Ventral Temporal (VT) cortex coming from the
-# Haxby study is available:
+# All we have to do for now is define a mask filename
+# to restrict the voxels of the brain
+# we will use as features for our decoding.
+# Here we will use a mask of the Ventral Temporal (VT) cortex
+# coming from the Haxby study:
 mask_filename = haxby_dataset.mask_vt[0]
 
-# Let's visualize it, using the subject's anatomical image as a
-# background
-plotting.plot_roi(mask_filename, bg_img=haxby_dataset.anat[0], cmap="Paired")
+# Let's visualize it,
+# using the subject's anatomical image as a background
+plot_roi(mask_filename, bg_img=haxby_dataset.anat[0], cmap="Paired")
+
+show()
 
 # %%
 # Load the behavioral labels
 # ..........................
 #
-# Now that the brain images are converted to a data matrix, we can apply
-# machine-learning to them, for instance to predict the task that the subject
-# was doing. The behavioral labels are stored in a CSV file, separated by
-# spaces.
+# We are now almost ready to apply machine-learning to these brain images,
+# for instance to predict the task that the subject was doing.
+# The behavioral labels are stored in a CSV file, separated by spaces.
+# The task was a visual-recognition task, and the labels denote the
+# experimental condition: the type of object that was presented to the
+# subject. This is what we are going to try to predict.
 #
 # We use pandas to load them in an array.
 import pandas as pd
 
-# Load behavioral information
 behavioral = pd.read_csv(haxby_dataset.session_target[0], delimiter=" ")
 print(behavioral)
 
-# %%
-# The task was a visual-recognition task, and the labels denote the
-# experimental condition: the type of object that was presented to the
-# subject. This is what we are going to try to predict.
 conditions = behavioral["labels"]
-print(conditions)
+print(conditions.value_counts())
+
 
 # %%
 # Restrict the analysis to cats and faces
@@ -123,33 +140,48 @@ fmri_niimgs = index_img(fmri_filename, condition_mask)
 # %%
 # We apply the same mask to the targets
 conditions = conditions[condition_mask]
-# Convert to numpy array
-conditions = conditions.values
-print(conditions.shape)
+conditions = conditions.to_numpy()
+print(f"{conditions.shape=}")
 
 # %%
 # Decoding with Support Vector Machine
 # ------------------------------------
 #
 # As a decoder, we use a Support Vector Classifier with a linear kernel. We
-# first create it using by using :class:`nilearn.decoding.Decoder`.
+# first create it by using :class:`~nilearn.decoding.Decoder`.
 from nilearn.decoding import Decoder
 
 decoder = Decoder(
-    estimator="svc", mask=mask_filename, standardize="zscore_sample"
+    estimator="svc",
+    mask=mask_filename,
+    screening_percentile=100,
+    verbose=1,
 )
+
+# %%
+#
+# .. include:: ../../../examples/html_repr_note.rst
+#
+decoder
 
 # %%
 # The decoder object is an object that can be fit (or trained) on data with
 # labels, and then predict labels on data without.
 #
-# We first fit it on the data
+# We first fit it on the data.
+#
+# .. note ::
+#
+#   After fitting,
+#   the HTML representation of the estimator looks different
+#   than before fitting.
+#
 decoder.fit(fmri_niimgs, conditions)
 
 # %%
 # We can then predict the labels from the data
 prediction = decoder.predict(fmri_niimgs)
-print(prediction)
+print(f"{prediction=}")
 
 # %%
 # Note that for this classification task both classes contain the same number
@@ -180,20 +212,25 @@ conditions_train = conditions[:-30]
 conditions_test = conditions[-30:]
 
 decoder = Decoder(
-    estimator="svc", mask=mask_filename, standardize="zscore_sample"
+    estimator="svc",
+    mask=mask_filename,
+    screening_percentile=100,
+    verbose=1,
 )
 decoder.fit(fmri_niimgs_train, conditions_train)
 
 prediction = decoder.predict(fmri_niimgs_test)
 
+# %%
+#
 # The prediction accuracy is calculated on the test data: this is the accuracy
-# of our model on examples it hasn't seen to examine how well the model perform
-# in general.
+# of our model on examples it hasn't seen to examine how well the model
+# performs in general.
 
-predicton_accuracy = (prediction == conditions_test).sum() / float(
+prediction_accuracy = (prediction == conditions_test).sum() / float(
     len(conditions_test)
 )
-print(f"Prediction Accuracy: {predicton_accuracy:.3f}")
+print(f"Prediction Accuracy: {prediction_accuracy:.3f}")
 
 # %%
 # Implementing a KFold loop
@@ -207,16 +244,19 @@ cv = KFold(n_splits=5)
 
 for fold, (train, test) in enumerate(cv.split(conditions), start=1):
     decoder = Decoder(
-        estimator="svc", mask=mask_filename, standardize="zscore_sample"
+        estimator="svc",
+        mask=mask_filename,
+        screening_percentile=100,
+        verbose=1,
     )
     decoder.fit(index_img(fmri_niimgs, train), conditions[train])
     prediction = decoder.predict(index_img(fmri_niimgs, test))
-    predicton_accuracy = (prediction == conditions[test]).sum() / float(
+    prediction_accuracy = (prediction == conditions[test]).sum() / float(
         len(conditions[test])
     )
     print(
         f"CV Fold {fold:01d} | "
-        f"Prediction Accuracy: {predicton_accuracy:.3f}"
+        f"Prediction Accuracy: {prediction_accuracy:.3f}\n"
     )
 
 # %%
@@ -231,16 +271,18 @@ n_folds = 5
 decoder = Decoder(
     estimator="svc",
     mask=mask_filename,
-    standardize="zscore_sample",
     cv=n_folds,
     scoring="accuracy",
+    screening_percentile=100,
+    verbose=1,
+    n_jobs=2,
 )
 decoder.fit(fmri_niimgs, conditions)
 
 # %%
 # Cross-validation pipeline can also be implemented manually. More details can
-# be found on `scikit-learn website
-# <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html>`_.
+# be found on :sklearn:`scikit-learn website
+# <modules/generated/sklearn.model_selection.cross_val_score.html>`.
 #
 # Then we can check the best performing parameters per fold.
 print(decoder.cv_params_["face"])
@@ -254,7 +296,7 @@ print(decoder.cv_params_["face"])
 # the structure of the experiment,
 # for instance by leaving out full runs of acquisition.
 #
-# The number of the run is stored in the CSV file giving
+# The number of the runs is stored in the CSV file giving
 # the behavioral data.
 # We have to apply our run mask, to select only cats and faces.
 run_label = behavioral["chunks"][condition_mask]
@@ -270,11 +312,16 @@ from sklearn.model_selection import LeaveOneGroupOut
 cv = LeaveOneGroupOut()
 
 decoder = Decoder(
-    estimator="svc", mask=mask_filename, standardize="zscore_sample", cv=cv
+    estimator="svc",
+    mask=mask_filename,
+    cv=cv,
+    screening_percentile=100,
+    verbose=1,
+    n_jobs=2,
 )
 decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
-print(decoder.cv_scores_)
+print(f"{decoder.cv_scores_['face']=}")
 
 # %%
 # Inspecting the model weights
@@ -286,21 +333,22 @@ print(decoder.cv_scores_)
 # ......................................
 #
 # We retrieve the SVC discriminating weights
-coef_ = decoder.coef_
-print(coef_)
+# (we round it to make it more readable).
+print(f"{decoder.coef_.round(decimals=3)=}")
 
 # %%
-# It's a numpy array with only one coefficient per voxel:
-print(coef_.shape)
+# It's a numpy array with only one coefficient per voxel.
+print(f"{decoder.coef_.shape=}")
 
 # %%
-# To get the Nifti image of these coefficients, we only need retrieve the
-# `coef_img_` in the decoder and select the class
+# To get the Nifti image of these coefficients, we only need to retrieve the
+# ``coef_img_`` in the decoder and select the class.
 
 coef_img = decoder.coef_img_["face"]
 
 # %%
-# coef_img is now a NiftiImage.  We can save the coefficients as a nii.gz file:
+# ``coef_img`` is now a NiftiImage.
+# We can save the coefficients as a nii.gz file.
 from pathlib import Path
 
 output_dir = Path.cwd() / "results" / "plot_decoding_tutorial"
@@ -312,8 +360,10 @@ decoder.coef_img_["face"].to_filename(output_dir / "haxby_svc_weights.nii.gz")
 # Plotting the :term:`SVM` weights
 # ................................
 #
-# We can plot the weights, using the subject's anatomical as a background
-plotting.view_img(
+# We can plot the weights, using the subject's anatomical image as background.
+from nilearn.plotting import view_img
+
+view_img(
     decoder.coef_img_["face"],
     bg_img=haxby_dataset.anat[0],
     title="SVM weights",
@@ -326,41 +376,60 @@ plotting.view_img(
 #
 # Does the model above perform better than chance?
 # To answer this question, we measure a score at random using simple strategies
-# that are implemented in the :class:`nilearn.decoding.Decoder` object. This is
-# useful to inspect the decoding performance by comparing to a score at chance.
+# that are implemented in the :class:`~nilearn.decoding.Decoder` object.
+# This is useful to inspect the decoding performance
+# by comparing to a score at chance.
 
 # %%
-# Let's define a object with Dummy estimator replacing 'svc' for classification
-# setting. This object initializes estimator with default dummy strategy.
+# Let's define an object with a Dummy estimator
+# replacing 'svc' for classification setting.
+# This object initializes estimator
+# with a default dummy strategy.
 dummy_decoder = Decoder(
     estimator="dummy_classifier",
     mask=mask_filename,
     cv=cv,
-    standardize="zscore_sample",
+    screening_percentile=100,
+    verbose=1,
+    n_jobs=2,
 )
 dummy_decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
-# Now, we can compare these scores by simply taking a mean over folds
-print(dummy_decoder.cv_scores_)
+# %%
+# Now, we can compare these scores by simply taking a mean over folds.
+import numpy as np
+
+print(
+    f"decoder: {np.mean(decoder.cv_scores_['face']).round(decimals=3)} "
+    f"+:- {np.std(decoder.cv_scores_['face']).round(decimals=3)}"
+)
+print(
+    "dummy_decoder: "
+    f"{np.mean(dummy_decoder.cv_scores_['face']).round(decimals=3)} "
+    f"+:- {np.std(dummy_decoder.cv_scores_['face']).round(decimals=3)}"
+)
 
 # %%
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 #
-# See also
-# --------
+# .. seealso::
 #
-# * The :ref:`section of the documentation on decoding <decoding>`
+#   * The :ref:`section of the documentation on decoding <decoding>`
 #
-# * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
-#   For decoding without a precomputed mask
+#   * :ref:`sphx_glr_auto_examples_02_decoding_\
+#     plot_haxby_understand_decoder.py`
+#     For a more in-depth understanding
+#     of the :class:`~nilearn.decoding.Decoder`
 #
-# * :ref:`frem`
+#   * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
+#     For decoding without a precomputed mask
 #
-# * :ref:`space_net`
+#   * :ref:`frem`
 #
-# ______________
+#   * :ref:`space_net`
+#
 
 # sphinx_gallery_dummy_images=1

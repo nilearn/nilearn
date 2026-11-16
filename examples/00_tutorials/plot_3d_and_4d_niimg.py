@@ -3,28 +3,28 @@
 ==========================================
 
 Here we discover how to work with 3D and 4D niimgs.
+
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Smith 2009 atlas <smith_2009_atlas>`
+    - a sample motor activation statistical map (`image 10426
+      <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
+      <neurovault_dataset>`)
 """
 
 # %%
 # Downloading tutorial datasets from Internet
 # -------------------------------------------
 #
-# Nilearn comes with functions that download public data from Internet
+# Nilearn comes with functions that download public data from Internet.
 #
 # Let's first check where the data is downloaded on our disk:
-from nilearn import datasets
+from nilearn.datasets import load_sample_motor_activation_image
 
-print(f"Datasets are stored in: {datasets.get_data_dirs()!r}")
-
-# %%
-# Let's now retrieve a motor :term:`contrast`
-# from a :term:`Neurovault` repository
-motor_images = datasets.fetch_neurovault_motor_task()
-motor_images.images
-
-# %%
-# motor_images is a list of filenames. We need to take the first one
-tmap_filename = motor_images.images[0]
+tmap_filename = load_sample_motor_activation_image()
+print(tmap_filename)
 
 
 # %%
@@ -33,13 +33,23 @@ tmap_filename = motor_images.images[0]
 #
 # The file contains a 3D volume, we can easily visualize it as a
 # statistical map:
-from nilearn import plotting
+from nilearn.plotting import plot_stat_map
 
-plotting.plot_stat_map(tmap_filename)
+plot_stat_map(tmap_filename)
+
+# %%
+# Calling ``show`` function
+# from :mod:`nilearn.plotting` package is necessary to display the figure
+# when running as a script outside IPython.
+from nilearn.plotting import show
+
+show()
 
 # %%
 # Visualizing works better with a threshold
-plotting.plot_stat_map(tmap_filename, threshold=3)
+plot_stat_map(tmap_filename, threshold=3)
+
+show()
 
 
 # %%
@@ -47,27 +57,39 @@ plotting.plot_stat_map(tmap_filename, threshold=3)
 # -----------------------------------
 #
 # We can download :term:`resting-state` networks from the Smith 2009 study on
-# correspondence between rest and task
-rsn = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)["maps"]
-rsn
+# correspondence between rest and task.
+from nilearn.datasets import fetch_atlas_smith_2009
+
+rsn = fetch_atlas_smith_2009(resting=True, dimension=10)
 
 # %%
-# It is a 4D nifti file. We load it into the memory to print its
-# shape.
-from nilearn import image
+print(rsn.description.content.maps)
+print(rsn.maps)
 
-print(image.load_img(rsn).shape)
+# %%
+# The :mod:`nilearn.image` package
+# provides some utility functions to work with image files.
+# We can load it into the memory to print its shape.
+from nilearn.image import load_img
+
+print(load_img(rsn.maps).shape)
 
 # %%
 # We can retrieve the first volume (note that Python indexing starts at 0):
-first_rsn = image.index_img(rsn, 0)
+from nilearn.image import index_img
+
+first_rsn = index_img(rsn.maps, 0)
+
+first_rsn = index_img(rsn.maps, 0)
 print(first_rsn.shape)
 
 # %%
 # first_rsn is a 3D image.
 #
 # We can then plot it
-plotting.plot_stat_map(first_rsn)
+plot_stat_map(first_rsn)
+
+show()
 
 
 # %%
@@ -79,12 +101,15 @@ plotting.plot_stat_map(first_rsn)
 #
 # Then we give a few arguments to plot_stat_map in order to have a more
 # compact display.
-for img in image.iter_img(rsn):
+from nilearn.image import iter_img
+
+for img in iter_img(rsn.maps):
     # img is now an in-memory 3D img
-    plotting.plot_stat_map(
+    plot_stat_map(
         img, threshold=3, display_mode="z", cut_coords=1, colorbar=False
     )
 
+show()
 
 # %%
 # Looping through selected volumes in a 4D file
@@ -95,26 +120,19 @@ for img in image.iter_img(rsn):
 #
 # Afterwards, we'll use iter_img to loop through them following the same
 # formula as before.
-selected_volumes = image.index_img(rsn, slice(3, 5))
+selected_volumes = index_img(rsn.maps, slice(3, 5))
 
 # %%
 # If you're new to Python, one thing to note is that the slice constructor
 # uses 0-based indexing. You can confirm this by matching these slices
 # to the previous plot above.
 
-for img in image.iter_img(selected_volumes):
-    plotting.plot_stat_map(img)
+for img in iter_img(selected_volumes):
+    plot_stat_map(img)
 
-
-# %%
-# plotting.show is useful to force the display of figures when running
-# outside IPython
-plotting.show()
+show()
 
 # %%
-# |
-#
-# ______
 #
 # To recap, neuroimaging images (niimgs as we call them) come in
 # different flavors:
@@ -126,7 +144,7 @@ plotting.show()
 # given in the documentation section: :ref:`loading_data`.
 #
 # Functions accept either 3D or 4D images, and we need to use on the one
-# hand :func:`nilearn.image.index_img` or :func:`nilearn.image.iter_img`
+# hand :func:`~nilearn.image.index_img` or :func:`~nilearn.image.iter_img`
 # to break down 4D images into 3D images, and on the other hand
-# :func:`nilearn.image.concat_imgs` to group a list of 3D images into a 4D
+# :func:`~nilearn.image.concat_imgs` to group a list of 3D images into a 4D
 # image.

@@ -1,15 +1,16 @@
 """Tools for computing functional connectivity matrices \
 and also implementation of algorithm for sparse multi subjects learning \
-of Gaussian graphical models."""
+of Gaussian graphical models.
+"""
 
-from .connectivity_matrices import (
+from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
     cov_to_corr,
     prec_to_partial,
     sym_matrix_to_vec,
     vec_to_sym_matrix,
 )
-from .group_sparse_cov import (
+from nilearn.connectome.group_sparse_cov import (
     GroupSparseCovariance,
     GroupSparseCovarianceCV,
     group_sparse_covariance,

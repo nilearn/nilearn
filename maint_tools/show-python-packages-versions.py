@@ -1,34 +1,42 @@
-"""Print the versions of python and several packages used in the project."""
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#    "rich"
+# ]
+# ///
+"""Print the versions of Python and several packages used in the project."""
 
+import importlib.metadata
 import sys
 
-import pkg_resources
+from rich import print
 
 DEPENDENCIES = [
-    "numpy",
-    "scipy",
-    "scikit-learn",
     "joblib",
     "matplotlib",
     "nibabel",
+    "numpy",
+    "pandas",
+    "requests",
+    "scipy",
+    "scikit-learn",
 ]
 
 
 def print_package_version(package_name, indent="  "):
     """Print install status and version of a package."""
     try:
-        dist = pkg_resources.get_distribution(package_name)
-    except pkg_resources.DistributionNotFound:
+        version = importlib.metadata.version(package_name)
+        provenance_info = f"{version} installed"
+    except importlib.metadata.PackageNotFoundError:
         provenance_info = "not installed"
-    else:
-        provenance_info = f"{dist.version} installed in {dist.location}"
 
     print(f"{indent}{package_name}: {provenance_info}")
 
 
 if __name__ == "__main__":
     print("=" * 120)
-    print(f"Python {str(sys.version)}")
+    print(f"Python {sys.version!s}")
     print(f"from: {sys.executable}\n")
 
     print("Dependencies versions")

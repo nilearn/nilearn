@@ -7,7 +7,8 @@
    :no-members:
    :no-inherited-members:
 
-**Classes**:
+Classes
+-------
 
 .. currentmodule:: nilearn.decomposition
 
@@ -17,3 +18,6 @@
 
    CanICA
    DictLearning
+
+.. autoclasstree:: nilearn.decomposition
+   :full:

@@ -4,7 +4,6 @@ Connectivity structure estimation on simulated data
 
 This example shows a comparison of graph lasso and group-sparse covariance
 estimation of connectivity structure for a synthetic dataset.
-
 """
 
 from nilearn import plotting
@@ -66,13 +65,9 @@ for n in range(n_displayed):
 
 
 # Fit one graph lasso per subject
-try:
-    from sklearn.covariance import GraphicalLassoCV
-except ImportError:
-    # for Scitkit-Learn < v0.20.0
-    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
+from sklearn.covariance import GraphicalLassoCV
 
-gl = GraphicalLassoCV(verbose=1)
+gl = GraphicalLassoCV(verbose=True)
 
 for n, subject in enumerate(subjects[:n_displayed]):
     gl.fit(subject)

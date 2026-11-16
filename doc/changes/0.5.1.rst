@@ -1,10 +1,8 @@
 
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.5.1
-=====
+Version 0.5.1
+=============
 
 **Released April 2019**
 
@@ -78,13 +76,13 @@ Contributors
 
 The following people contributed to this release:
 
-    * `Bertrand Thirion`_ (2)
-    * `Kshitij Chawla`_ (90)
-    * `Franz Liem`_ (22)
-    * `Jerome Dockes`_ (16)
-    * `Gael Varoquaux`_ (11)
-    * `Salma Bougacha`_ (8)
-    * himanshupathak21061998 (7)
-    * `Elizabeth DuPre`_ (2)
-    * `Eric Larson`_ (1)
-    * `Pierre Bellec`_ (1)
+* `Bertrand Thirion`_ (2)
+* `Kshitij Chawla`_ (90)
+* `Franz Liem`_ (22)
+* `Jerome Dockes`_ (16)
+* `Gael Varoquaux`_ (11)
+* `Salma Bougacha`_ (8)
+* himanshupathak21061998 (7)
+* `Elizabeth DuPre`_ (2)
+* `Eric Larson`_ (1)
+* `Pierre Bellec`_ (1)

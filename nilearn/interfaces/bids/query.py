@@ -1,12 +1,22 @@
 """Functions for working with BIDS datasets."""
 
-from __future__ import annotations
-
 import glob
 import json
-import os
 from pathlib import Path
+from typing import TypedDict
 from warnings import warn
+
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_params
+
+
+class _BidsFileRef(TypedDict):
+    file_path: str
+    file_basename: str
+    extension: str
+    suffix: str
+    entities: dict[str, str | None]
 
 
 def _get_metadata_from_bids(
@@ -28,32 +38,40 @@ def _get_metadata_from_bids(
     json_files : :obj:`list` of :obj:`str`
         List of path to json files, for example returned by get_bids_files.
 
-    bids_path : :obj:`str` or :obj:`pathlib.Path`, optional
-        Fullpath to the BIDS dataset.
+    bids_path : :obj:`str` or :obj:`pathlib.Path` or None, default=None
+        Full path to the BIDS dataset.
 
     Returns
     -------
     float or None
-        value of the field or None if the field is not found.
+        Value of the field or None if the field is not found.
     """
     if json_files:
         assert isinstance(json_files, list) and isinstance(
             json_files[0], (Path, str)
         )
-        with open(json_files[0]) as f:
+        with Path(json_files[0]).open(encoding="utf-8") as f:
             specs = json.load(f)
         value = specs.get(field)
         if value is not None:
             return value
         else:
-            warn(f"'{field}' not found in file {json_files[0]}.", stacklevel=4)
+            warn(
+                f"'{field}' not found in file {json_files[0]}.",
+                stacklevel=find_stack_level(),
+                category=RuntimeWarning,
+            )
     else:
         msg_suffix = f" in:\n {bids_path}" if bids_path else ""
-        warn(f"\nNo bold.json found in BIDS folder{msg_suffix}.", stacklevel=3)
+        warn(
+            f"\nNo bold.json found in BIDS folder{msg_suffix}.",
+            stacklevel=find_stack_level(),
+        )
 
     return None
 
 
+@fill_doc
 def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     """Return the StartTime metadata field from a BIDS derivatives dataset.
 
@@ -65,24 +83,23 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     Parameters
     ----------
     bids_path : :obj:`str` or :obj:`pathlib.Path`
-        Fullpath to the derivatives folder of the BIDS dataset.
+        Full path to the derivatives folder of the BIDS dataset.
 
-    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), optional
+    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`)
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
         ('task', 'localizer').
 
-    verbose : :obj:`int`, optional
-        Indicate the level of verbosity. By default, nothing is printed.
-        If 0 prints nothing. If 1 prints warnings.
+    %(verbose0)s
 
     Returns
     -------
     float or None
         Value of the field or None if the field is not found.
-
     """
+    check_params(locals())
+
     img_specs = get_bids_files(
         bids_path,
         modality_folder="func",
@@ -95,7 +112,7 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
             msg_suffix = f" in:\n {bids_path}"
             warn(
                 f"\nNo bold.json found in BIDS folder{msg_suffix}.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
         return None
 
@@ -106,30 +123,30 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     )
 
 
+@fill_doc
 def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
     """Return the RepetitionTime metadata field from a BIDS dataset.
 
     Parameters
     ----------
     bids_path : :obj:`str` or :obj:`pathlib.Path`
-        Fullpath to the raw folder of the BIDS dataset.
+        Full path to the raw folder of the BIDS dataset.
 
-    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), optional
+    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`)
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
         ('task', 'localizer').
 
-    verbose : :obj:`int`, optional
-        Indicate the level of verbosity. By default, nothing is printed.
-        If 0 prints nothing. If 1 prints warnings.
+    %(verbose0)s
 
     Returns
     -------
     float or None
         Value of the field or None if the field is not found.
-
     """
+    check_params(locals())
+
     img_specs = get_bids_files(
         main_path=bids_path,
         modality_folder="func",
@@ -143,7 +160,7 @@ def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
             msg_suffix = f" in:\n {bids_path}"
             warn(
                 f"\nNo bold.json found in BIDS folder{msg_suffix}.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
         return None
 
@@ -162,7 +179,7 @@ def get_bids_files(
     modality_folder="*",
     filters=None,
     sub_folder=True,
-):
+) -> list[str]:
     """Search for files in a :term:`BIDS` dataset following given constraints.
 
     This utility function allows to filter files in the :term:`BIDS` dataset by
@@ -182,7 +199,7 @@ def get_bids_files(
 
     Parameters
     ----------
-    main_path : :obj:`str`
+    main_path : :obj:`str` or :obj:`pathlib.Path`
         Directory of the :term:`BIDS` dataset.
 
     file_tag : :obj:`str` accepted by glob, default='*'
@@ -206,7 +223,8 @@ def get_bids_files(
         folders. If given as the empty string '', files will be searched
         inside the sub-label/ses-label directories.
 
-    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), optional
+    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), \
+              default=None
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
@@ -224,42 +242,93 @@ def get_bids_files(
     files : :obj:`list` of :obj:`str`
         List of file paths found.
 
+    Examples
+    --------
+    >>> from pathlib import Path
+    >>> from nilearn.interfaces.bids import get_bids_files
+    >>> bids_path = Path("tmp") / "my_bids_folder"
+    >>> bids_func_dir = bids_path / "sub-01" / "ses-01" / "func"
+    >>>
+    >>> # Create a fake fMRI NIfTI file.
+    >>> bids_func_dir.mkdir(parents=True, exist_ok=True)
+    >>> _ = ( bids_func_dir
+    ...    / "sub-01_ses-01_task-finger_run-01_bold.nii.gz"
+    ...    ).touch()
+    >>>
+    >>> # Searching for finger tapping task fMRI files.
+    >>> bids_files = get_bids_files(
+    ...    bids_path,
+    ...    file_tag='bold',
+    ...    file_type='nii.gz',
+    ...    sub_label='01',
+    ...    modality_folder='func',
+    ...    filters=[('task','finger')],
+    ... )
+    >>> len(bids_files)
+    1
     """
+    main_path = Path(main_path)
+    subject_level_files = []
     if sub_folder:
-        ses_level = ""
-        files = os.path.join(main_path, "sub-*", "ses-*")
-        session_folder_exists = glob.glob(files)
-        if session_folder_exists:
-            ses_level = "ses-*"
-
-        files = os.path.join(
-            main_path,
-            f"sub-{sub_label}",
-            ses_level,
-            modality_folder,
-            f"sub-{sub_label}*_{file_tag}.{file_type}",
+        files = main_path / "sub-*" / "ses-*"
+        session_folder_exists = glob.glob(str(files))
+        ses_level = "ses-*" if session_folder_exists else ""
+        files = (
+            main_path
+            / f"sub-{sub_label}"
+            / ses_level
+            / modality_folder
+            / f"sub-{sub_label}*_{file_tag}.{file_type}"
         )
+        if modality_folder in ["anat", "func"] and session_folder_exists:
+            subject_level_files = glob.glob(
+                str(
+                    main_path
+                    / f"sub-{sub_label}"
+                    / modality_folder
+                    / f"sub-{sub_label}*_{file_tag}.{file_type}"
+                )
+            )
     else:
-        files = os.path.join(main_path, f"*{file_tag}.{file_type}")
+        files = main_path / f"*{file_tag}.{file_type}"
 
-    files = glob.glob(files)
+    files = glob.glob(str(files))
     files.sort()
 
     filters = filters or []
-    if filters:
-        files = [parse_bids_filename(file_) for file_ in files]
-        for key, value in filters:
-            files = [
-                file_
-                for file_ in files
-                if (key in file_ and file_[key] == value)
-            ]
-        return [ref_file["file_path"] for ref_file in files]
+    if filters or subject_level_files:
+        filtered_files = _filter_bids_files(files, filters)
+        if subject_level_files:
+            filtered_files.extend(
+                _filter_bids_files(subject_level_files, filters)
+            )
+            filtered_files.sort(key=lambda file_: str(file_["file_path"]))
+
+        return [ref_file["file_path"] for ref_file in filtered_files]
 
     return files
 
 
-def parse_bids_filename(img_path):
+def _filter_bids_files(
+    files: list[str], filters: list[tuple[str, str]]
+) -> list[_BidsFileRef]:
+    """Filter BIDS files according to their filename entities."""
+    parsed_files = [parse_bids_filename(file_) for file_ in files]
+    for entity, label in filters:
+        parsed_files = [
+            file_
+            for file_ in parsed_files
+            # skip file if it has entity and label = ""
+            if (label == "" and entity not in file_["entities"])
+            or (
+                entity in file_["entities"]
+                and file_["entities"][entity] == label
+            )
+        ]
+    return parsed_files
+
+
+def parse_bids_filename(img_path) -> _BidsFileRef:
     r"""Return dictionary with parsed information from file path.
 
     Parameters
@@ -271,36 +340,51 @@ def parse_bids_filename(img_path):
     -------
     reference : :obj:`dict`
         Returns a dictionary with all key-value pairs in the file name
-        parsed and other useful fields like 'file_path', 'file_basename',
-        'file_tag', 'file_type' and 'file_fields'.
+        parsed and other useful fields.
 
-        The 'file_tag' field refers to the last part of the file under the
-        :term:`BIDS` convention that is of the form \*_tag.type.
-        Contrary to the rest of the file name it is not a key-value pair.
-        This notion should be revised in the case we are handling derivatives
-        since so far the convention will keep the tag prepended to any fields
-        added in the case of preprocessed files that also end with another tag.
-        This parser will consider any tag in the middle of the file name as a
-        key with no value and will be included in the 'file_fields' key.
+        .. nilearn_versionadded :: 0.13.0
 
+        The dictionary will contain:
+
+        - ``'file_path'``,
+        - ``'file_basename'``,
+        - ``'extension'``,
+        - ``'suffix'``
+        - and ``'entities'``.
+
+        See the documentation on
+        `typical bids filename <https://bids.neuroimaging.io/getting_started/folders_and_files/files.html#filename-template>`_
+        for more information.
+
+    Examples
+    --------
+    >>> from nilearn.interfaces.bids import parse_bids_filename
+    >>> ref = parse_bids_filename("sub-01_task-rest_bold.nii.gz")
+    >>> ref["suffix"]
+    'bold'
+    >>> ref["extension"]
+    'nii.gz'
+    >>> ref["entities"] == {"sub": "01", "task": "rest"}
+    True
     """
-    reference = {
-        "file_path": img_path,
-        "file_basename": os.path.basename(img_path),
-    }
-    parts = reference["file_basename"].split("_")
-    tag, type_ = parts[-1].split(".", 1)
-    reference["file_tag"] = tag
-    reference["file_type"] = type_
-    reference["file_fields"] = []
+    file_basename = Path(img_path).name
+    parts = file_basename.split("_")
+    suffix, extension = parts[-1].split(".", 1)
+
+    entities: dict[str, str | None] = {}
     for part in parts[:-1]:
-        field = part.split("-")[0]
-        reference["file_fields"].append(field)
+        entity = part.split("-")[0]
         # In derivatives is not clear if the source file name will
         # be parsed as a field with no value.
+        label = None
         if len(part.split("-")) > 1:
-            value = part.split("-")[1]
-            reference[field] = value
-        else:
-            reference[field] = None
-    return reference
+            label = part.split("-")[1]
+        entities[entity] = label
+
+    return _BidsFileRef(
+        file_path=img_path,
+        file_basename=file_basename,
+        extension=extension,
+        suffix=suffix,
+        entities=entities,
+    )

@@ -1,49 +1,53 @@
 import functools
-import operator
 import os
+import sys
 import warnings
 
+from nilearn._utils.logger import find_stack_level
 
-def rename_parameters(replacement_params,
-                      end_version='future',
-                      lib_name='Nilearn',
-                      ):
+
+def rename_parameters(
+    replacement_params,
+    end_version="future",
+    lib_name="Nilearn",
+):
     """Use this decorator to deprecate & replace specified parameters \
     in the decorated functions and methods without changing \
     function definition or signature.
 
     Parameters
     ----------
-    replacement_params : Dict[string, string]
+    replacement_params : :obj:`dict`
         Dict where the key-value pairs represent the old parameters
         and their corresponding new parameters.
         Example: {old_param1: new_param1, old_param2: new_param2,...}
 
-    end_version : str {'future' | 'next' | <version>}, default='future'
+    end_version : :obj:`str` {'future' | 'next' | <version>}, default='future'
         Version when using the deprecated parameters will raise an error.
         For informational purpose in the warning text.
 
-    lib_name : str, default='Nilearn'
+    lib_name : :obj:`str`, default='Nilearn'
         Name of the library to which the decoratee belongs.
         For informational purpose in the warning text.
-
     """
+
     def _replace_params(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            _warn_deprecated_params(replacement_params, end_version, lib_name,
-                                    kwargs
-                                    )
-            kwargs = _transfer_deprecated_param_vals(replacement_params,
-                                                     kwargs
-                                                     )
+            _warn_deprecated_params(
+                replacement_params, end_version, lib_name, kwargs
+            )
+            kwargs = transfer_deprecated_param_vals(replacement_params, kwargs)
             return func(*args, **kwargs)
 
         return wrapper
+
     return _replace_params
 
 
-def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
+def _warn_deprecated_params(
+    replacement_params, end_version, lib_name, kwargs
+) -> None:
     """Raise warnings about deprecated parameters, \
     for the decorator replace_parameters().
 
@@ -53,31 +57,33 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
         Dictionary of old_parameters as keys with replacement parameters
         as their corresponding values.
 
-    end_version : str
+    end_version : :obj:`str`
         The version where use of the deprecated parameters will raise an error.
         For informational purpose in the warning text.
 
-    lib_name : str
+    lib_name : :obj:`str`
         Name of the library. For informational purpose in the warning text.
 
     kwargs : Dict[str, any]
         Dictionary of all the keyword args passed on the decorated function.
-
     """
     used_deprecated_params = set(kwargs).intersection(replacement_params)
     for deprecated_param_ in used_deprecated_params:
         replacement_param = replacement_params[deprecated_param_]
         param_deprecation_msg = (
             f'The parameter "{deprecated_param_}" '
-            f'will be removed in {end_version} release of {lib_name}. '
-            f'Please use the parameter "{replacement_param}" instead.')
-        warnings.warn(category=DeprecationWarning,
-                      message=param_deprecation_msg,
-                      stacklevel=3)
+            f"will be removed in {end_version} release of {lib_name}. "
+            f'Please use the parameter "{replacement_param}" instead.'
+        )
+        warnings.warn(
+            category=FutureWarning,
+            message=param_deprecation_msg,
+            stacklevel=find_stack_level(),
+        )
 
 
-def _transfer_deprecated_param_vals(replacement_params, kwargs):
-    """Reassigns new parameters \
+def transfer_deprecated_param_vals(replacement_params, kwargs):
+    """Reassign new parameters \
     the values passed to their corresponding deprecated parameters \
     for the decorator replace_parameters().
 
@@ -96,49 +102,51 @@ def _transfer_deprecated_param_vals(replacement_params, kwargs):
         Dictionary of all the keyword args to be passed on
         to the decorated function, with old parameter names
         replaced by new parameters, with their values intact.
-
     """
     for old_param, new_param in replacement_params.items():
-        old_param_val = kwargs.setdefault(old_param, None)
-        if old_param_val is not None:
-            kwargs[new_param] = old_param_val
-        kwargs.pop(old_param)
+        if old_param in kwargs:
+            kwargs[new_param] = kwargs.pop(old_param)
     return kwargs
 
 
-def remove_parameters(removed_params,
-                      reason,
-                      end_version='future'):
+def remove_parameters(
+    removed_params: list[str], reason: str, end_version: str = "future"
+):
     """Use this decorator to deprecate \
     but not renamed parameters in the decorated functions and methods.
 
     Parameters
     ----------
-    removed_params : list[string]
+    removed_params : :obj:`list` of :obj:`str`
         List of old parameters to be removed.
         Example: [old_param1, old_param2, ...]
 
-    reason : str
+    reason : :obj:`str`
         Detailed reason of deprecated parameter and alternative solutions.
 
-    end_version : str {'future' | 'next' | <version>}, default='future'
+    end_version : :obj:`str`, default='future'
         Version when using the deprecated parameters will raise an error.
         For informational purpose in the warning text.
-
     """
+
     def _remove_params(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            found = set(removed_params).intersection(kwargs)
-            if found:
-                message = (f'Parameter(s) {", ".join(found)} '
-                           f'will be removed in version {end_version}; '
-                           f'{reason}')
-                warnings.warn(category=DeprecationWarning,
-                              message=message,
-                              stacklevel=3)
+            if found := set(removed_params).intersection(kwargs):
+                message = (
+                    f"Parameter(s) {', '.join(found)} "
+                    f"will be removed in version {end_version}; "
+                    f"{reason}"
+                )
+                warnings.warn(
+                    category=FutureWarning,
+                    message=message,
+                    stacklevel=find_stack_level(),
+                )
             return func(*args, **kwargs)
+
         return wrapper
+
     return _remove_params
 
 
@@ -150,59 +158,40 @@ def stringify_path(path):
 
     Parameters
     ----------
-    path : str or path-like object
+    path : :obj:`str` or path-like object
 
     Returns
     -------
     str
-
     """
     return path.__fspath__() if isinstance(path, os.PathLike) else path
 
 
-VERSION_OPERATORS = {
-    "==": operator.eq,
-    "!=": operator.ne,
-    ">": operator.gt,
-    ">=": operator.ge,
-    "<": operator.lt,
-    "<=": operator.le,
-}
+def is_matplotlib_installed() -> bool:
+    """Check if matplotlib is installed."""
+    try:
+        import matplotlib  # noqa: F401
+    except ImportError:
+        return False
+    else:
+        return True
 
 
-def compare_version(version_a, operator, version_b):
-    """Compare two version strings via a user-specified operator.
+def check_matplotlib() -> None:
+    """Check if matplotlib is installed, raise an error if not.
 
-    Note: This function is inspired from MNE-Python.
-    See https://github.com/mne-tools/mne-python/blob/main/mne/fixes.py
-
-    Parameters
-    ----------
-    version_a : :obj:`str`
-        First version string.
-
-    operator : {'==', '!=','>', '<', '>=', '<='}
-        Operator to compare ``version_a`` and ``version_b`` in the form of
-        ``version_a operator version_b``.
-
-    version_b : :obj:`str`
-        Second version string.
-
-    Returns
-    -------
-    result : :obj:`bool`
-        The result of the version comparison.
-
+    Used in examples that require matplolib.
     """
-    from packaging.version import parse
+    if not is_matplotlib_installed():
+        raise RuntimeError(
+            "This script needs the matplotlib library.\n"
+            "You can install Nilearn "
+            "and all its plotting dependencies with:\n"
+            "pip install 'nilearn[plotting]'"
+        )
 
-    if operator not in VERSION_OPERATORS:
-        error_msg = "'compare_version' received an unexpected operator "
-        raise ValueError(error_msg + operator + ".")
-    return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))
 
-
-def is_plotly_installed():
+def is_plotly_installed() -> bool:
     """Check if plotly is installed."""
     try:
         import plotly.graph_objects as go  # noqa: F401
@@ -211,10 +200,60 @@ def is_plotly_installed():
     return True
 
 
-def is_kaleido_installed():
+def is_kaleido_installed() -> bool:
     """Check if kaleido is installed."""
     try:
         import kaleido  # noqa: F401
     except ImportError:
         return False
     return True
+
+
+def is_windows_platform() -> bool:
+    """Check if the current platform is Windows."""
+    return os.name == "nt"
+
+
+def is_gil_enabled() -> bool:
+    """Check if the Python GIL is enabled."""
+    try:
+        return sys._is_gil_enabled()  # type: ignore[attr-defined]
+    except AttributeError:
+        # sys._is_gil_enabled does not exist in standard Python builds
+        return True
+
+
+def is_sphinx_build() -> bool:
+    return any(module.startswith("sphinx.") for module in sys.modules)
+
+
+@functools.lru_cache
+def is_notebook() -> bool:
+    """Detect if we are running in a notebook.
+
+    Adapted from https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
+    """
+    try:
+        shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
+    except NameError:
+        shell = False
+
+    try:
+        import marimo as mo
+
+        is_marimo = mo.running_in_notebook()
+    except ImportError:
+        is_marimo = False
+
+    if shell:
+        if shell == "ZMQInteractiveShell":
+            return True  # Jupyter notebook or qtconsole
+        elif shell == "TerminalInteractiveShell":
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+
+    if is_marimo:
+        return is_marimo
+
+    return False

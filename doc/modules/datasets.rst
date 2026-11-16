@@ -12,7 +12,8 @@
 Templates
 ---------
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 
@@ -23,6 +24,8 @@ Templates
    fetch_icbm152_2009
    fetch_icbm152_brain_gm_mask
    fetch_surf_fsaverage
+   load_fsaverage
+   load_fsaverage_data
    load_mni152_brain_mask
    load_mni152_gm_mask
    load_mni152_gm_template
@@ -38,15 +41,18 @@ Templates descriptions
 
     description/icbm152_2009.rst
     description/fsaverage.rst
-    description/fsaverage3.rst
-    description/fsaverage4.rst
-    description/fsaverage5.rst
-    description/fsaverage6.rst
+    description/fsaverage_polymesh.rst
 
 Atlases
 -------
 
-**Functions**:
+Deterministic atlases
+^^^^^^^^^^^^^^^^^^^^^
+
+.. _listing_deterministic_atlases:
+
+.. include:: deterministic_atlases.md
+   :parser: myst_parser.sphinx_
 
 .. currentmodule:: nilearn.datasets
 
@@ -55,17 +61,12 @@ Atlases
    :template: function.rst
 
    fetch_atlas_aal
-   fetch_atlas_allen_2011
    fetch_atlas_basc_multiscale_2015
-   fetch_atlas_craddock_2012
    fetch_atlas_destrieux_2009
-   fetch_atlas_difumo
    fetch_atlas_harvard_oxford
    fetch_atlas_juelich
-   fetch_atlas_msdl
    fetch_atlas_pauli_2017
    fetch_atlas_schaefer_2018
-   fetch_atlas_smith_2009
    fetch_atlas_surf_destrieux
    fetch_atlas_talairach
    fetch_atlas_yeo_2011
@@ -73,34 +74,58 @@ Atlases
    fetch_coords_power_2011
    fetch_coords_seitzman_2018
 
-Atlases descriptions
-^^^^^^^^^^^^^^^^^^^^
+Probabilistic atlases
+^^^^^^^^^^^^^^^^^^^^^
 
+.. _listing_probabilistic_atlases:
+
+.. include:: probabilistic_atlases.md
+   :parser: myst_parser.sphinx_
+
+.. currentmodule:: nilearn.datasets
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   fetch_atlas_allen_2011
+   fetch_atlas_craddock_2012
+   fetch_atlas_difumo
+   fetch_atlas_harvard_oxford
+   fetch_atlas_juelich
+   fetch_atlas_msdl
+   fetch_atlas_pauli_2017
+   fetch_atlas_smith_2009
+
+.. the following is here to avoid warning during the doc build
 .. toctree::
-    :titlesonly:
+    :hidden:
 
-    description/aal_SPM12.rst
-    description/allen_rsn_2011.rst
-    description/basc_multiscale_2015.rst
-    description/craddock_2012.rst
-    description/destrieux_surface.rst
-    description/difumo_atlases.rst
-    description/harvard_oxford.rst
-    description/juelich.rst
+    description/aal_atlas.rst
+    description/allen_2011_atlas.rst
+    description/basc_multiscale_2015_atlas.rst
+    description/craddock_2012_atlas.rst
+    description/difumo_atlas.rst
+    description/destrieux_2009_atlas.rst
+    description/dosenbach_2010_atlas.rst
+    description/harvard_oxford_atlas.rst
+    description/juelich_atlas.rst
     description/msdl_atlas.rst
-    description/pauli_2017.rst
-    description/schaefer_2018.rst
-    description/smith_2009.rst
+    description/pauli_2017_atlas.rst
+    description/power_2011_atlas.rst
+    description/schaefer_2018_atlas.rst
+    description/seitzman_2018_atlas.rst
+    description/smith_2009_atlas.rst
+    description/surf_destrieux_atlas.rst
     description/talairach_atlas.rst
-    description/yeo_2011.rst
-    description/dosenbach_2010.rst
-    description/power_2011.rst
-    description/seitzman_2018.rst
+    description/yeo_2011_atlas.rst
+
 
 Preprocessed datasets
 ---------------------
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 
@@ -110,7 +135,6 @@ Preprocessed datasets
 
    fetch_abide_pcp
    fetch_adhd
-   fetch_bids_langloc_dataset
    fetch_development_fmri
    fetch_ds000030_urls
    fetch_fiac_first_level
@@ -118,10 +142,10 @@ Preprocessed datasets
    fetch_language_localizer_demo_dataset
    fetch_localizer_first_level
    fetch_miyawaki2008
-   fetch_openneuro_dataset_index
    fetch_spm_auditory
    fetch_spm_multimodal_fmri
    fetch_surf_nki_enhanced
+   load_nki
 
 Datasets descriptions
 ^^^^^^^^^^^^^^^^^^^^^
@@ -131,8 +155,8 @@ Datasets descriptions
 
     description/ABIDE_pcp.rst
     description/adhd.rst
-    description/bids_langloc.rst
     description/development_fmri.rst
+    description/ds000030.rst
     description/fiac.rst
     description/haxby2001.rst
     description/language_localizer_demo.rst
@@ -146,7 +170,8 @@ Datasets descriptions
 Statistical maps/derivatives
 ----------------------------
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 
@@ -161,7 +186,7 @@ Statistical maps/derivatives
    fetch_mixed_gambles
    fetch_oasis_vbm
    fetch_neurovault_auditory_computation_task
-   fetch_neurovault_motor_task
+
 
 Statistical maps/derivatives descriptions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -171,12 +196,13 @@ Statistical maps/derivatives descriptions
 
     description/Megatrawls.rst
     description/mixed_gambles.rst
-    description/oasis1.rst
+    description/oasis_vbm.rst
 
 General functions
 -----------------
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 

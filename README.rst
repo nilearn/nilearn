@@ -6,41 +6,47 @@
     :target: https://pypi.org/project/nilearn/
     :alt: PyPI - Python Version
 
-.. image:: https://github.com/nilearn/nilearn/workflows/build/badge.svg?branch=main&event=push
-    :target: https://github.com/nilearn/nilearn/actions
-    :alt: Github Actions Build Status
+.. image:: https://github.com/nilearn/nilearn/actions/workflows/build-docs.yml/badge.svg
+    :target: https://github.com/nilearn/nilearn/actions/workflows/build-docs.yml
+    :alt: Github Actions Doc Build Status
 
-.. image:: https://codecov.io/gh/nilearn/nilearn/branch/main/graph/badge.svg
-    :target: https://codecov.io/gh/nilearn/nilearn
+.. image:: https://github.com/nilearn/nilearn/actions/workflows/test_with_tox.yml/badge.svg?branch=main&event=push
+    :target: https://github.com/nilearn/nilearn/actions/workflows/test_with_tox.yml
+    :alt: Github Actions Test Status
+
+.. image:: https://codecov.io/gh/nilearn/nilearn/graph/badge.svg?token=KpYArSdyXv
+    :target: https://app.codecov.io/gh/nilearn/nilearn
     :alt: Coverage Status
-
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://github.com/psf/black
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.8397156.svg
     :target: https://doi.org/10.5281/zenodo.8397156
 
-.. image:: http://img.shields.io/twitter/follow/nilearn.svg
-    :target: https://twitter.com/nilearn
-    :alt: Twitter
+.. image:: https://img.shields.io/badge/bluesky-Follow_nilearn-blue?logo=bluesky
+    :target: https://bsky.app/profile/nilearn.bsky.social
+    :alt: Bluesky
+
+.. image:: https://img.shields.io/youtube/channel/subscribers/UCU6BMAi2zOhNFnDkbdevmPw
+    :target: https://www.youtube.com/@nilearnevents5116
+    :alt: YouTube Channel Subscribers
 
 .. image:: https://img.shields.io/mastodon/follow/109669703955432270?domain=https%3A%2F%2Ffosstodon.org%2F
     :target: https://fosstodon.org/@nilearn
     :alt: Mastodon
 
 .. image:: https://img.shields.io/discord/711993354929569843
-    :target: https://discord.gg/SsQABEJHkZ
+    :target: https://discord.com/invite/SsQABEJHkZ
     :alt: Discord
-
-
-
 
 nilearn
 =======
 
-Nilearn enables approachable and versatile analyses of brain volumes. It provides statistical and machine-learning tools, with instructive documentation & friendly community.
+Nilearn enables approachable and versatile analyses of brain volumes and surfaces.
+It provides statistical and machine-learning tools, with instructive documentation & friendly community.
 
-It supports general linear model (GLM) based analysis and leverages the `scikit-learn <https://scikit-learn.org>`_ Python toolbox for multivariate statistics with applications such as predictive modelling, classification, decoding, or connectivity analysis.
+It supports general linear model (GLM) based analysis
+and leverages the `scikit-learn <https://scikit-learn.org>`_ Python toolbox
+for multivariate statistics with applications
+such as predictive modeling, classification, decoding, or connectivity analysis.
 
 Important links
 ===============
@@ -54,54 +60,22 @@ Install
 Latest release
 --------------
 
-**1. Setup a virtual environment**
-
-We recommend that you install ``nilearn`` in a virtual Python environment,
-either managed with the standard library ``venv`` or with ``conda``
-(see `miniconda <https://docs.conda.io/en/latest/miniconda.html>`_ for instance).
-Either way, create and activate a new python environment.
-
-With ``venv``:
-
-.. code-block:: bash
-
-    python3 -m venv /<path_to_new_env>
-    source /<path_to_new_env>/bin/activate
-
-Windows users should change the last line to ``\<path_to_new_env>\Scripts\activate.bat`` in order to activate their virtual environment.
-
-With ``conda``:
-
-.. code-block:: bash
-
-    conda create -n nilearn python=3.9
-    conda activate nilearn
-
-**2. Install nilearn with pip**
-
+The easiest way to install Nilearn is using pip.
 Execute the following command in the command prompt / terminal
 in the proper python environment:
 
 .. code-block:: bash
 
-    python -m pip install -U nilearn
+    python -m pip install nilearn
+
+Please find all installation instructions
+`on our install page <https://nilearn.github.io/dev/install.html>`_.
 
 Development version
 -------------------
 
 Please find all development setup instructions in the
-`contribution guide <https://nilearn.github.io/stable/development.html#setting-up-your-environment>`_.
-
-Check installation
-------------------
-
-Try importing nilearn in a python / iPython session:
-
-.. code-block:: python
-
-    import nilearn
-
-If no error is raised, you have installed nilearn correctly.
+`contribution guide <https://nilearn.github.io/dev/development.html#setting-up-your-environment>`_.
 
 Drop-in Hours
 =============
@@ -113,19 +87,27 @@ least one member of the core-developer team is available. These events are held
 on `Jitsi Meet <https://meet.jit.si/nilearn-drop-in-hours>`_ and are fully open,
 anyone is welcome to join!
 For more information and ways to engage with the Nilearn team see
-`How to get help <https://nilearn.github.io/stable/development.html#how-to-get-help>`_.
+`How to get help <https://nilearn.github.io/dev/development.html#how-to-get-help>`_.
 
 Dependencies
 ============
 
-The required dependencies to use the software are listed in the file `pyproject.toml <https://github.com/nilearn/nilearn/blob/main/pyproject.toml>`_.
+The required dependencies to use Nilearn are listed
+in the file `pyproject.toml <https://github.com/nilearn/nilearn/blob/main/pyproject.toml>`_.
 
-If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.3.0 is required.
+If you are using Nilearn plotting functionalities or running the examples, ``matplotlib`` is required.
 
-Some plotting functions in Nilearn support both matplotlib and plotly as plotting engines.
-In order to use the plotly engine in these functions, you will need to install both plotly and kaleido, which can both be installed with pip and anaconda.
+Some plotting functions in Nilearn require both matplotlib and plotly as plotting engines.
+In order to use the plotly engine in these functions,
+you will need to install both plotly and kaleido, which can both be installed with pip and anaconda.
 
-If you want to run the tests, you need pytest >= 6.0.0 and pytest-cov for coverage reporting.
+Please find all installation instructions
+`on our install page <https://nilearn.github.io/dev/install.html>`_.
+
+If you want to run the tests,
+extra dependencies (such as ``pytest`` and ``pytest-cov``) are required.
+See our `development setup instructions <https://nilearn.github.io/dev/development.html#setting-up-your-environment>`_
+to know how to install them.
 
 Development
 ===========

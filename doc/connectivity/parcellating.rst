@@ -53,15 +53,16 @@ Applying clustering
       spatial smoothing, that will be better balanced than with Kmeans.
 
     All these algorithms are showcased in a full code example :
-    :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`. Below, we focus on explaining the principle of Ward.
+    :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`.
+    Below, we focus on explaining the principle of Ward.
 
 |
 
 **Compute a connectivity matrix**
 Before applying Ward's method, we compute a spatial neighborhood matrix,
 aka connectivity matrix. This is useful to constrain clusters to form
-contiguous parcels (see `the scikit-learn documentation
-<https://scikit-learn.org/stable/modules/clustering.html#adding-connectivity-constraints>`_)
+contiguous parcels
+(see :sklearn:`the scikit-learn documentation <modules/clustering.html#adding-connectivity-constraints>`)
 
 This is done from the mask computed by the masker: a niimg from which we
 extract a numpy array and then the connectivity matrix.
@@ -120,7 +121,6 @@ for the labels visualization.
 .. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_001.png
    :target: ../auto_examples/03_connectivity/plot_data_driven_parcellations.html
    :align: center
-   :scale: 80
 
 Compressed representation
 --------------------------
@@ -135,11 +135,11 @@ representation, taking the average on each parcel:
 
 .. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_002.png
    :target: ../auto_examples/03_connectivity/plot_data_driven_parcellations.html
-   :width: 49%
+
 
 .. |right_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_003.png
    :target: ../auto_examples/03_connectivity/plot_data_driven_parcellations.html
-   :width: 49%
+
 
 |left_img| |right_img|
 

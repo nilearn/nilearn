@@ -9,25 +9,41 @@ By participating in Nilearn, you agree to abide by the :nipy:`NIPY Code of Condu
 How to get help?
 ================
 
-If you have issues when using Nilearn, or if you have questions on how to use it, please don't hesitate to reach out!
+If you have issues when using Nilearn, or if you have questions on how to use it,
+please don't hesitate to reach out!
 
-There are currently three ways to interact with the Nilearn team: through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues, and through our weekly `drop-in hours <https://tinyurl.com/nilearn-drop-in-hour>`_, usually **every Wednesday from 4pm to 5pm UTC**.
-We post on our `X account <https://twitter.com/nilearn>`_ in advance to let you know if the drop-in hours are happening that week.
+There are currently three ways to interact with the Nilearn team:
 
-If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn, we would appreciate it if you either ask it during the drop-in hours or create a topic on :neurostars:`neurostars <>` with the "nilearn" tag.
-Asking questions or reporting issues is always valuable because it will help other users having the same problem. So, please don't hold onto a burning question!
+* through the :neurostars:`neurostars <>` forum
 
-We ask that you *don't* open an issue on :nilearn-gh:`GitHub <>` for usage questions. We use our :nilearn-gh:`GitHub <>` issue board for bug reports, feature requests, and documentation changes only.
+* our :nilearn-gh:`github <>` issues
+
+* through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_,
+  usually **every Wednesday from 4pm to 5pm UTC**.
+  We post on our `Bluesky account <https://bsky.app/profile/nilearn.bsky.social>`_ in advance
+  to let you know if the drop-in hours are happening that week.
+
+If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn,
+we would appreciate it if you either ask it during the drop-in hours
+or create a topic on :neurostars:`neurostars <>` with the "nilearn" tag.
+Asking questions or reporting issues is always valuable
+because it will help other users having the same problem.
+So, please don't hold onto a burning question!
+
+We ask that you *don't* open an issue on :nilearn-gh:`GitHub <>` for usage questions.
+We use our :nilearn-gh:`GitHub <>` issue board for bug reports, feature requests, and documentation changes only.
 
 How to help the project?
 ========================
 
-If you are interested in contributing to the Nilearn project, we thank you very much. Note that there are multiple ways to help us, and not all of them require writing code.
+If you are interested in contributing to the Nilearn project, we thank you very much.
+Note that there are multiple ways to help us, and not all of them require writing code.
 
 Report bugs or discuss enhancement ideas
 ----------------------------------------
 
-We welcome open discussion around improvements---both to the documentation as well as to the code base---through our GitHub issue board!
+We welcome open discussion around improvements ---both to the documentation as well as to the code base---
+through our GitHub issue board!
 
 * If you think you have discovered a bug,
   please start by searching through the existing :nilearn-gh:`issues <issues>`
@@ -46,19 +62,22 @@ We welcome open discussion around improvements---both to the documentation as we
 Answer questions
 ----------------
 
-Another way to help the project is to answer questions on :neurostars:`neurostars <>`, or comment on github :nilearn-gh:`issues <issues>`.
-Some :nilearn-gh:`issues <issues>` are used to gather user opinions on various questions, and any input from the community is valuable to us.
+Another way to help the project is to answer questions on :neurostars:`neurostars <>`,
+or comment on github :nilearn-gh:`issues <issues>`.
+Some :nilearn-gh:`issues <issues>` are used to gather user opinions on various questions,
+and any input from the community is valuable to us.
 
 Review Pull Requests
 --------------------
 
-Any addition to the Nilearn's code base has to be reviewed and approved by several people including at least two :ref:`core_devs`.
+Any addition to the Nilearn's code base has to be reviewed and approved
+by several people including at least two :ref:`core_devs`.
 This can put a heavy burden on :ref:`core_devs` when a lot of
 :nilearn-gh:`pull requests <pulls>` are opened at the same time.
 We welcome help in reviewing :nilearn-gh:`pull requests <pulls>` from any
 community member.
-We do not expect community members to be experts in all changes included in
-:nilearn-gh:`pull requests <pulls>`, and we encourage you to concentrate on those code changes that you feel comfortable with.
+We do not expect community members to be experts in all changes included in :nilearn-gh:`pull requests <pulls>`,
+and we encourage you to concentrate on those code changes that you feel comfortable with.
 As always, more eyes on a code change means that the code is more likely to work in a wide variety of contexts!
 
 Contribute code
@@ -74,13 +93,47 @@ If you want to contribute code:
   to get started, :nilearn-gh:`known bugs <labels/Bug>`,
   or :nilearn-gh:`proposed enhancements <labels/Enhancement>`.
 
+  If you want to help with a known issue,
+  make sure it has not been assigned to someone else
+  or that no open PR is associated with that issue.
+
+  If you want an issue to be assigned to you,
+  notify the Nilearn dev-team by adding ``@nilearn/triaging``
+  to one comment in the issue.
+
 Please see the :ref:`contributing_code` section for more detailed information, including
 instructions for  `Setting up your environment`_ and a description of the `Contribution Guidelines`_.
+
+
+Automated contributions policy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Contributing to Nilearn requires human judgment, contextual understanding,
+and familiarity with Nilearn's structure and goals.
+It is not suitable for automated AI coding agent driven contributions.
+Instead, we value authentic human engagement in our community.
+
+- Do not post output from Large Language Models or similar generative AI
+  as comments on our GitHub or our Discord server,
+  as such comments tend to be formulaic and low content.
+
+- If you use generative AI tools
+  as an aid in developing code or documentation changes,
+  ensure that you fully understand and can explain the proposed changes, and it complies with Nilearn's code structure and coding conventions.
+
+Please do not submit issues or pull requests generated by fully-automated tools; i.e., without human review.
+Maintainers reserve the right, at their sole discretion, to close such submissions and to block any account responsible for them.
+
+If you have used AI tools, please declare their use in your issue or pull request description.
+
+Pull requests that appear to violate this policy will be closed without review.
+
 
 How do we decide what code goes in?
 ====================================
 
-The following sections explain the :ref:`nilearn_scope` and :ref:`nilearn_governance`, which jointly determine whether potential contributions will be accepted into the project.
+The following sections explain the :ref:`nilearn_scope` and :ref:`nilearn_governance`,
+which jointly determine whether potential contributions will be accepted into the project.
 
 .. _nilearn_scope:
 
@@ -90,7 +143,7 @@ Scope of the project
 Nilearn is an Open-source Python package for visualizing and analyzing human
 brain MRI data.
 It provides statistical and machine-learning tools for brain mapping,
-connectivity estimation and predictive modelling.
+connectivity estimation and predictive modeling.
 It brings visualization tools with instructive documentation & open community.
 
 Nilearn targets ease of use, but as Python code.
@@ -127,7 +180,7 @@ As a rule of thumb:
 Adding atlases and datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Downloaders for new atlases datasets are usually discouraged.
+Downloaders for new atlases and datasets are usually discouraged.
 
 There is no intention to provide a comprehensive collection of downloaders
 for the most widely used atlases and datasets.
@@ -143,10 +196,11 @@ which are needed to demo and teach features.
 
 The following projects are dedicated to host atlases and accept contributions:
 
-* `templateflow <https://www.templateflow.org>`_
-* `neuromaps <https://netneurolab.github.io/neuromaps>`_
-* `neuroparc <https://github.com/neurodata/neuroparc>`_
+* `templateflow <https://www.templateflow.org>`_ : the example :ref:`sphx_glr_auto_examples_01_plotting_plot_templateflow.py` shows how to use templateflow with nilearn.
 
+* `neuromaps <https://netneurolab.github.io/neuromaps>`_
+
+* `neuroparc <https://github.com/neurodata/neuroparc>`_
 
 .. _nilearn_governance:
 
@@ -195,7 +249,7 @@ Contribution Guidelines
 
 When modifying the codebase, we ask every contributor to respect common
 guidelines.
-Those are inspired from :sklearn:`scikit-learn <developers/contributing.html#contributing-code>`
+Those are inspired from :sklearn:`scikit-learn <developers/contributing.html#contributing-code-and-documentation>`
 and ensure Nilearn remains simple to understand, efficient and maintainable.
 For example, code needs to be tested and those tests need to run quickly in order
 not to burden the development process.
@@ -217,15 +271,16 @@ with the tools we use for development and deployment.
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Variables, functions, arguments have clear names  |
 |                    |               | - Easy to read, PEP8_ compliant                     |
-|                    |               | - Code formatted with black_                        |
-|                    |               | - Imports sorted with isort_                        |
+|                    |               | - Code formatted with ruff_                         |
 |                    |               | - Public functions have docstring (numpydoc_ format)|
 |                    |               | - Low redundancy                                    |
 |   `Coding Style`_  |    Any        | - No new dependency                                 |
 |                    |               | - Backward compatibility                            |
 |                    |               | - All internal imports are absolute, not relative   |
-|                    |               | - Impacted docstrings have versionadded and/or      |
-|                    |               |   versionchanged directives as needed.              |
+|                    |               | - Impacted docstrings have                          |
+|                    |               |   ``.. nilearn_versionadded`` and/or                |
+|                    |               |   ``.. nilearn_versionchanged`` directives          |
+|                    |               |   as needed.                                        |
 |                    |               |   These should use the current dev version.         |
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Test type is adapted to function behavior         |
@@ -246,10 +301,9 @@ with the tools we use for development and deployment.
 |                    |               | - Doesn't include code                              |
 +--------------------+---------------+-----------------------------------------------------+
 
-.. _PEP8: https://www.python.org/dev/peps/pep-0008/
+.. _PEP8: https://peps.python.org/pep-0008/
 .. _numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
-.. _black: https://black.readthedocs.io/en/stable/getting_started.html#basic-usage
-.. _isort: https://pycqa.github.io/isort/index.html#using-isort
+.. _ruff: https://docs.astral.sh/ruff/
 
 PR Structure
 ------------
@@ -312,7 +366,7 @@ Associated entry in ``CITATION.cff``:
         - given-names: Dimitri Papadopoulos
           family-names: Orfanos
           website: https://github.com/DimitriPapadopoulos
-          affiliation: NeuroSpin, C.E.A., Université Paris-Saclay, Gif-sur-Yvette, France
+          affiliation: NeuroSpin, CEA, Université Paris-Saclay, Gif-sur-Yvette, France
           orcid: https://orcid.org/0000-0002-1242-8990
 
 
@@ -332,12 +386,7 @@ The main conventions we enforce are :
 - 2 empty lines between functions or classes
 
 You can check that any code you may have edited follows these conventions
-by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invoking-flake8>`__.
-
-Additionally, we use:
-
-- black_ to format our code,
-- isort_  to organize the import statements.
+by running `ruff <https://docs.astral.sh/ruff/>`__.
 
 Documentation style
 ^^^^^^^^^^^^^^^^^^^
@@ -392,6 +441,75 @@ This is also useful for writing unit tests.
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
 
+Examples in docstrings
+^^^^^^^^^^^^^^^^^^^^^^
+
+Where possible an ``Examples`` section should be present in the docstring
+of a public function or method.
+
+To facilitate users to copy-paste those examples,
+they should be written as single block
+with inline comments.
+
+So it is better to do:
+
+      >>> # Create a 4D image with one volume of ones and one of zeros
+      >>> import numpy as np
+      >>> from nibabel import Nifti1Image
+      >>> shape = (2, 2, 2, 1)
+      >>> img = Nifti1Image(np.concatenate([np.ones(shape),
+      ...                                   np.zeros(shape)],
+      ...                                  axis=-1),
+      ...                   affine=np.eye(4),
+      ...                   dtype=np.int32)
+      >>>
+      >>> # Compute the mean image and get its content as a numpy array
+      >>> from nilearn.image import mean_img
+      >>> mean_image = mean_img(img)
+      >>> mean_image.get_fdata()
+      array([[[0.5, 0.5],
+                  [0.5, 0.5]],
+            [[0.5, 0.5],
+                  [0.5, 0.5]]])
+
+Than to do:
+
+
+      Create a 4D image with one volume of ones and one of zeros
+
+      >>> import numpy as np
+      >>> from nibabel import Nifti1Image
+      >>> shape = (2, 2, 2, 1)
+      >>> img = Nifti1Image(np.concatenate([np.ones(shape),
+      ...                                   np.zeros(shape)],
+      ...                                  axis=-1),
+      ...                   affine=np.eye(4),
+      ...                   dtype=np.int32)
+
+      Compute the mean image and get its content as a numpy array
+
+      >>> from nilearn.image import mean_img
+      >>> mean_image = mean_img(img)
+      >>> mean_image.get_fdata()
+      array([[[0.5, 0.5],
+                  [0.5, 0.5]],
+            [[0.5, 0.5],
+                  [0.5, 0.5]]])
+
+The latter can still be used to break several independent examples.
+
+Thanks to the `plot_directive <https://matplotlib.org/stable/api/sphinxext_plot_directive_api.html>`_
+from matplotlib,
+it is possible to plot the output of an example directly in the HTML documentation::
+
+      .. plot::
+
+            import matplotlib.pyplot as plt
+            plt.plot([1, 2, 3], [4, 5, 6])
+            plt.title("A plotting example")
+
+
+
 APIs of nilearn objects
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -405,7 +523,7 @@ would be stored in a ``coef_`` attribute after ``fit`` has been called.
 
 The estimated attributes are expected to be overridden when you call ``fit`` a second time.
 
-This follows the `scikit-learn convention <https://scikit-learn.org/stable/developers/develop.html#estimated-attributes>`_.
+This follows the :sklearn:`scikit-learn convention <developers/develop.html#estimated-attributes>`.
 
 .. _private_functions:
 
@@ -492,34 +610,43 @@ Code inside ``maskers._validation.py``:
 Guidelines for HTML and CSS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We use `prettier <https://prettier.io/>`_ to format HTML and CSS.
+We use `prettier <https://prettier.io/>`_ and `djlint <https://github.com/djlint/djlint>`_ to format HTML and CSS.
 
-This is implemented via a pre-commit hook (see below)
-that can be run with
+This is implemented via a pre-commit hook.
 
-.. code-block:: bash
+.. _pre_commit:
 
-      pre-commit run --all-files prettier
+Pre-commit/Prek
+---------------
 
-Pre-commit
-----------
-
-We use `pre-commit <https://pre-commit.com/>`__
+We use `prek <https://prek.j178.dev/>`__
 to run a set of linters and autoformatters on the codebase.
 
-To install pre-commit, run:
+To install prek, run:
 
 .. code-block:: bash
 
-      pip install pre-commit
+      pip install prek
+
+.. note::
+
+      Prek will already be installed if you installed
+      the ``dev`` or ``style`` developers dependencies of nilearn
+      with::
+
+            pip install -e . --group dev
+
+      or::
+
+            pip install -e . --group style
 
 Then run the following to install the pre-commit hooks:
 
 .. code-block:: bash
 
-      pre-commit install
+      prek install
 
-Pre-commit will then run all those hooks on the files you have staged for commit.
+Prek will then run all those hooks on the files you have staged for commit.
 Note that if some of those hooks fail you may have to edit some files and stage them again.
 
 Tests
@@ -573,6 +700,15 @@ but some fixures specific to certain modules can also be kept in that testing mo
 Before adding new fixtures, first check those that exist
 in the test modules you are working in or in ``nilearn/conftest.py``.
 
+You can also run the following command to let pytest list
+all the available fixtures with their description,
+though this will also list fixtures provided
+by any of the pytest plugins or extensions that may also be installed.
+
+.. code-block:: bash
+
+      pytest nilearn --fixtures
+
 Seeding
 ^^^^^^^
 
@@ -600,6 +736,92 @@ You can also use the ``rng`` fixture.
 
           # the rest of the test
 
+
+Using tox
+^^^^^^^^^
+
+`Tox <https://tox.wiki/en/stable/>`_ is set
+to facilitate testing and managing environments during development
+and ensure that the same commands can easily be run locally and in CI.
+
+It should already be installed if you ran:
+
+.. code-block:: bash
+
+    pip install -e . --group dev
+
+You can set up certain environment or run certain command by calling ``tox``.
+
+Calling ``tox`` with no extra argument will simply run
+all the default commands defined in the tox configuration (``tox.ini``).
+
+Use ``tox list`` to view all environment descriptions.
+
+Use ``tox run`` to run a specific environment.
+
+Example
+
+.. code-block:: bash
+
+    tox run -e lint
+
+Some environments allow passing extra argument:
+
+.. code-block:: bash
+
+    # only run ruff
+    tox run -e lint -- ruff
+
+    # only run some tests
+    tox -e plotting -- nilearn/glm/tests/test_contrasts.py
+
+You can also run any arbitrary command in a given environment with ``tox exec``:
+
+.. code-block:: bash
+
+    tox exec -e latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
+
+Running the tests with several python versions
+""""""""""""""""""""""""""""""""""""""""""""""
+
+Running the following should let tox run all the tests on all the python versions
+it can find on your system.
+
+.. code-block:: bash
+
+      tox
+
+You can specify which tests to run
+by passing extra command line arguments to pytest after a ``--``.
+
+For example, the following would run all the tests in ``nilearn/image``
+that contain the word ``smooth``.
+
+.. code-block:: bash
+
+      tox -- nilearn/image -k smooth
+
+Plotting
+--------
+
+Glass brains
+^^^^^^^^^^^^
+
+The background images for the glass brains are stored in
+``nilearn/plotting/glass_brain_files``.
+Once the SVG file have been modified (or added) make sure
+to regenerate the associated JSON file
+(this will require to make sure that the svg module
+from https://github.com/cjlano/svg
+is in the python path).
+
+.. code-block:: bash
+
+      python maint_tools/svg_to_json_converter.py \
+            nilearn/plotting/glass_brain_files/input.svg \
+            nilearn/plotting/glass_brain_files/output.json
+
+
 Documentation
 -------------
 
@@ -624,7 +846,42 @@ main documentation and
 example tutorials. If you want to work on those, check out next section to
 learn how to use those tools to build documentation.
 
+Examples
+--------
+
+All examples must give some description of the data they use
+in an admonition at the beginning of the example,
+and link to the full dataset description
+(see in ``nilearn/datasets/description``).
+
+.. code-block:: python
+
+      # .. admonition:: dataset
+      #
+      #    This example uses the :ref:`haxby dataset <haxby_dataset>`.
+      #
+
+Where possible the dataset used should be mentioned in the title of the example.
+
+Reports
+-------
+
+Reports (for maskers and GLM) are generated using `Jinja templates <https://jinja.palletsprojects.com/en/stable/>`_.
+
+Reports HTML, CSS, javascript and templates are stored in ``nilearn/reporting/data``.
+
+All reports rely on the `pure CSS framework <https://pure-css.github.io/>`_.
+
+
 .. _git_repo:
+
+
+Continuous integration
+----------------------
+
+See the :ref:`continuous integration` page.
+
+.. _setup_development_environment:
 
 Setting up your environment
 ===========================
@@ -641,21 +898,9 @@ Here are the key steps you need to go through to copy the repo before contributi
 
       git clone git@github.com:<your_username>/nilearn.git
 
-2. (optional but highly recommended) set up a virtual environment to wor
+2. (optional but highly recommended) set up a virtual environment to work
    in using whichever environment management tool you're used to and activate it.
-   For example:
-
-.. code-block:: bash
-
-      python3 -m venv nilearn
-      source nilearn/bin/activate
-
-or:
-
-.. code-block:: bash
-
-      conda create -n nilearn
-      conda activate nilearn
+   See :ref:`our virtual environment setup instructions <virtual_env>`.
 
 3. install the forked version of ``nilearn``
 
@@ -664,12 +909,6 @@ or:
       When you install nilearn, it will use the version stored in the version control system
       (in this case git)
       to get the version number you would see if you typed in your terminal:
-
-      .. code-block:: bash
-
-            pip show nilearn
-
-      or:
 
       .. code-block:: bash
 
@@ -688,30 +927,23 @@ or:
             # check that you got all the tags
             git tag --list
 
-You can then install nilearn in editable mode:
+You can then install Nilearn in editable mode:
 
 .. code-block:: bash
 
-      pip install -e '.[dev]'
+      pip install -e '.[plotting,plotly]' --group dev
 
 This installs your local version of Nilearn,
-along with all dependencies necessary for developers (hence the ``[dev]`` tag).
+along with all dependencies necessary for developers (hence the ``dev`` group).
 For more information about the dependency installation options, see ``pyproject.toml``.
 The installed version will also reflect any changes you make to your code.
 
-
-4. check that all tests pass with (this can take a while):
-
-.. code-block:: bash
-
-      pytest nilearn
-
-5. (optional) install `pre-commit <https://pre-commit.com/#usage>`_ hooks
+4. (optional) install `prek <https://prek.j178.dev>`_ hooks
    to run the linter and other checks before each commit:
 
 .. code-block:: bash
 
-      pre-commit install
+      prek install
 
 
 Contributing
@@ -732,23 +964,21 @@ Here are the key steps you need to go through to contribute code to ``nilearn``:
 .. admonition:: Recommendation
 
     To lint your code and verify PEP8 compliance, you can run
-    `flake8 <https://flake8.pycqa.org/en/latest/>`__ locally on the
+    `ruff <https://docs.astral.sh/ruff/>`_ locally on the
     changes you have made.
 
     .. code-block:: bash
 
-        flake8 <path_to_edited_file>
+        ruff check --fix <path_to_edited_file>
 
-    To automatically format your code, you can run
-    `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_
-    locally on the changes you have made.
+    To format your code, you can also use ruff and run:
 
     .. code-block:: bash
 
-        black <path_to_edited_file>
+        ruff format <path_to_edited_file>
 
-    Note that if you installed pre-commit and the pre-commit hooks,
-    those 2 commands will be run automatically before each commit.
+    Note that if you installed prek and the pre-commit hooks,
+    those commands will be run automatically before each commit.
 
 4. commit your changes on this branch (don't forget to write tests!)
 
@@ -770,8 +1000,11 @@ Here are the key steps you need to go through to contribute code to ``nilearn``:
 
 8. check that all continuous integration tests pass
 
-For more details about the Fork Clone Push workflows, read `here <https://guides.github.com/activities/forking/>`_.
+For more details about the Fork Clone Push workflows,
+read `here <https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project#about-forking>`_.
 
+
+.. _building documentation:
 
 Building documentation
 ----------------------
@@ -783,10 +1016,10 @@ If you wish to build documentation:
 
 .. code-block:: bash
 
-      pip install '.[doc]'
+      pip install -e . --group doc
 
 2. Then go to ``nilearn/examples`` or ``nilearn/doc`` and make needed changes
-   using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
+   using `reStructuredText files <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
 
 3. You can now go to ``nilearn/doc`` and build the examples locally:
 
@@ -800,14 +1033,28 @@ or, if you do not have make install (for instance under Windows):
 
       python3 -m sphinx -b html -d _build/doctrees . _build/html
 
-if you don't need the plots, a quicker option is:
+The full build can take a very long time.
+So if you don't need the plots, a quicker option is:
 
 .. code-block:: bash
 
       make html-noplot
 
-4. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``.
+An even quicker option is:
+
+.. code-block:: bash
+
+      make html-noplot-noreport
+
+4. Visually review the output in ``nilearn/doc/_build/html/index.html``.
    If all looks well and there were no errors, commit and push the changes.
+
+.. tip::
+
+      The documentation build by the CI uses the oldest supported version of Python
+      and Nilearn's dependencies.
+      This may explain some differences with a local build of the doc
+      if you are using different dependencies.
 
 5. You can now open a Pull Request from Nilearn's Pull Request page.
 
@@ -818,13 +1065,21 @@ if you don't need the plots, a quicker option is:
       git commit --allow-empty -m "[full doc] request full build"
 
 .. tip::
-    When generating documentation locally, you can build only specific files
-    to reduce building time. To do so, use the ``filename_pattern``:
 
-.. code-block:: bash
+      When generating documentation locally, you can build only specific files
+      to reduce building time. To do so, use the ``filename_pattern``:
 
-      python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
-      plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+      .. code-block:: bash
+
+            python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+
+      or if you want to use make :
+
+      .. code-block:: bash
+
+            PATTERN='examples/04_glm_first_level/plot_bids_features.py'
+            export PATTERN
+            make --directory doc html-modified-examples-only
 
 
 Additional cases
@@ -833,23 +1088,40 @@ Additional cases
 How to contribute an atlas
 --------------------------
 
-We want atlases in nilearn to be internally consistent. Specifically,
-your atlas object should have three attributes (as with the existing
-atlases):
+We want atlases in Nilearn to be internally consistent.
+Specifically, your atlas object:
 
-- ``description`` (bytes): A text description of the atlas. This should be
-  brief but thorough, describing the source (paper), relevant information
-  related to its construction (modality, dataset, method), and, if there is
-  more than one map, a description of each map.
-- ``labels`` (list): a list of string labels corresponding to each atlas
-  label, in the same (numerical) order as the atlas labels
-- ``maps`` (list or string): the path to the nifti image, or a list of paths
+- should be a Scikit-learn ``Bunch``
 
-In addition, the atlas will need to be called by a fetcher. For example, see :nilearn-gh:`here <blob/main/nilearn/datasets/atlas.py>`.
+- MUST have at least the following 4 attributes (as with the existing atlases):
+
+  - ``description``: a description of the content of the atlas
+    built from the dataset description registry
+    (see :ref:`dataset_description`).
+  - ``maps`` (list or string): the path to the nifti image, or a list of paths
+  - ``atlas_type``: must be either ``deterministic`` or ``probabilistic``
+  - ``labels`` (list): a list of string labels corresponding to each atlas label,
+    in the same (numerical) order as the atlas labels
+
+Deterministic atlases must also include:
+
+- a look up table (``lut``) attribute:
+
+  - providing the mapping between the values in the atlas image
+    and the name to the region of interest they define.
+  - that complies with the
+    `dseg.tsv format from BIDS
+    <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
+  - can be validated by the function ``nilearn._utils.bids.check_look_up_table``
+    in strict mode.
+
+In addition, the atlas will need to be called by a fetcher.
+For example, see :nilearn-gh:`here <blob/main/nilearn/datasets/atlas.py>`.
+The fetcher and the content it returns must be documented
+as described in :ref:`dataset_description`.
 
 Finally, as with other features, please provide a test for your atlas.
 Examples can be found :nilearn-gh:`here <blob/main/nilearn/datasets/tests/test_atlas.py>`.
-
 
 How to contribute a dataset fetcher
 -----------------------------------
@@ -889,6 +1161,291 @@ returned by the ``request_mocker`` pytest fixture, defined in
 ``nilearn.datasets.tests._testing``. The docstrings of this module and the
 ``Sender`` class it contains provide information on how to write a test using
 this fixture. Existing tests can also serve as examples.
+
+.. _dataset_description:
+
+Describing the data returned by a fetcher
+-----------------------------------------
+
+Each atlas or dataset comes with a description of what its fetcher returns.
+This description is defined in a single place
+and then reused to:
+
+- build the ``description`` returned by the fetcher
+  (a ``nilearn._utils.docs.Description`` object
+  with ``documentation``, ``content`` and ``license`` attributes),
+- fill the ``Returns`` section of the docstring of the fetcher,
+- fill the ``Content`` and ``License`` sections
+  of the dataset description page in the documentation,
+- check that what the fetcher returns matches its description.
+
+Everything is tied together by a single name, for example ``yeo_2011_atlas``.
+This name must be used for:
+
+- the key of the dataset in the ``DATASET_DESCRIPTIONS`` registry
+  in ``nilearn/_utils/docs.py``,
+- the name of the description files
+  ``nilearn/datasets/description/<name>.rst``
+  and ``nilearn/datasets/description/<name>.json``,
+- the reference label at the top of the ``.rst`` file,
+- for new datasets, the name of the directory where the data is stored
+  (the ``dataset_name`` passed to ``get_dataset_dir``).
+
+Atlas names must contain ``atlas``:
+the ``atlas_type`` and ``template`` keys are then automatically
+added to their content.
+
+To add the description of a new dataset ``<name>``:
+
+1. Describe each value returned by the fetcher in
+   ``nilearn/datasets/description/<name>.json``.
+   For each key, give its ``type`` and a ``desc`` (rst is allowed):
+
+   .. code-block:: json
+
+      {
+          "labels": {
+              "type": "list[str]",
+              "desc": "List of the names of the regions."
+          },
+          "maps": {
+              "type": "str",
+              "desc": "Path to the 3D nifti image containing the regions."
+          }
+      }
+
+   Types are written as Python type hints
+   and are evaluated when nilearn is imported, for example:
+   ``str``, ``float``, ``list[str]``, ``list[tuple[str, list[int]]]``,
+   ``pd.DataFrame``, ``np.ndarray``, ``nibabel.nifti1.Nifti1Image``.
+
+   Do not include ``description``, ``atlas_type`` or ``template``.
+   They will be added automatically.
+
+2. Add an entry to ``DATASET_DESCRIPTIONS``
+   in ``nilearn/_utils/docs.py`` with the license of the dataset (if it is known).
+   Values that are shared across datasets and already documented in ``docdict``
+   (for example the look up table ``lut`` of deterministic atlases)
+   are added here rather than in the json file:
+
+   .. code-block:: python
+
+      DATASET_DESCRIPTIONS: dict[str, Bunch] = {
+          # ...
+          "yeo_2011_atlas": Bunch(
+              content=Bunch(lut=Bunch(type=pd.DataFrame, desc=lut)),
+              license="MIT",
+          ),
+      }
+
+   A key cannot be defined both in the registry and in the json file.
+
+3. In the fetcher, build the description from the registry
+   and use the generated ``<name>_content`` template
+   in the ``Returns`` section of the docstring:
+
+   .. code-block:: python
+
+      @fill_doc
+      def fetch_atlas_yeo_2011(data_dir=None, verbose=1):
+          """...
+
+          For more information
+          see the :ref:`dataset description <yeo_2011_atlas>`.
+
+          Returns
+          -------
+          data : :class:`sklearn.utils.Bunch`
+              Dictionary-like object, contains:
+
+              %(yeo_2011_atlas_content)s
+          """
+          ...
+          dataset_name = "yeo_2011_atlas"
+          data_dir = get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+          ...
+          description = Description.from_registry(dataset_name)
+
+4. Write ``nilearn/datasets/description/<name>.rst``
+   with a free text description of the dataset
+   (source, construction, references...).
+   Do not describe the content or the license by hand:
+   use the ``nilearn_dataset_content`` and ``nilearn_dataset_license`` directives
+   instead.
+
+   .. code-block:: rst
+
+      .. _yeo_2011_atlas:
+
+      Yeo 2011 atlas
+      ==============
+
+      Access
+      ------
+      See :func:`nilearn.datasets.fetch_atlas_yeo_2011`.
+
+      Notes
+      -----
+      ...
+
+      Content
+      -------
+      .. nilearn_dataset_content:: yeo_2011_atlas
+
+      References
+      ----------
+      .. footbibliography::
+
+      License
+      -------
+      .. nilearn_dataset_license:: yeo_2011_atlas
+
+   These directives are rendered at doc build time
+   by the sphinx extension in ``doc/sphinxext/dataset_descriptions.py``.
+
+5. Add the ``.rst`` file to the relevant ``toctree``
+   in ``doc/modules/datasets.rst``.
+
+The tests in ``nilearn/_utils/tests/test_docs.py`` check
+that all the directives used in the description files
+refer to an entry of the registry.
+
+Since tests do not download any data,
+they cannot check that the described types match the actual data.
+This is checked when the data is actually downloaded,
+by ``doc/get_data_examples.py`` (run before building the documentation)
+and ``doc/make_atlas_table.py``.
+If you add a new fetcher, make sure it is called in at least one of these scripts.
+
+.. _performance:
+
+Performance monitoring
+----------------------
+
+Nilearn includes performance monitoring in the
+library using `asv <https://asv.readthedocs.io/en/latest/index.html>`_ benchmarks.
+The goal is two-fold:
+
+- To track the performance over time and flag regressions due to changes in the codebase.
+- To compare the performance of different implementations of an algorithm
+  (for example, loading an image using :func:`nilearn.image.load_img` vs. :func:`nibabel.loadsave.load`).
+
+A collection of these benchmarks are located in the ``nilearn/asv_benchmarks`` directory.
+Currently, we run them on GitHub CI regularly on the latest commit of the main branch.
+The results are available on `nilearn.github.io/benchmarks/ <https://nilearn.github.io/benchmarks/>`_.
+
+To run these benchmarks locally, you will need to install the asv package:
+
+.. code-block:: bash
+
+      pip install asv
+
+Then, change to the ``asv_benchmarks`` directory:
+
+.. code-block:: bash
+
+      cd asv_benchmarks
+
+To run a specific set of benchmark matching a specific regex
+(for example containing ``load_img``)
+on the current HEAD of your clone of the repository,
+use the following command:
+
+.. code-block:: bash
+
+      asv run -b load_img
+
+This will run any benchmark with ``load_img`` in the name.
+
+You can also track the performance of a specific benchmark over, say,
+5 equally spaced commits, until release 0.10.0, like this:
+
+.. code-block:: bash
+
+      asv run 0.10.0..main -b load_img --steps 5
+
+There is also a ```hashestobenchmark.txt`` file
+with the shasum of the git tag of several of the last versions of nilearn
+that will allow you to run the benchmarks only for those versions by doing:
+
+.. code-block:: bash
+
+      asv run -b load_img HASHFILE:hashestobenchmark.txt
+
+Note that versions older than 0.11.0 cannot be benchmarked this way:
+their ``nilearn/__init__.py`` imports ``pkg_resources``,
+which was removed from ``setuptools>=81``,
+the version pip installs by default in the virtualenv asv builds.
+
+If you want to update this file you can use
+to list the shasum of all tags
+that you can then edit to only keep the versions
+you want to run your benchmarks on.
+
+.. code-block:: bash
+
+      git show-ref --tags > hashestobenchmark.txt
+
+Once you have run you benchmarks, you can view the results with:
+
+.. code-block:: bash
+
+      asv publish
+      asv preview
+
+For more information on how to use asv, please refer to the
+`asv documentation <https://asv.readthedocs.io/en/stable/>`_.
+
+Adding new benchmarks
+^^^^^^^^^^^^^^^^^^^^^
+
+Please see the `asv documentation writing tips <https://asv.readthedocs.io/en/stable/writing_benchmarks.html>`_
+to make sure you understand the basics about how to write benchmarks.
+
+Only benchmark functions and methods that are part of nilearn's public API
+(what a user could import and call directly),
+not private helpers (leading underscore) or implementation details.
+
+The structure of ``asv_benchmarks/benchmarks`` must mirror
+the structure of the ``nilearn`` package itself:
+a benchmark for a function or class living in ``nilearn/glm/first_level/first_level.py``
+belongs in ``asv_benchmarks/benchmarks/glm/first_level/first_level.py``,
+and a benchmark for ``nilearn/glm/io.py`` belongs in ``asv_benchmarks/benchmarks/glm/io.py``.
+This makes it easy to find the benchmark(s) for a given piece of the public API,
+and keeps benchmark files from growing unrelated content
+as nilearn's own modules get reorganized over time.
+
+For naming benchmarks, try to follow the following rules:
+
+- use snake_case instead of CamelCase
+
+- make sure that the name of the module the benchmark is in,
+  is duplicated in the name of the benchmark:
+  if you are adding a benchmark to the ``asv_benchmarks/benchmarks/maskers/nifti_masker.py``
+  make sure that the name of the benchmark contains ``nifti_masker``
+  is in the name of the benchmark (``def peakmem_nifti_masker_fit_transform``).
+  This makes is easier to systematically select the benchmarks to run
+  via the command line: ``asv run -b nifti_masker``
+  would run all the benchmarks for the NiftiMasker.
+
+- if the benchmark exercises a function or class that was added recently,
+  import it locally inside ``setup()`` rather than at the top of the module.
+  All benchmarks in a given file share that file's module-level imports,
+  so a single top-level import of a function that does not exist yet in an older nilearn version
+  (for example when benchmarking past releases with ``HASHFILE:hashestobenchmark.txt``)
+  will fail to import the whole module,
+  and every other benchmark in that file will be reported as failed too,
+  even though they do not rely on the missing function.
+  A local import inside ``setup()`` confines the failure to that one benchmark.
+
+  Catch the ``ImportError`` and re-raise it as ``NotImplementedError``
+  instead of letting it propagate as-is.
+  asv treats a ``NotImplementedError`` raised in ``setup()`` as "this benchmark
+  does not apply here" and reports it as *skipped*,
+  whereas any other exception (including a bare ``ImportError``) is reported as *failed*,
+  which the CI benchmark workflow treats as a hard failure
+  (see the "Fail if any benchmark reported as failed" step).
+  See ``BenchMarkAllEstimators`` in ``asv_benchmarks/benchmarks/utils/discovery.py`` for a concrete example.
 
 Maintenance
 ===========

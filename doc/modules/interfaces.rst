@@ -14,7 +14,8 @@
    :no-members:
    :no-inherited-members:
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.interfaces.bids
 
@@ -24,7 +25,6 @@
 
    get_bids_files
    parse_bids_filename
-   save_glm_to_bids
 
 :mod:`nilearn.interfaces.fmriprep`
 ----------------------------------
@@ -33,7 +33,8 @@
    :no-members:
    :no-inherited-members:
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.interfaces.fmriprep
 
@@ -51,7 +52,8 @@
    :no-members:
    :no-inherited-members:
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.interfaces.fsl
 

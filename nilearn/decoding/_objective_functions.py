@@ -1,11 +1,5 @@
 """Common functions and base classes."""
 
-# Author: DOHMATOB Elvis Dopgima,
-#         PIZARRO Gaspar,
-#         VAROQUAUX Gael,
-#         GRAMFORT Alexandre,
-#         PEDREGOSA Fabian
-
 from functools import partial
 
 import numpy as np
@@ -27,9 +21,8 @@ def spectral_norm_squared(X):
 
     Returns
     -------
-    lipschitz_constant : float
+    lipschitz_constant : :obj:`float`
       The square of the spectral norm of X.
-
     """
     # On big matrices like those that we have in neuroimaging, svdvals
     # is faster than a power iteration (even when using arpack's)
@@ -43,7 +36,6 @@ def logistic_loss_lipschitz_constant(X):
     .. code-block::
 
         w -> sum_i log(1+exp(-y_i*(x_i*w + v)))
-
     """
     # N.B: we handle intercept!
     X = np.hstack((X, np.ones((X.shape[0], 1))))
@@ -70,20 +62,19 @@ def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    compute_energy : bool, optional (default True)
+    compute_energy : :obj:`bool`, default=True
         If set then energy is computed, otherwise only gradient is computed.
 
-    compute_grad : bool, optional (default False)
+    compute_grad : :obj:`bool`, default=False
         If set then gradient is computed, otherwise only energy is computed.
 
     Returns
     -------
-    energy : float
+    energy : :obj:`float`
         Energy (returned if `compute_energy` is set).
 
     gradient : ndarray, shape (n_features,)
         Gradient of energy (returned if `compute_grad` is set).
-
     """
     if not compute_energy and not compute_grad:
         raise RuntimeError(
@@ -113,7 +104,7 @@ def tv_l1_from_gradient(spatial_grad):
 
     Returns
     -------
-    out : float
+    out : :obj:`float`
         Energy contribution due to penalized gradient.
     """
     tv_term = np.sum(
@@ -132,7 +123,7 @@ def divergence_id(grad, l1_ratio=0.5):
         where `img_shape` is the shape of the brain bounding box, and
         n_axes = len(img_shape).
 
-    l1_ratio : float in the interval [0, 1]; optional (default .5)
+    l1_ratio : :obj:`float` in the interval [0, 1]; default=0.5
         Constant that mixes L1 and spatial prior terms in the penalization.
 
     Returns
@@ -143,7 +134,6 @@ def divergence_id(grad, l1_ratio=0.5):
     Raises
     ------
     RuntimeError
-
     """
     if not (0.0 <= l1_ratio <= 1.0):
         raise RuntimeError(
@@ -177,7 +167,7 @@ def gradient_id(img, l1_ratio=0.5):
     img : ndarray, shape (nx, ny, nz, ...)
         N-dimensional image
 
-    l1_ratio : float in the interval [0, 1]; optional (default .5)
+    l1_ratio : :obj:`float` in the interval [0, 1]; default=0.5
         Constant that mixes L1 and spatial prior terms in the penalization.
 
     Returns
@@ -189,14 +179,13 @@ def gradient_id(img, l1_ratio=0.5):
     Raises
     ------
     RuntimeError
-
     """
     if not (0.0 <= l1_ratio <= 1.0):
         raise RuntimeError(
             f"l1_ratio must be in the interval [0, 1]; got {l1_ratio}"
         )
 
-    shape = [img.ndim + 1] + list(img.shape)
+    shape = [img.ndim + 1, *img.shape]
     gradient = np.zeros(shape, dtype=np.float64)
 
     # the gradient part: 'Clever' code to have a view of the gradient
@@ -242,7 +231,7 @@ def logistic_loss(X, y, w):
 
     Returns
     -------
-    energy : float
+    energy : :obj:`float`
         Energy contribution due to logistic data-fit term.
     """
     z = np.dot(X, w[:-1]) + w[-1]

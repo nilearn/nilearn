@@ -13,13 +13,18 @@ See :ref:`plotting` for more plotting functionalities and
 :ref:`Section 4.3 <display_modules>` for more details about display objects
 in Nilearn.
 
-Also, see :func:`nilearn.datasets.fetch_neurovault_motor_task` for details
-about the plotting data and associated meta-data.
+.. admonition:: dataset
+
+    This example uses a sample motor activation statistical map (`image 10426
+    <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
+    <neurovault_dataset>`).
+    Also, see :func:`~nilearn.datasets.load_sample_motor_activation_image`
+    for details about the plotting data and associated meta-data.
 """
 
 # %%
 # Load the data
-# ------------------
+# -------------
 #
 # We will use a motor activation :term:`contrast` map distributed with Nilearn.
 from nilearn import datasets
@@ -40,18 +45,18 @@ stat_img
 # value of ``display_mode``, different display objects are returned. Here,
 # a :class:`~nilearn.plotting.displays.OrthoProjector` is returned.
 
-from nilearn import plotting
-from nilearn.plotting import plot_glass_brain
+from nilearn.plotting import plot_glass_brain, show
 
 # Whole brain sagittal cuts and map is thresholded at 3
+
 plot_glass_brain(stat_img, threshold=3)
 
 
 # %%
-# The same figure, with a colorbar, can be produced by
-# setting ``colorbar=True``.
+# The same figure, without a colorbar,
+# can be produced by setting ``colorbar=False``.
 
-plot_glass_brain(stat_img, threshold=3, colorbar=True)
+plot_glass_brain(stat_img, threshold=3, colorbar=False)
 
 
 # %%
@@ -74,49 +79,44 @@ plot_glass_brain(
 # ``display_mode='yz'`` which returns a
 # :class:`~nilearn.plotting.displays.YZProjector`.
 
-plot_glass_brain(
-    stat_img, threshold=0, colorbar=True, plot_abs=False, display_mode="yz"
-)
+plot_glass_brain(stat_img, threshold=0, plot_abs=False, display_mode="yz")
 
 
 # %%
 # Setting ``plot_abs=True`` and ``display_mode='yx'`` (returns a
 # :class:`~nilearn.plotting.displays.YXProjector`).
 
-plot_glass_brain(
-    stat_img, threshold=3, colorbar=True, plot_abs=True, display_mode="yx"
-)
+plot_glass_brain(stat_img, threshold=3, plot_abs=True, display_mode="yx")
 
 # %%
 # We can control the limits of the colormap and colorbar by setting ``vmin``
-# and ``vmax``. Note that we use a non-diverging colormap here since the
-# colorbar will not be centered around zero.
+# and ``vmax``.
+# Note that we use a non-diverging colormap here
+# since the colorbar will not be centered around zero.
 
 # only plot positive values
 plot_glass_brain(
     stat_img,
-    colorbar=True,
     plot_abs=False,
     display_mode="yz",
     vmin=0,
     threshold=2,
     symmetric_cbar=False,
-    cmap="viridis",
+    cmap="inferno",
     title="only plot positive values",
 )
 
 # %%
 # Here we set ``vmin`` to the threshold to use the full color range instead of
-# losing colours due to the thresholding.
+# losing colors due to the thresholding.
 plot_glass_brain(
     stat_img,
-    colorbar=True,
     plot_abs=False,
     display_mode="yz",
     vmin=2,
     threshold=2,
     symmetric_cbar=False,
-    cmap="viridis",
+    cmap="inferno",
     title="vmin == threshold",
 )
 
@@ -147,7 +147,6 @@ plot_glass_brain(
 plot_glass_brain(
     stat_img,
     threshold=0,
-    colorbar=True,
     title='plot_glass_brain with display_mode="lyrz"',
     plot_abs=False,
     display_mode="lyrz",
@@ -156,30 +155,29 @@ plot_glass_brain(
 
 # %%
 # If you are only interested in single projections, you can set
-# ``display_mode`` to 'x' (returns a
-# :class:`~nilearn.plotting.displays.XProjector`), 'y' (returns a
-# :class:`~nilearn.plotting.displays.YProjector`), 'z' (returns a
-# :class:`~nilearn.plotting.displays.ZProjector`), 'l' (returns a
-# :class:`~nilearn.plotting.displays.LProjector`), or 'r' (returns a
-# :class:`~nilearn.plotting.displays.RProjector`).
+# ``display_mode`` to
+# 'x' (returns a :class:`~nilearn.plotting.displays.XProjector`),
+# 'y' (returns a :class:`~nilearn.plotting.displays.YProjector`),
+# 'z' (returns a :class:`~nilearn.plotting.displays.ZProjector`),
+# 'l' (returns a :class:`~nilearn.plotting.displays.LProjector`), or
+# 'r' (returns a :class:`~nilearn.plotting.displays.RProjector`).
 
 plot_glass_brain(
     stat_img,
     threshold=0,
-    colorbar=True,
     title='display_mode="x"',
-    plot_abs=False,
+    plot_abs=True,
     display_mode="x",
 )
 
 
 # %%
-# Demo glass brain plotting with contours and with fillings
-# ---------------------------------------------------------
+# Contours and with fillings
+# --------------------------
 #
 # The display objects returned by :func:`~nilearn.plotting.plot_glass_brain`
 # all inherit from the :class:`~nilearn.plotting.displays.OrthoProjector`
-# and enable further customisation of the figures.
+# and enable further customization of the figures.
 #
 # In this example, we focus on using methods
 # :meth:`~nilearn.plotting.displays.OrthoProjector.add_contours` and
@@ -249,8 +247,8 @@ display.title("Glass brain with black background and filled in contours")
 
 
 # %%
-# Display contour projections in both hemispheres
-# -----------------------------------------------
+# Contour projections in both hemispheres
+# ---------------------------------------
 #
 # The key argument to vary here is ``display_mode`` for hemispheric plotting.
 # Here, we set ``display_mode='lr'`` for both hemispheric plots. Note that a
@@ -332,6 +330,6 @@ display.add_contours(stat_img, filled=True, levels=[-np.inf, -2.8], colors="b")
 display.add_contours(stat_img, filled=True, levels=[3.0], colors="r")
 display.title("Now same plotting but with filled contours")
 # Finally, displaying them
-plotting.show()
+show()
 
 # sphinx_gallery_dummy_images=7

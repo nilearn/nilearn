@@ -1,12 +1,6 @@
-"""Test the numpy_conversions module.
+"""Test the numpy_conversions module."""
 
-This test file is in nilearn/tests because Nosetest,
-which we historically used,
-ignores modules whose name starts with an underscore.
-"""
-
-import os
-import tempfile
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -150,9 +144,10 @@ def test_as_ndarray(
         assert arr2.flags["C_CONTIGUOUS"]
 
 
+@pytest.mark.thread_unsafe
 def test_as_ndarray_memmap():
     # memmap
-    filename = os.path.join(os.path.dirname(__file__), "data", "mmap.dat")
+    filename = Path(__file__).parent / "data" / "mmap.dat"
 
     # same dtype, no copy requested
     arr1 = np.memmap(filename, dtype="float32", mode="w+", shape=(5,))
@@ -230,7 +225,7 @@ def test_as_ndarray_more():
     assert not are_arrays_identical(arr1[0], arr2[0])
 
     # Unhandled cases
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         as_ndarray("test_string")
     with pytest.raises(ValueError):
         as_ndarray([], order="invalid")
@@ -238,15 +233,11 @@ def test_as_ndarray_more():
 
 def test_csv_to_array(tmp_path):
     # Create a phony CSV file
-    fd, filename = tempfile.mkstemp(suffix=".csv", dir=tmp_path)
-    os.close(fd)
-    try:
-        with open(filename, mode="w") as fp:
-            fp.write("1.,2.,3.,4.,5.\n")
-        assert np.allclose(
-            csv_to_array(filename), np.asarray([1.0, 2.0, 3.0, 4.0, 5.0])
-        )
-        with pytest.raises(TypeError):
-            csv_to_array(filename, delimiters="?!")
-    finally:
-        os.remove(filename)
+    filename = tmp_path / "tmp.csv"
+    with filename.open(mode="w") as fp:
+        fp.write("1.,2.,3.,4.,5.\n")
+    assert np.allclose(
+        csv_to_array(filename), np.asarray([1.0, 2.0, 3.0, 4.0, 5.0])
+    )
+    with pytest.raises(TypeError):
+        csv_to_array(filename, delimiters="?!")

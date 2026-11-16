@@ -14,17 +14,17 @@ export BROWSER_PYSCRIPT
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
 
 # You can set these variables from the command line.
-SPHINXOPTS    = -v
+SPHINXOPTS    = --verbose --color
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
 
 # Internal variables.
-PAPEROPT_a4     = -D latex_paper_size=a4
-PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
+PAPEROPT_a4     = --define latex_paper_size=a4
+PAPEROPT_letter = --define latex_paper_size=letter
+ALLSPHINXOPTS   = --doctree-dir $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
-.PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex latexpdf changes linkcheck doctest
+.PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex latexpdf changes linkcheck doctest reports dummy_reports
 
 all: html-noplot
 
@@ -53,22 +53,27 @@ clean:
 	-rm -rf ../examples/**/nilearn_cache
 	-rm -rf ../**/nilearn_cache
 	-rm -rf modules/description/
-
-glm_reports:
-	python visual_testing/reporter_visual_inspection_suite.py
+	-rm -rf modules/generated_reports/*.html
 
 sym_links_datasets:
 	# copy datasets RST from nilearn package to doc folder
+	-rm -rf modules/description/
 	mkdir -p modules/description
 	cd ../nilearn/datasets/description && cp -l *.rst ../../../doc/modules/description
+	# fsaverage figures to doc folder
+	cp ../nilearn/plotting/tests/baseline/test_surface_fs_data_*-fsaverage*.png modules/description
 
 sym_links:
 	# Make sym-links to share the cache across various example directories
 	# The following find command selects all the depth-one
 	# subdirectories of ../examples/ and creates a sym-link to
 	# ../examples/nilearn_cache/
-	-find ../examples/ -type d -mindepth 1 -maxdepth 1 -not -path "../examples/nilearn_cache" -exec ln -sf ../nilearn_cache "{}/nilearn_cache" \;
+	-find ../examples/ -mindepth 1 -maxdepth 1 -type d -not -path "../examples/nilearn_cache" -exec ln -sf ../nilearn_cache "{}/nilearn_cache" \;
 	-mkdir -p ../examples/nilearn_cache/joblib
+
+.PHONY: ci.rst
+ci.rst:
+	python get_ci_workflows_description.py
 
 force_html: force html
 
@@ -79,65 +84,82 @@ force:
 view: _build/html/index.html
 	$(BROWSER) _build/html/index.html
 
-html:	sym_links sym_links_datasets glm_reports
-	# These two lines make the build a bit more lengthy, and the
-	# the embedding of images more robust
+dummy_reports:
+	mkdir -p _build/html/
+	marimo export html  visual_testing/notebook_reports_maskers.py -- --build_type=partial > reports/notebook_reports_maskers.html
+	marimo export html  visual_testing/notebook_reports_glm.py -- --build_type=partial > reports/notebook_reports_glm.html
+
+reports:
+	marimo export html  visual_testing/notebook_reports_maskers.py -- --build_type=full > reports/notebook_reports_maskers.html
+	marimo export html  visual_testing/notebook_reports_glm.py -- --build_type=full > reports/notebook_reports_glm.html
+
+
+html: ci.rst sym_links sym_links_datasets reports
 	rm -rf $(BUILDDIR)/html/_images
-	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	touch $(BUILDDIR)/html/.nojekyll
+	$(SPHINXBUILD) --builder html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-strict:	sym_links sym_links_datasets glm_reports
+html-strict: ci.rst sym_links sym_links_datasets reports
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
 	make check
-	touch $(BUILDDIR)/html/.nojekyll
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-modified-examples-only: 	sym_links sym_links_datasets glm_reports
-	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D sphinx_gallery_conf.filename_pattern=$(PATTERN) -D sphinx_gallery_conf.run_stale_examples=True -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	touch $(BUILDDIR)/html/.nojekyll
+html-modified-examples-only-reports: ci.rst sym_links sym_links_datasets reports
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) --fail-on-warning --keep-going --define sphinx_gallery_conf.filename_pattern=$(PATTERN) --define sphinx_gallery_conf.run_stale_examples=True --builder html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-noplot: sym_links_datasets glm_reports
-	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	touch $(BUILDDIR)/html/.nojekyll
+html-modified-examples-only: ci.rst sym_links sym_links_datasets dummy_reports
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) --fail-on-warning --keep-going --define sphinx_gallery_conf.filename_pattern=$(PATTERN) --define sphinx_gallery_conf.run_stale_examples=True --builder html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-ci-html-noplot: sym_links_datasets glm_reports
-	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	touch $(BUILDDIR)/html/.nojekyll
+html-noplot-reports: ci.rst sym_links_datasets reports
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) --define plot_gallery=0 --builder html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+html-noplot: ci.rst sym_links_datasets dummy_reports
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) --fail-on-warning --keep-going --define plot_gallery=0 --builder html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+ci-html-noplot-reports: ci.rst sym_links_datasets reports
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) --fail-on-warning --keep-going --define plot_gallery=0 --builder html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+ci-html-noplot: ci.rst sym_links_datasets dummy_reports
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) --fail-on-warning --keep-going --define plot_gallery=0 --builder html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 dirhtml:
-	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
-	touch $(BUILDDIR)/dirhtml .nojekyll
+	$(SPHINXBUILD) --builder dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."
 
 pickle:
-	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) $(BUILDDIR)/pickle
+	$(SPHINXBUILD) --builder pickle $(ALLSPHINXOPTS) $(BUILDDIR)/pickle
 	@echo
 	@echo "Build finished; now you can process the pickle files."
 
 json:
-	$(SPHINXBUILD) -b json $(ALLSPHINXOPTS) $(BUILDDIR)/json
+	$(SPHINXBUILD) --builder json $(ALLSPHINXOPTS) $(BUILDDIR)/json
 	@echo
 	@echo "Build finished; now you can process the JSON files."
 
 htmlhelp:
-	$(SPHINXBUILD) -b htmlhelp $(ALLSPHINXOPTS) $(BUILDDIR)/htmlhelp
+	$(SPHINXBUILD) --builder htmlhelp $(ALLSPHINXOPTS) $(BUILDDIR)/htmlhelp
 	@echo
 	@echo "Build finished; now you can run HTML Help Workshop with the" \
 	      ".hhp project file in $(BUILDDIR)/htmlhelp."
 
 qthelp:
-	$(SPHINXBUILD) -b qthelp $(ALLSPHINXOPTS) $(BUILDDIR)/qthelp
+	$(SPHINXBUILD) --builder qthelp $(ALLSPHINXOPTS) $(BUILDDIR)/qthelp
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
@@ -145,32 +167,19 @@ qthelp:
 	@echo "To view the help file:"
 	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/nilearn.qhc"
 
-latex:
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
-	@echo
-	@echo "Build finished; the LaTeX files are in $(BUILDDIR)/latex."
-	@echo "Run \`make' in that directory to run these through (pdf)latex" \
-	      "(use \`make latexpdf' here to do that automatically)."
-
-latexpdf:
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
-	@echo "Running LaTeX files through pdflatex..."
-	make -C $(BUILDDIR)/latex all-pdf
-	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
-
 changes:
-	$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) $(BUILDDIR)/changes
+	$(SPHINXBUILD) --builder changes $(ALLSPHINXOPTS) $(BUILDDIR)/changes
 	@echo
 	@echo "The overview file is in $(BUILDDIR)/changes."
 
-linkcheck:
-	$(SPHINXBUILD) -b linkcheck $(ALLSPHINXOPTS) $(BUILDDIR)/linkcheck
+linkcheck: sym_links sym_links_datasets dummy_reports
+	$(SPHINXBUILD) --define plot_gallery=0 --builder linkcheck $(ALLSPHINXOPTS) $(BUILDDIR)/linkcheck
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in $(BUILDDIR)/linkcheck/output.txt."
 
 doctest:
-	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
+	$(SPHINXBUILD) --builder doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
@@ -182,26 +191,4 @@ zip: html
 check:
 	rm -rf _build/doctrees
 	rm -rf $(BUILDDIR)/html/_images
-	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-
-install: sym_links_datasets glm_reports
-	@echo $(VERSIONTAG)
-	rm -rf _build/doctrees _build/nilearn.github.io
-	# first clone the nilearn.github.io repo because it may ask
-	# for password and we don't want to delay this long build in
-	# the middle of it
-	# --depth 1 is a speed optimization since we don't need the
-	# history prior to the last commit
-	git clone --depth 1 git@github.com:nilearn/nilearn.github.io.git _build/nilearn.github.io
-	touch _build/nilearn.github.io/.nojekyll
-	rm -Rf _build/nilearn.github.io/stable;
-	mkdir _build/nilearn.github.io/stable;
-	make html
-	cd _build/ && \
-	cp -r html/* nilearn.github.io/stable/ && \
-	cd nilearn.github.io && \
-	git add -A && \
-	git add .nojekyll && \
-	git commit -a -m 'Make install' && \
-	git tag $(VERSIONTAG) && \
-	git push --tags
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) --fail-on-warning --keep-going -T -n --builder html $(ALLSPHINXOPTS) $(BUILDDIR)/html

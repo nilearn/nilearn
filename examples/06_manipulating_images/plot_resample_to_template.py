@@ -3,9 +3,15 @@ Resample an image to a template
 ===============================
 
 The goal of this example is to illustrate the use of the function
-:func:`nilearn.image.resample_to_img` to resample an image to a template.
-We use the MNI152 template as the reference for resampling a t-map image.
-Function :func:`nilearn.image.resample_img` could also be used to achieve this.
+:func:`~nilearn.image.resample_to_img` to resample an image.
+The function :func:`~nilearn.image.resample_img`
+could also be used to achieve this.
+
+.. admonition:: dataset
+
+    We use the :ref:`ICBM 152 template <icbm152_2009>`
+    to resample a sample motor activation statistical map
+    (`image 10426 <https://neurovault.org/images/10426/>`_ from Neurovault)
 """
 
 # %%
@@ -72,6 +78,7 @@ plotting.plot_stat_map(
     cut_coords=(36, -27, 66),
     threshold=3,
     title="t-map in original resolution",
+    vmax=8,
 )
 plotting.plot_stat_map(
     resampled_stat_img,
@@ -79,6 +86,7 @@ plotting.plot_stat_map(
     cut_coords=(36, -27, 66),
     threshold=3,
     title="Resampled t-map",
+    vmax=8,
 )
 plotting.show()
 

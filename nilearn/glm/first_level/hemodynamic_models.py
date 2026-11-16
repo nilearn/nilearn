@@ -1,22 +1,25 @@
 """Hemodynamic response function (hrf) specification.
 
-Here we provide for SPM, Glover hrfs and finite timpulse response (FIR) models.
+Here we provide for SPM, Glover hrfs and finite impulse response (FIR) models.
 This module closely follows SPM implementation
-
-Author: Bertrand Thirion, 2011--2018
 """
 
 import warnings
 from collections.abc import Iterable
 
 import numpy as np
+from scipy.interpolate import interp1d
+from scipy.linalg import pinv
 from scipy.stats import gamma
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_params
+from nilearn.nilearn_typing import HrfModel
 
 
 def _gamma_difference_hrf(
-    tr,
+    t_r,
     oversampling=50,
     time_length=32.0,
     onset=0.0,
@@ -30,40 +33,39 @@ def _gamma_difference_hrf(
 
     Parameters
     ----------
-    tr : float
+    t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, default=50
+    oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
 
-    time_length : float, default=32
+    time_length : :obj:`float`, default=32
         hrf kernel length, in seconds.
 
-    onset : float, default=0
+    onset : :obj:`float`, default=0
         Onset time of the hrf.
 
-    delay : float, default=6
+    delay : :obj:`float`, default=6
         Delay parameter of the hrf (in s.).
 
-    undershoot : float, default=16
+    undershoot : :obj:`float`, default=16
         Undershoot parameter of the hrf (in s.).
 
-    dispersion : float, default=1
+    dispersion : :obj:`float`, default=1
         Dispersion parameter for the first gamma function.
 
-    u_dispersion : float, default=1
+    u_dispersion : :obj:`float`, default=1
         Dispersion parameter for the second gamma function.
 
-    ratio : float, default=0.167
+    ratio : :obj:`float`, default=0.167
         Ratio of the two gamma components.
 
     Returns
     -------
-    hrf : array of shape(length / tr * oversampling, dtype=float)
-         hrf sampling on the oversampled time grid
-
+    hrf : array of shape (length / t_r * oversampling, dtype=float)
+         :term:`HRF` sampled on the oversampled time grid.
     """
-    dt = tr / oversampling
+    dt = t_r / oversampling
     time_stamps = np.linspace(
         0, time_length, np.rint(float(time_length) / dt).astype(int)
     )
@@ -83,57 +85,81 @@ def _gamma_difference_hrf(
     return hrf
 
 
-def spm_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
+def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0) -> np.ndarray:
     """Implement the :term:`SPM` :term:`HRF` model.
 
     Parameters
     ----------
-    tr : float
+    t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, default=50
+        .. nilearn_versionchanged:: 0.11.0
+
+           The old ``tr`` parameter was replaced by ``t_r``.
+
+    oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
 
-    time_length : float, default=32
+    time_length : :obj:`float`, default=32.0
         :term:`HRF` kernel length, in seconds.
 
-    onset : float, default=0
+    onset : :obj:`float`, default=0.0
         :term:`HRF` onset time, in seconds.
 
     Returns
     -------
-    hrf : array of shape(length / tr * oversampling, dtype=float)
-         :term:`HRF` sampling on the oversampled time grid
+    hrf : array of shape (length / t_r * oversampling, dtype=float)
+         :term:`HRF` sampling on the oversampled time grid.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import spm_hrf
+    >>> hrf = spm_hrf(t_r=2.0, oversampling=1, time_length=20.0)
+    >>> np.round(hrf, 3).tolist()
+    [0.0, 0.0, 0.161, 0.443, 0.335, 0.139, 0.022, -0.028, -0.04, -0.033]
     """
-    return _gamma_difference_hrf(tr, oversampling, time_length, onset)
+    return _gamma_difference_hrf(t_r, oversampling, time_length, onset)
 
 
-def glover_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
+def glover_hrf(
+    t_r, oversampling=50, time_length=32.0, onset=0.0
+) -> np.ndarray:
     """Implement the Glover :term:`HRF` model.
 
     Parameters
     ----------
-    tr : float
+    t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, default=50
+        .. nilearn_versionchanged:: 0.11.0
+
+           The old ``tr`` parameter was replaced by ``t_r``.
+
+    oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
 
-    time_length : float, default=32
+    time_length : :obj:`float`, default=32.0
         :term:`HRF` kernel length, in seconds.
 
-    onset : float, default=0
+    onset : :obj:`float`, default=0.0
         Onset of the response.
 
     Returns
     -------
-    hrf : array of shape(length / tr * oversampling, dtype=float)
+    hrf : array of shape (length / t_r * oversampling, dtype=float)
          :term:`HRF` sampling on the oversampled time grid.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import glover_hrf
+    >>> hrf = glover_hrf(t_r=2.0, oversampling=1, time_length=20.0)
+    >>> np.round(hrf, 3).tolist()
+    [0.0, 0.0, 0.226, 0.741, 0.5, 0.037, -0.181, -0.176, -0.103, -0.045]
     """
     return _gamma_difference_hrf(
-        tr,
+        t_r,
         oversampling,
         time_length,
         onset,
@@ -141,7 +167,7 @@ def glover_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
         undershoot=12.0,
         dispersion=0.9,
         u_dispersion=0.9,
-        ratio=0.35,
+        ratio=0.48,
     )
 
 
@@ -151,7 +177,7 @@ def _compute_derivative_from_values(values, values_plus_dt, dt=0.1):
 
 
 def _generic_time_derivative(
-    func, tr, oversampling=50, time_length=32.0, onset=0.0, dt=0.1
+    func, t_r, oversampling=50, time_length=32.0, onset=0.0, dt=0.1
 ):
     """Return the time derivative of an hrf for a given function.
 
@@ -160,86 +186,114 @@ def _generic_time_derivative(
     func : :obj:`function`
         spm_hrf or glover_hrf
 
-    tr : float
+    t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, default=50
+    oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
 
-    time_length : float, default=32
+    time_length : :obj:`float`, default=32
         hrf kernel length, in seconds.
 
-    onset : float, default=0
+    onset : :obj:`float`, default=0
         Onset of the response.
 
-    dt : float, default=0.1
+    dt : :obj:`float`, default=0.1
         Time step for the derivative.
     """
     return _compute_derivative_from_values(
-        func(tr, oversampling, time_length, onset),
-        func(tr, oversampling, time_length, onset + dt),
+        func(t_r, oversampling, time_length, onset),
+        func(t_r, oversampling, time_length, onset + dt),
         dt=dt,
     )
 
 
-def spm_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
+def spm_time_derivative(
+    t_r, oversampling=50, time_length=32.0, onset=0.0
+) -> np.ndarray:
     """Implement the :term:`SPM` time derivative :term:`HRF` (dhrf) model.
 
     Parameters
     ----------
-    tr : float
+    t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, default=50
+        .. nilearn_versionchanged:: 0.11.0
+
+           The old ``tr`` parameter was replaced by ``t_r``.
+
+    oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
 
-    time_length : float, default=32
+    time_length : :obj:`float`, default=32.0
         :term:`HRF` kernel length, in seconds.
 
-    onset : float, default=0
+    onset : :obj:`float`, default=0.0
         Onset of the response in seconds.
 
     Returns
     -------
-    dhrf : array of shape(length / tr, dtype=float)
-          dhrf sampling on the provided grid
+    dhrf : array of shape (length / t_r, dtype=float)
+          Derivative of the :term:`HRF` sampled on the provided grid.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import spm_time_derivative
+    >>> dhrf = spm_time_derivative(t_r=2.0, oversampling=1, time_length=20.0)
+    >>> np.round(dhrf, 3).tolist()
+    [0.0, 0.0, 0.167, 0.04, -0.091, -0.072, -0.035, -0.013, -0.0, 0.005]
     """
     return _generic_time_derivative(
         spm_hrf,
-        tr=tr,
+        t_r=t_r,
         oversampling=oversampling,
         time_length=time_length,
         onset=onset,
     )
 
 
-def glover_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
+def glover_time_derivative(
+    t_r, oversampling=50, time_length=32.0, onset=0.0
+) -> np.ndarray:
     """Implement the Glover time derivative :term:`HRF` (dhrf) model.
 
     Parameters
     ----------
-    tr : float
+    t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, default=50
+        .. nilearn_versionchanged:: 0.11.0
+
+           The old ``tr`` parameter was replaced by ``t_r``.
+
+    oversampling : :obj:`int`, default=50
         Temporal oversampling factor.
 
-    time_length : float, default=32
+    time_length : :obj:`float`, default=32.0
         :term:`HRF` kernel length, in seconds.
 
-    onset : float, default=0
+    onset : :obj:`float`, default=0.0
         Onset of the response.
 
     Returns
     -------
-    dhrf : array of shape(length / tr), dtype=float
-          dhrf sampling on the provided grid
+    dhrf : array of shape (length / t_r), dtype=float
+          Derivative of the :term:`HRF` sampled on the provided grid.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import glover_time_derivative
+    >>> dhrf = glover_time_derivative(
+    ...     t_r=2.0, oversampling=1, time_length=20.0
+    ... )
+    >>> np.round(dhrf, 3).tolist()
+    [0.0, 0.0, 0.267, 0.076, -0.215, -0.168, -0.039, 0.027, 0.033, 0.019]
     """
     return _generic_time_derivative(
         glover_hrf,
-        tr=tr,
+        t_r=t_r,
         oversampling=oversampling,
         time_length=time_length,
         onset=onset,
@@ -247,7 +301,7 @@ def glover_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
 
 
 def _generic_dispersion_derivative(
-    tr,
+    t_r,
     oversampling=50,
     time_length=32.0,
     onset=0.0,
@@ -260,14 +314,18 @@ def _generic_dispersion_derivative(
 
     Parameters
     ----------
-    dt : float, default=0.01
+    dt : :obj:`float`, default=0.01
         Dispersion step for the derivative.
 
-    See _gamma_difference_hrf for the other parameters description.
+    .. do not check for missing parameters in docstring
+
+    Notes
+    -----
+    See ``_gamma_difference_hrf`` for the other parameters description.
     """
     return _compute_derivative_from_values(
         _gamma_difference_hrf(
-            tr,
+            t_r,
             oversampling,
             time_length,
             onset,
@@ -276,7 +334,7 @@ def _generic_dispersion_derivative(
             dispersion=dispersion,
         ),
         _gamma_difference_hrf(
-            tr,
+            t_r,
             oversampling,
             time_length,
             onset,
@@ -289,67 +347,95 @@ def _generic_dispersion_derivative(
 
 
 def spm_dispersion_derivative(
-    tr, oversampling=50, time_length=32.0, onset=0.0
-):
+    t_r, oversampling=50, time_length=32.0, onset=0.0
+) -> np.ndarray:
     """Implement the :term:`SPM` dispersion derivative :term:`HRF` model.
 
     Parameters
     ----------
-    tr : float
+    t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, default=50
+        .. nilearn_versionchanged:: 0.11.0
+
+           The old ``tr`` parameter was replaced by ``t_r``.
+
+    oversampling : :obj:`int`, default=50
         Temporal oversampling factor in seconds.
 
-    time_length : float, default=32
+    time_length : :obj:`float`, default=32.0
         :term:`HRF` kernel length, in seconds.
 
-    onset : float, default=0
+    onset : :obj:`float`, default=0.0
         Onset of the response in seconds.
 
     Returns
     -------
-    dhrf : array of shape(length / tr * oversampling), dtype=float
-          dhrf sampling on the oversampled time grid
+    dhrf : array of shape (length / tr * oversampling), dtype=float
+          Derivative of the :term:`HRF` sampled on the oversampled
+          time grid.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import glover_dispersion_derivative
+    >>> ddhrf = glover_dispersion_derivative(
+    ...     t_r=2.0, oversampling=1, time_length=20.0
+    ... )
+    >>> np.round(ddhrf, 3).tolist()
+    [0.0, -0.0, -0.373, 0.282, 0.295, -0.04, -0.094, -0.048, -0.017, -0.005]
     """
     return _generic_dispersion_derivative(
-        tr, oversampling=oversampling, time_length=time_length, onset=onset
+        t_r, oversampling=oversampling, time_length=time_length, onset=onset
     )
 
 
 def glover_dispersion_derivative(
-    tr, oversampling=50, time_length=32.0, onset=0.0
-):
+    t_r, oversampling=50, time_length=32.0, onset=0.0
+) -> np.ndarray:
     """Implement the Glover dispersion derivative :term:`HRF` model.
 
     Parameters
     ----------
-    tr : float
+    t_r : :obj:`float`
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, default=50
+        .. nilearn_versionchanged:: 0.11.0
+
+           The old ``tr`` parameter was replaced by ``t_r``.
+
+    oversampling : :obj:`int`, default=50
         Temporal oversampling factor in seconds.
 
-    time_length : float, default=32
+    time_length : :obj:`float`, default=32.0
         :term:`HRF` kernel length, in seconds.
 
-    onset : float, default=0
+    onset : :obj:`float`, default=0.0
         Onset of the response in seconds.
 
     Returns
     -------
-    dhrf : array of shape(length / tr * oversampling), dtype=float
-          dhrf sampling on the oversampled time grid
+    dhrf : array of shape (length / t_r * oversampling), dtype=float
+          Derivative of the :term:`HRF` sampled on the oversampled
+          time grid.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import glover_dispersion_derivative
+    >>> ddhrf = glover_dispersion_derivative(
+    ...     t_r=2.0, oversampling=1, time_length=20.0
+    ... )
+    >>> np.round(ddhrf, 3).tolist()
+    [0.0, -0.0, -0.373, 0.282, 0.295, -0.04, -0.094, -0.048, -0.017, -0.005]
     """
     return _generic_dispersion_derivative(
-        tr,
+        t_r,
         oversampling=oversampling,
         time_length=time_length,
         onset=onset,
         undershoot=12.0,
-        ratio=0.35,
+        ratio=0.48,
         dispersion=0.9,
     )
 
@@ -368,10 +454,10 @@ def _sample_condition(
     frame_times : array of shape(n_scans)
         Sample time points.
 
-    oversampling : int, default=50
+    oversampling : :obj:`int`, default=50
         Factor for oversampling event regressor.
 
-    min_onset : float, default=-24
+    min_onset : :obj:`float`, default=-24
         Minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered.
 
@@ -382,7 +468,6 @@ def _sample_condition(
 
     frame_times_high_res : array of shape(over_sampling * n_scans)
         Time points used for regressor sampling.
-
     """
     # Find the high-resolution frame_times
     n_frames = frame_times.size
@@ -407,6 +492,7 @@ def _sample_condition(
                 " experiment and are thus not considered in the model."
             ),
             UserWarning,
+            stacklevel=find_stack_level(),
         )
 
     # Set up the regressor timecourse
@@ -415,7 +501,7 @@ def _sample_condition(
     t_onset = np.minimum(
         np.searchsorted(frame_times_high_res, onsets), tmax - 1
     )
-    for t, v in zip(t_onset, values):
+    for t, v in zip(t_onset, values, strict=False):
         regressor[t] += v
     t_offset = np.minimum(
         np.searchsorted(frame_times_high_res, onsets + durations), tmax - 1
@@ -426,7 +512,7 @@ def _sample_condition(
         if t < (tmax - 1) and t == t_onset[i]:
             t_offset[i] += 1
 
-    for t, v in zip(t_offset, values):
+    for t, v in zip(t_offset, values, strict=False):
         regressor[t] -= v
     regressor = np.cumsum(regressor)
 
@@ -467,10 +553,7 @@ def _resample_regressor(hr_regressor, frame_times_high_res, frame_times):
     -------
     regressor : array of shape(n_scans)
          The resampled regressor.
-
     """
-    from scipy.interpolate import interp1d
-
     f = interp1d(frame_times_high_res, hr_regressor)
     return f(frame_times).T
 
@@ -491,12 +574,9 @@ def orthogonalize(X):
     Notes
     -----
     X is changed in place. The columns are not normalized.
-
     """
     if X.size == X.shape[0]:
         return X
-
-    from scipy.linalg import pinv
 
     for i in range(1, X.shape[1]):
         X[:, i] -= np.dot(np.dot(X[:, i], X[:, :i]), pinv(X[:, :i]))
@@ -515,18 +595,18 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
 
     Parameters
     ----------
-    con_name : string
+    con_name : :obj:`str`
         identifier of the condition
     %(hrf_model)s
-    fir_delays : 1D array_like, optional
+    fir_delays : 1D array_like or None, default=None
         Delays (in scans) used in case of an FIR model
 
     Returns
     -------
-    names : list of strings,
-        regressor names
-
+    names : :obj:`list` of strings,
+        Regressor names.
     """
+    check_params(locals())
     # Default value
     names = [con_name]
 
@@ -558,30 +638,30 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     return names
 
 
-def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
+@fill_doc
+def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
     """Return the list of matching kernels \
     given the specification of the hemodynamic model and time parameters.
 
     Parameters
     ----------
-    hrf_model : string, function, list of functions, or None,
-        HRF model to be used.
+    %(hrf_model)s
 
-    tr : float
+    t_r : :obj:`float`
         the repetition time in seconds
 
-    oversampling : int, default=50
+    oversampling : :obj:`int`, default=50
         Temporal oversampling factor to have a smooth hrf.
 
-    fir_delays : 1D-array-like, optional
+    fir_delays : 1D-array-like or None, default=None
         List of delays (in scans) for finite impulse response models.
 
     Returns
     -------
-    hkernel : list of arrays
+    hkernel : :obj:`list` of arrays
         Samples of the hrf (the number depends on the hrf_model used).
-
     """
+    check_params(locals())
     acceptable_hrfs = [
         "spm",
         "spm + derivative",
@@ -597,30 +677,30 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
         "Please refer to the related documentation."
     )
     if hrf_model == "spm":
-        hkernel = [spm_hrf(tr, oversampling)]
+        hkernel = [spm_hrf(t_r, oversampling)]
     elif hrf_model == "spm + derivative":
         hkernel = [
-            spm_hrf(tr, oversampling),
-            spm_time_derivative(tr, oversampling),
+            spm_hrf(t_r, oversampling),
+            spm_time_derivative(t_r, oversampling),
         ]
     elif hrf_model == "spm + derivative + dispersion":
         hkernel = [
-            spm_hrf(tr, oversampling),
-            spm_time_derivative(tr, oversampling),
-            spm_dispersion_derivative(tr, oversampling),
+            spm_hrf(t_r, oversampling),
+            spm_time_derivative(t_r, oversampling),
+            spm_dispersion_derivative(t_r, oversampling),
         ]
     elif hrf_model == "glover":
-        hkernel = [glover_hrf(tr, oversampling)]
+        hkernel = [glover_hrf(t_r, oversampling)]
     elif hrf_model == "glover + derivative":
         hkernel = [
-            glover_hrf(tr, oversampling),
-            glover_time_derivative(tr, oversampling),
+            glover_hrf(t_r, oversampling),
+            glover_time_derivative(t_r, oversampling),
         ]
     elif hrf_model == "glover + derivative + dispersion":
         hkernel = [
-            glover_hrf(tr, oversampling),
-            glover_time_derivative(tr, oversampling),
-            glover_dispersion_derivative(tr, oversampling),
+            glover_hrf(t_r, oversampling),
+            glover_time_derivative(t_r, oversampling),
+            glover_dispersion_derivative(t_r, oversampling),
         ]
     elif hrf_model == "fir":
         hkernel = [
@@ -634,16 +714,16 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
         ]
     elif callable(hrf_model):
         try:
-            hkernel = [hrf_model(tr, oversampling)]
-        except TypeError:
-            raise ValueError(error_msg)
+            hkernel = [hrf_model(t_r, oversampling)]
+        except TypeError as e:
+            raise ValueError(error_msg) from e
     elif isinstance(hrf_model, Iterable) and all(
         callable(_) for _ in hrf_model
     ):
         try:
-            hkernel = [model(tr, oversampling) for model in hrf_model]
-        except TypeError:
-            raise ValueError(error_msg)
+            hkernel = [model(t_r, oversampling) for model in hrf_model]
+        except TypeError as e:
+            raise ValueError(error_msg) from e
     elif hrf_model is None:
         hkernel = [np.hstack((1, np.zeros(oversampling - 1)))]
     else:
@@ -658,13 +738,13 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
 @fill_doc
 def compute_regressor(
     exp_condition,
-    hrf_model,
+    hrf_model: HrfModel,
     frame_times,
-    con_id="cond",
-    oversampling=50,
+    con_id: str = "cond",
+    oversampling: int = 50,
     fir_delays=None,
-    min_onset=-24,
-):
+    min_onset: float = -24.0,
+) -> tuple[np.ndarray, list[str]]:
     """Convolve regressors with :term:`HRF` model.
 
     Parameters
@@ -672,20 +752,22 @@ def compute_regressor(
     exp_condition : array-like of shape (3, n_events)
         yields description of events for this condition as a
         (onsets, durations, amplitudes) triplet
+
     %(hrf_model)s
+
     frame_times : array of shape (n_scans)
         the desired sampling times
 
-    con_id : string, default='cond'
+    con_id : :obj:`str`, default='cond'
         Identifier of the condition
 
-    oversampling : int, default=50
+    oversampling : :obj:`int`, default=50
         Oversampling factor to perform the convolution.
 
-    fir_delays : [int] 1D-array-like, optional
+    fir_delays : [int] 1D-array-like or None, default=None
         Delays (in scans) used in case of a finite impulse response model.
 
-    min_onset : float, default=-24
+    min_onset : :obj:`float`, default=-24
         Minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered.
 
@@ -694,24 +776,52 @@ def compute_regressor(
     computed_regressors : array of shape(n_scans, n_reg)
         Computed regressors sampled at frame times.
 
-    reg_names : list of strings
+    reg_names : :obj:`list` of strings
         Corresponding regressor names.
 
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>>
+        >>> from nilearn.glm.first_level import compute_regressor
+        >>> from nilearn.plotting import plot_design_matrix, show
+        >>>
+        >>> onset = [1, 20, 36.5]
+        >>> duration = [2, 2, 2]
+        >>> amplitude = [1, 1, 1]
+        >>> exp_condition = (onset, duration, amplitude)
+        >>>
+        >>> frame_times = np.linspace(0, 69, 70)
+        >>>
+        >>> hrf_model = "spm + derivative"
+        >>>
+        >>> reg, reg_names = compute_regressor(
+        ...     exp_condition, hrf_model, frame_times
+        ... )
+        >>>
+        >>> ax = plot_design_matrix(pd.DataFrame(reg, columns=reg_names))
+        >>>
+        >>> show()
     """
+    check_params(locals())
     # fir_delays should be integers
     if fir_delays is not None:
         fir_delays = [int(x) for x in fir_delays]
     oversampling = int(oversampling)
 
-    # this is the minimal tr in this run, not necessarily the true tr
-    tr = _calculate_tr(frame_times)
+    # this is the minimal t_r in this run, not necessarily the true t_r
+    t_r = _calculate_tr(frame_times)
     # 1. create the high temporal resolution regressor
     hr_regressor, frame_times_high_res = _sample_condition(
         exp_condition, frame_times, oversampling, min_onset
     )
 
     # 2. create the  hrf model(s)
-    hkernel = _hrf_kernel(hrf_model, tr, oversampling, fir_delays)
+    hkernel = _hrf_kernel(hrf_model, t_r, oversampling, fir_delays)
 
     # 3. convolve the regressor and hrf, and downsample the regressor
     conv_reg = np.array(
@@ -746,9 +856,10 @@ def _calculate_tr(frame_times):
     ----------
     frame_times : array of shape (n_scans)
         the desired sampling times
+
     Returns
     -------
-    float
-        repetition time
+    :obj:`float`
+        Repetition time.
     """
-    return np.min(np.diff(frame_times))
+    return float(np.min(np.diff(frame_times)))

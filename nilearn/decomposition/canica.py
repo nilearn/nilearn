@@ -1,19 +1,22 @@
 """Canonical Independent Component Analysis."""
 
-# Author: Alexandre Abraham, Gael Varoquaux,
-
 import warnings as _warnings
 from operator import itemgetter
+from typing import get_args
 
 import numpy as np
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 from scipy.stats import scoreatpercentile
 from sklearn.decomposition import fastica
 from sklearn.utils import check_random_state
 
-from nilearn._utils import fill_doc
-
-from ._multi_pca import _MultiPCA
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_is_of_allowed_type
+from nilearn.decomposition._multi_pca import _MultiPCA
+from nilearn.maskers import MultiNiftiMasker, MultiSurfaceMasker
+from nilearn.nilearn_typing import NiimgLike
+from nilearn.surface import SurfaceImage
 
 
 @fill_doc
@@ -24,34 +27,19 @@ class CanICA(_MultiPCA):
 
     Parameters
     ----------
-    mask : Niimg-like object or MultiNiftiMasker instance, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters.
+    %(mask_decomposition)s
 
-    n_components : int, default=20
+    n_components : :obj:`int`, default=20
         Number of components to extract.
-    %(smoothing_fwhm)s
-        Default=6mm.
 
-    do_cca : boolean, default=True
+    %(smoothing_fwhm)s
+        default=6mm.
+
+    do_cca : :obj:`bool`, default=True
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
-    standardize : boolean, default=True
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
-
-    standardize_confounds : boolean, default=True
-        If standardize_confounds is True, the confounds are zscored:
-        their mean is put to 0 and their variance to 1 in the time dimension.
-
-    detrend : boolean, default=True
-        If detrend is True, the time-series will be detrended before
-        components extraction.
-
-    threshold : None, 'auto' or float, default='auto'
+    threshold : None, 'auto' or :obj:`float`, default='auto'
         If None, no thresholding is applied. If 'auto',
         then we apply a thresholding that will keep the n_voxels,
         more intense voxels across all the maps, n_voxels being the number
@@ -60,96 +48,80 @@ class CanICA(_MultiPCA):
         have 2 x n_voxels non-zero voxels ). The float value
         must be bounded by [0. and n_components].
 
-    n_init : int, default=10
+    n_init : :obj:`int`, default=10
         The number of times the fastICA algorithm is restarted
 
-    random_state : int or RandomState, optional
-        Pseudo number generator state used for random sampling.
+    %(random_state)s
 
-    target_affine : 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+    %(standardize_zscore)s
 
-    target_shape : 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+    %(standardize_confounds)s
 
-    low_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    %(detrend)s
 
-    high_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    %(low_pass)s
 
-    t_r : float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(high_pass)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(t_r)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
+
+    %(target_affine)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(target_shape)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(mask_strategy)s
 
+        default='epi'.
+
         .. note::
-             Depending on this value, the mask will be computed from
-             :func:`nilearn.masking.compute_background_mask`,
-             :func:`nilearn.masking.compute_epi_mask`, or
-             :func:`nilearn.masking.compute_brain_mask`.
+            These strategies are only relevant for Nifti images and the
+            parameter is ignored for SurfaceImage objects.
 
-        Default='epi'.
-
-    mask_args : dict, optional
+    mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
-    memory : instance of joblib.Memory or string, default=None
-        Used to cache the masking process.
-        By default, no caching is done.
-        If a string is given, it is the path to the caching directory.
-        If ``None`` is passed will default to ``Memory(location=None)``.
+    %(memory)s
 
-    memory_level : integer, default=0
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
+    %(memory_level)s
 
-    n_jobs : integer, default=1
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on.
+    %(n_jobs)s
 
-    verbose : integer, default=0
-        Indicate the level of verbosity. By default, nothing is printed
+    %(verbose0)s
 
-    Attributes
-    ----------
-    components_ : 2D numpy array (n_components x n-voxels)
-        Masked ICA components extracted from the input images.
+    %(base_decomposition_fit_attributes)s
 
-        .. note::
+    %(multi_pca_fit_attributes)s
 
-            Use attribute ``components_img_`` rather than manually unmasking
-            ``components_`` with ``masker_`` attribute.
-
-    components_img_ : 4D Nifti image
-        4D image giving the extracted ICA components. Each 3D image is a
-        component.
-
-        .. versionadded:: 0.4.1
-
-    masker_ : instance of MultiNiftiMasker
-        Masker used to filter and mask data as first step. If an instance of
-        MultiNiftiMasker is given in ``mask`` parameter,
-        this is a copy of it. Otherwise, a masker is created using the value
-        of ``mask`` and other NiftiMasker related parameters as initialization.
-
-    mask_img_ : Niimg-like object
-        See :ref:`extracting_data`.
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
+    variance_ : numpy array (n_components,)
+        The amount of variance explained
+        by each of the selected components.
 
     References
     ----------
     .. footbibliography::
-
     """
 
     def __init__(
@@ -161,12 +133,13 @@ class CanICA(_MultiPCA):
         threshold="auto",
         n_init=10,
         random_state=None,
-        standardize=True,
+        standardize="zscore_sample",
         standardize_confounds=True,
         detrend=True,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -176,8 +149,6 @@ class CanICA(_MultiPCA):
         n_jobs=1,
         verbose=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         super().__init__(
             n_components=n_components,
             do_cca=do_cca,
@@ -190,6 +161,7 @@ class CanICA(_MultiPCA):
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             target_affine=target_affine,
             target_shape=target_shape,
             mask_strategy=mask_strategy,
@@ -200,19 +172,13 @@ class CanICA(_MultiPCA):
             verbose=verbose,
         )
 
-        if isinstance(threshold, float) and threshold > n_components:
-            raise ValueError(
-                "Threshold must not be higher than number "
-                "of maps. "
-                f"Number of maps is {n_components} and you provided "
-                f"threshold={threshold}"
-            )
         self.threshold = threshold
         self.n_init = n_init
 
-    def _unmix_components(self, components):
+    def _unmix_components(self, components) -> None:
         """Core function of CanICA than rotate components_ to maximize \
-        independence."""
+        independence.
+        """
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
@@ -257,7 +223,7 @@ class CanICA(_MultiPCA):
                     "Threshold should be decreased or "
                     "number of components should be adjusted.",
                     UserWarning,
-                    stacklevel=4,
+                    stacklevel=find_stack_level(),
                 )
             else:
                 threshold = scoreatpercentile(abs_ica_maps, percentile)
@@ -285,8 +251,31 @@ class CanICA(_MultiPCA):
         ----------
         data : ndarray or memmap
             Unmasked data to process
-
         """
+        if (
+            isinstance(self.threshold, float)
+            and self.threshold > self.n_components
+        ):
+            raise ValueError(
+                "Threshold must not be higher than number of maps. "
+                f"Number of maps is {self.n_components} "
+                f"and you provided threshold={self.threshold}."
+            )
+
         components = _MultiPCA._raw_fit(self, data)
+
         self._unmix_components(components)
         return self
+
+    def _validate_mask(self) -> None:
+        if self.mask is not None:
+            check_is_of_allowed_type(
+                self.mask,
+                (
+                    MultiSurfaceMasker,
+                    SurfaceImage,
+                    MultiNiftiMasker,
+                    *get_args(NiimgLike),
+                ),
+                "mask",
+            )

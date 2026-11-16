@@ -1,121 +1,57 @@
-import warnings
-from string import Template
+"""Masker utilities available for other nilearn modules.
 
-import numpy as np
+Must be kept out of the nilearn.maskers subpackage to avoid circular imports.
+"""
 
-from nilearn.experimental.surface import SurfaceMasker
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+from collections.abc import Iterable
+from typing import Any, get_args
 
-from .cache_mixin import _check_memory
-from .class_inspect import get_params
+from nilearn._utils.param_validation import check_is_of_allowed_type
+from nilearn.nilearn_typing import NiimgLike
+from nilearn.surface.surface import SurfaceImage
 
 
-def check_embedded_masker(estimator, masker_type="multi_nii"):
-    """Create a masker from instance parameters.
+def check_compatibility_mask_and_images(mask_img: Any, run_imgs: Any) -> None:
+    """Check that mask type and image types are compatible.
 
-    Base function for using a masker within a BaseEstimator class
-
-    This creates a masker from instance parameters :
-    - If instance contains a mask image in mask parameter,
-    we use this image as new masker mask_img, forwarding instance parameters to
-    new masker : smoothing_fwhm, standardize, detrend, low_pass= high_pass,
-    t_r, target_affine, target_shape, mask_strategy, mask_args,
-    - If instance contains a masker in mask parameter, we use a copy of
-    this masker, overriding all instance masker related parameters.
-    In all case, we forward system parameters of instance to new masker :
-    memory, memory_level, verbose, n_jobs
-
-    Parameters
-    ----------
-    instance : object, instance of BaseEstimator
-        The object that gives us the values of the parameters
-
-    masker_type : {"multi_nii", "nii", "surface"}, default="mutli_nii"
-        Indicates whether to return a MultiNiftiMasker, NiftiMasker, or a
-        SurfaceMasker.
-
-    Returns
-    -------
-    masker : MultiNiftiMasker, NiftiMasker, or SurfaceMasker
-        New masker
-
+    Images to fit should be a Niimg-Like
+    if the mask is a NiftiImage, a path or a volume masker
+    (for example NiftiMasker or NiftiLabelsMasker).
+    Similarly, only SurfaceImages can be fitted
+    with a SurfaceImage or a surface masker
+    (for example SurfaceMasker or SurfaceLabelsMasker) as mask.
     """
-    if masker_type == "surface":
-        masker_type = SurfaceMasker
-    elif masker_type == "multi_nii":
-        masker_type = MultiNiftiMasker
-    else:
-        masker_type = NiftiMasker
-    estimator_params = get_params(masker_type, estimator)
-    mask = getattr(estimator, "mask", None)
+    from nilearn.maskers.base_masker import BaseMasker, _BaseSurfaceMasker
 
-    if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
-        # Creating masker from provided masker
-        masker_params = get_params(masker_type, mask)
-        new_masker_params = masker_params
-    else:
-        # Creating a masker with parameters extracted from estimator
-        new_masker_params = estimator_params
-        new_masker_params["mask_img"] = mask
-    # Forwarding system parameters of instance to new masker in all case
-    if issubclass(masker_type, MultiNiftiMasker) and hasattr(
-        estimator, "n_jobs"
-    ):
-        # For MultiNiftiMasker only
-        new_masker_params["n_jobs"] = estimator.n_jobs
+    if mask_img is None:
+        return None
 
-    warning_msg = Template(
-        "Provided estimator has no $attribute attribute set."
-        "Setting $attribute to $default_value by default."
+    if not isinstance(run_imgs, Iterable):
+        run_imgs = [run_imgs]
+
+    msg = (
+        "Mask and input images must be of compatible types.\n"
+        f"Got mask of type: {mask_img.__class__.__name__}, "
+        f"and images of type: {[type(x) for x in run_imgs]}"
     )
 
-    if hasattr(estimator, "memory"):
-        new_masker_params["memory"] = _check_memory(estimator.memory)
-    else:
-        warnings.warn(
-            warning_msg.substitute(
-                attribute="memory", default_value="Memory(location=None)"
-            )
+    volumetric_type = (*get_args(NiimgLike), BaseMasker)
+    surface_type = (SurfaceImage, _BaseSurfaceMasker)
+    all_allowed_types = (*volumetric_type, *surface_type)
+
+    check_is_of_allowed_type(mask_img, all_allowed_types, "mask")
+
+    if isinstance(mask_img, volumetric_type) and any(
+        not isinstance(x, NiimgLike) for x in run_imgs
+    ):
+        raise TypeError(
+            f"{msg} "
+            f"where images should be NiftiImage-like instances "
+            f"(Nifti1Image or str or Path)."
         )
-        new_masker_params["memory"] = _check_memory(None)
-
-    if hasattr(estimator, "memory_level"):
-        new_masker_params["memory_level"] = max(0, estimator.memory_level - 1)
-    else:
-        warnings.warn(
-            warning_msg.substitute(attribute="memory_level", default_value="0")
+    elif isinstance(mask_img, surface_type) and any(
+        not isinstance(x, SurfaceImage) for x in run_imgs
+    ):
+        raise TypeError(
+            f"{msg} where SurfaceImage instances would be expected."
         )
-        new_masker_params["memory_level"] = 0
-
-    if hasattr(estimator, "verbose"):
-        new_masker_params["verbose"] = estimator.verbose
-    else:
-        warnings.warn(
-            warning_msg.substitute(attribute="verbose", default_value="0")
-        )
-        new_masker_params["verbose"] = 0
-    # Raising warning if masker override parameters
-    conflict_string = ""
-    for param_key in sorted(estimator_params):
-        if np.any(new_masker_params[param_key] != estimator_params[param_key]):
-            conflict_string += (
-                f"Parameter {param_key} :\n"
-                f"    Masker parameter {new_masker_params[param_key]}"
-                " - overriding estimator parameter "
-                f"{estimator_params[param_key]}\n"
-            )
-
-    if conflict_string != "":
-        warn_str = (
-            "Overriding provided-default estimator parameters with"
-            f" provided masker parameters :\n{conflict_string}"
-        )
-        warnings.warn(warn_str)
-    masker = masker_type(**new_masker_params)
-
-    # Forwarding potential attribute of provided masker
-    if hasattr(mask, "mask_img_"):
-        # Allow free fit of returned mask
-        masker.mask_img = mask.mask_img_
-
-    return masker

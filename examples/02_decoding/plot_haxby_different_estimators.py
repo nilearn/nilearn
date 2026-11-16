@@ -1,9 +1,13 @@
 """
-Different classifiers in decoding the Haxby dataset
-===================================================
+Comparing classifiers in decoding
+=================================
 
-Here we compare different classifiers on a visual object recognition
-decoding task.
+Here we compare different classifiers on the visual object discrimination
+decoding task of the Haxby dataset.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
 """
 
 # We start by loading data using nilearn dataset fetcher
@@ -21,7 +25,7 @@ haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print(
-    "First subject anatomical nifti image (3D) located is "
+    "First subject anatomical nifti image (3D) is located "
     f"at: {haxby_dataset.anat[0]}"
 )
 print(
@@ -93,11 +97,16 @@ for classifier_name in sorted(classifiers):
     decoder = Decoder(
         estimator=classifier_name,
         mask=mask_filename,
-        standardize="zscore_sample",
         cv=cv,
+        screening_percentile=100,
+        verbose=1,
     )
     t0 = time.time()
-    decoder.fit(fmri_niimgs, classification_target, groups=run_labels)
+    decoder.fit(
+        fmri_niimgs,
+        classification_target,
+        groups=run_labels,
+    )
 
     classifiers_data[classifier_name] = {"score": decoder.cv_scores_}
     print(f"{classifier_name:10}: {time.time() - t0:.2f}s")
@@ -118,14 +127,16 @@ for classifier_name in sorted(classifiers):
 # Then we make a rudimentary diagram
 import matplotlib.pyplot as plt
 
-plt.figure(figsize=(8, 6))
+plt.subplots(figsize=(8, 6), constrained_layout=True)
 
 all_categories = np.sort(np.hstack([categories, "AVERAGE"]))
 tick_position = np.arange(len(all_categories))
 plt.yticks(tick_position + 0.25, all_categories)
 height = 0.1
 
-for color, classifier_name in zip(["b", "m", "k", "r", "g"], classifiers):
+for color, classifier_name in zip(
+    ["b", "m", "k", "r", "g"], classifiers, strict=False
+):
     score_means = [
         np.mean(classifiers_data[classifier_name]["score"][category])
         for category in all_categories
@@ -147,13 +158,12 @@ plt.legend(ncol=1, bbox_to_anchor=(1.3, 0.2))
 plt.title(
     "Category-specific classification accuracy for different classifiers"
 )
-plt.tight_layout()
 
 # %%
-# We can see that for a fixed penalty the results are similar between the svc
-# and the logistic regression. The main difference relies on the penalty
-# ($\ell_1$ and $\ell_2$). The sparse penalty works better because we are in
-# an intra-subject setting.
+# We can see that for a fixed penalty the results are similar
+# between the svc and the logistic regression.
+# The main difference relies on the penalty l\ :sub:`1`\ and l\ :sub:`2`\).
+# The sparse penalty works better because we are in an intra-subject setting.
 
 # %%
 # Visualizing the face vs house map
@@ -173,8 +183,8 @@ for classifier_name in sorted(classifiers):
     decoder = Decoder(
         estimator=classifier_name,
         mask=mask_filename,
-        standardize="zscore_sample",
         cv=cv,
+        screening_percentile=100,
     )
     decoder.fit(fmri_niimgs_condition, stimuli, groups=run_labels)
     classifiers_data[classifier_name] = {}

@@ -1,26 +1,25 @@
 """Public Utility functions for the nilearn.interfaces.bids module."""
 
-from __future__ import annotations
+from typing import Any
 
 
-def bids_entities():
+def bids_entities() -> dict[str, list[str]]:
     """Return a dictionary of BIDS entities.
 
     Entities are listed in the order they should appear in a filename.
 
-    https://bids-specification.readthedocs.io/en/stable/appendices/entities.html # noqa
+    https://bids-specification.readthedocs.io/en/stable/appendices/entities.html
 
     Note that:
 
     - this only contains the entities for functional data
 
-    https://github.com/bids-standard/bids-specification/blob/master/src/schema/rules/files/raw/func.yaml#L13 # noqa
-    https://github.com/bids-standard/bids-specification/blob/master/src/schema/rules/files/deriv/imaging.yaml#L29 # noqa
+    https://github.com/bids-standard/bids-specification/blob/master/src/schema/rules/files/raw/func.yaml#L13
+    https://github.com/bids-standard/bids-specification/blob/master/src/schema/rules/files/deriv/imaging.yaml#L29
 
     Returns
     -------
     Dictionary of raw and derivatives entities : dict[str, list[str]]
-
     """
     return {
         "raw": [
@@ -39,21 +38,20 @@ def bids_entities():
     }
 
 
-def check_bids_label(label):
+def check_bids_label(label: Any) -> None:
     """Validate a BIDS label.
 
-    https://bids-specification.readthedocs.io/en/stable/glossary.html#label-formats # noqa
+    https://bids-specification.readthedocs.io/en/stable/glossary.html#label-formats
 
     Parameters
     ----------
     label : Any
         Label to validate
-
     """
     if not isinstance(label, str):
         raise TypeError(
             f"All bids labels must be string. "
-            f"Got '{type(label)}' for {label} instead."
+            f"Got '{label.__class__.__name__}' for {label} instead."
         )
     if not all(char.isalnum() for char in label):
         raise ValueError(
@@ -61,7 +59,10 @@ def check_bids_label(label):
         )
 
 
-def create_bids_filename(fields, entities_to_include=None):
+def create_bids_filename(
+    fields,
+    entities_to_include: list[str] | None = None,
+) -> str:
     """Create BIDS filename from dictionary of entity-label pairs.
 
     Parameters
@@ -70,16 +71,20 @@ def create_bids_filename(fields, entities_to_include=None):
         Dictionary of entity-label pairs, for example:
 
         {
+         "prefix": None, # can be useful to easily prefix filenames
          "suffix": "T1w",
          "extension": "nii.gz",
          "entities": {"acq":  "ap",
                       "desc": "preproc"}
         }.
 
+    entities_to_include : :obj:`list` of str or None
+        If None is passed, all raw BIDS entities but not derivatives
+        are supported.
+
     Returns
     -------
     BIDS filename : :obj:`str`
-
     """
     if entities_to_include is None:
         entities_to_include = bids_entities()["raw"]
@@ -87,13 +92,18 @@ def create_bids_filename(fields, entities_to_include=None):
     filename = ""
 
     for key in entities_to_include:
-        if key in fields["entities"]:
-            value = fields["entities"][key]
-            if value not in (None, ""):
-                filename += f"{key}-{value}_"
+        if value := fields["entities"].get(key):
+            filename += f"{key}-{value}_"
     if "suffix" in fields:
         filename += f"{fields['suffix']}"
     if "extension" in fields:
         filename += f".{fields['extension']}"
+    if "prefix" in fields:
+        prefix = fields["prefix"]
+        if prefix is None:
+            prefix = ""
+        if prefix and prefix != "" and not prefix.endswith("_"):
+            prefix += "_"
+        filename = f"{prefix}{filename}"
 
     return filename

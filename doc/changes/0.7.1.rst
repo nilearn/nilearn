@@ -1,9 +1,7 @@
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.7.1
-=====
+Version 0.7.1
+=============
 
 **Released March 2021**
 
@@ -23,7 +21,7 @@ NEW
 
 - :bdg-success:`API` New atlas fetcher :func:`~datasets.fetch_atlas_difumo` to download *Dictionaries of Functional Modes*, or “DiFuMo”, that can serve as atlases to extract functional signals with different dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well raw :term:`BOLD` timeseries, over a with range of experimental conditions (:gh:`2619` by `Nicolas Gensollen`_).
 
-- :bdg-success:`API` Function :func:`glm.Contrast.one_minus_pvalue` was added to ensure numerical stability of p-value estimation. It computes 1 - p-value using the Cumulative Distribution Function in the same way as function :func:`nilearn.glm.Contrast.p_value` computes the p-value using the Survival Function. (:gh:`2567` by `Ana Luisa Pinho`_).
+- :bdg-success:`API` Function :func:`glm.Contrast.one_minus_pvalue` was added to ensure numerical stability of p-value estimation. It computes 1 - p-value using the Cumulative Distribution Function in the same way as function :func:`~glm.Contrast.p_value` computes the p-value using the Survival Function. (:gh:`2567` by `Ana Luisa Pinho`_).
 
 Fixes
 -----
@@ -35,7 +33,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-success:`API` Functions :func:`~reporting.make_glm_report` and :func:`~reporting.get_clusters_table` have a new argument, ``two_sided``, which allows for two-sided thresholding, which is disabled by default (:gh:`2719` by `Taylor Salo`_).
+- :bdg-success:`API` Functions ``nilearn.reporting.make_glm_report`` and :func:`~reporting.get_clusters_table` have a new argument, ``two_sided``, which allows for two-sided thresholding, which is disabled by default (:gh:`2719` by `Taylor Salo`_).
 
 - :bdg-success:`API` Function :func:`~signal.clean` now has a ``psc`` standardization option which allows time series with negative mean values (:gh:`2714` by `Hao-Ting Wang`_).
 
@@ -45,7 +43,7 @@ Enhancements
 
 - :bdg-dark:`Code` :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMRegressor`, and :class:`~decoding.FREMClassifier` now override the ``score`` method to use whatever scoring strategy was defined through the ``scoring`` attribute instead of the sklearn default. If the ``scoring`` attribute of the decoder is set to ``None``, the scoring strategy will default to accuracy for classifiers and to r2 score for regressors (:gh:`2669` by `Nicolas Gensollen`_).
 
-- :bdg-dark:`Code` :class:`~maskers.NiftiMasker`, :class:`~maskers.NiftiLabelsMasker`, :class:`~maskers.MultiNiftiMasker`, :class:`~maskers.NiftiMapsMasker`, and :class:`~maskers.NiftiSpheresMasker` can now compute high variance confounds on the images provided to ``transform`` and regress them out automatically. This behaviour is controlled through the ``high_variance_confounds`` boolean parameter of these maskers which default to ``False`` (:gh:`2697` by `Nicolas Gensollen`_).
+- :bdg-dark:`Code` :class:`~maskers.NiftiMasker`, :class:`~maskers.NiftiLabelsMasker`, :class:`~maskers.MultiNiftiMasker`, :class:`~maskers.NiftiMapsMasker`, and :class:`~maskers.NiftiSpheresMasker` can now compute high variance confounds on the images provided to ``transform`` and regress them out automatically. This behavior is controlled through the ``high_variance_confounds`` boolean parameter of these maskers which default to ``False`` (:gh:`2697` by `Nicolas Gensollen`_).
 
 - :bdg-dark:`Code` :class:`~maskers.NiftiLabelsMasker` now automatically replaces ``NaNs`` in input data with zeros, to match the behavior of other maskers (:gh:`2712` by `Taylor Salo`_).
 

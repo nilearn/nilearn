@@ -1,0 +1,33 @@
+(function () {
+var brain;
+function initializeBrainSprite() {
+if (brain) {
+return;
+}
+brain = brainsprite({{ params }});
+var slider = document.getElementById("{{ html_ids.opacity }}");
+var output = document.getElementById("{{ html_ids.opacity_value }}");
+slider.oninput = function () {
+output.innerHTML = this.value;
+brain.overlay.opacity = this.value / 100;
+brain.init();
+brain.drawAll();
+};
+}
+var images = [
+document.getElementById("{{ html_ids.sprite }}"),
+document.getElementById("{{ html_ids.overlay }}"),
+document.getElementById("{{ html_ids.color_map }}")
+];
+if (images.every(function (image) { return image.complete; })) {
+initializeBrainSprite();
+} else {
+images.forEach(function (image) {
+image.addEventListener("load", function () {
+if (images.every(function (item) { return item.complete; })) {
+initializeBrainSprite();
+}
+}, {once: true});
+});
+}
+})();

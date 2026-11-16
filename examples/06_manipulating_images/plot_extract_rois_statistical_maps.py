@@ -5,22 +5,24 @@ Region Extraction using a t-statistical map (3D)
 This example shows how to extract regions or separate the regions
 from a statistical map.
 
-We use localizer t-statistic maps from
-:func:`nilearn.datasets.fetch_neurovault_auditory_computation_task`
-as an input image.
-
 The idea is to threshold an image to get foreground objects using a
-function :func:`nilearn.image.threshold_img` and
+function :func:`~nilearn.image.threshold_img` and
 extract objects using a function
-:func:`nilearn.regions.connected_regions`.
+:func:`~nilearn.regions.connected_regions`.
+
+.. admonition:: dataset
+
+    We use localizer t-statistic maps from
+    :func:`~nilearn.datasets.fetch_neurovault_auditory_computation_task`
+    as input images.
 """
 
 # %%
 # Fetching t-statistic image of localizer contrasts by loading from datasets
 # utilities
-from nilearn import datasets
+from nilearn.datasets import fetch_neurovault_auditory_computation_task
 
-localizer = datasets.fetch_neurovault_auditory_computation_task()
+localizer = fetch_neurovault_auditory_computation_task(timeout=30.0)
 tmap_filename = localizer.images[0]
 
 # %%
@@ -41,10 +43,10 @@ threshold_value_img = threshold_img(tmap_filename, threshold=3.0, copy=False)
 # %%
 # Visualization
 # Showing thresholding results by importing plotting modules and its utilities
-from nilearn import plotting
+from nilearn.plotting import plot_stat_map, show
 
 # Showing percentile threshold image
-plotting.plot_stat_map(
+plot_stat_map(
     threshold_percentile_img,
     display_mode="z",
     cut_coords=5,
@@ -53,13 +55,15 @@ plotting.plot_stat_map(
 )
 
 # Showing intensity threshold image
-plotting.plot_stat_map(
+plot_stat_map(
     threshold_value_img,
     display_mode="z",
     cut_coords=5,
     title="Threshold image with intensity value",
     colorbar=False,
 )
+
+show()
 
 # %%
 # Extracting the regions by importing connected regions function
@@ -75,13 +79,17 @@ regions_value_img, index = connected_regions(
 
 # %%
 # Visualizing region extraction results
+from nilearn.plotting import plot_prob_atlas
+
 images = [regions_percentile_img, regions_value_img]
-for image, strategy in zip(images, ["percentile", "image intensity"]):
+for image, strategy in zip(
+    images, ["percentile", "image intensity"], strict=False
+):
     title = (
         f"ROIs using {strategy} thresholding. "
         "Each ROI in same color is an extracted region"
     )
-    plotting.plot_prob_atlas(
+    plot_prob_atlas(
         image,
         bg_img=tmap_filename,
         view_type="contours",
@@ -89,4 +97,4 @@ for image, strategy in zip(images, ["percentile", "image intensity"]):
         cut_coords=5,
         title=title,
     )
-plotting.show()
+show()

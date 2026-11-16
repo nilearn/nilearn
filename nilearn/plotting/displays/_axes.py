@@ -1,4 +1,5 @@
 import numbers
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,7 +10,10 @@ from matplotlib.patches import FancyArrow
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.image import coord_transform
+from nilearn.plotting.displays._utils import coords_3d_to_2d
 from nilearn.plotting.glass_brain import plot_brain_schematics
 
 
@@ -32,7 +36,7 @@ class BaseAxes:
         self.ax = ax
         self.direction = direction
         self.coord = coord
-        self._object_bounds = list()
+        self._object_bounds = []
         self.shape = None
         self.radiological = radiological
 
@@ -42,7 +46,7 @@ class BaseAxes:
             "'transform_to_2d' needs to be implemented in derived classes'"
         )
 
-    def add_object_bounds(self, bounds):
+    def add_object_bounds(self, bounds) -> None:
         """Ensure that axes get rescaled when adding object bounds."""
         old_object_bounds = self.get_object_bounds()
         self._object_bounds.append(bounds)
@@ -52,10 +56,31 @@ class BaseAxes:
             self.ax.axis(self.get_object_bounds())
 
     def draw_2d(
-        self, data_2d, data_bounds, bounding_box, type="imshow", **kwargs
+        self,
+        data_2d,
+        data_bounds,
+        bounding_box,
+        type="imshow",
+        transparency=None,
+        **kwargs,
     ):
         """Draw 2D."""
         kwargs["origin"] = "upper"
+
+        if "alpha" in kwargs:
+            warnings.warn(
+                f"{kwargs['alpha']=} detected in parameters.\n"
+                f"Overriding with {transparency=}.\n"
+                "To suppress this warning pass "
+                "your 'alpha' value "
+                "via the 'transparency' parameter.",
+                stacklevel=find_stack_level(),
+            )
+        kwargs["alpha"] = transparency
+
+        check_parameter_in_allowed(
+            self.direction, ["y", "x", "l", "r", "z"], "direction"
+        )
 
         if self.direction == "y":
             (xmin, xmax), (_, _), (zmin, zmax) = data_bounds
@@ -66,8 +91,7 @@ class BaseAxes:
         elif self.direction == "z":
             (xmin, xmax), (zmin, zmax), (_, _) = data_bounds
             (xmin_, xmax_), (zmin_, zmax_), (_, _) = bounding_box
-        else:
-            raise ValueError(f"Invalid value for direction {self.direction}")
+
         ax = self.ax
         # Here we need to do a copy to avoid having the image changing as
         # we change the data
@@ -77,7 +101,6 @@ class BaseAxes:
 
         self.add_object_bounds((xmin_, xmax_, zmin_, zmax_))
         self.shape = data_2d.T.shape
-
         # The bounds of the object do not take into account a possible
         # inversion of the axis. As such, we check that the axis is properly
         # inverted when direction is left
@@ -98,17 +121,16 @@ class BaseAxes:
 
         return xmin, xmax, ymin, ymax
 
-    def draw_left_right(self, size, bg_color, **kwargs):
+    def draw_left_right(self, size, bg_color, **kwargs) -> None:
         """Draw the annotation "L" for left, and "R" for right.
 
         Parameters
         ----------
-        size : :obj:`float`, optional
+        size : :obj:`float`
             Size of the text areas.
 
         bg_color : matplotlib color: :obj:`str` or (r, g, b) value
             The background color for both text areas.
-
         """
         if self.direction in "xlr":
             return
@@ -116,7 +138,6 @@ class BaseAxes:
         annotation_on_left = "L"
         annotation_on_right = "R"
         if self.radiological:
-            ax.invert_xaxis()
             annotation_on_left = "R"
             annotation_on_right = "L"
         ax.text(
@@ -127,9 +148,12 @@ class BaseAxes:
             horizontalalignment="left",
             verticalalignment="top",
             size=size,
-            bbox=dict(
-                boxstyle="square,pad=0", ec=bg_color, fc=bg_color, alpha=1
-            ),
+            bbox={
+                "boxstyle": "square,pad=0",
+                "ec": bg_color,
+                "fc": bg_color,
+                "alpha": 1,
+            },
             **kwargs,
         )
 
@@ -141,7 +165,7 @@ class BaseAxes:
             horizontalalignment="right",
             verticalalignment="top",
             size=size,
-            bbox=dict(boxstyle="square,pad=0", ec=bg_color, fc=bg_color),
+            bbox={"boxstyle": "square,pad=0", "ec": bg_color, "fc": bg_color},
             **kwargs,
         )
 
@@ -161,7 +185,7 @@ class BaseAxes:
         color="black",
         fontsize=None,
         **kwargs,
-    ):
+    ) -> None:
         """Add a scale bar annotation to the display.
 
         Parameters
@@ -172,24 +196,20 @@ class BaseAxes:
         size : :obj:`float`, default=5.0
             Horizontal length of the scale bar, given in `units`.
 
-
         units : :obj:`str`, default='cm'
             Physical units of the scale bar (`'cm'` or `'mm'`).
 
-
-        fontproperties : :class:`~matplotlib.font_manager.FontProperties`\
-        or :obj:`dict`, optional
+        fontproperties : :class:`~matplotlib.font_manager.FontProperties`, \
+                :obj:`dict` or None, default=None
             Font properties for the label text.
 
         frameon : :obj:`bool`, default=False
             Whether the scale bar is plotted with a border.
 
         loc : :obj:`int`, default=4
-            Location of this scale bar. Valid location codes are documented
-            `here <https://matplotlib.org/mpl_toolkits/axes_grid/\
-            api/anchored_artists_api.html#mpl_toolkits.axes_grid1.\
-            anchored_artists.AnchoredSizeBar>`__.
-
+            Location of this scale bar.
+            Valid location codes are documented in
+            :class:`~mpl_toolkits.axes_grid1.anchored_artists.AnchoredSizeBar`
 
         pad : :obj:`int` or :obj:`float`, default=0.1
             Padding around the label and scale bar, in fraction of the font
@@ -201,26 +221,22 @@ class BaseAxes:
         sep : :obj:`int` or :obj:`float`, default=5
             Separation between the label and the scale bar, in points.
 
-
         size_vertical : :obj:`int` or :obj:`float`, default=0
             Vertical length of the size bar, given in `units`.
-
 
         label_top : :obj:`bool`, default=False
             If ``True``, the label will be over the scale bar.
 
-
         color : :obj:`str`, default='black'
             Color for the scale bar and label.
 
-        fontsize : :obj:`int`, optional
+        fontsize : :obj:`int` or None, default=None
             Label font size (overwrites the size passed in through the
             ``fontproperties`` argument).
 
         **kwargs :
             Keyworded arguments to pass to
             :class:`~matplotlib.offsetbox.AnchoredOffsetbox`.
-
         """
         axis = self.ax
         fontproperties = fontproperties or FontProperties()
@@ -253,7 +269,8 @@ class BaseAxes:
 
     def draw_position(self, size, bg_color, **kwargs):
         """``draw_position`` is not implemented in base class and \
-        should be implemented in derived classes."""
+        should be implemented in derived classes.
+        """
         raise NotImplementedError(
             "'draw_position' should be implemented in derived classes"
         )
@@ -283,11 +300,11 @@ class CutAxes(BaseAxes):
 
         affine : 4x4 :class:`~numpy.ndarray`
             The affine of the volume.
-
         """
         coords = [0, 0, 0]
-        if self.direction not in ["x", "y", "z"]:
-            raise ValueError(f"Invalid value for direction {self.direction}")
+        check_parameter_in_allowed(
+            self.direction, ["x", "y", "z"], "direction"
+        )
         coords["xyz".index(self.direction)] = self.coord
         x_map, y_map, z_map = (
             int(np.round(c))
@@ -303,12 +320,12 @@ class CutAxes(BaseAxes):
             cut = np.rot90(data[:, :, z_map])
         return cut
 
-    def draw_position(self, size, bg_color, decimals=False, **kwargs):
+    def draw_position(self, size, bg_color, decimals=False, **kwargs) -> None:
         """Draw coordinates.
 
         Parameters
         ----------
-        size : :obj:`float`, optional
+        size : :obj:`float`
             Size of the text area.
 
         bg_color : matplotlib color: :obj:`str` or (r, g, b) value
@@ -317,8 +334,6 @@ class CutAxes(BaseAxes):
         decimals : :obj:`bool` or :obj:`str`, default=False
             Formatting string for the coordinates.
             If set to ``False``, integer formatting will be used.
-
-
         """
         if decimals:
             text = f"%s=%.{decimals}f"
@@ -335,39 +350,14 @@ class CutAxes(BaseAxes):
             horizontalalignment="left",
             verticalalignment="bottom",
             size=size,
-            bbox=dict(
-                boxstyle="square,pad=0", ec=bg_color, fc=bg_color, alpha=1
-            ),
+            bbox={
+                "boxstyle": "square,pad=0",
+                "ec": bg_color,
+                "fc": bg_color,
+                "alpha": 1,
+            },
             **kwargs,
         )
-
-
-def _get_index_from_direction(direction):
-    """Return numerical index from direction."""
-    directions = ["x", "y", "z"]
-    try:
-        # l and r are subcases of x
-        if direction in "lr":
-            index = 0
-        else:
-            index = directions.index(direction)
-    except ValueError:
-        message = (
-            f"{direction} is not a valid direction. "
-            "Allowed values are 'l', 'r', 'x', 'y' and 'z'"
-        )
-        raise ValueError(message)
-    return index
-
-
-def coords_3d_to_2d(coords_3d, direction, return_direction=False):
-    """Project 3d coordinates into 2d ones given the direction of a cut."""
-    index = _get_index_from_direction(direction)
-    dimensions = [0, 1, 2]
-    dimensions.pop(index)
-    if return_direction:
-        return coords_3d[:, dimensions], coords_3d[:, index]
-    return coords_3d[:, dimensions]
 
 
 @fill_doc
@@ -378,6 +368,7 @@ class GlassBrainAxes(BaseAxes):
     Parameters
     ----------
     %(ax)s
+
     direction : {'x', 'y', 'z'}
         The directions of the view.
 
@@ -387,6 +378,7 @@ class GlassBrainAxes(BaseAxes):
     plot_abs : :obj:`bool`, default=True
         If set to ``True`` the absolute value of the data will be considered.
 
+    %(radiological)s
     """
 
     def __init__(
@@ -409,13 +401,10 @@ class GlassBrainAxes(BaseAxes):
 
         affine : 4x4 :class:`numpy.ndarray`
             The affine of the volume.
-
         """
-        if self.direction in "xlr":
-            max_axis = 0
-        else:
-            max_axis = ".yz".index(self.direction)
-
+        max_axis = (
+            0 if self.direction in "xlr" else ".yz".index(self.direction)
+        )
         # set unselected brain hemisphere activations to 0
         if self.direction == "l":
             x_center, _, _, _ = np.dot(
@@ -466,8 +455,8 @@ class GlassBrainAxes(BaseAxes):
     def draw_position(self, size, bg_color, **kwargs):
         """Not implemented as it does not make sense to draw crosses for \
         the position of the cuts \
-        since we are taking the max along one axis."""
-        pass
+        since we are taking the max along one axis.
+        """
 
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
         """Plot markers.
@@ -485,12 +474,13 @@ class GlassBrainAxes(BaseAxes):
             ):
                 marker_color = np.asarray(marker_color)
             relevant_coords = []
-            xcoords, ycoords, zcoords = marker_coords.T
-            for cidx, xc in enumerate(xcoords):
-                if self.direction == "r" and xc >= 0:
-                    relevant_coords.append(cidx)
-                elif self.direction == "l" and xc <= 0:
-                    relevant_coords.append(cidx)
+            xcoords, _, _ = marker_coords.T
+            relevant_coords.extend(
+                cidx
+                for cidx, xc in enumerate(xcoords)
+                if (self.direction == "r" and xc >= 0)
+                or (self.direction == "l" and xc <= 0)
+            )
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]
             # if marker_color is string for example 'red' or 'blue', then
@@ -510,6 +500,7 @@ class GlassBrainAxes(BaseAxes):
 
         self.ax.scatter(xdata, ydata, s=marker_size, c=marker_color, **kwargs)
 
+    @fill_doc
     def _add_lines(
         self,
         line_coords,
@@ -519,7 +510,7 @@ class GlassBrainAxes(BaseAxes):
         vmax=None,
         directed=False,
         **kwargs,
-    ):
+    ) -> None:
         """Plot lines.
 
         Parameters
@@ -530,10 +521,10 @@ class GlassBrainAxes(BaseAxes):
         line_values : array_like
             Values of the lines.
 
-        cmap : :class:`~matplotlib.colors.Colormap`
+        %(cmap)s
             Colormap used to map ``line_values`` to a color.
 
-        vmin, vmax : :obj:`float`, optional
+        vmin, vmax : :obj:`float`, default=None
             If not ``None``, either or both of these values will be used to
             as the minimum and maximum values to color lines. If ``None`` are
             supplied the maximum absolute value within the given threshold
@@ -544,19 +535,17 @@ class GlassBrainAxes(BaseAxes):
             Add arrows instead of lines if set to ``True``.
             Use this when plotting directed graphs for example.
 
-
         kwargs : :obj:`dict`
             Additional arguments to pass to :class:`~matplotlib.lines.Line2D`.
-
         """
         # colormap for colorbar
         self.cmap = cmap
-        if vmin is None and vmax is None:
-            abs_line_values_max = np.abs(line_values).max()
-            vmin = -abs_line_values_max
-            vmax = abs_line_values_max
-        elif vmin is None:
-            if vmax > 0:
+        if vmin is None:
+            if vmax is None:
+                abs_line_values_max = np.abs(line_values).max()
+                vmin = -abs_line_values_max
+                vmax = abs_line_values_max
+            elif vmax > 0:
                 vmin = -vmax
             else:
                 raise ValueError(
@@ -579,18 +568,24 @@ class GlassBrainAxes(BaseAxes):
 
         # Allow lines only in their respective hemisphere when appropriate
         if self.direction in "lr":
-            relevant_lines = []
-            for lidx, line in enumerate(line_coords):
-                if self.direction == "r":
-                    if line[0, 0] >= 0 and line[1, 0] >= 0:
-                        relevant_lines.append(lidx)
-                elif self.direction == "l":
-                    if line[0, 0] < 0 and line[1, 0] < 0:
-                        relevant_lines.append(lidx)
+            relevant_lines = [
+                lidx
+                for lidx, line in enumerate(line_coords)
+                if (
+                    self.direction == "r"
+                    and line[0, 0] >= 0
+                    and line[1, 0] >= 0
+                )
+                or (
+                    self.direction == "l" and line[0, 0] < 0 and line[1, 0] < 0
+                )
+            ]
             line_coords = np.array(line_coords)[relevant_lines]
             line_values = line_values[relevant_lines]
 
-        for start_end_point_3d, line_value in zip(line_coords, line_values):
+        for start_end_point_3d, line_value in zip(
+            line_coords, line_values, strict=False
+        ):
             start_end_point_2d = coords_3d_to_2d(
                 start_end_point_3d, self.direction
             )

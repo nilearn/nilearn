@@ -2,52 +2,72 @@
 
 import numbers
 import warnings
+from collections.abc import Iterable
+from typing import Any, Literal, get_args, get_origin
 
 import numpy as np
-from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 
-from .niimg import _get_data
-
-# Volume of a standard (MNI152) brain mask in mm^3
-MNI152_BRAIN_VOLUME = 1827243.0
+from nilearn import nilearn_typing
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
 
 
-def check_threshold(threshold, data, percentile_func, name="threshold"):
-    """Check if the given threshold is in correct format \
-    and within the limit.
+def check_threshold(
+    threshold,
+    data: np.ndarray,
+    percentile_func,
+    name: str = "threshold",
+    two_sided: bool = True,
+) -> float:
+    """Check if the given threshold is in correct format and within the limit.
 
-    If necessary, this function also returns score of the data calculated based
-    upon the given specific percentile function.
-    Note: This is only for threshold as string.
+    If threshold is string, this function returns score of the data calculated
+    based upon the given specific percentile function.
 
     Parameters
     ----------
-    threshold : float or str
-        If threshold is a float value, it should be within the range of the
-        maximum intensity value of the data.
-        If threshold is a percentage expressed in a string it must finish with
-        a percent sign like "99.7%".
+    threshold : :obj:`float` or :obj:`str`
+        Threshold that is used to set certain data values to zero.
+        If threshold is float, it should be within the range of minimum and the
+        maximum intensity of the data.
+        If `two_sided` is True, threshold cannot be negative.
+        If threshold is str, the given string should be within the range of
+        "0%" to "100%".
 
     data : ndarray
         An array of the input masked data.
 
-    percentile_func : function {scoreatpercentile, fastabspercentile}
+    percentile_func : function {scoreatpercentile, fast_abs_percentile}
         Percentile function for example scipy.stats.scoreatpercentile
         to calculate the score on the data.
 
-    name : str, default='threshold'
-        A string just used for representing
-        the name of the threshold for a precise
-        error message.
+    name : :obj:`str`, default='threshold'
+        A string just used for representing the name of the threshold for a
+        precise error message.
+
+    two_sided : :obj:`bool`, default=True
+        Whether the thresholding should yield both positive and negative
+        part of the maps.
+
+        .. nilearn_versionadded:: 0.12.0
 
     Returns
     -------
-    threshold : number
-        Returns the score of the percentile on the data or
-        returns threshold as it is
-        if given threshold is not a string percentile.
+    threshold : :obj:`float`
+        Returns the score of the percentile on the data or returns threshold as
+        it is if given threshold is not a string percentile.
 
+    Raises
+    ------
+    ValueError
+        If threshold is of type str but is not a non-negative number followed
+        by the percent sign.
+        If threshold is a negative float and `two_sided` is True.
+    TypeError
+        If threshold is neither float nor a string in correct percentile
+        format.
     """
+    percentile = False
     if isinstance(threshold, str):
         message = (
             f'If "{name}" is given as string it '
@@ -56,181 +76,68 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
         )
         if not threshold.endswith("%"):
             raise ValueError(message)
-
         try:
-            percentile = float(threshold[:-1])
+            threshold = float(threshold[:-1])
+            percentile = True
         except ValueError as exc:
             exc.args += (message,)
             raise
-
-        threshold = percentile_func(data, percentile)
-    elif isinstance(threshold, numbers.Real):
-        # checks whether given float value exceeds the maximum
-        # value of the image data
-        value_check = abs(data).max()
-        if abs(threshold) > value_check:
-            warnings.warn(
-                f"The given float value must not exceed {value_check}. "
-                f"But, you have given threshold={threshold}.",
-                category=UserWarning,
-                stacklevel=3,
-            )
-    else:
+    elif not isinstance(threshold, numbers.Real):
         raise TypeError(
             f"{name} should be either a number "
             "or a string finishing with a percent sign"
         )
-    return threshold
 
+    threshold = float(threshold)
 
-def get_mask_volume(mask_img):
-    """Compute the volume of a brain mask in mm^3.
+    if threshold >= 0.0:
+        data = abs(data) if two_sided else np.extract(data >= 0, data)
 
-    Parameters
-    ----------
-    mask_img : nibabel image object
-        Input image whose voxel dimensions are to be computed.
-
-    Returns
-    -------
-    vol : float
-        The computed volume.
-
-    """
-    affine = mask_img.affine
-    prod_vox_dims = 1.0 * np.abs(np.linalg.det(affine[:3, :3]))
-    return prod_vox_dims * _get_data(mask_img).astype(bool).sum()
-
-
-def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
-    """Adjust the screening percentile according to the MNI152 template.
-
-    Parameters
-    ----------
-    screening_percentile : float in the interval [0, 100]
-        Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is expressed
-        w.r.t the volume of a standard (MNI152) brain, and so is corrected
-        at runtime by premultiplying it with the ratio of the volume of the
-        mask of the data and volume of a standard brain.
-
-    mask_img : nibabel image object
-        Input image whose voxel dimensions are to be computed.
-
-    verbose : int, default=0
-        Verbosity level.
-
-    Returns
-    -------
-    screening_percentile: float in the interval [0, 100]
-        Percentile value for ANOVA univariate feature selection.
-
-    """
-    original_screening_percentile = screening_percentile
-    # correct screening_percentile according to the volume of the data mask
-    mask_volume = get_mask_volume(mask_img)
-    if mask_volume > 1.1 * MNI152_BRAIN_VOLUME:
-        warnings.warn(
-            "Brain mask is bigger than the volume of a standard "
-            "human brain. This object is probably not tuned to "
-            "be used on such data.",
-            stacklevel=3,
-        )
-    elif mask_volume < 0.005 * MNI152_BRAIN_VOLUME:
-        warnings.warn(
-            "Brain mask is smaller than .5% of the volume "
-            "human brain. This object is probably not tuned to "
-            "be used on such data.",
-            stacklevel=3,
-        )
-
-    if screening_percentile < 100.0:
-        screening_percentile = screening_percentile * (
-            MNI152_BRAIN_VOLUME / mask_volume
-        )
-        screening_percentile = min(screening_percentile, 100.0)
-    # if screening_percentile is 100, we don't do anything
-
-    if verbose > 1:
-        print(
-            f"Mask volume = {mask_volume:g}mm^3 = {mask_volume / 1000.0:g}cm^3"
-        )
-        print(
-            "Standard brain volume "
-            f"= {MNI152_BRAIN_VOLUME:g}mm^3 "
-            f"= {MNI152_BRAIN_VOLUME / 1.0e3:g}cm^3"
-        )
-        print(
-            f"Original screening-percentile: {original_screening_percentile:g}"
-        )
-        print(
-            f"Volume-corrected screening-percentile: {screening_percentile:g}"
-        )
-    return screening_percentile
-
-
-def check_feature_screening(
-    screening_percentile, mask_img, is_classification, verbose=0
-):
-    """Check feature screening method.
-
-    Turns floats between 1 and 100 into SelectPercentile objects.
-
-    Parameters
-    ----------
-    screening_percentile : float in the interval [0, 100]
-        Percentile value for :term:`ANOVA` univariate feature selection.
-        A value of 100 means 'keep all features'.
-        This percentile is expressed
-        w.r.t the volume of a standard (MNI152) brain, and so is corrected
-        at runtime by premultiplying it with the ratio of the volume of the
-        mask of the data and volume of a standard brain.
-
-    mask_img : nibabel image object
-        Input image whose :term:`voxel` dimensions are to be computed.
-
-    is_classification : bool
-        If is_classification is True, it indicates that a classification task
-        is performed. Otherwise, a regression task is performed.
-
-    verbose : int, default=0
-        Verbosity level.
-
-    Returns
-    -------
-    selector : SelectPercentile instance
-       Used to perform the :term:`ANOVA` univariate feature selection.
-
-    """
-    f_test = f_classif if is_classification else f_regression
-
-    if screening_percentile == 100 or screening_percentile is None:
-        return None
-    elif not (0.0 <= screening_percentile <= 100.0):
-        raise ValueError(
-            "screening_percentile should be in the interval"
-            f" [0, 100], got {screening_percentile:g}"
-        )
+        if percentile:
+            threshold = percentile_func(data, threshold) + 1e-5
+        else:
+            value_check = data.max()
+            if threshold > value_check:
+                warnings.warn(
+                    f"The given float value must not exceed {value_check}. "
+                    f"But, you have given threshold={threshold}.",
+                    category=UserWarning,
+                    stacklevel=find_stack_level(),
+                )
     else:
-        # correct screening_percentile according to the volume of the data mask
-        screening_percentile_ = adjust_screening_percentile(
-            screening_percentile, mask_img, verbose=verbose
-        )
+        if two_sided:
+            raise ValueError(
+                f'"{name}" should not be a negative value when two_sided=True.'
+            )
+        if percentile:
+            raise ValueError(
+                f'"{name}" should not be a negative percentile value.'
+            )
+        data = np.extract(data <= 0, data)
+        value_check = data.min()
+        if threshold < value_check:
+            warnings.warn(
+                f"The given float value must not be less than "
+                f"{value_check}. But, you have given "
+                f"threshold={threshold}.",
+                category=UserWarning,
+                stacklevel=find_stack_level(),
+            )
 
-        return SelectPercentile(f_test, percentile=int(screening_percentile_))
+    return float(threshold)
 
 
-def check_run_sample_masks(n_runs, sample_masks):
+def check_run_sample_masks(n_runs: int, sample_masks: Any):
     """Check that number of sample_mask matches number of runs."""
-    if not isinstance(sample_masks, (list, tuple, np.ndarray)):
-        raise TypeError(
-            f"sample_mask has an unhandled type: {sample_masks.__class__}"
-        )
+    check_is_of_allowed_type(
+        sample_masks, (list, tuple, np.ndarray), "sample_masks"
+    )
 
     if isinstance(sample_masks, np.ndarray):
         sample_masks = (sample_masks,)
 
     checked_sample_masks = [_convert_bool2index(sm) for sm in sample_masks]
+    checked_sample_masks = [_cast_to_int32(sm) for sm in checked_sample_masks]
 
     if len(checked_sample_masks) != n_runs:
         raise ValueError(
@@ -248,3 +155,200 @@ def _convert_bool2index(sample_mask):
     if all(check_boolean):
         sample_mask = np.where(sample_mask)[0]
     return sample_mask
+
+
+def _cast_to_int32(sample_mask: np.ndarray) -> np.ndarray:
+    """Ensure the sample mask dtype is signed."""
+    new_dtype = np.int32
+    if np.min(sample_mask) < 0:
+        msg = "sample_mask should not contain negative values."
+        raise ValueError(msg)
+
+    if highest := np.max(sample_mask) > np.iinfo(new_dtype).max:
+        msg = f"Max value in sample mask is larger than \
+            what can be represented by int32: {highest}."
+        raise ValueError(msg)
+    return np.asarray(sample_mask, new_dtype)
+
+
+# dictionary that matches a given parameter / attribute name to a type
+TYPE_MAPS = {
+    "annotate": nilearn_typing.Annotate,
+    "border_size": nilearn_typing.BorderSize,
+    "bg_on_data": nilearn_typing.BgOnData,
+    "black_bg": nilearn_typing.BlackBg,
+    "cbar_tick_format": nilearn_typing.CbarTickFormat,
+    "colorbar": nilearn_typing.ColorBar,
+    "cluster_threshold": nilearn_typing.ClusterThreshold,
+    "connected": nilearn_typing.Connected,
+    "copy_header": nilearn_typing.CopyHeader,
+    "data_dir": nilearn_typing.DataDir,
+    "draw_cross": nilearn_typing.DrawCross,
+    "detrend": nilearn_typing.Detrend,
+    "force_resample": nilearn_typing.ForceResample,
+    "high_pass": nilearn_typing.HighPass,
+    "hrf_model": nilearn_typing.HrfModel,
+    "low_pass": nilearn_typing.LowPass,
+    "lower_cutoff": nilearn_typing.LowerCutoff,
+    "memory": nilearn_typing.MemoryLike,
+    "memory_level": nilearn_typing.MemoryLevel,
+    "n_jobs": nilearn_typing.NJobs,
+    "n_perm": nilearn_typing.NPerm,
+    "n_subjects": (int, list, tuple, type(None)),
+    "opening": nilearn_typing.Opening,
+    "output_file": nilearn_typing.OutputFile,
+    "radiological": nilearn_typing.Radiological,
+    "random_state": nilearn_typing.RandomState,
+    "resampling_interpolation": nilearn_typing.ResamplingInterpolation,
+    "resolution": nilearn_typing.Resolution,
+    "resume": nilearn_typing.Resume,
+    "screening_percentile": nilearn_typing.ScreeningPercentile,
+    "smoothing_fwhm": nilearn_typing.SmoothingFwhm,
+    "standardize": nilearn_typing.Standardize,
+    "standardize_confounds": nilearn_typing.StandardizeConfounds,
+    "t_r": nilearn_typing.Tr,
+    "tfce": nilearn_typing.Tfce,
+    "threshold": nilearn_typing.Threshold,
+    "title": nilearn_typing.Title,
+    "two_sided_test": nilearn_typing.TwoSidedTest,
+    "target_affine": nilearn_typing.TargetAffine,
+    "target_shape": nilearn_typing.TargetShape,
+    "transparency": nilearn_typing.Transparency,
+    "transparency_range": nilearn_typing.TransparencyRange,
+    "url": nilearn_typing.Url,
+    "upper_cutoff": nilearn_typing.UpperCutoff,
+    "verbose": nilearn_typing.Verbose,
+    "vmax": nilearn_typing.Vmax,
+    "vmin": nilearn_typing.Vmin,
+}
+
+
+def check_params(fn_dict) -> None:
+    """Check types of inputs passed to a function / method / class.
+
+    This function checks the types of function / method parameters or type_map
+    the attributes of the class.
+
+    This function is made to check the types of the parameters
+    described in ``nilearn._utils.docs``
+    that are shared by many functions / methods / class
+    and thus ensure a generic way to do input validation
+    in several important points in the code base.
+
+    In most cases this means that this function can be used
+    on functions / classes that have the ``@fill_doc`` decorator,
+    or whose doc string uses parameter templates
+    (for example ``%(data_dir)s``).
+
+    If the function cannot (yet) check any of the parameters / attributes,
+    it will throw an error to say that its use is not needed.
+
+    Typical usage:
+
+    .. code-block:: python
+
+        def some_function(param_1, param_2="a"):
+            check_params(locals())
+
+        Class MyClass:
+            def __init__()
+
+            def fit(X):
+                # check attributes of the class instance
+                check_params(self.__dict__)
+                # check parameters passed to the method
+                check_params(locals())
+    """
+    keys_to_check = set(TYPE_MAPS.keys()).intersection(set(fn_dict.keys()))
+    # Send a message to dev if they are using this function needlessly.
+    if not keys_to_check:
+        raise ValueError(
+            "No known parameter to check.\n"
+            "You probably do not need to use 'check_params' here."
+        )
+
+    for k in keys_to_check:
+        type_to_check = TYPE_MAPS[k]
+        value = fn_dict[k]
+
+        if get_origin(type_to_check) is Literal:
+            allowed_values = get_args(type_to_check)
+            check_parameter_in_allowed(value, allowed_values, k)
+
+        else:
+            check_is_of_allowed_type(value, type_to_check, k)
+
+
+def check_is_of_allowed_type(
+    value: Any, type_to_check: tuple[Any] | Any, parameter_name: str
+) -> None:
+    """Check that value is of requested type.
+
+    Ignore truthy / falsy so that:
+
+    check_is_of_allowed_type(True, (int), "foo") will fail.
+    """
+    if not isinstance(type_to_check, tuple):
+        type_to_check = (type_to_check,)
+    type_to_check_str = ", ".join([str(x) for x in type_to_check])
+    error_msg = (
+        f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
+        f"Got: '{value.__class__.__name__}'"
+    )
+    flat_types: list = []
+    for t in type_to_check:
+        args = get_args(t)
+        flat_types.extend(args or [t])
+    if (bool not in flat_types and isinstance(value, bool)) or not isinstance(
+        value, type_to_check
+    ):
+        raise TypeError(error_msg)
+
+
+@fill_doc
+def check_reduction_strategy(strategy: str) -> None:
+    """Check that the provided strategy is supported.
+
+    Parameters
+    ----------
+    %(strategy)s
+    """
+    available_reduction_strategies = {
+        "mean",
+        "median",
+        "sum",
+        "minimum",
+        "maximum",
+        "standard_deviation",
+        "variance",
+    }
+    check_parameter_in_allowed(
+        strategy, available_reduction_strategies, "strategy"
+    )
+
+
+def check_parameter_in_allowed(
+    parameter: Any, allowed: Iterable[Any], parameter_name: str
+) -> None:
+    if parameter not in allowed:
+        raise ValueError(
+            f"'{parameter_name}' must be one of {allowed}.\n"
+            f"'{parameter}' was provided."
+        )
+
+
+def sanitize_verbose(verbose: int | bool) -> int:
+    """Ensure that verbose is an int."""
+    if verbose is True:
+        verbose = 1
+    elif verbose is False:
+        verbose = 0
+    return verbose
+
+
+def check_n_confounds_match_n_images(confounds, imgs_list) -> None:
+    if len(confounds) != len(imgs_list):
+        raise ValueError(
+            f"Number of confounds ({len(confounds)}) "
+            f"must match number of images ({len(imgs_list)})."
+        )

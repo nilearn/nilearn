@@ -1,3 +1,4 @@
+# %%
 """
 More plotting tools from nilearn
 ================================
@@ -14,7 +15,7 @@ returned, as well as how many cuts will be shown for example.
 As we will see in the first part of this example, depending on the values of
 the parameters ``display_mode`` and ``cut_coords``, plotting functions return
 different display objects, all subclasses of
-:class:`nilearn.plotting.displays.OrthoSlicer`.
+:class:`~nilearn.plotting.displays.OrthoSlicer`.
 
 These objects implement various methods to interact with the figures. In the
 second part of this example, we show how to use these methods to further
@@ -37,15 +38,28 @@ accordingly with particular slice direction. This helps us point to the
 activation specific location of the brain slices.
 
 See :ref:`plotting` for more details.
-"""
 
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Haxby dataset <haxby_dataset>`
+    - a sample motor activation statistical map (`image 10426
+      <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
+      <neurovault_dataset>`)
+"""
 # %%
-# First, we retrieve data from nilearn provided (general-purpose) datasets
-# ------------------------------------------------------------------------
+# Display objects returned by plotting functions
+# -----------------------------------------------
+#
+# Plotting functions return different display objects depending on the values
+# of the parameters ``display_mode`` and ``cut_coords``.
+#
+# We first retrieve data from nilearn provided (general-purpose) datasets.
 
 from nilearn import datasets
 
-# haxby dataset to have anatomical image, EPI images and masks
+# The Haxby dataset to have anatomical image, EPI images and masks.
 haxby_dataset = datasets.fetch_haxby()
 haxby_anat_filename = haxby_dataset.anat[0]
 haxby_mask_filename = haxby_dataset.mask_vt[0]
@@ -62,8 +76,8 @@ stat_img = datasets.load_sample_motor_activation_image()
 from nilearn import plotting
 
 # %%
-# Visualizing in - 'sagittal', 'coronal' and 'axial' with given coordinates
-# -------------------------------------------------------------------------
+# OrthoSlicer: Three views 'sagittal', 'coronal' and 'axial' with coordinates
+# ```````````````````````````````````````````````````````````````````````````
 #
 # The first argument ``stat_img`` is a path to the filename of a contrast map.
 # The optional argument ``display_mode`` is given as a string 'ortho' to
@@ -82,8 +96,8 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Visualizing in - single view 'axial' with number of cuts=5
-# ----------------------------------------------------------
+# ZSlicer: Single view 'axial' with number of cuts=5
+# ``````````````````````````````````````````````````
 #
 # For axial visualization, we set ``display_mode='z'``. As a
 # consequence :func:`~nilearn.plotting.plot_stat_map` returns a
@@ -101,8 +115,8 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Visualizing in - single view 'sagittal' with only two slices
-# ------------------------------------------------------------
+# XSlicer: Single view 'sagittal' with only two slices
+# ````````````````````````````````````````````````````
 #
 # For sagittal visualization, we set ``display_mode='x'`` which returns a
 # :class:`~nilearn.plotting.displays.XSlicer` object.
@@ -117,8 +131,8 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Visualizing in - 'coronal' view with single cut
-# -----------------------------------------------
+# YSlicer: Single view 'coronal' with single cut
+# ``````````````````````````````````````````````
 #
 # For coronal view, we set ``display_mode='y'`` which returns a
 # :class:`~nilearn.plotting.displays.YSlicer` object.
@@ -135,24 +149,8 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Visualizing without a colorbar on the right side
-# ------------------------------------------------
-#
-# The argument ``colorbar`` should be set to ``False`` to show plots without
-# a colorbar on the right side.
-
-plotting.plot_stat_map(
-    stat_img,
-    display_mode="z",
-    cut_coords=1,
-    colorbar=False,
-    title="display_mode='z', cut_coords=1,\ncolorbar=False",
-    figure=plt.figure(figsize=(5, 7)),
-)
-
-# %%
-# Visualize in - two views 'sagittal' and 'axial' with given coordinates
-# ----------------------------------------------------------------------
+# XZSlicer: Two views 'sagittal' and 'axial' with given coordinates
+# `````````````````````````````````````````````````````````````````
 #
 # In order to visualize both sagittal and axial views, we set
 # ``display_mode='xz'``, where 'x' stands for sagittal and 'z' for axial view.
@@ -170,8 +168,8 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Changing the views to 'coronal', 'sagittal' views with coordinates
-# ------------------------------------------------------------------
+# YXSlicer: Two views 'coronal' and 'sagittal' with coordinates
+# `````````````````````````````````````````````````````````````
 #
 # Similarly, we can set ``display_mode='yx'`` for combining a coronal with a
 # sagittal view, which will return a
@@ -186,8 +184,8 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Now, views are changed to 'coronal' and 'axial' views with coordinates
-# ----------------------------------------------------------------------
+# YZSlicer: Two views 'coronal' and 'axial' with coordinates
+# ``````````````````````````````````````````````````````````
 #
 # We can set ``display_mode='yz'`` to combine a coronal with an axial
 # view, which will return a :class:`~nilearn.plotting.displays.YZSlicer`
@@ -201,8 +199,8 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Visualizing three views in 2x2 fashion
-# --------------------------------------
+# TiledSlicer: Three views in 2x2 fashion
+# ```````````````````````````````````````
 #
 # If we want to combine three views in a 2x2 way, we can set
 # ``display_mode='tiled'``, which will combine sagittal, coronal, and axial
@@ -217,14 +215,15 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Visualizing three views along multiple rows and columns
-# -------------------------------------------------------
+# MosaicSlicer: Three views along multiple rows and columns
+# `````````````````````````````````````````````````````````
 #
 # If we set ``display_mode='mosaic'``, we can easily combine sagittal,
 # coronal, and axial views with different rows and columns. In this
 # situation, :func:`~nilearn.plotting.plot_stat_map` returns a
 # :class:`~nilearn.plotting.displays.MosaicSlicer` object.
-# In addition, we show here the default option ``cut_coords=None``.
+#
+# Below we show the default option ``cut_coords=None``.
 
 plotting.plot_stat_map(
     stat_img,
@@ -233,12 +232,8 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Now, changing the number of slices along columns
-# ------------------------------------------------
-#
-# Here, we still set ``display_mode='mosaic'``, but we set the number of
-# slices to be the same across views. In this case, we can specify it as
-# an integer, i.e. ``cut_coords=3``.
+# We can also set the number of slices to be the same across views.
+# In this case, we can specify it as an integer, i.e. ``cut_coords=3``.
 
 plotting.plot_stat_map(
     stat_img,
@@ -248,9 +243,6 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Now, another way of limiting the number of slices along rows and columns
-# ------------------------------------------------------------------------
-#
 # It can be the case that we want to display a different number of cuts in
 # each view. In this situation, we still set ``display_mode='mosaic'``, but
 # we specify the number of slices as a tuple of length 3.
@@ -263,8 +255,21 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Demonstrating various display features
-# --------------------------------------
+# It is also possible to specify cut positions in each direction.
+# In this situation, we still set ``display_mode='mosaic'``, but
+# we specify the cut positions of slices as a dictionary with keys
+# "x", "y", "z" and values as list of cut positions in that direction.
+
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="mosaic",
+    cut_coords={"x": [42, 18, -45], "y": [-52, -28, 0], "z": [55, 67, 73]},
+    title="display_mode='mosaic' with cut_coords as dict",
+)
+
+# %%
+# Display object's features
+# -------------------------
 #
 # In this second part, we demonstrate how to interact with the obtained
 # figures. More precisely, we will show how to use specific methods of the
@@ -279,15 +284,15 @@ from nilearn import image
 mean_haxby_img = image.mean_img(haxby_func_filename)
 
 # %%
-# Showing how to use `add_edges`
-# ------------------------------
+# Overlay anatomical image as edges: `add_edges`
+# ``````````````````````````````````````````````
 #
 # Now let us see how to use the method
 # :meth:`~nilearn.plotting.displays.OrthoSlicer.add_edges` for checking
 # coregistration by overlaying anatomical image as edges (red) on top of
 # mean functional image (background), both being of same subject.
 #
-# First, we call the :func:`nilearn.plotting.plot_anat` plotting function,
+# First, we call the :func:`~nilearn.plotting.plot_anat` plotting function,
 # with a background image as first argument, in this case the mean
 # :term:`fMRI` image.
 #
@@ -300,8 +305,8 @@ display = plotting.plot_anat(mean_haxby_img, title="add_edges")
 display.add_edges(haxby_anat_filename, color="r")
 
 # %%
-# How to use `add_contours`
-# -------------------------
+# Plot the outline of a mask: `add_contours`
+# ``````````````````````````````````````````
 #
 # Here, we show how to plot the outline of a mask (in red) on top of the
 # mean :term:`EPI` image with the method
@@ -350,8 +355,8 @@ display.add_contours(
 )
 
 # %%
-# Plotting seeds using `add_markers`
-# ----------------------------------
+# Plotting seeds: `add_markers`
+# `````````````````````````````
 #
 # Plotting seed regions of interest as spheres using method
 # :meth:`~nilearn.plotting.displays.OrthoSlicer.add_markers`
@@ -369,8 +374,8 @@ coords = [(-34, -39, -9)]
 display.add_markers(coords, marker_color="y", marker_size=100)
 
 # %%
-# Annotating plots
-# ----------------
+# Annotate plots: `annotate`
+# ``````````````````````````
 #
 # It is possible to alter the default annotations of plots, using the
 # method :meth:`~nilearn.plotting.displays.OrthoSlicer.annotate` of the
@@ -394,13 +399,13 @@ display = plotting.plot_anat(
 display.annotate(scalebar=True, scale_size=25, scale_units="mm")
 
 # %%
-# Saving plots to file
-# --------------------
+# Save plots to a file: `savefig`
+# ```````````````````````````````
 #
 # Finally, we can save a plot to file in two different ways:
 #
 # First, we can save the :term:`contrast` maps plotted with the function
-# :func:`nilearn.plotting.plot_stat_map` using the built-in parameter
+# :func:`~nilearn.plotting.plot_stat_map` using the built-in parameter
 # ``output_file``. We provide the filename and the file extension as
 # a string (supported extensions are .png, .pdf, .svg).
 from pathlib import Path
@@ -409,7 +414,7 @@ output_dir = Path.cwd() / "results" / "plot_demo_more_plotting"
 output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
 
-plotting.plot_stat_map(
+display = plotting.plot_stat_map(
     stat_img,
     title="Using plot_stat_map output_file",
     output_file=output_dir / "plot_stat_map.png",

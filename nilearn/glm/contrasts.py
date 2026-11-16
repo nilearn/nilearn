@@ -1,166 +1,26 @@
 """Contrast computation and operation on contrast to \
 obtain fixed effect results.
-
-Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
 """
 
-from warnings import warn
+import warnings
+from collections.abc import Sequence
+from typing import overload
 
 import numpy as np
 import pandas as pd
 import scipy.stats as sps
+from nibabel import Nifti1Image
 
-from nilearn._utils import rename_parameters
+from nilearn._utils import logger
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm._utils import pad_contrast, z_score
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.nilearn_typing import NiimgLike
+from nilearn.surface import SurfaceImage
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
-
-
-def expression_to_contrast_vector(expression, design_columns):
-    """Convert a string describing a :term:`contrast` \
-       to a :term:`contrast` vector.
-
-    Parameters
-    ----------
-    expression : string
-        The expression to convert to a vector.
-
-    design_columns : list or array of strings
-        The column names of the design matrix.
-
-    """
-    if expression in design_columns:
-        contrast_vector = np.zeros(len(design_columns))
-        contrast_vector[list(design_columns).index(expression)] = 1.0
-        return contrast_vector
-    df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
-    try:
-        contrast_vector = df.eval(expression, engine="python").values
-    except Exception:
-        raise ValueError(
-            f"The expression ({expression}) is not valid. "
-            "This could be due to "
-            "defining the contrasts using design matrix columns that are "
-            "invalid python identifiers."
-        )
-    return contrast_vector
-
-
-@rename_parameters(
-    replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
-)
-def compute_contrast(labels, regression_result, con_val, stat_type=None):
-    """Compute the specified :term:`contrast` given an estimated glm.
-
-    Parameters
-    ----------
-    labels : array of shape (n_voxels,)
-        A map of values on voxels used to identify the corresponding model
-
-    regression_result : dict
-        With keys corresponding to the different labels
-        values are RegressionResults instances corresponding to the voxels.
-
-    con_val : numpy.ndarray of shape (p) or (q, p)
-        Where q = number of :term:`contrast` vectors
-        and p = number of regressors.
-
-    stat_type : {None, 't', 'F'}, optional
-        Type of the :term:`contrast`.
-        If None, then defaults to 't' for 1D `con_val`
-        and 'F' for 2D `con_val`.
-
-    contrast_type :
-
-        .. deprecated:: 0.10.3
-
-            Use ``stat_type`` instead (see above).
-
-    Returns
-    -------
-    con : Contrast instance,
-        Yields the statistics of the :term:`contrast`
-        (:term:`effects<Parameter Estimate>`, variance, p-values).
-
-    """
-    con_val = np.asarray(con_val)
-    dim = 1
-    if con_val.ndim > 1:
-        dim = con_val.shape[0]
-
-    if stat_type is None:
-        stat_type = "t" if dim == 1 else "F"
-
-    acceptable_stat_types = ["t", "F"]
-    if stat_type not in acceptable_stat_types:
-        raise ValueError(
-            f"'{stat_type}' is not a known contrast type. "
-            f"Allowed types are {acceptable_stat_types}."
-        )
-
-    if stat_type == "t":
-        effect_ = np.zeros((1, labels.size))
-        var_ = np.zeros(labels.size)
-        for label_ in regression_result:
-            label_mask = labels == label_
-            reg = regression_result[label_].Tcontrast(con_val)
-            effect_[:, label_mask] = reg.effect.T
-            var_[label_mask] = (reg.sd**2).T
-
-    elif stat_type == "F":
-        from scipy.linalg import sqrtm
-
-        effect_ = np.zeros((dim, labels.size))
-        var_ = np.zeros(labels.size)
-        # TODO
-        # explain why we cannot simply do
-        # reg = regression_result[label_].Tcontrast(con_val)
-        # like above or refactor the code so it can be done
-        for label_ in regression_result:
-            label_mask = labels == label_
-            reg = regression_result[label_]
-            con_val = pad_contrast(
-                con_val=con_val, theta=reg.theta, stat_type=stat_type
-            )
-            cbeta = np.atleast_2d(np.dot(con_val, reg.theta))
-            invcov = np.linalg.inv(
-                np.atleast_2d(reg.vcov(matrix=con_val, dispersion=1.0))
-            )
-            wcbeta = np.dot(sqrtm(invcov), cbeta)
-            rss = reg.dispersion
-            effect_[:, label_mask] = wcbeta
-            var_[label_mask] = rss
-
-    dof_ = regression_result[label_].df_residuals
-    return Contrast(
-        effect=effect_,
-        variance=var_,
-        dim=dim,
-        dof=dof_,
-        stat_type=stat_type,
-    )
-
-
-def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
-    """Compute the summary contrast assuming fixed effects.
-
-    Adds the same contrast applied to all labels and results lists.
-
-    """
-    contrast = None
-    n_contrasts = 0
-    for i, (lab, res, con_val) in enumerate(zip(labels, results, con_vals)):
-        if np.all(con_val == 0):
-            warn(f"Contrast for run {int(i)} is null.")
-            continue
-        contrast_ = compute_contrast(lab, res, con_val, stat_type)
-        contrast = contrast_ if contrast is None else contrast + contrast_
-        n_contrasts += 1
-    if contrast is None:
-        raise ValueError("All contrasts provided were null contrasts.")
-    return contrast * (1.0 / n_contrasts)
 
 
 class Contrast:
@@ -175,11 +35,31 @@ class Contrast:
     and could be enhanced in the future on the computational side
     (high-dimensional F :term:`contrasts<contrast>`
     may lead to memory breakage).
+
+    Parameters
+    ----------
+    effect : array of shape (contrast_dim, n_voxels)
+        The effects related to the :term:`contrast`.
+
+    variance : array of shape (n_voxels)
+        The associated variance estimate.
+
+    dim : :obj:`int` or None, default=None
+        The dimension of the :term:`contrast`.
+
+    dof : scalar, default=DEF_DOFMAX
+        The degrees of freedom of the residuals.
+
+    stat_type : {'t', 'F'}, default='t'
+        Specification of the :term:`contrast` type.
+
+    tiny : :obj:`float`, default=DEF_TINY
+        Small quantity used to avoid numerical underflows.
+
+    dofmax : scalar, default=DEF_DOFMAX
+        The maximum degrees of freedom of the residuals.
     """
 
-    @rename_parameters(
-        replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
-    )
     def __init__(
         self,
         effect,
@@ -190,54 +70,28 @@ class Contrast:
         tiny=DEF_TINY,
         dofmax=DEF_DOFMAX,
     ):
-        """Construct instance.
-
-        Parameters
-        ----------
-        effect : array of shape (contrast_dim, n_voxels)
-            The effects related to the :term:`contrast`.
-
-        variance : array of shape (n_voxels)
-            The associated variance estimate.
-
-        dim : int or None, optional
-            The dimension of the :term:`contrast`.
-
-        dof : scalar, default=DEF_DOFMAX
-            The degrees of freedom of the residuals.
-
-        stat_type : {'t', 'F'}, default='t'
-            Specification of the :term:`contrast` type.
-
-        contrast_type :
-
-            .. deprecated:: 0.10.3
-
-                Use ``stat_type`` instead (see above).
-
-        tiny : float, default=DEF_TINY
-            Small quantity used to avoid numerical underflows.
-
-        dofmax : scalar, default=DEF_DOFMAX
-            The maximum degrees of freedom of the residuals.
-
-        """
         if variance.ndim != 1:
             raise ValueError("Variance array should have 1 dimension")
-        if effect.ndim != 2:
-            raise ValueError("Effect array should have 2 dimensions")
+        if effect.ndim > 2:
+            raise ValueError("Effect array should have 1 or 2 dimensions")
 
         self.effect = effect
         self.variance = variance
         self.dof = float(dof)
-        self.dim = effect.shape[0] if dim is None else dim
+        if dim is None:
+            self.dim = effect.shape[0] if effect.ndim == 2 else 1
+        else:
+            self.dim = dim
+
         if self.dim > 1 and stat_type == "t":
-            print("Automatically converted multi-dimensional t to F contrast")
-            stat_type = "F"
-        if stat_type not in ["t", "F"]:
-            raise ValueError(
-                f"{stat_type} is not a valid stat_type. " "Should be t or F"
+            logger.log(
+                "Automatically converted multi-dimensional t to F contrast",
+                verbose=1,
             )
+            stat_type = "F"
+
+        check_parameter_in_allowed(stat_type, ["t", "F"], "stat_type")
+
         self.stat_type = stat_type
         self.stat_ = None
         self.p_value_ = None
@@ -246,52 +100,37 @@ class Contrast:
         self.tiny = tiny
         self.dofmax = dofmax
 
-    @property
-    def contrast_type(self):
-        """Return value of stat_type.
-
-        .. deprecated:: 0.10.3
-        """
-        attrib_deprecation_msg = (
-            'The attribute "contrast_type" '
-            "will be removed in 0.13.0 release of Nilearn. "
-            'Please use the attribute "stat_type" instead.'
-        )
-        warn(
-            category=DeprecationWarning,
-            message=attrib_deprecation_msg,
-            stacklevel=3,
-        )
-        return self.stat_type
-
-    def effect_size(self):
+    def effect_size(self) -> np.ndarray:
         """Make access to summary statistics more straightforward \
-        when computing contrasts."""
+        when computing contrasts.
+        """
         return self.effect
 
-    def effect_variance(self):
+    def effect_variance(self) -> np.ndarray:
         """Make access to summary statistics more straightforward \
-        when computing contrasts."""
+        when computing contrasts.
+        """
         return self.variance
 
-    def stat(self, baseline=0.0):
+    def stat(self, baseline: float = 0.0) -> np.ndarray:
         """Return the decision statistic associated with the test of the \
         null hypothesis: (H0) 'contrast equals baseline'.
 
         Parameters
         ----------
-        baseline : float, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
         Returns
         -------
         stat : 1-d array, shape=(n_voxels,)
-            statistical values, one per voxel.
-
+            Statistical values, one per voxel.
         """
         self.baseline = baseline
 
         # Case: one-dimensional contrast ==> t or t**2
+        check_parameter_in_allowed(self.stat_type, ["F", "t"], "stat_type")
+        stat = np.empty(1)
         if self.stat_type == "F":
             stat = (
                 np.sum((self.effect - baseline) ** 2, 0)
@@ -303,27 +142,24 @@ class Contrast:
             stat = (self.effect - baseline) / np.sqrt(
                 np.maximum(self.variance, self.tiny)
             )
-        else:
-            raise ValueError("Unknown statistic type")
+
         self.stat_ = stat.ravel()
         return self.stat_
 
-    def p_value(self, baseline=0.0):
+    def p_value(self, baseline=0.0) -> np.ndarray:
         """Return a parametric estimate of the p-value associated with \
         the null hypothesis (H0): 'contrast equals baseline', \
         using the survival function.
 
         Parameters
         ----------
-        baseline : float, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
-
 
         Returns
         -------
         p_values : 1-d array, shape=(n_voxels,)
-            p-values, one per voxel
-
+            P-values, one per voxel.
         """
         if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
@@ -339,7 +175,7 @@ class Contrast:
         self.p_value_ = p_values
         return p_values
 
-    def one_minus_pvalue(self, baseline=0.0):
+    def one_minus_pvalue(self, baseline: float = 0.0) -> np.ndarray:
         """Return a parametric estimate of the 1 - p-value associated \
         with the null hypothesis (H0): 'contrast equals baseline', \
         using the cumulative distribution function, \
@@ -347,15 +183,13 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
-
 
         Returns
         -------
         one_minus_pvalues : 1-d array, shape=(n_voxels,)
-            one_minus_pvalues, one per voxel
-
+            One minus p-values, one per voxel.
         """
         if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
@@ -372,26 +206,22 @@ class Contrast:
         self.one_minus_pvalue_ = one_minus_pvalues
         return one_minus_pvalues
 
-    def z_score(self, baseline=0.0):
+    def z_score(self, baseline: float = 0.0) -> np.ndarray:
         """Return a parametric estimation of the z-score associated \
         with the null hypothesis: (H0) 'contrast equals baseline'.
 
         Parameters
         ----------
-        baseline : float, optional, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
-
 
         Returns
         -------
         z_score : 1-d array, shape=(n_voxels,)
-            statistical values, one per voxel
-
+            Statistical values, one per voxel.
         """
-        if self.p_value_ is None or self.baseline != baseline:
-            self.p_value_ = self.p_value(baseline)
-        if self.one_minus_pvalue_ is None:
-            self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
+        self.p_value_ = self.p_value(baseline)
+        self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
 
         # Avoid inf values kindly supplied by scipy.
         self.z_score_ = z_score(
@@ -402,7 +232,7 @@ class Contrast:
     def __add__(self, other):
         """Add two contrast, Yields an new Contrast instance.
 
-        This should be used only on indepndent contrasts.
+        This should be used only on independent contrasts.
         """
         if self.stat_type != other.stat_type:
             raise ValueError(
@@ -414,10 +244,10 @@ class Contrast:
             )
         dof_ = self.dof + other.dof
         if self.stat_type == "F":
-            warn(
+            warnings.warn(
                 "Running approximate fixed effects on F statistics.",
                 category=UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
@@ -448,28 +278,221 @@ class Contrast:
         return self.__rmul__(1 / float(scalar))
 
 
+def expression_to_contrast_vector(expression, design_columns) -> np.ndarray:
+    """Convert a string describing a :term:`contrast` \
+       to a :term:`contrast` vector.
+
+    Parameters
+    ----------
+    expression : :obj:`str`
+        The expression to convert to a vector.
+
+    design_columns : :obj:`list` or array of :obj:`str`
+        The column names of the design matrix.
+
+    Returns
+    -------
+    contrast_vector : numpy.ndarray
+        1D array with one entry per design column.
+
+    Examples
+    --------
+    >>> from nilearn.glm.contrasts import expression_to_contrast_vector
+    >>> expression_to_contrast_vector("task", ["task", "rest"])
+    array([1., 0.])
+    >>> expression_to_contrast_vector("task - rest", ["task", "rest"])
+    array([ 1., -1.])
+    """
+    if expression in design_columns:
+        contrast_vector = np.zeros(len(design_columns))
+        contrast_vector[list(design_columns).index(expression)] = 1.0
+        return contrast_vector
+
+    eye_design = pd.DataFrame(
+        np.eye(len(design_columns)), columns=design_columns
+    )
+    try:
+        contrast_vector = eye_design.eval(  # type: ignore[union-attr, assignment]
+            expression, engine="python"
+        ).to_numpy()
+    except pd.errors.UndefinedVariableError as e:
+        raise ValueError(
+            f"The expression ({expression}) is not valid:\n"
+            f"{e}.\n"
+            f"Available matrix columns are: {design_columns}"
+        ) from e
+    except Exception as e:
+        raise ValueError(
+            f"The expression ({expression}) is not valid.\n"
+            "This could be due to "
+            "defining the contrasts using design matrix columns that are "
+            "invalid python identifiers.\n"
+            f"Available matrix columns are: {design_columns}"
+        ) from e
+
+    return contrast_vector
+
+
+def compute_contrast(
+    labels, regression_result, con_val, stat_type=None
+) -> Contrast:
+    """Compute the specified :term:`contrast` given an estimated glm.
+
+    Parameters
+    ----------
+    labels : array of shape (n_voxels,)
+        A map of values on voxels used to identify the corresponding model
+
+    regression_result : :obj:`dict`
+        With keys corresponding to the different labels
+        values are RegressionResults instances corresponding to the voxels.
+
+    con_val : numpy.ndarray of shape (p) or (q, p)
+        Where q = number of :term:`contrast` vectors
+        and p = number of regressors.
+
+    stat_type : {None, 't', 'F'}, default=None
+        Type of the :term:`contrast`.
+        If None, then defaults to 't' for 1D `con_val`
+        and 'F' for 2D `con_val`.
+
+    Returns
+    -------
+    con : Contrast instance,
+        Yields the statistics of the :term:`contrast`
+        (:term:`effects<Parameter Estimate>`, variance, p-values).
+    """
+    con_val = np.asarray(con_val)
+    dim = 1
+    if con_val.ndim > 1:
+        dim = con_val.shape[0]
+
+    if stat_type is None:
+        stat_type = "t" if dim == 1 else "F"
+
+    check_parameter_in_allowed(stat_type, ["t", "F"], "stat_type")
+
+    effect_ = (
+        np.zeros(labels.size)
+        if stat_type == "t"
+        else np.zeros((dim, labels.size))
+    )
+    var_ = np.zeros(labels.size)
+
+    if stat_type == "t":
+        for label_ in regression_result:
+            label_mask = labels == label_
+            reg = regression_result[label_].Tcontrast(con_val)
+            effect_[label_mask] = reg.effect.T
+            var_[label_mask] = (reg.sd**2).T
+
+    elif stat_type == "F":
+        from scipy.linalg import sqrtm
+
+        # TODO
+        # explain why we cannot simply do
+        # reg = regression_result[label_].Tcontrast(con_val)
+        # like above or refactor the code so it can be done
+        for label_ in regression_result:
+            label_mask = labels == label_
+            reg = regression_result[label_]
+            con_val = pad_contrast(
+                con_val=con_val, theta=reg.theta, stat_type=stat_type
+            )
+            cbeta = np.atleast_2d(np.dot(con_val, reg.theta))
+            invcov = np.linalg.inv(
+                np.atleast_2d(reg.vcov(matrix=con_val, dispersion=1.0))
+            )
+            wcbeta = np.dot(sqrtm(invcov), cbeta)
+            rss = reg.dispersion
+            effect_[:, label_mask] = wcbeta
+            var_[label_mask] = rss
+
+    dof_ = regression_result[list(regression_result)[-1]].df_residuals
+    return Contrast(
+        effect=effect_,
+        variance=var_,
+        dim=dim,
+        dof=dof_,
+        stat_type=stat_type,
+    )
+
+
+def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
+    """Compute the summary contrast assuming fixed effects.
+
+    Adds the same contrast applied to all labels and results lists.
+    """
+    contrast = None
+    n_contrasts = 0
+    for i, (lab, res, con_val) in enumerate(
+        zip(labels, results, con_vals, strict=False)
+    ):
+        if np.all(con_val == 0):
+            warnings.warn(
+                f"Contrast for run {int(i)} is null.",
+                stacklevel=find_stack_level(),
+            )
+            continue
+        contrast_ = compute_contrast(lab, res, con_val, stat_type)
+
+        contrast = contrast_ if contrast is None else contrast + contrast_
+        n_contrasts += 1
+    if contrast is None:
+        raise ValueError("All contrasts provided were null contrasts.")
+    return contrast * (1.0 / n_contrasts)
+
+
+@overload
 def compute_fixed_effects(
-    contrast_imgs,
-    variance_imgs,
-    mask=None,
+    contrast_imgs: list[SurfaceImage],
+    variance_imgs: list[SurfaceImage],
+    mask: SurfaceImage | SurfaceMasker | None = ...,
+    precision_weighted: bool = ...,
+    dofs: Sequence[float] | np.ndarray | None = ...,
+) -> tuple[SurfaceImage, SurfaceImage, SurfaceImage, SurfaceImage]: ...
+
+
+@overload
+def compute_fixed_effects(
+    contrast_imgs: list[NiimgLike],
+    variance_imgs: list[NiimgLike],
+    mask: NiimgLike | NiftiMasker | None = ...,
+    precision_weighted: bool = ...,
+    dofs: Sequence[float] | np.ndarray | None = ...,
+) -> tuple[Nifti1Image, Nifti1Image, Nifti1Image, Nifti1Image]: ...
+
+
+def compute_fixed_effects(
+    contrast_imgs: list[SurfaceImage] | list[NiimgLike],
+    variance_imgs: list[SurfaceImage] | list[NiimgLike],
+    mask: SurfaceImage | SurfaceMasker | NiimgLike | NiftiMasker | None = None,
     precision_weighted=False,
-    dofs=None,
-    return_z_score=False,
-):
+    dofs: Sequence[float] | np.ndarray | None = None,
+) -> tuple[
+    Nifti1Image | SurfaceImage,
+    Nifti1Image | SurfaceImage,
+    Nifti1Image | SurfaceImage,
+    Nifti1Image | SurfaceImage,
+]:
     """Compute the fixed effects, given images of effects and variance.
 
     Parameters
     ----------
-    contrast_imgs : list of Nifti1Images or strings
+    contrast_imgs : :obj:`list` of Nifti1Images or :obj:`str`\
+                    or :obj:`~nilearn.surface.SurfaceImage`
         The input contrast images.
 
-    variance_imgs : list of Nifti1Images or strings
+    variance_imgs : :obj:`list` of Nifti1Images or :obj:`str` \
+                    or :obj:`~nilearn.surface.SurfaceImage`
         The input variance images.
 
-    mask : Nifti1Image or NiftiMasker instance or None, optional
+    mask : Nifti1Image or NiftiMasker instance or \
+        :obj:`~nilearn.maskers.SurfaceMasker` instance \
+        or None, default=None
         Mask image. If ``None``, it is recomputed from ``contrast_imgs``.
 
-    precision_weighted : Bool, default=False
+    precision_weighted : :obj:`bool`, default=False
         Whether fixed effects estimates should be weighted by inverse
         variance or not.
 
@@ -478,28 +501,19 @@ def compute_fixed_effects(
         when ``None``,
         it is assumed that the degrees of freedom are 100 per input.
 
-    return_z_score: Bool, default=False
-        Whether ``fixed_fx_z_score_img`` should be output or not.
-
     Returns
     -------
-    fixed_fx_contrast_img : Nifti1Image
+    fixed_fx_contrast_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         The fixed effects contrast computed within the mask.
 
-    fixed_fx_variance_img : Nifti1Image
+    fixed_fx_variance_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         The fixed effects variance computed within the mask.
 
-    fixed_fx_stat_img : Nifti1Image
+    fixed_fx_stat_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         The fixed effects stat computed within the mask.
 
-    fixed_fx_z_score_img : Nifti1Image, optional
-        The fixed effects corresponding z-transform
-
-    Warns
-    -----
-    DeprecationWarning
-        Starting in version 0.13, fixed_fx_z_score_img will always be returned
-
+    fixed_fx_z_score_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
+        The fixed effects corresponding z-transform.
     """
     n_runs = len(contrast_imgs)
     if n_runs != len(variance_imgs):
@@ -508,27 +522,44 @@ def compute_fixed_effects(
             f"from the number of variance images ({len(variance_imgs)})."
         )
 
-    if isinstance(mask, NiftiMasker):
-        masker = mask.fit()
-    elif mask is None:
-        masker = NiftiMasker().fit(contrast_imgs)
-    else:
-        masker = NiftiMasker(mask_img=mask).fit()
+    if isinstance(mask, (NiftiMasker, SurfaceMasker)):
+        with warnings.catch_warnings():
+            # ignore warning in case the masker
+            # was initialized with a mask image
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*Generation of a mask.*",
+            )
+            masker = mask.fit()
 
-    variances = masker.transform(variance_imgs)
+    # TODO (nilearn >=0.15) remove ALL standardize=None below
+    elif mask is None:
+        if isinstance(contrast_imgs[0], SurfaceImage):
+            masker = SurfaceMasker(standardize=None).fit(contrast_imgs[0])
+        else:
+            masker = NiftiMasker(standardize=None).fit(contrast_imgs)
+    elif isinstance(mask, SurfaceImage):
+        masker = SurfaceMasker(mask_img=mask, standardize=None).fit(
+            contrast_imgs[0]
+        )
+    else:
+        masker = NiftiMasker(mask_img=mask, standardize=None).fit()
+
+    variances = np.array(
+        [masker.transform(vi).squeeze() for vi in variance_imgs]
+    )
     contrasts = np.array(
-        [masker.transform(contrast_img) for contrast_img in contrast_imgs]
+        [masker.transform(ci).squeeze() for ci in contrast_imgs]
     )
 
-    if dofs is not None:
-        if len(dofs) != n_runs:
-            raise ValueError(
-                f"The number of degrees of freedom ({len(dofs)}) "
-                f"differs from the number of contrast images ({n_runs})."
-            )
-    else:
+    if dofs is None:
         dofs = [100] * n_runs
 
+    elif len(dofs) != n_runs:
+        raise ValueError(
+            f"The number of degrees of freedom ({len(dofs)}) "
+            f"differs from the number of contrast images ({n_runs})."
+        )
     (
         fixed_fx_contrast,
         fixed_fx_variance,
@@ -542,29 +573,21 @@ def compute_fixed_effects(
     fixed_fx_variance_img = masker.inverse_transform(fixed_fx_variance)
     fixed_fx_stat_img = masker.inverse_transform(fixed_fx_stat)
     fixed_fx_z_score_img = masker.inverse_transform(fixed_fx_z_score)
-    warn(
-        category=DeprecationWarning,
-        message="The behavior of this function will be "
-        "changed in release 0.13 to have an additional"
-        "return value 'fixed_fx_z_score_img'  by default. "
-        "Please set return_z_score to True.",
+
+    return (
+        fixed_fx_contrast_img,
+        fixed_fx_variance_img,
+        fixed_fx_stat_img,
+        fixed_fx_z_score_img,
     )
-    if return_z_score:
-        return (
-            fixed_fx_contrast_img,
-            fixed_fx_variance_img,
-            fixed_fx_stat_img,
-            fixed_fx_z_score_img,
-        )
-    else:
-        return fixed_fx_contrast_img, fixed_fx_variance_img, fixed_fx_stat_img
 
 
 def _compute_fixed_effects_params(
     contrasts, variances, precision_weighted, dofs
 ):
     """Compute the fixed effects t/F-statistic, contrast, variance, \
-    given arrays of effects and variance."""
+    given arrays of effects and variance.
+    """
     tiny = 1.0e-16
     contrasts, variances = np.asarray(contrasts), np.asarray(variances)
     variances = np.maximum(variances, tiny)
@@ -584,7 +607,8 @@ def _compute_fixed_effects_params(
         if dim > 1:
             stat_type = "F"
     else:
-        fixed_fx_contrasts_ = fixed_fx_contrasts[np.newaxis]
+        fixed_fx_contrasts_ = fixed_fx_contrasts
+
     con = Contrast(
         effect=fixed_fx_contrasts_,
         variance=fixed_fx_variance,

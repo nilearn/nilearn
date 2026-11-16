@@ -38,28 +38,28 @@ information on the corresponding category.
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_007.png
    :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
-   :align: left
+   :align: center
 
    Face stimuli
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_004.png
    :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
-   :align: left
+   :align: center
 
    Cat stimuli
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_haxby_masks_001.png
    :target: ../auto_examples/01_plotting/plot_haxby_masks.html
    :scale: 30
-   :align: left
+   :align: center
 
    Masks
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_full_analysis_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_full_analysis.html
    :scale: 35
-   :align: left
+   :align: center
 
    Decoding scores per mask
 
@@ -181,18 +181,23 @@ Decoding made easy
 Nilearn makes it easy to train a model with a principled pipeline using the
 :class:`nilearn.decoding.Decoder` object. Using the mask we defined before
 and an SVC estimator as we already introduced, we can create a pipeline in
-two lines. The additional ``standardize=True`` argument adds a normalization
-of images signal to a zero mean and unit variance, which will improve
-performance of most estimators.
+two lines. The decoder also standardizes the signal out of the box: by
+default it passes ``standardize="zscore_sample"`` to its masker, shifting
+each voxel's time series to a zero mean and scaling it to unit variance,
+which will improve performance of most estimators. Pass
+``standardize=None`` or ``standardize="psc"`` to change this behavior;
+see :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_standardize.py`
+for a comparison of the three options.
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn.decoding import Decoder
-     decoder = Decoder(estimator='svc', mask=mask_filename)
+
+     decoder = Decoder(estimator="svc", mask=mask_filename)
 
 Then we can fit it on the images and the conditions we chose before.
 
-.. code-block:: default
+.. code-block:: python
 
      decoder.fit(fmri_niimgs, conditions)
 
@@ -230,7 +235,7 @@ During the ``fit``, :class:`nilearn.decoding.Decoder` object implicitly used a
 cross-validation: Stratified K-fold by default. You can easily inspect
 the prediction "score" it got in each fold.
 
-.. code-block:: default
+.. code-block:: python
 
      print(decoder.cv_scores_)
 
@@ -283,7 +288,7 @@ Other metrics, such as the :term:`AUC` (Area Under the Curve, for the
 
 .. seealso::
   the `list of scoring options
-  <https://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
+  <https://scikit-learn.org/stable/modules/model_evaluation.html>`_
 
 Prediction accuracy at chance using simple strategies
 .....................................................
@@ -314,7 +319,7 @@ model is better than chance or not.
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_haxby_masks_001.png
    :target: ../auto_examples/01_plotting/plot_haxby_masks.html
    :scale: 55
-   :align: left
+   :align: center
 
    Masks
 
@@ -322,7 +327,7 @@ model is better than chance or not.
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_full_analysis_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_full_analysis.html
    :scale: 70
-   :align: left
+   :align: center
 
 
 Visualizing the decoder's weights
@@ -334,6 +339,7 @@ coefficients of best models for each class in ``decoder.coef_img_``.
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
    :target: ../auto_examples/plot_decoding_tutorial.html
+   :align: center
    :scale: 65
 
 .. note::
@@ -367,6 +373,14 @@ argument. To keep the 10% most correlated voxels, just create us this parameter 
    :start-after: # on nested cross-validation.
    :end-before: # Visualize the results
 
+.. note::
+
+    Providing a region-of-interest mask may interact with
+    the ``screening_percentile`` parameter, particularly
+    in cases where the mask extent is small relative to the
+    total brain volume. In these cases, there may not be
+    enough features in the mask to allow for further
+    sub-selection with ``screening_percentile``.
 
 Visualizing the results
 -----------------------
@@ -383,6 +397,7 @@ To visualize the results, :class:`nilearn.decoding.Decoder` handles two main ste
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_anova_svm.html
+   :align: center
    :scale: 65
 
 .. seealso::

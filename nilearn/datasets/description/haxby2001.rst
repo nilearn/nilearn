@@ -28,8 +28,8 @@ The full dataset additionally includes
     :'anat': Nifti images with anatomical image
     :'func': Nifti images with bold data
     :'mask_vt': Nifti images with mask for ventral visual/temporal cortex
-    :'mask_face': Nifti images with face-reponsive brain regions
-    :'mask_house': Nifti images with house-reponsive brain regions
+    :'mask_face': Nifti images with face-responsive brain regions
+    :'mask_house': Nifti images with house-responsive brain regions
     :'mask_face_little': Spatially more constrained version of the above
     :'mask_house_little': Spatially more constrained version of the above
 

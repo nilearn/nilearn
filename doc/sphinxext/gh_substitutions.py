@@ -7,7 +7,15 @@ from docutils.parsers.rst.roles import set_classes
 # https://github.com/mne-tools/mne-python/blob/main/doc/sphinxext/gh_substitutions.py
 
 
-def _gh_role(name, rawtext, text, lineno, inliner, options=None, content=None):
+def _gh_role(
+    name,  # noqa: ARG001
+    rawtext,
+    text,
+    lineno,  # noqa: ARG001
+    inliner,  # noqa: ARG001
+    options=None,
+    content=None,
+):
     """Link to a GitHub issue."""
     if options is None:
         options = {}

@@ -9,16 +9,15 @@ def test_all_modules_error(func):
     with pytest.raises(
         ValueError,
         match=(
-            "`modules_to_ignore` and "
-            "`modules_to_consider` cannot "
-            "be both specified."
+            r"'modules_to_ignore' and 'modules_to_consider' cannot "
+            r"be both specified."
         ),
     ):
         func(modules_to_ignore=["foo"], modules_to_consider=["bar"])
 
 
 @pytest.mark.parametrize("func", [all_functions, all_classes])
-def test_private_vs_public(func):
+def test_private_vs_public(matplotlib_pyplot, func):  # noqa: ARG001
     public_only = set(func(return_private=False))
     private_and_public = set(func(return_private=True))
     assert public_only.issubset(private_and_public)
@@ -27,21 +26,21 @@ def test_private_vs_public(func):
     )
 
 
-def test_number_public_functions():
+def test_number_public_functions(matplotlib_pyplot):  # noqa: ARG001
     """Check that number of public functions is stable.
 
     If it changes, it means that we have added or removed a public function.
     If this is intentional, then the number should be updated in the test.
     Otherwise it means that the public API of nilearn has changed by mistake.
     """
-    assert len({_[0] for _ in all_functions()}) == 241
+    assert len({_[0] for _ in all_functions(return_private=False)}) == 279
 
 
-def test_number_public_classes():
+def test_number_public_classes(matplotlib_pyplot):  # noqa: ARG001
     """Check that number of public classes is stable.
 
     If it changes, it means that we have added or removed a public function.
     If this is intentional, then the number should be updated in the test.
     Otherwise it means that the public API of nilearn has changed by mistake.
     """
-    assert len({_[0] for _ in all_classes()}) == 60
+    assert len({_[0] for _ in all_classes()}) == 76

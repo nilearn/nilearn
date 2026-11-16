@@ -7,15 +7,19 @@ analysis (one-sample test) and visualizing the results.
 
 More specifically:
 
-1. A sequence of subject :term:`fMRI` button press contrasts is downloaded.
+1. A list of subject-level :term:`fMRI` contrasts is downloaded.
 2. A mask of the useful brain volume is computed.
 3. A one-sample t-test is applied to the brain maps.
 
-We focus on a given contrast of the localizer dataset: the motor response to
-left versus right button press. Both at the individual and group level, this is
-expected to elicit activity in the motor cortex (positive in the right
-hemisphere, negative in the left hemisphere).
+.. admonition:: dataset
 
+    This example uses the the motor response
+    to left versus right button press task
+    from the :ref:`Brainomics Localizer dataset <brainomics_maps>`.
+
+    Both at the individual and group level, this is
+    expected to elicit activity in the motor cortex
+    (positive in the rightv hemisphere, negative in the left hemisphere).
 """
 
 from nilearn import plotting
@@ -23,8 +27,7 @@ from nilearn import plotting
 # %%
 # Fetch dataset
 # -------------
-# We download a list of left vs right button press :term:`contrasts<contrast>`
-# from a localizer dataset. Note that we fetch individual t-maps that represent
+# Note that we fetch individual t-maps that represent
 # the :term:`BOLD` activity estimate divided by the uncertainty about
 # this estimate.
 from nilearn.datasets import fetch_localizer_contrasts
@@ -34,7 +37,6 @@ data = fetch_localizer_contrasts(
     ["left vs right button press"],
     n_subjects,
     get_tmaps=True,
-    legacy_format=False,
 )
 
 # %%
@@ -56,6 +58,8 @@ for cidx, tmap in enumerate(data["tmaps"]):
         axes=axes[int(cidx / 4), int(cidx % 4)],
         plot_abs=False,
         display_mode="z",
+        vmin=-8.5,
+        vmax=8.5,
     )
 fig.suptitle("subjects t_map left-right button press")
 plt.show()
@@ -80,7 +84,7 @@ design_matrix = pd.DataFrame(
 # Next, we specify the model and fit it.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2)
+second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2, verbose=1)
 second_level_model = second_level_model.fit(
     second_level_input,
     design_matrix=design_matrix,
@@ -104,7 +108,6 @@ p001_unc = norm.isf(p_val)
 display = plotting.plot_glass_brain(
     z_map,
     threshold=p001_unc,
-    colorbar=True,
     display_mode="z",
     plot_abs=False,
     title="group left-right button press (unc p<0.001)",
@@ -126,7 +129,7 @@ p_val = second_level_model.compute_contrast(output_type="p_value")
 n_voxels = np.sum(get_data(second_level_model.masker_.mask_img_))
 # Correcting the p-values for multiple testing and taking negative logarithm
 neg_log_pval = math_img(
-    f"-np.log10(np.minimum(1, img * {str(n_voxels)}))",
+    f"-np.log10(np.minimum(1, img * {n_voxels!s}))",
     img=p_val,
 )
 
@@ -144,7 +147,7 @@ neg_log_pval = math_img(
 #   :func:`~nilearn.mass_univariate.permuted_ols`
 #   is that the one-sample test in non_parametric_inference/permuted_ols
 #   assumes that the distribution is symmetric about 0,
-#   which is is weaker than the SecondLevelModel's assumption that
+#   which is weaker than the SecondLevelModel's assumption that
 #   the null distribution is Gaussian and centered about 0.
 #
 # .. important::
@@ -169,6 +172,8 @@ out_dict = non_parametric_inference(
     smoothing_fwhm=8.0,
     n_jobs=2,
     threshold=0.001,
+    random_state=0,  # to ensure reproducible results
+    verbose=1,
 )
 
 # %%
@@ -211,14 +216,15 @@ for img_counter, (i_row, j_col) in enumerate(
     ax = axes[i_row, j_col]
     plotting.plot_glass_brain(
         IMAGES[img_counter],
-        colorbar=True,
         vmax=vmax,
+        vmin=threshold,
         display_mode="z",
         plot_abs=False,
         cut_coords=cut_coords,
         threshold=threshold,
         figure=fig,
         axes=ax,
+        cmap="inferno",
     )
     ax.set_title(TITLES[img_counter])
 fig.suptitle("Group left-right button press\n(negative log10 p-values)")

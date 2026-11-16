@@ -27,15 +27,15 @@ Core developers
 
 The nilearn core developers are:
 
-* `Alexis Thual`_
 * `Bertrand Thirion`_
 * `Elizabeth DuPre`_
+* `Hande Gözükan`_
 * `Hao-Ting Wang`_
 * `Himanshu Aggarwal`_
-* `Jerome Dockes`_
-* `Nicolas Gensollen`_
+* `Michelle Wang`_
+* `Mohammad Torabi`_
+* `Pierre-Louis Barbarant`_
 * `Rémi Gau`_
-* `Taylor Salo`_
 
 .. CORE DEV SECTION ENDS HERE
 
@@ -48,8 +48,10 @@ Other contributors
 
 Some other past or present contributors are:
 
+* `Achintya Singh`_
 * `Ahmad Chamma`_: Inria, Saclay, France
 * `Aina Frau-Pascual`_
+* `Akaash P`_
 * `Alex Rothberg`_: Free Agency, New York, USA
 * `Alexandre Abadie`_: Inria, Paris
 * `Alexandre Abraham`_: Bazemont, Île-de-France, France
@@ -58,19 +60,30 @@ Some other past or present contributors are:
 * `Alexandre Cionca`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
 * `Alexandre Sayal`_: CIBIT, University of Coimbra, Portugal
 * `Alexis Thual`_: Inria, Saclay, France
+* `Alice Schiavone`_: University of Copenhagen
 * `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
-* `Amadeus Kanaan`_
+* Amadeus Kanaan
 * `Ana Luisa Pinho`_: Western University, London, Ontario, Canada
+* `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
+* `Andrew Chen`_
 * `Andrés Hoyos Idrobo`_: Rakuten, France
+* `Aniket Singh Yadav`_: Galgotias University, India
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
+* `Anton Karpov`_
+* `Anupriya Kumari`_: Indian Institute of Technology, Roorkee, India
 * `Ariel Rokem`_: University of Washington, Psychology, Seattle, Washington, 98107, USA
 * `Arthur Mensch`_
 * `Aswin Vijayan`_
 * `Audrey Duran`_: TheraPanacea, France
+* `Basile Pinsard`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
+* `Bastien Cagna`_: CATI, APHP, Paris, France
 * `Ben Cipollini`_: Facebook, Hayward, California, USA
 * `Bertrand Thirion`_: Inria, Saclay, France
 * `Binh Nguyen`_
 * `Caglar Cakan`_: Technische Universität Berlin, Berlin, Germany
+* `Cedric Conday`_
+* `Chloe Hampson`_: Florida International University, Miami, United States
+* `Chris Rorden`_: University of South Carolina, USA
 * `Chris Gorgolewski`_: Google LLC
 * `Chris Markiewicz`_: Stanford University, Stanford, California, USA
 * `Christian Horea`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
@@ -87,37 +100,53 @@ Some other past or present contributors are:
 * `Demian Wassermann`_: Inria, Saclay, France
 * `Derek Pisner`_: St. Petersburg, FL
 * `Dimitri Papadopoulos Orfanos`_: NeuroSpin, CEA, Université Paris-Saclay, Gif-sur-Yvette, France
+* `Donncha O'Toole`_
 * `Elizabeth DuPre`_: Stanford University, Stanford, California, USA
 * `Elvis Dohmatob`_: Facebook AI Research (FAIR)
 * `Eric Larson`_: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
 * `Evan Edmond`_: University of Oxford, Oxford, UK
 * `Fabian Pedregosa`_: @google, Geneva, Switzerland
+* `Fabricio Cravo`_: NeuroPRISM, Northeastern University
+* `Fernanda Ponce`_: Université Paris-Saclay, Inria, Saclay, France
 * `Florent Pollet`_: ENS Paris-Saclay, Saclay, France
 * `Franz Liem`_
 * `François Paugam`_
+* `Gabriele Amorosino`_: Department of Psychology, The University of Texas at Austin, TX, USA
 * `Gael Varoquaux`_: Inria, Saclay, France
 * `Gilles de Hollander`_: Vrije Universiteit, Amsterdam, The Netherlands
 * `Greg Kiar`_: Child Mind Institute
 * `Greydon Gilmore`_: Department of Mathematics, Western University, Toronto, Canada
 * `Guillaume Lemaitre`_: Inria, Saclay, France
+* `Gustav Magnusson`_: Linköping University, Linköping
+* `Hande Gözükan`_: Inria, Saclay, France
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
+* `Hariom Patidar`_
 * `Himanshu Aggarwal`_: Inria, Saclay, France
+* `Hugo Delhaye`_: SIMEXP, Université de Montréal, Montréal, Canada
 * `Ian Abenes`_
+* `Idrissa Traore`_: IMT Atlantique, Brest, France
+* `Ishaan Gupta`_
 * `Jake Vogel`_: Department of Clinical Sciences, SciLifeLab, Lund University, Lund, Sweden
 * `Jan Margeta`_: KardioMe, Nova Dubnica, Slovakia
 * `Jaques Grobler`_: Anyline GmbH, Vienna, Austria
 * `Jason Gors`_: Insight Data Science, Mountain View, California, USA
+* `Jason Kai`_: Child Mind Institute
+* `Jason D. Yeatman`_: Stanford University, Stanford, California, USA
 * `Javier Rasero`_: School of Data Science, University of Virginia, Viginia, USA
 * `Jean Kossaifi`_: Imperial College London, London, UK
 * `Jean-Rémi King`_: Meta AI, CNRS, Paris
+* `Jeffrey Cooney`_
 * `Jelle Roelof Dalenberg`_: University Medical Center Groningen, Groningen, The Netherlands
 * `Jeremy Lefort-Besnard`_: Inria Rennes, France
-* `Jerome Dockes`_: Origami lab, McGill University, Montréal, Canada
+* `Jerome Dockes`_: Probabl
 * `Jerome-Alexis Chevalier`_: Emerton Data
+* `Johanna Bayer`_: McGill University, Montréal, Canada
 * `Johannes Wiesner`_: Central Institute of Mental Health, Mannheim, Germany
+* `John T. Johnson`_: Neurogram, USA
 * `Jon Haitz Legarreta Gorrono`_: Brigham and Women's Hospital, Mass General Brigham/Harvard Medical School, Boston, Massachusetts, USA
 * `Jona Sassenhagen`_
 * `Jordi Huguet`_: BarcelonaBeta Brain Research Center
+* `Joseph Paillard`_: Inria, Saclay, France
 * `Joshua Teves`_
 * `Julia Huntenburg`_: International Brain Laboratory, Berlin, Germany
 * `Julio A Peraza`_: Florida International University, Miami, Florida, USA
@@ -126,13 +155,18 @@ Some other past or present contributors are:
 * `Koen Helwegen`_: Dutch Connectome Lab, VU, Amsterdam, The Netherlands
 * `Konrad Wagstyl`_
 * `Konstantin Shmelkov`_
+* `Kosei Tanno`_
 * `Kshitij Chawla`_: Duke University Health System, USA
 * `Kun CHEN`_: University of Macau, Macau, China
+* `Laura Piñero Roig`_: University of Barcelona, Barcelona, Spain
+* `Lee Newberg`_: Kitware, Inc., USA
 * `Leonard Sasse`_
 * `Loic Estève`_
 * `Loic Tetrel`_
 * `Luz Paz`_
 * `Manon Pietrantoni`_
+* `Marco Flores`_: Basque Center on Cognition Brain and Language
+* `Marco Bedini`_: Institut de Neurosciences de la Timone, University of Aix-Marseille, France
 * `Martin Perez-Guevara`_: Criteo, France
 * `Martin Wegrzyn`_: Bielefeld University, Bielefeld, Germany
 * `Mathias Goncalves`_: Stanford University, Stanford, California, USA
@@ -142,18 +176,24 @@ Some other past or present contributors are:
 * `Maximilian Cosmo Sitter`_
 * `Mehdi Rahim`_: Air Liquide, France
 * `Mia Zwally`_: DSST, National Institute of Mental Health, USA
+* `Micha Burkhardt`_: University of Oldenburg, Germany
 * `Michael Eickenberg`_: Flatiron Institute, New-York, New-York, USA
 * `Michael Hanke`_: Psychoinformatics, Forschungszentrum Jülich GmbH, Jülich, Germany
 * `Michael Notter`_: ams OSRAM, Martigny, Lausanne, Switzerland
 * `Michael Waskom`_: Flatiron health, New York, USA
 * `Michelle Wang`_: Origami lab, McGill University, Montréal, Canada
+* `Milton Camacho`_: University of Calgary, Calgary, Alberta, Canada
 * `Mohammad Torabi`_: Origami lab, McGill University, Montréal, Canada
+* `Mohammad Sadeghi Hardengi`_: IAUN, Iran (M.Sc. student, AI and robotics)
 * `Moritz Boos`_
+* `Mudassir Chapra`_
 * `Myeong Seop Song`_
 * `Natasha Clarke`_: @SIMEXP, Montréal, Canada
 * `Neelay Shah`_: Max Planck Institute for Intelligent Systems, Germany
 * `Nicolas Gensollen`_: Inria, Paris, France
 * `Nikhil Krish`_: University of Texas, Austin
+* `Nirmitee Mulay`_: BCBL, Spain
+* `Noah C. Benson`_: University of Washington, Seattle, Washington, USA
 * `Oliver Warrington`_: Wellcome Centre for Human Neuroimaging, UCL, London, UK
 * `Oscar Esteban`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
 * `Patrick Sadil`_: Department of Biostatistics, Johns Hopkins Bloomberg School of Public Health, USA
@@ -164,22 +204,32 @@ Some other past or present contributors are:
 * `Philippe Gervais`_: Zurich, Switzerland
 * `Pierre Bellec`_: Psychology Department, University of Montréal, Montréal, Canada
 * `Pierre Glaser`_: Gatsby Computational Neuroscience Unit, University College London, London, UK
+* `Pierre-Louis Barbarant`_: Inria, Saclay, France
 * `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
 * `Pradeep Reddy Raamana`_: University of Pittsburgh, Pittsburgh, PA, USA
+* `Prakhar Jain`_: RV College of Engineering, Bangalore, India
 * `Rahul Brito`_
 * `Raphael Meudec`_: Inria, Saclay, France
+* `Reyyi Shreyas`_
+* `Rishika Kapil`_: Thapar Institute of Engineering and Technology
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
 * `Robert Williamson`_
 * `Roberto Guidotti`_: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
+* `Rohan Thomas Jepegnanam`_: Cognitive Neuroscience & Clinical Phenomenology Lab, Christian Medical College, Vellore, India
 * `Ronald Phlypo`_: Lyon area, France
+* `Ruben Dörfel`_: Karolinska Institutet
 * `Ryan Hammonds`_: UC San Diego, San Diego, California, USA
-* `Rémi Gau`_: Origami lab, McGill University, Montréal, Canada
+* `Rémi Gau`_: Inria, Saclay, France
 * `Sachin Patalasingh`_
+* `Saeed Babadi`_
 * `Sage Hahn`_: deephealth
 * `Salma Bougacha`_
 * `Sam Buck Johnson`_
 * `Sami Jawhar`_
+* `Sanjana Soni`_: Government Engineering College, Bilaspur, India
+* `Siddhardha Nanda`_
 * `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
+* `Sin Kim`_: Korea Advanced Institute of Science and Technology: Daejeon, KR
 * `Sourav Singh`_
 * `Steven Meisler`_: Harvard-MIT Division of Health Sciences and Technology, Cambridge, Massachusetts, USA
 * `Suramya Pokharel`_: Tribhuvan University, Kathmandu, Nepal
@@ -187,12 +237,21 @@ Some other past or present contributors are:
 * `Sylvain Takerkart`_: CNRS, Institut des Neurosciences de la Timone, Marseille, France
 * `Tamer Gezici`_: Bilkent University
 * `Tarun Samanta`_: Acharya Prafulla Chandra College
+* `Taylor Hanayik`_: QuantCo
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
+* `Tharun K`_
+* `Thibault de Varax`_: Aramis lab, Paris Brain Institute
+* `Thiti Premrudeepreechacharn`_
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_
+* `Venish Paneliya`_
+* `Victoria Shevchenko`_: Inria Saclay, Université Paris Cité, France
+* `Victoria McCray`_: Northeastern University, USA
 * `Vincent Michel`_: https://www.logilab.fr/
 * `Virgile Fritsch`_: Inria, Saclay, France
+* `Wolfgang Aura`_
+* `Xichun Xu`_: Oregon State University, Corvallis, Oregon, USA
 * `Yaroslav Halchenko`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Yasmin Mzayek`_: Inria, Saclay, France
 * `Yichun Huang`_: Peking University, Beijing, China
@@ -213,15 +272,15 @@ Funding
 `Mehdi Rahim`_, `Philippe Gervais`_ were paid by the
 :inria:`NiConnect <parietal/research/spatial_patterns/niconnect/>`.
 project, funded by the French `Investissement d'Avenir
-<https://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
+<https://www.info.gouv.fr/organisation/secretariat-general-pour-l-investissement-sgpi>`_.
 
 `Kshitij Chawla`_ was paid by `INRIA <https://www.inria.fr/en>`_.
 
 `Yasmin Mzayek`_ and `Nicolas Gensollen`_ were paid by the `Human Brain Project <https://www.humanbrainproject.eu/en/>`_
 |HBP logo|.
 
-NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_
-|digicosme logo| and `DataIA <https://dataia.eu/en>`_ |dataia_logo|.
+NiLearn is also supported by `DigiCosme <https://digicosme.cnrs.fr/en/digicosme-paris-saclay-english/>`_
+|digicosme logo| and `DataIA <https://www.dataia.eu/en>`_ |dataia_logo|.
 
 .. _citing:
 
@@ -241,7 +300,7 @@ If you want to cite Nilearn, we suggest you do it using our Zenodo DOI:
     }
 
 Nilearn's Research Resource Identifier (RRID) is:
-`RRID:SCR_001362 <https://scicrunch.org/resources/data/record/nlx_144509-1/SCR_001362/resolver?q=nilearn&l=nilearn&i=rrid:scr_001362>`_
+`RRID:SCR_001362 <https://rrid.site/data/record/nlx_144509-1/SCR_001362/resolver?q=nilearn&l=nilearn&i=rrid:scr_001362>`_
 
 There is no paper published about nilearn.
 However, the patterns underlying the package have been described in:

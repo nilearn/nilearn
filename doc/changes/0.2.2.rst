@@ -1,10 +1,8 @@
 
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.2.2
-=====
+Version 0.2.2
+=============
 
 **Released February 2016**
 
@@ -62,14 +60,14 @@ Contributors
 
 Contributors (from ``git shortlog -ns 0.2.1..0.2.2``):
 
-    * `Kamalakar Reddy Daddy`_ (39)
-    * `Alexandre Abraham`_ (22)
-    * `Loic Estève`_ (21)
-    * `Gael Varoquaux`_ (19)
-    * `Alexandre Abadie`_ (12)
-    * `Salma Bougacha`_ (7)
-    * `Danilo Bzdok`_ (3)
-    * `Arthur Mensch`_ (1)
-    * `Ben Cipollini`_ (1)
-    * `Elvis Dohmatob`_ (1)
-    * `Óscar Nájera`_ (1)
+* `Kamalakar Reddy Daddy`_ (39)
+* `Alexandre Abraham`_ (22)
+* `Loic Estève`_ (21)
+* `Gael Varoquaux`_ (19)
+* `Alexandre Abadie`_ (12)
+* `Salma Bougacha`_ (7)
+* `Danilo Bzdok`_ (3)
+* `Arthur Mensch`_ (1)
+* `Ben Cipollini`_ (1)
+* `Elvis Dohmatob`_ (1)
+* `Óscar Nájera`_ (1)

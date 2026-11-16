@@ -44,20 +44,19 @@ def random_diagonal(p, v_min=1.0, v_max=2.0, random_state=0):
     p : int
         The first dimension of the array.
 
-    v_min : float, optional (default to 1.)
+    v_min : :obj:`float`, optional (default to 1.)
         Minimal element.
 
-    v_max : float, optional (default to 2.)
+    v_max : :obj:`float`, optional (default to 2.)
         Maximal element.
 
-    random_state : int or numpy.random.RandomState instance, optional
-        random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
     output : numpy.ndarray, shape (p, p)
         A diagonal matrix with the given minimal and maximal elements.
-
     """
     random_state = np.random.default_rng(random_state)
     diag = random_state.random(p) * (v_max - v_min) + v_min
@@ -74,15 +73,15 @@ def random_spd(p, eig_min, cond, random_state=0):
     p : int
         The first dimension of the array.
 
-    eig_min : float
+    eig_min : :obj:`float`
         Minimal eigenvalue.
 
-    cond : float
+    cond : :obj:`float`
         Condition number, defined as the ratio of the maximum eigenvalue to the
         minimum one.
 
-    random_state : int or numpy.random.RandomState instance, optional
-        random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -99,11 +98,14 @@ def random_spd(p, eig_min, cond, random_state=0):
     return unitary.dot(diag).dot(unitary.T)
 
 
-def _signals(n_subjects=N_SUBJECTS):
+def _signals(
+    n_subjects: int = N_SUBJECTS, n_features: int = N_FEATURES
+) -> tuple[list[np.ndarray], np.ndarray]:
     """Generate signals and compute covariances \
-    and apply confounds while computing covariances."""
-    n_features = N_FEATURES
+    and apply confounds while computing covariances.
+    """
     signals = []
+    confounds = np.empty(1)
     for k in range(n_subjects):
         n_samples = 200 + k
         signal, _, confounds = generate_signals(
@@ -118,12 +120,15 @@ def _signals(n_subjects=N_SUBJECTS):
 
 
 @pytest.fixture
-def signals():
+def signals() -> list[np.ndarray]:
+    """Return a list of signals as arrays."""
     return _signals(N_SUBJECTS)[0]
 
 
 @pytest.fixture
-def signals_and_covariances(cov_estimator):
+def signals_and_covariances(
+    cov_estimator,
+) -> tuple[list[np.ndarray], list[np.ndarray]] | None:
     signals, _ = _signals()
     emp_covs = []
     ledoit_covs = []
@@ -138,6 +143,7 @@ def signals_and_covariances(cov_estimator):
         return signals, ledoit_covs
     elif isinstance(cov_estimator, EmpiricalCovariance):
         return signals, emp_covs
+    return None
 
 
 def test_check_square():
@@ -152,7 +158,7 @@ def test_check_square():
 )  # non SPD
 def test_check_spd(invalid_input):
     with pytest.raises(
-        ValueError, match="Expected a symmetric positive definite matrix."
+        ValueError, match=r"Expected a symmetric positive definite matrix."
     ):
         _check_spd(invalid_input)
 
@@ -244,7 +250,7 @@ def test_geometric_mean_properties():
 
     # Generic
     assert isinstance(spds, list)
-    for spd, input_spd in zip(spds, input_spds):
+    for spd, input_spd in zip(spds, input_spds, strict=False):
         assert_array_equal(spd, input_spd)
     assert is_spd(gmean, decimal=7)
 
@@ -257,14 +263,14 @@ def random_non_singular(p, sing_min=1.0, sing_max=2.0, random_state=0):
     p : int
         The first dimension of the array.
 
-    sing_min : float, optional (default to 1.)
+    sing_min : :obj:`float`, optional (default to 1.)
         Minimal singular value.
 
-    sing_max : float, optional (default to 2.)
+    sing_max : :obj:`float`, optional (default to 2.)
         Maximal singular value.
 
-    random_state : int or numpy.random.RandomState instance, optional
-        random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -323,7 +329,7 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
 
     Returns
     -------
-    grad_norm : list of float
+    grad_norm : :obj:`list` of float
         Norm of the covariant derivative in the tangent space at each step.
     """
     mats = np.array(mats)
@@ -358,8 +364,7 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
         ).dot(gmean_sqrt)
 
         # Update the norm and the step size
-        if norm < norm_old:
-            norm_old = norm
+        norm_old = min(norm, norm_old)
         if norm > norm_old:
             step = step / 2.0
             norm = norm_old
@@ -433,7 +438,7 @@ def test_geometric_mean_error_input_matrices_have_different_shapes():
     mat2 = np.ones((n_features + 1, n_features + 1))
 
     with pytest.raises(
-        ValueError, match="Matrices are not of the same shape."
+        ValueError, match=r"Matrices are not of the same shape."
     ):
         _geometric_mean([mat1, mat2])
 
@@ -443,7 +448,7 @@ def test_geometric_mean_error_non_spd_input_matrix():
     mat2 = np.ones((n_features + 1, n_features + 1))
 
     with pytest.raises(
-        ValueError, match="Expected a symmetric positive definite matrix."
+        ValueError, match=r"Expected a symmetric positive definite matrix."
     ):
         _geometric_mean([mat2])
 
@@ -558,20 +563,16 @@ def test_connectivity_measure_errors():
     # Raising error for input subjects not iterable
     conn_measure = ConnectivityMeasure()
 
-    with pytest.raises(
-        ValueError, match="'subjects' input argument must be an iterable"
-    ):
-        conn_measure.fit(1.0)
-
     # input subjects not 2D numpy.ndarrays
     with pytest.raises(
-        ValueError, match="Each subject must be 2D numpy.ndarray."
+        ValueError, match=r"Each subject must be 2D numpy.ndarray."
     ):
         conn_measure.fit([np.ones((100, 40)), np.ones((10,))])
 
     # input subjects with different number of features
     with pytest.raises(
-        ValueError, match="All subjects must have the same number of features."
+        ValueError,
+        match=r"All subjects must have the same number of features.",
     ):
         conn_measure.fit([np.ones((100, 40)), np.ones((100, 41))])
 
@@ -580,11 +581,24 @@ def test_connectivity_measure_errors():
 
     with pytest.raises(
         ValueError,
-        match="Tangent space parametrization .* only be .* group of subjects",
+        match=r"Tangent space parametrization .* only be .* group of subjects",
     ):
         conn_measure.fit_transform([np.ones((100, 40))])
 
+    # invalid cov_estimator
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"'cov_estimator' must be an estimator with '.fit\(\)' and "
+            "'.covariance_'"
+        ),
+    ):
+        ConnectivityMeasure(cov_estimator="not_an_estimator").fit(
+            [np.ones((100, 40)), np.ones((100, 40))]
+        )
 
+
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
 )
@@ -609,6 +623,48 @@ def test_connectivity_measure_generic(
         assert is_spd(covs[k], decimal=7)
 
 
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
+)
+@pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
+def test_connectivity_measure_generic_3d_array(kind, cov_estimator, signals):
+    """Ensure ConnectivityMeasure accepts 3D arrays or tuple of 2D arrays."""
+    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+
+    signals_as_array = np.asarray(
+        [_signals(n_subjects=1)[0] for _ in range(5)]
+    ).squeeze()
+    assert signals_as_array.ndim == 3
+
+    connectivities = conn_measure.fit_transform(signals_as_array)
+
+    assert isinstance(connectivities, np.ndarray)
+
+    signals_as_tuple = tuple(signals)
+
+    connectivities = conn_measure.fit_transform(signals_as_tuple)
+
+    assert isinstance(connectivities, np.ndarray)
+
+
+def test_connectivity_measure_refit():
+    """Ensure ConnectivityMeasure can be refitted \
+        with data of different shape.
+
+    Regression test for issue
+    https://github.com/nilearn/nilearn/pull/6511#issuecomment-5566552823
+    """
+    conn_measure = ConnectivityMeasure()
+
+    signals = _signals(n_subjects=1)[0]
+    conn_measure.fit_transform(signals)
+
+    signals_different_shape = _signals(n_subjects=1, n_features=100)[0]
+
+    conn_measure.fit_transform(signals_different_shape)
+
+
 def _assert_connectivity_tangent(connectivities, conn_measure, covs):
     """Check output value properties for tangent connectivity measure \
     that they have the expected relationship \
@@ -620,7 +676,7 @@ def _assert_connectivity_tangent(connectivities, conn_measure, covs):
         also produces a positive-definite matrix
     """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         assert_array_almost_equal(
             estimated_covariance_matrix, estimated_covariance_matrix.T
@@ -646,9 +702,10 @@ def _assert_connectivity_precision(connectivities, covs):
     """Estimated precision matrix: \
     - is positive definite, \
     - its product with the true covariance matrix \
-      is close to the identity matrix."""
+      is close to the identity matrix.
+    """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         assert is_spd(estimated_covariance_matrix, decimal=7)
         assert_array_almost_equal(
@@ -671,7 +728,7 @@ def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
     should be close to the true covariance matrix.
     """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         assert is_spd(estimated_covariance_matrix, decimal=7)
 
@@ -691,7 +748,7 @@ def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
 
 def _assert_connectivity_partial_correlation(connectivities, covs):
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         precision_matrix = linalg.inv(true_covariance_matrix)
 
@@ -716,6 +773,7 @@ def _assert_connectivity_partial_correlation(connectivities, covs):
         )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "kind",
     ["tangent", "precision", "correlation", "partial correlation"],
@@ -763,6 +821,7 @@ def test_connectivity_measure_check_mean(kind, signals):
     assert_array_equal(mean, conn_measure.mean_)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
 def test_connectivity_measure_check_vectorization_option(kind, signals):
     conn_measure = ConnectivityMeasure(kind=kind)
@@ -773,10 +832,6 @@ def test_connectivity_measure_check_vectorization_option(kind, signals):
     assert_array_almost_equal(
         vectorized_connectivities, sym_matrix_to_vec(connectivities)
     )
-
-    # Check not fitted error
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        ConnectivityMeasure().inverse_transform(vectorized_connectivities)
 
 
 @pytest.mark.parametrize(
@@ -813,7 +868,9 @@ def test_connectivity_measure_check_inverse_transformation_discard_diag(
     # with vectorization
     connectivities = ConnectivityMeasure(kind=kind).fit_transform(signals)
     conn_measure = ConnectivityMeasure(
-        kind=kind, vectorize=True, discard_diagonal=True
+        kind=kind,
+        vectorize=True,
+        discard_diagonal=True,
     )
     vectorized_connectivities = conn_measure.fit_transform(signals)
 
@@ -837,6 +894,7 @@ def test_connectivity_measure_check_inverse_transformation_discard_diag(
             conn_measure.inverse_transform(vectorized_connectivities)
 
 
+@pytest.mark.slow
 def test_connectivity_measure_inverse_transform_tangent(
     signals,
 ):
@@ -907,6 +965,14 @@ def test_confounds_connectome_measure():
 
 
 def test_confounds_connectome_measure_errors(signals):
+    """Check proper errors raised for wrong inputs."""
+    # Raising error for input signals are not iterable
+    conn_measure = ConnectivityMeasure(vectorize=True)
+    msg = "is not iterable"
+
+    with pytest.raises(TypeError, match=msg):
+        conn_measure._check_input(X=1.0)
+
     # Generate signals and compute covariances and apply confounds while
     # computing covariances
     signals, confounds = _signals()
@@ -915,15 +981,15 @@ def test_confounds_connectome_measure_errors(signals):
     conn_measure = ConnectivityMeasure(vectorize=True)
     msg = "'confounds' input argument must be an iterable"
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure._check_input(X=signals, confounds=1.0)
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure._fit_transform(
             X=signals, do_fit=True, do_transform=True, confounds=1.0
         )
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure.fit_transform(X=signals, y=None, confounds=1.0)
 
     # Raising error for input confounds are given but not vectorize=True
@@ -932,18 +998,3 @@ def test_confounds_connectome_measure_errors(signals):
         ValueError, match="'confounds' are provided but vectorize=False"
     ):
         conn_measure.fit_transform(signals, None, confounds[:10])
-
-
-def test_connectivity_measure_standardize(signals):
-    """Check warning is raised and then suppressed with setting standardize."""
-    match = "default strategy for standardize"
-
-    with pytest.warns(DeprecationWarning, match=match):
-        ConnectivityMeasure(kind="correlation").fit_transform(signals)
-
-    with warnings.catch_warnings(record=True) as record:
-        ConnectivityMeasure(
-            kind="correlation", standardize="zscore_sample"
-        ).fit_transform(signals)
-        for m in record:
-            assert match not in m.message

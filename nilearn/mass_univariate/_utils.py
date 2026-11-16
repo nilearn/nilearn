@@ -1,8 +1,13 @@
 """Utility functions for the permuted least squares method."""
 
+from warnings import warn
+
 import numpy as np
 from scipy import linalg
 from scipy.ndimage import label
+
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 
 
 def calculate_tfce(
@@ -11,7 +16,7 @@ def calculate_tfce(
     E=0.5,
     H=2,
     dh="auto",
-    two_sided_test=True,
+    two_sided_test: bool = True,
 ):
     """Calculate threshold-free cluster enhancement values for scores maps.
 
@@ -34,7 +39,7 @@ def calculate_tfce(
         Step size for TFCE calculation.
         If set to 'auto', use 100 steps, as is done in fslmaths.
         A good alternative is 0.1 for z and t maps, as in [1]_.
-    two_sided_test : :obj:`bool`, default=False
+    two_sided_test : :obj:`bool`, default=True
         Whether to assess both positive and negative clusters (True) or just
         positive ones (False).
 
@@ -59,7 +64,7 @@ def calculate_tfce(
     ----------
     .. [1] Smith, S. M., & Nichols, T. E. (2009).
        Threshold-free cluster enhancement: addressing problems of smoothing,
-       threshold dependence and localisation in cluster inference.
+       threshold dependence and localization in cluster inference.
        Neuroimage, 44(1), 83-98.
     """
     tfce_4d = np.zeros_like(arr4d)
@@ -68,23 +73,13 @@ def calculate_tfce(
     for i_regressor in range(arr4d.shape[3]):
         arr3d = arr4d[..., i_regressor]
 
-        # Get signs / threshs
-        if two_sided_test:
-            signs = [-1, 1]
-            max_score = np.max(np.abs(arr3d))
-        else:
-            signs = [1]
-            max_score = np.max(arr3d)
-
-        step = max_score / 100 if dh == "auto" else dh
-
-        # Set based on determined step size
-        score_threshs = np.arange(step, max_score + step, step)
+        signs = [-1, 1] if two_sided_test else [1]
+        score_threshs = _return_score_threshs(arr3d, dh, two_sided_test)
 
         # If we apply the sign first...
         for sign in signs:
             # Init a temp copy of arr3d with the current sign applied,
-            # which can then be re-used by incrementally setting more
+            # which can then be reused by incrementally setting more
             # voxel's to background, by taking advantage that each score_thresh
             # is incrementally larger
             temp_arr3d = arr3d * sign
@@ -94,7 +89,7 @@ def calculate_tfce(
                 temp_arr3d[temp_arr3d < score_thresh] = 0
 
                 # Label into clusters - importantly (for the next step)
-                # this returns clusters labelled ordinally
+                # this returns clusters labeled ordinally
                 # from 1 to n_clusters+1,
                 # which allows us to use bincount to count
                 # frequencies directly.
@@ -140,6 +135,31 @@ def calculate_tfce(
     return tfce_4d
 
 
+def _return_score_threshs(arr3d, dh, two_sided_test):
+    """Compute list of score threshold to use for TFCE."""
+    max_score = (
+        np.nanmax(np.abs(arr3d)) if two_sided_test else np.nanmax(arr3d)
+    )
+
+    number_steps = 100 if dh == "auto" else round(max_score / dh)
+    if number_steps < 10:
+        warn(
+            f"Not enough steps for TFCE. Got: {number_steps=}. "
+            "Setting it to 10.",
+            stacklevel=find_stack_level(),
+        )
+        number_steps = 10
+    if number_steps > 1000:
+        warn(
+            f"Too many steps for TFCE. Got: {number_steps=}. "
+            "Setting it to 1000.",
+            stacklevel=find_stack_level(),
+        )
+        number_steps = 1000
+
+    return np.linspace(0, max_score, number_steps + 1)[1:]
+
+
 def null_to_p(test_values, null_array, alternative="two-sided"):
     """Return p-value for test value(s) against null array.
 
@@ -171,11 +191,9 @@ def null_to_p(test_values, null_array, alternative="two-sided"):
     This function assumes that the null distribution for two-sided tests is
     symmetric around zero.
     """
-    if alternative not in {"two-sided", "larger", "smaller"}:
-        raise ValueError(
-            'Argument "alternative" must be one of '
-            '["two-sided", "larger", "smaller"]'
-        )
+    check_parameter_in_allowed(
+        alternative, {"two-sided", "larger", "smaller"}, "alternative"
+    )
 
     return_first = isinstance(test_values, (float, int))
     test_values = np.atleast_1d(test_values)
@@ -295,19 +313,20 @@ def normalize_matrix_on_axis(m, axis=0):
     m : numpy 2D array,
         The matrix to normalize.
 
-    axis : integer in {0, 1}, default=0
+    axis : :obj`int` in {0, 1}, default=0
         A valid axis to normalize across.
 
     Returns
     -------
     ret : numpy array, shape = m.shape
-        The normalized matrix
+        The normalized matrix.
 
     Examples
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     normalize_matrix_on_axis)
+    ...     normalize_matrix_on_axis,
+    ... )
     >>> X = np.array([[0, 4], [1, 0]])
     >>> normalize_matrix_on_axis(X)
     array([[0., 1.],
@@ -315,7 +334,6 @@ def normalize_matrix_on_axis(m, axis=0):
     >>> normalize_matrix_on_axis(X, axis=1)
     array([[0., 1.],
            [1., 0.]])
-
     """
     if m.ndim > 2:
         raise ValueError(
@@ -344,7 +362,7 @@ def orthonormalize_matrix(m, tol=1.0e-12):
     m : numpy array,
         The matrix to orthonormalize.
 
-    tol : float, default=1e-12
+    tol : :obj:`float`, default=1e-12
         Tolerance parameter for nullity.
 
     Returns
@@ -356,7 +374,8 @@ def orthonormalize_matrix(m, tol=1.0e-12):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     orthonormalize_matrix)
+    ...     orthonormalize_matrix,
+    ... )
     >>> X = np.array([[1, 2], [0, 1], [1, 1]])
     >>> orthonormalize_matrix(X)
     array([[-0.81049889, -0.0987837 ],
@@ -366,7 +385,6 @@ def orthonormalize_matrix(m, tol=1.0e-12):
     >>> orthonormalize_matrix(X)
     array([[ 0., -1.],
            [-1.,  0.]])
-
     """
     U, s, _ = linalg.svd(m, full_matrices=False)
     n_eig = np.count_nonzero(s > tol)
@@ -376,7 +394,7 @@ def orthonormalize_matrix(m, tol=1.0e-12):
 def t_score_with_covars_and_normalized_design(
     tested_vars, target_vars, covars_orthonormalized=None
 ):
-    """t-score in the regression of tested variates against target variates.
+    """Compute t-scores of tested variates regressed against target variates.
 
     Covariates are taken into account (if not None).
     The normalized_design case corresponds to the following assumptions:
@@ -394,15 +412,14 @@ def t_score_with_covars_and_normalized_design(
         Targets variates. F-ordered is better for efficient computation.
 
     covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None, \
-            optional
+            default=None
         Confounding variates.
 
     Returns
     -------
     score : numpy.ndarray, shape=(n_target_vars, n_tested_vars)
-        t-scores associated with the tests of each explanatory variate against
-        each target variate (in the presence of covars).
-
+        T-scores associated with the tests of each explanatory variate
+        against each target variate (in the presence of covars).
     """
     if covars_orthonormalized is None:
         lost_dof = 0

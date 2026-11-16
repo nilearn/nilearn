@@ -1,31 +1,37 @@
 """Contains the GLM and contrast classes that are meant to be the main \
 objects of fMRI data analyses.
-
-Author: Bertrand Thirion, Martin Perez-Guevara, 2016
-
 """
 
-from __future__ import annotations
-
 import csv
-import glob
-import os
-import sys
+import inspect
 import time
 from pathlib import Path
-from warnings import warn
+from typing import TYPE_CHECKING, Any, Literal, Self, get_args
+from warnings import catch_warnings, filterwarnings, warn
 
 import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
-from sklearn.base import clone
+from scipy.linalg import toeplitz
 from sklearn.cluster import KMeans
+from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, stringify_path
-from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_run_sample_masks
-from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.logger import find_stack_level, readable_time
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_n_confounds_match_n_images,
+    check_parameter_in_allowed,
+    check_params,
+    check_run_sample_masks,
+)
+from nilearn.datasets import load_fsaverage
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -40,7 +46,7 @@ from nilearn.glm.regression import (
     RegressionResults,
     SimpleRegressionResults,
 )
-from nilearn.image import get_data
+from nilearn.image.image import check_niimg, check_same_fov, get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids.query import (
     infer_repetition_time_from_dataset,
@@ -48,9 +54,31 @@ from nilearn.interfaces.bids.query import (
 )
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
+from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.masking import intersect_masks
+from nilearn.nilearn_typing import (
+    HrfModel,
+    MemoryLevel,
+    MemoryLike,
+    NiimgLike,
+    NJobs,
+    NoiseModel,
+    NonNullScalar,
+    SingleConfound,
+    SmoothingFwhm,
+    Standardize,
+    TableLike,
+    TargetAffine,
+    TargetShape,
+    Tr,
+    Verbose,
+)
+from nilearn.surface import SurfaceImage
+from nilearn.surface.utils import check_polymesh_equal
 
 
-def mean_scaling(Y, axis=0):
+def mean_scaling(Y, axis=0) -> tuple[np.ndarray, np.ndarray]:
     """Scaling of the data to have percent of baseline change \
     along the specified axis.
 
@@ -59,7 +87,7 @@ def mean_scaling(Y, axis=0):
     Y : array of shape (n_time_points, n_voxels)
        The input data.
 
-    axis : int, default=0
+    axis : :obj:`int`, default=0
         Axis along which the scaling mean should be calculated.
 
     Returns
@@ -70,15 +98,27 @@ def mean_scaling(Y, axis=0):
     mean : array of shape (n_voxels,)
         The data mean.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.glm.first_level import mean_scaling
+    >>> Y = np.array([[1.0, 2.0, 3.0], [2.0, 4.0, 6.0]])
+    >>> Y_scaled, mean = mean_scaling(Y)
+    >>> Y_scaled.shape
+    (2, 3)
+    >>> mean
+    array([1.5, 3. , 4.5])
+    >>> bool(np.allclose(Y_scaled.mean(axis=0), 0))
+    True
     """
     mean = Y.mean(axis=axis)
     if (mean == 0).any():
         warn(
             "Mean values of 0 observed. "
-            "The data have probably been centered."
-            "Scaling might not work as expected",
+            "The data have probably been centered. "
+            "Scaling might not work as expected.",
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     mean = np.maximum(mean, 1)
     Y = 100 * (Y / mean - 1)
@@ -95,8 +135,6 @@ def _yule_walker(x, order):
 
     Operates along the last axis of x.
     """
-    from scipy.linalg import toeplitz
-
     if order < 1:
         raise ValueError("AR order must be positive")
     if type(order) is not int:
@@ -108,7 +146,7 @@ def _yule_walker(x, order):
     n = np.prod(np.array(x.shape[:-1], int))
     r = np.zeros((n, order + 1), np.float64)
     y = x - x.mean()
-    y.shape = (n, x.shape[-1])  # inplace
+    y = y.reshape(n, x.shape[-1])  # inplace
     r[:, 0] += (y[:, np.newaxis, :] @ y[:, :, np.newaxis])[:, 0, 0]
     for k in range(1, order + 1):
         r[:, k] += (y[:, np.newaxis, 0:-k] @ y[:, k:, np.newaxis])[:, 0, 0]
@@ -120,13 +158,21 @@ def _yule_walker(x, order):
     # section removed-ambiguity-when-broadcasting-in-np-solve
     rho = np.linalg.solve(rt, r[:, 1:, None])[..., 0]
 
-    rho.shape = x.shape[:-1] + (order,)
+    rho = rho.reshape((*x.shape[:-1], order))
+
     return rho
 
 
+@fill_doc
 def run_glm(
-    Y, X, noise_model="ar1", bins=100, n_jobs=1, verbose=0, random_state=None
-):
+    Y: np.ndarray,
+    X: np.ndarray,
+    noise_model: NoiseModel = "ar1",
+    bins: int = 100,
+    n_jobs: NJobs = 1,
+    verbose: Verbose = 0,
+    random_state=None,
+) -> tuple[np.ndarray, dict[str | float, RegressionResults]]:
     """:term:`GLM` fit for an :term:`fMRI` data matrix.
 
     Parameters
@@ -137,41 +183,37 @@ def run_glm(
     X : array of shape (n_time_points, n_regressors)
         The design matrix.
 
-    noise_model : {'ar(N)', 'ols'}, default='ar1'
-        The temporal variance model.
-        To specify the order of an autoregressive model place the
-        order after the characters `ar`, for example to specify a third order
-        model use `ar3`.
+    %(noise_model)s
 
-    bins : int, default=100
+    bins : :obj:`int`, default=100
         Maximum number of discrete bins for the AR coef histogram.
         If an autoregressive model with order greater than one is specified
         then adaptive quantification is performed and the coefficients
         will be clustered via K-means with `bins` number of clusters.
 
-    n_jobs : int, default=1
+    n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose : int, default=0
-        The verbosity level.
+    %(verbose0)s
 
-    random_state : int or numpy.random.RandomState, default=None
+    random_state : :obj:`int` or numpy.random.RandomState, default=None
         Random state seed to sklearn.cluster.KMeans for autoregressive models
         of order at least 2 ('ar(N)' with n >= 2).
 
-        .. versionadded:: 0.9.1
+        .. nilearn_versionadded:: 0.9.1
 
     Returns
     -------
     labels : array of shape (n_voxels,),
         A map of values on voxels used to identify the corresponding model.
 
-    results : dict,
+    results : :obj:`dict`,
         Keys correspond to the different labels values
         values are RegressionResults instances corresponding to the voxels.
-
     """
+    check_params(locals())
+
     acceptable_noise_models = ["ols", "arN"]
     if (noise_model[:2] != "ar") and (noise_model != "ols"):
         raise ValueError(
@@ -189,6 +231,9 @@ def run_glm(
     # Create the model
     ols_result = OLSModel(X).fit(Y)
 
+    labels: np.ndarray
+    results: dict[str | float, RegressionResults]
+
     if noise_model[:2] == "ar":
         err_msg = (
             "AR order must be a positive integer specified as arN, "
@@ -197,8 +242,8 @@ def run_glm(
         )
         try:
             ar_order = int(noise_model[2:])
-        except ValueError:
-            raise ValueError(err_msg)
+        except ValueError as e:
+            raise ValueError(err_msg) from e
 
         # compute the AR coefficients
         ar_coef_ = _yule_walker(ols_result.residuals.T, ar_order)
@@ -228,7 +273,6 @@ def run_glm(
             labels = np.array([cluster_labels[i] for i in kmeans.labels_])
 
         unique_labels = np.unique(labels)
-        results = {}
 
         # Fit the AR model according to current AR(N) estimates
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
@@ -239,8 +283,7 @@ def run_glm(
         )
 
         # Converting the key to a string is required for AR(N>1) cases
-        for val, result in zip(unique_labels, ar_result):
-            results[val] = result
+        results = dict(zip(unique_labels, ar_result, strict=False))
         del unique_labels
         del ar_result
 
@@ -251,31 +294,31 @@ def run_glm(
     return labels, results
 
 
-def _check_trial_type(events):
+def _check_trial_type(events: list[str | Path]) -> None:
     """Check that the event files contain a "trial_type" column.
 
     Parameters
     ----------
     events : :obj:`list` of :obj:`str` or :obj:`pathlib.Path``.
               A list of paths of events.tsv files.
-
     """
     file_names = []
 
     for event_ in events:
-        df = pd.read_csv(event_, sep="\t")
-        if "trial_type" not in df.columns:
-            file_names.append(os.path.basename(event_))
+        events_df = pd.read_csv(event_, sep="\t")
+        if "trial_type" not in events_df.columns:
+            file_names.append(Path(event_).name)
 
     if file_names:
-        file_names = "\n -".join(file_names)
+        problematic_files = "\n -".join(file_names)
         warn(
-            f"No column named 'trial_type' found in:{file_names}.\n "
+            f"No column named 'trial_type' found in:{problematic_files}.\n "
             "All rows in those files will be treated "
             "as if they are instances of same experimental condition.\n"
             "If there is a column in the dataframe "
             "corresponding to trial information, "
-            "consider renaming it to 'trial_type'."
+            "consider renaming it to 'trial_type'.",
+            stacklevel=find_stack_level(),
         )
 
 
@@ -285,76 +328,116 @@ class FirstLevelModel(BaseGLM):
 
     Parameters
     ----------
-    t_r : float
+    t_r : :obj:`float` or None, default=None
         This parameter indicates :term:`repetition times<TR>`
         of the experimental runs.
         In seconds. It is necessary to correctly consider times in the design
         matrix. This parameter is also passed to :func:`nilearn.signal.clean`.
         Please see the related documentation for details.
 
-    slice_time_ref : float, default=0
+        .. warning::
+
+                    This parameter is ignored by fit() if design matrices
+                    are passed at fit time.
+
+    slice_time_ref : :obj:`float`, default=0.0
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs.
         It is expressed as a fraction of the ``t_r`` (repetition time),
         so it can have values between 0. and 1.
+
+        .. warning::
+
+                    This parameter is ignored by fit() if design matrices
+                    are passed at fit time.
+
     %(hrf_model)s
-        Default='glover'.
-    drift_model : string, default='cosine'
+        default='glover'.
+
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
+
+    drift_model : :obj:`str`, default='cosine'
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
 
-    high_pass : float, default=0.01
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
+
+    high_pass : :obj:`float`, default=0.01
         This parameter specifies the cut frequency of the high-pass filter in
         Hz for the design matrices. Used only if drift_model is 'cosine'.
 
-    drift_order : int, default=1
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
+
+    drift_order : :obj:`int`, default=1
         This parameter specifies the order of the drift model (in case it is
         polynomial) for the design matrices.
 
-    fir_delays : array of shape(n_onsets) or list, default=[0]
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
+
+    fir_delays : array of shape(n_onsets), :obj:`list` or None, default=None
+        Will be set to ``[0]`` if ``None`` is passed.
         In case of :term:`FIR` design,
         yields the array of delays used in the :term:`FIR` model,
         in scans.
 
-    min_onset : float, default=-24
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
+
+    min_onset : :obj:`float`, default=-24.0
         This parameter specifies the minimal onset relative to the design
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
 
-    mask_img : Niimg-like, NiftiMasker, SurfaceImage, SurfaceMasker, False or \
-               None, default=None
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If None is passed, the mask
-        will be computed automatically by a NiftiMasker with default
-        parameters. If False is given then the data will not be masked.
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
+
+    mask_img : Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
+             :obj:`~nilearn.maskers.SurfaceMasker`, False or \
+             None, default=None
+        Mask to be used on data.
+        If an instance of masker is passed, then its mask will be used.
+        If None is passed, the mask will be computed automatically
+        by a NiftiMasker
+        or :obj:`~nilearn.maskers.SurfaceMasker` with default parameters.
+        If False is given then the data will not be masked.
         In the case of surface analysis, passing None or False will lead to
         no masking.
 
-    target_affine : 3x3 or 4x4 matrix, optional
-        This parameter is passed to nilearn.image.resample_img.
-        Please see the related documentation for details.
+    %(target_affine)s
 
-    target_shape : 3-tuple of integers, optional
-        This parameter is passed to nilearn.image.resample_img.
-        Please see the related documentation for details.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(target_shape)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
     %(smoothing_fwhm)s
-    memory : string or pathlib.Path, default=None
-        Path to the directory used to cache the masking process
-        and the glm fit.
-        By default, no caching is done.
-        Creates instance of joblib.Memory.
-        If ``None`` is passed will default to ``Memory(location=None)``.
 
-    memory_level : integer, optional
-        Rough estimator of the amount of memory used by caching.
-        Higher value means more memory for caching.
+    %(memory)s
 
+    %(memory_level)s
 
-    standardize : boolean, default=False
-        If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
+    %(standardize_none)s
 
-    signal_scaling : False, int or (int, int), default=0
+    signal_scaling : False, :obj:`int` or (int, int), default=0
         If not False, fMRI signals are
         scaled to the mean value of scaling_axis given,
         which can be 0, 1 or (0, 1).
@@ -362,87 +445,129 @@ class FirstLevelModel(BaseGLM):
         1 refers to mean scaling each time point with respect to all voxels &
         (0, 1) refers to scaling with respect to voxels and time,
         which is known as grand mean scaling.
-        Incompatible with standardize (standardize=False is enforced when
-        signal_scaling is not False).
+        Incompatible with standardize (``standardize=None`` is enforced when
+        ``signal_scaling`` is not False).
 
-    noise_model : {'ar1', 'ols'}, default='ar1'
-        The temporal variance model.
+    %(noise_model)s
 
-    verbose : integer, default=0
-        Indicate the level of verbosity. By default, nothing is printed.
-        If 0 prints nothing. If 1 prints progress by computation of
-        each run. If 2 prints timing details of masker and GLM. If 3
-        prints masker computation details.
+    %(verbose0)s
+        If 0, prints nothing
+        If 1, prints progress by computation of each run.
+        If 2, prints timing details of masker and GLM.
 
-    n_jobs : integer, default=1
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on.
+    %(n_jobs)s
 
-    minimize_memory : boolean, default=True
+    minimize_memory : :obj:`bool`, default=True
         Gets rid of some variables on the model fit results that are not
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption.
 
-    subject_label : string, optional
+    subject_label : :obj:`str` or None, default=None
         This id will be used to identify a `FirstLevelModel` when passed to
         a `SecondLevelModel` object.
 
-    random_state : int or numpy.random.RandomState, default=None.
+    random_state : :obj:`int` or numpy.random.RandomState, default=None.
         Random state seed to sklearn.cluster.KMeans
         for autoregressive models
         of order at least 2 ('ar(N)' with n >= 2).
 
-        .. versionadded:: 0.9.1
+        .. nilearn_versionadded:: 0.9.1
+
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+        .. nilearn_versionadded:: 0.14.0
 
     Attributes
     ----------
-    labels_ : array of shape (n_voxels,),
-        a map of values on voxels used to identify the corresponding model
+    design_matrices_ : :obj:`list` of :obj:`pandas.DataFrame`
+        Design matrices used to fit the GLM.
 
-    results_ : dict,
+    fir_delays_ : array of shape(n_onsets), :obj:`list`
+
+    labels_ : array of shape ``(n_elements_,)``
+        a map of values on voxels / vertices
+        used to identify the corresponding model
+
+    masker_ :  :obj:`~nilearn.maskers.NiftiMasker` or \
+            :obj:`~nilearn.maskers.SurfaceMasker`
+        Masker used to filter and mask data during fit.
+        If :obj:`~nilearn.maskers.NiftiMasker`
+        or :obj:`~nilearn.maskers.SurfaceMasker` is given in
+        ``mask_img`` parameter, this is a copy of it.
+        Otherwise, a masker is created using the value of ``mask_img`` and
+        other NiftiMasker/SurfaceMasker
+        related parameters as initialization.
+
+    memory_ : joblib memory cache
+
+    n_elements_ : :obj:`int`
+        The number of voxels or vertices in the mask.
+
+        .. nilearn_versionadded:: 0.12.1
+
+    results_ : :obj:`dict`,
         with keys corresponding to the different labels values.
         Values are SimpleRegressionResults corresponding to the voxels,
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
 
+    standardize_ :  any of: 'zscore_sample', 'psc', or None
+        This value may differ from the ``standardize`` parameters
+        as it is set to ``None`` when ``signal_scaling`` is not False.
     """
+
+    drift_model: Literal["polynomial", "cosine", None]
+    drift_order: int
+    high_pass: float
+    hrf_model: HrfModel
+    target_affine: TargetAffine
+    target_shape: TargetShape
+    smoothing_fwhm: SmoothingFwhm
+    memory: MemoryLike
+    memory_level: MemoryLevel
+    min_onset: float
+    minimize_memory: bool
+    noise_model: NoiseModel
+    n_jobs: NJobs
+    slice_time_ref: NonNullScalar
+    standardize: Standardize
+    subject_label: str | None
+    t_r: Tr
+    verbose: Verbose
+
+    def __str__(self):
+        return "First Level Model"
 
     def __init__(
         self,
-        t_r=None,
-        slice_time_ref=0.0,
-        hrf_model="glover",
-        drift_model="cosine",
-        high_pass=0.01,
-        drift_order=1,
+        t_r: Tr = None,
+        slice_time_ref: NonNullScalar = 0.0,
+        hrf_model: HrfModel = "glover",
+        drift_model: Literal["polynomial", "cosine", None] = "cosine",
+        high_pass: float = 0.01,
+        drift_order: int = 1,
         fir_delays=None,
-        min_onset=-24,
+        min_onset: float = -24.0,
         mask_img=None,
-        target_affine=None,
-        target_shape=None,
-        smoothing_fwhm=None,
-        memory=None,
-        memory_level=1,
-        standardize=False,
+        target_affine: TargetAffine = None,
+        target_shape: TargetShape = None,
+        smoothing_fwhm: SmoothingFwhm = None,
+        memory: MemoryLike = None,
+        memory_level: MemoryLevel = 1,
+        standardize: Standardize = None,
         signal_scaling=0,
-        noise_model="ar1",
-        verbose=0,
-        n_jobs=1,
-        minimize_memory=True,
-        subject_label=None,
+        noise_model: NoiseModel = "ar1",
+        verbose: Verbose = 0,
+        n_jobs: NJobs = 1,
+        minimize_memory: bool = True,
+        subject_label: str | None = None,
         random_state=None,
+        reports: bool = True,
     ):
-        if fir_delays is None:
-            fir_delays = [0]
-        if memory is None:
-            memory = Memory(None)
         # design matrix parameters
-        if t_r is not None:
-            _check_repetition_time(t_r)
         self.t_r = t_r
-        if slice_time_ref is not None:
-            _check_slice_time_ref(slice_time_ref)
         self.slice_time_ref = slice_time_ref
         self.hrf_model = hrf_model
         self.drift_model = drift_model
@@ -450,55 +575,362 @@ class FirstLevelModel(BaseGLM):
         self.drift_order = drift_order
         self.fir_delays = fir_delays
         self.min_onset = min_onset
+
         # glm parameters
         self.mask_img = mask_img
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
-        memory = stringify_path(memory)
-        self.memory = Memory(memory) if isinstance(memory, str) else memory
+        self.memory = memory
         self.memory_level = memory_level
         self.standardize = standardize
-        if signal_scaling is False:
-            self.signal_scaling = signal_scaling
-        elif signal_scaling in [0, 1, (0, 1)]:
-            self.signal_scaling = signal_scaling
-            self.standardize = False
-        else:
-            raise ValueError(
-                'signal_scaling must be "False", "0", "1" or "(0, 1)"'
-            )
+        self.signal_scaling = signal_scaling
 
         self.noise_model = noise_model
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
+
         # attributes
-        self.labels_ = None
-        self.results_ = None
         self.subject_label = subject_label
         self.random_state = random_state
 
-    @property
-    def scaling_axis(self):
-        """Return scaling of axis."""
-        warn(
-            DeprecationWarning(
-                "Deprecated. `scaling_axis` will be removed in 0.11.0. "
-                "Please use `signal_scaling` instead."
-            )
-        )
-        return self.signal_scaling
+        self.reports = reports
+        self._reset_report()
 
+    def _is_first_level_glm(self):
+        return True
+
+    def _check_fit_inputs(
+        self,
+        run_imgs,
+        events,
+        confounds,
+        sample_masks,
+        design_matrices,
+    ):
+        """Run input validation and ensure inputs are compatible."""
+        if not isinstance(
+            run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
+        ) or (
+            isinstance(run_imgs, (list, tuple))
+            and not all(
+                isinstance(x, (*get_args(NiimgLike), SurfaceImage))
+                for x in run_imgs
+            )
+        ):
+            input_type = type(run_imgs)
+            if isinstance(run_imgs, list):
+                input_type = [type(x) for x in run_imgs]
+            raise TypeError(
+                "'run_imgs' must be a single instance / a list "
+                "of any of the following:\n"
+                "- string\n"
+                "- pathlib.Path\n"
+                "- NiftiImage\n"
+                "- SurfaceImage\n"
+                f"Got: {input_type}"
+            )
+
+        if not isinstance(run_imgs, (list, tuple)):
+            run_imgs = [run_imgs]
+
+        if all(isinstance(x, (str, Path, Nifti1Image)) for x in run_imgs):
+            check_same_fov(*run_imgs, raise_error=True)
+        else:
+            for img in run_imgs[1:]:
+                check_polymesh_equal(run_imgs[0].mesh, img.mesh)
+
+        if design_matrices is not None:
+            # If design_matrices is provided,
+            # throw warning for the attributes or parameters
+            # that were provided at init or fit time
+            # but that will be ignored
+            # because they will not be used to generate a design matrix.
+            parameters_to_ignore = []
+            if confounds is not None:
+                parameters_to_ignore.append("confounds")
+            if events is not None:
+                parameters_to_ignore.append("events")
+            if parameters_to_ignore:
+                warn(
+                    "If design matrices are supplied, "
+                    f"{' and '.join(parameters_to_ignore)} will be ignored.",
+                    stacklevel=find_stack_level(),
+                )
+
+            attributes_used_in_des_mat_generation = [
+                "drift_model",
+                "drift_order",
+                "fir_delays",
+                "high_pass",
+                "hrf_model",
+                "min_onset",
+                "slice_time_ref",
+                "t_r",
+            ]
+            tmp = dict(**inspect.signature(self.__init__).parameters)
+            attributes_to_ignore = [
+                k
+                for k in attributes_used_in_des_mat_generation
+                if getattr(self, k) != tmp[k].default
+            ]
+            if attributes_to_ignore:
+                warn(
+                    "If design matrices are supplied, "
+                    f"[{', '.join(attributes_to_ignore)}] will be ignored.",
+                    stacklevel=find_stack_level(),
+                )
+
+            design_matrices = _check_run_tables(
+                run_imgs, design_matrices, "design_matrices"
+            )
+
+        else:
+            if events is None:
+                raise ValueError("events or design matrices must be provided")
+
+            if self.t_r is None:
+                raise ValueError(
+                    "t_r not given to FirstLevelModel object"
+                    " to compute design from events"
+                )
+            else:
+                _check_repetition_time(self.t_r)
+
+            _check_slice_time_ref(self.slice_time_ref)
+
+            # Check that events and confounds files match number of runs
+            # and can be loaded as DataFrame.
+            _check_events_file_uses_tab_separators(events_files=events)
+            events = _check_run_tables(run_imgs, events, "events")
+
+            if confounds is not None:
+                confounds = _check_run_tables(run_imgs, confounds, "confounds")
+
+        if sample_masks is not None:
+            sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
+
+        return (
+            run_imgs,
+            events,
+            confounds,
+            sample_masks,
+            design_matrices,
+        )
+
+    def _log(
+        self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
+    ) -> None:
+        """Generate and log messages for different step of the model fit."""
+        msg = ""
+        if step == "progress":
+            msg = self._report_progress(run_idx, n_runs, t0)
+        elif step == "running":
+            msg = "Performing GLM computation."
+        elif step == "run_done":
+            if time_in_second is None:  # pragma: no cover
+                raise TypeError(f"'time_in_second' cannot be None for {step=}")
+            msg = f"GLM took {int(time_in_second)} seconds."
+        elif step == "masking":
+            msg = "Performing mask computation."
+        elif step == "masking_done":
+            if time_in_second is None:  # pragma: no cover
+                raise TypeError(f"'time_in_second' cannot be None for {step=}")
+            msg = f"Masking took {int(time_in_second)} seconds."
+        elif step == "done":
+            msg = (
+                f"Computation of {n_runs} runs done "
+                f"in {readable_time(time_in_second)}."
+            )
+
+        logger.log(
+            msg,
+            verbose=self.verbose,
+        )
+
+    def _report_progress(self, run_idx, n_runs, t0):
+        remaining = "go take a coffee, a big one"
+        if run_idx != 0:
+            percent = float(run_idx) / n_runs
+            percent = round(percent * 100, 2)
+            dt = time.time() - t0
+            # We use a max to avoid a division by zero
+            remaining = (100.0 - percent) / max(0.01, percent) * dt
+            remaining = f"{readable_time(remaining)} remaining"
+
+        return (
+            f"Computing run {run_idx + 1} out of {n_runs} runs ({remaining})."
+        )
+
+    def _fit_single_run(self, sample_masks, bins, run_img, run_idx) -> None:
+        """Fit the model for a single and keep only the regression results."""
+        assert self.labels_ is not None
+        assert self.results_ is not None
+        design = self.design_matrices_[run_idx]
+
+        sample_mask = None
+        if sample_masks is not None:
+            sample_mask = sample_masks[run_idx]
+            design = design.iloc[sample_mask, :]
+            self.design_matrices_[run_idx] = design
+
+        # Mask and prepare data for GLM
+        self._log("masking")
+        t_masking = time.time()
+        assert self.masker_ is not None
+        Y = self.masker_.transform(run_img, sample_mask=sample_mask)
+        del run_img  # Delete unmasked image to save memory
+        self._log("masking_done", time_in_second=time.time() - t_masking)
+
+        if self.signal_scaling is not False:
+            Y, _ = mean_scaling(Y, self.signal_scaling)
+
+        if self.memory_:
+            mem_glm = self._cache(run_glm, ignore=["n_jobs"])
+        else:
+            mem_glm = run_glm
+
+        # compute GLM
+        t_glm = time.time()
+        self._log("running")
+
+        labels, results = mem_glm(
+            Y,
+            design.values,
+            noise_model=self.noise_model,
+            bins=bins,
+            n_jobs=self.n_jobs,
+            random_state=self.random_state,
+        )
+
+        self._log("run_done", time_in_second=time.time() - t_glm)
+
+        self.labels_.append(labels)
+
+        # We save memory if inspecting model details is not necessary
+        if self.minimize_memory:
+            results = {
+                k: SimpleRegressionResults(v) for k, v in results.items()
+            }
+        self.results_.append(results)
+        del Y
+
+    def _create_all_designs(
+        self, run_imgs, events, confounds, design_matrices
+    ) -> list[pd.DataFrame]:
+        """Build experimental design of all runs."""
+        if design_matrices is not None:
+            return design_matrices
+
+        design_matrices = []
+
+        for run_idx, run_img in enumerate(run_imgs):
+            if isinstance(run_img, SurfaceImage):
+                n_scans = run_img.shape[1]
+            else:
+                run_img = check_niimg(run_img, ensure_ndim=4)
+                n_scans = get_data(run_img).shape[3]
+
+            design = self._create_single_design(
+                n_scans, events, confounds, run_idx
+            )
+
+            design_matrices.append(design)
+
+        return design_matrices
+
+    def _create_single_design(
+        self, n_scans, events, confounds, run_idx
+    ) -> pd.DataFrame:
+        """Build experimental design of a single run.
+
+        Parameters
+        ----------
+        n_scans : int
+
+        events : :obj:`list` of pandas.DataFrame
+
+        confounds : :obj:`list` of pandas.DataFrame or numpy.arrays
+
+        run_idx : int
+        """
+        confounds_matrix = None
+        confounds_names = None
+        if confounds is not None:
+            confounds_matrix = confounds[run_idx]
+
+            if isinstance(confounds_matrix, pd.DataFrame):
+                confounds_names = confounds[run_idx].columns.tolist()
+                confounds_matrix = confounds_matrix.to_numpy()
+            else:
+                # create dummy names when dealing with numpy arrays
+                confounds_names = [
+                    f"confound_{i}" for i in range(confounds_matrix.shape[1])
+                ]
+
+            if confounds_matrix.shape[0] != n_scans:
+                raise ValueError(
+                    "Rows in confounds does not match "
+                    "n_scans in run_img "
+                    f"at index {run_idx}."
+                )
+
+        tmp = check_and_load_tables(events[run_idx], "events")[0]
+        if "trial_type" in tmp.columns:
+            self._reporting_data["trial_types"].extend(
+                x for x in tmp["trial_type"] if x
+            )
+
+        # for type narrowing
+        if TYPE_CHECKING:
+            assert self.t_r is not None
+
+        start_time = self.slice_time_ref * self.t_r
+        end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
+        frame_times = np.linspace(start_time, end_time, n_scans)
+        design = make_first_level_design_matrix(
+            frame_times,
+            events[run_idx],
+            self.hrf_model,
+            self.drift_model,
+            self.high_pass,
+            self.drift_order,
+            self.fir_delays_,
+            confounds_matrix,
+            confounds_names,
+            self.min_onset,
+        )
+
+        return design
+
+    def __sklearn_is_fitted__(self) -> bool:
+        return (
+            hasattr(self, "labels_")
+            and hasattr(self, "results_")
+            and hasattr(self, "fir_delays_")
+            and self.labels_ is not None
+            and self.results_ is not None
+        )
+
+    @fill_doc
     def fit(
         self,
         run_imgs,
-        events=None,
-        confounds=None,
+        events: pd.DataFrame
+        | pd.Series
+        | str
+        | Path
+        | list[pd.DataFrame | pd.Series | str | Path]
+        | None = None,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
         sample_masks=None,
-        design_matrices=None,
+        design_matrices: TableLike
+        | list[TableLike]
+        | list[pd.DataFrame]
+        | None = None,
         bins=100,
-    ):
+    ) -> Self:
         """Fit the :term:`GLM`.
 
         For each run:
@@ -506,28 +938,66 @@ class FirstLevelModel(BaseGLM):
         2. do a masker job: fMRI_data -> Y
         3. fit regression to (Y, X)
 
+        .. warning::
+
+            If design_matrices are passed to fit(),
+            then the following attributes are ignored:
+            ``drift_model``, ``drift_order``, ``fir_delays``, ``high_pass``,
+            ``hrf_model``, ``min_onset``, ``slice_time_ref``, ``t_r``.
+
         Parameters
         ----------
-        run_imgs : Niimg-like object, :obj:`list` of Niimg-like objects, \
-                   SurfaceImage object, or :obj:`list` of SurfaceImage
-            Data on which the :term:`GLM` will be fitted. If this is a list,
-            the affine is considered the same for all.
+        run_imgs : Niimg-like object, \
+                   :obj:`list` or :obj:`tuple` of Niimg-like objects, \
+                   SurfaceImage object, \
+                   or :obj:`list` or \
+                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
+            Data on which the :term:`GLM` will be fitted.
+            If this is a list, the affine is considered the same for all.
 
-        events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
-                 :class:`pandas.DataFrame` or :obj:`str`, default=None
+            .. warning::
+
+                If the FirstLevelModel object was instantiated
+                with a ``mask_img``,
+                then ``run_imgs`` must be compatible with ``mask_img``.
+                For example, if ``mask_img`` is
+                a :class:`nilearn.maskers.NiftiMasker` instance
+                or a Niimng-like object, then ``run_imgs`` must be a
+                Niimg-like object, \
+                a :obj:`list` or a :obj:`tuple` of Niimg-like objects.
+                If ``mask_img`` is
+                a :obj:`~nilearn.maskers.SurfaceMasker`
+                or :obj:`~nilearn.surface.SurfaceImage` instance,
+                then ``run_imgs`` must be a
+                :obj:`~nilearn.surface.SurfaceImage`, \
+                a :obj:`list` or \
+                a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`.
+
+        events : :obj:`pandas.DataFrame` or :obj:`pandas.Series` \
+                 or :obj:`str` or \
+                 :obj:`pathlib.Path` to a TSV file, or \
+                 :obj:`list` of \
+                 :obj:`pandas.DataFrame`, :obj:`str` or \
+                 :obj:`pathlib.Path` to a TSV file, \
+                 or None, default=None
             :term:`fMRI` events used to build design matrices.
             One events object expected per run_img.
             Ignored in case designs is not None.
-            If string, then a path to a csv file is expected.
+            If string, then a path to a CSV or TSV file is expected.
+            See :func:`~nilearn.glm.first_level.make_first_level_design_matrix`
+            for details on the required content of events files.
 
-        confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
-                    :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
-                    :class:`numpy.ndarray` or :obj:`str`, default=None
-            Each column in a DataFrame corresponds to a confound variable
-            to be included in the regression model of the respective run_img.
-            The number of rows must match the number of volumes in the
-            respective run_img. Ignored in case designs is not None.
-            If string, then a path to a csv file is expected.
+            .. warning::
+
+                This parameter is ignored if design_matrices are passed.
+
+        %(confounds)s
+
+            Ignored in case designs is not None.
+
+            .. warning::
+
+                This parameter is ignored if design_matrices are passed.
 
         sample_masks : array_like, or :obj:`list` of array_like, default=None
             shape of array: (number of scans - number of volumes remove)
@@ -535,185 +1005,122 @@ class FirstLevelModel(BaseGLM):
             dimension to perform scrubbing (remove volumes with high motion)
             and/or remove non-steady-state volumes.
 
-            .. versionadded:: 0.9.2
+            .. nilearn_versionadded:: 0.9.2
 
-        design_matrices : :class:`pandas.DataFrame` or :obj:`list` of \
-                          :class:`pandas.DataFrame`, default=None
-            Design matrices that will be used to fit the GLM. If given it
-            takes precedence over events and confounds.
+        design_matrices : :obj:`pandas.DataFrame` or :obj:`str` or \
+                          :obj:`pathlib.Path` to a CSV or TSV file, or \
+                          :obj:`list` of \
+                          :obj:`pandas.DataFrame`, :obj:`str` or \
+                          :obj:`pathlib.Path` to a CSV or TSV file, \
+                          or None, default=None
+            Design matrices that will be used to fit the GLM.
+            If given it takes precedence over events and confounds.
 
         bins : :obj:`int`, default=100
             Maximum number of discrete bins for the AR coef histogram.
             If an autoregressive model with order greater than one is specified
             then adaptive quantification is performed and the coefficients
             will be clustered via K-means with `bins` number of clusters.
-
         """
-        # Initialize masker_ to None such that attribute exists
-        self.masker_ = None
+        check_params(self.__dict__)
+        #  check attributes passed at construction
 
-        # Raise a warning if both design_matrices and confounds are provided
-        if design_matrices is not None and (
-            confounds is not None or events is not None
-        ):
-            warn(
-                "If design matrices are supplied, "
-                "confounds and events will be ignored."
-            )
-
-        # Check arguments
-        # Check imgs type
-        if events is not None:
-            _check_events_file_uses_tab_separators(events_files=events)
-        if not isinstance(run_imgs, (list, tuple)):
-            run_imgs = [run_imgs]
-        if design_matrices is None:
-            if events is None:
-                raise ValueError("events or design matrices must be provided")
-            if self.t_r is None:
-                raise ValueError(
-                    "t_r not given to FirstLevelModel object"
-                    " to compute design from events"
-                )
+        if self.fir_delays is None:
+            self.fir_delays_ = [0]
         else:
-            design_matrices = _check_run_tables(
-                run_imgs, design_matrices, "design_matrices"
+            self.fir_delays_ = self.fir_delays
+
+        self._fit_cache()
+
+        self.standardize_ = self.standardize
+
+        check_parameter_in_allowed(
+            self.signal_scaling, {False, 1, (0, 1)}, "signal_scaling"
+        )
+        if self.signal_scaling in [0, 1, (0, 1)]:
+            self.standardize_ = None
+
+        self.labels_: list[Any] | None = None
+        self.results_: list[Any] | None = None
+
+        run_imgs, events, confounds, sample_masks, design_matrices = (
+            self._check_fit_inputs(
+                run_imgs,
+                events,
+                confounds,
+                sample_masks,
+                design_matrices,
             )
-        # Check that number of events and confound files match number of runs
-        # Also check that events and confound files can be loaded as DataFrame
-        if events is not None:
-            events = _check_run_tables(run_imgs, events, "events")
-        if confounds is not None:
-            confounds = _check_run_tables(run_imgs, confounds, "confounds")
+        )
 
-        if sample_masks is not None:
-            sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
+        self._reset_report()
 
-        self._prepare_mask(run_imgs[0])
+        # Initialize masker_ to None such that attribute exists
+        self.masker_: NiftiMasker | SurfaceMasker | None = None
+
+        self._prepare_mask(run_imgs)
+
+        # collect info that may be useful for report generation
+        drift_model_str = None
+        if self.drift_model:
+            if self.drift_model == "cosine":
+                param_str = f"high pass filter={self.high_pass} Hz"
+            else:
+                param_str = f"order={self.drift_order}"
+            drift_model_str = (
+                f"and a {self.drift_model} drift model ({param_str})"
+            )
+
+        self._report_content["reports_at_fit_time"] = self.reports
+        # TODO populate _report_data only if self.reports=True
+        # currently the values in reports_data is used in other places and
+        # tests fail if only populated when reports is True.
+
+        self._reporting_data: dict[str, Any] = {
+            "trial_types": [],
+            "noise_model": self.noise_model,
+            "hrf_model": "finite impulse response"
+            if self.hrf_model == "fir"
+            else self.hrf_model,
+            "drift_model": drift_model_str,
+        }
+
+        self.design_matrices_ = self._create_all_designs(
+            run_imgs, events, confounds, design_matrices
+        )
+
+        self._reporting_data["trial_types"] = sorted(
+            set(self._reporting_data["trial_types"])
+        )
 
         # For each run fit the model and keep only the regression results.
-        self.labels_, self.results_, self.design_matrices_ = [], [], []
+        self.labels_ = []
+        self.results_ = []
+        self._reporting_data["run_imgs"] = {}
         n_runs = len(run_imgs)
         t0 = time.time()
         for run_idx, run_img in enumerate(run_imgs):
-            # Report progress
-            if self.verbose > 0:
-                percent = float(run_idx) / n_runs
-                percent = round(percent * 100, 2)
-                dt = time.time() - t0
-                # We use a max to avoid a division by zero
-                if run_idx == 0:
-                    remaining = "go take a coffee, a big one"
-                else:
-                    remaining = (100.0 - percent) / max(0.01, percent) * dt
-                    remaining = f"{int(remaining)} seconds remaining"
+            self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
 
-                sys.stderr.write(
-                    f"Computing run {run_idx + 1} "
-                    f"out of {n_runs} runs ({remaining})\n"
+            # collect name of input files
+            # for eventual saving to disk later
+            self._reporting_data["run_imgs"][run_idx] = {}
+            if isinstance(run_img, (str, Path)):
+                self._reporting_data["run_imgs"][run_idx] = (
+                    parse_bids_filename(run_img)
                 )
 
-            # Build the experimental design for the glm
-            if not isinstance(run_img, SurfaceImage):
-                run_img = check_niimg(run_img, ensure_ndim=4)
-            if design_matrices is None:
-                if isinstance(run_img, SurfaceImage):
-                    n_scans = run_img.shape[0]
-                else:
-                    n_scans = get_data(run_img).shape[3]
-                if confounds is not None:
-                    confounds_matrix = confounds[run_idx].values
-                    if confounds_matrix.shape[0] != n_scans:
-                        raise ValueError(
-                            "Rows in confounds does not match "
-                            "n_scans in run_img "
-                            f"at index {run_idx}."
-                        )
-                    confounds_names = confounds[run_idx].columns.tolist()
-                else:
-                    confounds_matrix = None
-                    confounds_names = None
-                start_time = self.slice_time_ref * self.t_r
-                end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
-                frame_times = np.linspace(start_time, end_time, n_scans)
-                design = make_first_level_design_matrix(
-                    frame_times,
-                    events[run_idx],
-                    self.hrf_model,
-                    self.drift_model,
-                    self.high_pass,
-                    self.drift_order,
-                    self.fir_delays,
-                    confounds_matrix,
-                    confounds_names,
-                    self.min_onset,
-                )
-            else:
-                design = design_matrices[run_idx]
+            self._fit_single_run(sample_masks, bins, run_img, run_idx)
 
-            if sample_masks is not None:
-                sample_mask = sample_masks[run_idx]
-                design = design.iloc[sample_mask, :]
-            else:
-                sample_mask = None
+        self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
 
-            self.design_matrices_.append(design)
-
-            # Mask and prepare data for GLM
-            if self.verbose > 1:
-                t_masking = time.time()
-                sys.stderr.write("Starting masker computation \r")
-
-            Y = self.masker_.transform(run_img, sample_mask=sample_mask)
-            del run_img  # Delete unmasked image to save memory
-
-            if self.verbose > 1:
-                t_masking = time.time() - t_masking
-                sys.stderr.write(
-                    f"Masker took {int(t_masking)} seconds       \n"
-                )
-
-            if self.signal_scaling is not False:
-                Y, _ = mean_scaling(Y, self.signal_scaling)
-            if self.memory:
-                mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
-            else:
-                mem_glm = run_glm
-
-            # compute GLM
-            if self.verbose > 1:
-                t_glm = time.time()
-                sys.stderr.write("Performing GLM computation\r")
-            labels, results = mem_glm(
-                Y,
-                design.values,
-                noise_model=self.noise_model,
-                bins=bins,
-                n_jobs=self.n_jobs,
-                random_state=self.random_state,
-            )
-            if self.verbose > 1:
-                t_glm = time.time() - t_glm
-                sys.stderr.write(f"GLM took {int(t_glm)} seconds         \n")
-
-            self.labels_.append(labels)
-            # We save memory if inspecting model details is not necessary
-            if self.minimize_memory:
-                for key in results:
-                    results[key] = SimpleRegressionResults(results[key])
-            self.results_.append(results)
-            del Y
-
-        # Report progress
-        if self.verbose > 0:
-            sys.stderr.write(
-                f"\nComputation of {n_runs} runs done "
-                f"in {time.time() - t0} seconds.\n\n"
-            )
         return self
 
     def compute_contrast(
-        self, contrast_def, stat_type=None, output_type="z_score"
+        self,
+        contrast_def,
+        stat_type=None,
+        output_type="z_score",
     ):
         """Generate different outputs corresponding to \
         the contrasts provided e.g. z_map, t_map, effects and variance.
@@ -722,8 +1129,9 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        contrast_def : str or array of shape (n_col) or list of (string or
-                       array of shape (n_col))
+        contrast_def : :obj:`str` \
+                       or array of shape (n_col) or \
+                       :obj:`list` of (:obj:`str` or array of shape (n_col))
 
             where ``n_col`` is the number of columns of the design matrix,
             (one array per run). If only one array is provided when there
@@ -735,24 +1143,24 @@ class FirstLevelModel(BaseGLM):
             this case, the string defining the contrasts must be a valid
             expression for compatibility with :meth:`pandas.DataFrame.eval`.
 
-        stat_type : {'t', 'F'}, optional
+        stat_type : {'t', 'F'}, default=None
             Type of the contrast.
 
-        output_type : str, default='z_score'
+        output_type : :obj:`str`, default='z_score'
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
             :term:`'effect_size'<Parameter Estimate>`, 'effect_variance' or
             'all'.
 
-
         Returns
         -------
-        output : Nifti1Image or dict
-            The desired output image(s). If ``output_type == 'all'``, then
-            the output is a dictionary of images, keyed by the type of image.
-
+        output : Nifti1Image, :obj:`~nilearn.surface.SurfaceImage`, \
+                 or :obj:`dict`
+            The desired output image(s).
+            If ``output_type == 'all'``,
+            then the output is a dictionary of images,
+            keyed by the type of image.
         """
-        if self.labels_ is None or self.results_ is None:
-            raise ValueError("The model has not been fit yet.")
+        check_is_fitted(self)
 
         if isinstance(contrast_def, (np.ndarray, str)):
             con_vals = [contrast_def]
@@ -768,9 +1176,17 @@ class FirstLevelModel(BaseGLM):
         n_contrasts = len(con_vals)
         if n_contrasts == 1 and n_runs > 1:
             warn(
-                f"One contrast given, assuming it for all {n_runs} runs",
-                category=UserWarning,
-                stacklevel=2,
+                (
+                    f"The same contrast will be used for all {n_runs} runs. "
+                    "If the design matrices are not the same for all runs, "
+                    "(for example with different column names "
+                    "or column order across runs) "
+                    "you should pass contrast as an expression using "
+                    "the name of the conditions "
+                    "as they appear in the design matrices."
+                ),
+                category=RuntimeWarning,
+                stacklevel=find_stack_level(),
             )
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
@@ -781,7 +1197,7 @@ class FirstLevelModel(BaseGLM):
 
         # Translate formulas to vectors
         for cidx, (con, design_mat) in enumerate(
-            zip(con_vals, self.design_matrices_)
+            zip(con_vals, self.design_matrices_, strict=False)
         ):
             design_columns = design_mat.columns.tolist()
             if isinstance(con, str):
@@ -795,10 +1211,9 @@ class FirstLevelModel(BaseGLM):
             "p_value",
             "effect_size",
             "effect_variance",
+            "all",  # must be the final entry!
         ]
-        valid_types.append("all")  # ensuring 'all' is the final entry.
-        if output_type not in valid_types:
-            raise ValueError(f"output_type must be one of {valid_types}")
+        check_parameter_in_allowed(output_type, valid_types, "output_type")
         contrast = compute_fixed_effect_contrast(
             self.labels_, self.results_, con_vals, stat_type
         )
@@ -806,6 +1221,7 @@ class FirstLevelModel(BaseGLM):
             valid_types[:-1] if output_type == "all" else [output_type]
         )
         outputs = {}
+        assert self.masker_ is not None
         for output_type_ in output_types:
             estimate_ = getattr(contrast, output_type_)()
             # Prepare the returned images
@@ -820,40 +1236,90 @@ class FirstLevelModel(BaseGLM):
 
         return outputs if output_type == "all" else output
 
-    def _get_voxelwise_model_attribute(self, attribute, result_as_time_series):
-        """Transform RegressionResults instances within a dictionary \
-        (whose keys represent the autoregressive coefficient under the 'ar1' \
-        noise model or only 0.0 under 'ols' noise_model and values are the \
-        RegressionResults instances) into input nifti space.
+    def _make_stat_maps(
+        self, contrasts, output_type="z_score", first_level_contrast=None
+    ):
+        """Given a model and contrasts, return the corresponding z-maps.
 
         Parameters
         ----------
-        attribute : str
-            an attribute of a RegressionResults instance.
-            possible values include: residuals, normalized_residuals,
-            predicted, SSE, r_square, MSE.
+        contrasts : Dict[str, ndarray or str]
+            Dict of contrasts for a first or second level model.
+            Corresponds to the contrast_def for the FirstLevelModel
+            (nilearn.glm.first_level.FirstLevelModel.compute_contrast)
+            & second_level_contrast for a SecondLevelModel
+            (nilearn.glm.second_level.SecondLevelModel.compute_contrast)
 
-        result_as_time_series : bool
+        output_type : :obj:`str`, default='z_score'
+            The type of statistical map to retain from the contrast.
+
+            .. nilearn_versionadded:: 0.9.2
+
+        first_level_contrast : None
+
+            Only for consistent API with SecondLevelModel.
+
+        Returns
+        -------
+        statistical_maps : Dict[str, niimg] or Dict[str, Dict[str, niimg]]
+            Dict of statistical z-maps keyed to contrast names/titles.
+
+        See Also
+        --------
+        nilearn.glm.first_level.FirstLevelModel.compute_contrast
+        """
+        del first_level_contrast
+        return {
+            contrast_name: self.compute_contrast(
+                contrast_data,
+                output_type=output_type,
+            )
+            for contrast_name, contrast_data in contrasts.items()
+        }
+
+    def _get_element_wise_model_attribute(
+        self,
+        attribute: Literal[
+            "residuals",
+            "normalized_residuals",
+            "predicted",
+            "SSE",
+            "r_square",
+            "MSE",
+        ],
+        result_as_time_series: bool,
+    ):
+        """Transform RegressionResults instances within a dictionary \
+        (whose keys represent the autoregressive coefficient under the 'ar1' \
+        noise model or only 0.0 under 'ols' noise_model and values are the \
+        RegressionResults instances) into an image.
+
+        Parameters
+        ----------
+        attribute : {"residuals", "normalized_residuals", "predicted", \
+                    "SSE", "r_square", "MSE"}
+            an attribute of a RegressionResults instance.
+
+        result_as_time_series : :obj:`bool`
             whether the RegressionResult attribute has a value
             per timepoint of the input nifti image.
 
         Returns
         -------
-        output : list
-            A list of Nifti1Image(s).
-
+        output : :obj:`list`
+            A list of Nifti1Image(s) or SurfaceImage(s).
         """
         # check if valid attribute is being accessed.
+        check_is_fitted(self)
+
         all_attributes = dict(vars(RegressionResults)).keys()
         possible_attributes = [
             prop for prop in all_attributes if "__" not in prop
         ]
-        if attribute not in possible_attributes:
-            msg = f"attribute must be one of: {possible_attributes}"
-            raise ValueError(msg)
+        check_parameter_in_allowed(attribute, possible_attributes, "attribute")
 
         if self.minimize_memory:
-            raise ValueError(
+            raise AttributeError(
                 "To access voxelwise attributes like "
                 "R-squared, residuals, and predictions, "
                 "the `FirstLevelModel`-object needs to store "
@@ -862,13 +1328,13 @@ class FirstLevelModel(BaseGLM):
                 "when initializing the `FirstLevelModel`-object."
             )
 
-        if self.labels_ is None or self.results_ is None:
-            raise ValueError("The model has not been fit yet.")
-
         output = []
 
+        assert self.masker_ is not None
+        assert self.labels_ is not None
+        assert self.results_ is not None
         for design_matrix, labels, results in zip(
-            self.design_matrices_, self.labels_, self.results_
+            self.design_matrices_, self.labels_, self.results_, strict=False
         ):
             if result_as_time_series:
                 voxelwise_attribute = np.zeros(
@@ -887,96 +1353,113 @@ class FirstLevelModel(BaseGLM):
 
         return output
 
-    def _prepare_mask(self, run_img):
+    def _prepare_mask(self, run_imgs):
         """Set up the masker.
+
+        If mask_img == False, include all voxels / vertices in GLM.
+        If mask_img is not a masker,
+        we compute an implicit mask based on all the runs.
+        If mask_img is a masker we just check it has been fitted.
 
         Parameters
         ----------
-        run_img : Niimg-like object or SurfaceImage object
+        run_imgs : Niimg-like object, \
+                   :obj:`list` or :obj:`tuple` of Niimg-like objects, \
+                   SurfaceImage object, \
+                   or :obj:`list` or \
+                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Used for setting up the masker object.
         """
-        # Local import to prevent circular imports
-        from nilearn.maskers import NiftiMasker
+        first_image = run_imgs[0]
 
-        # Learn the mask
+        # Computing an implicit mask based on all runs
+        # requires we use a multi masker
+        # to get a common mask for all runs.
+        masker_type = "multi_nii"
+        if not self._is_volume_glm() or isinstance(first_image, SurfaceImage):
+            masker_type = "multi_surface"
+
         if self.mask_img is False:
-            # We create a dummy mask to preserve functionality of api
-            if isinstance(run_img, SurfaceImage):
-                surf_data = {}
-                for part in run_img.mesh.parts:
-                    surf_data[part] = np.ones(
-                        run_img.data.parts[part].shape[1], dtype=bool
+            if masker_type == "multi_surface":
+                surf_data = {
+                    part: np.ones(
+                        first_image.data.parts[part].shape[0], dtype=bool
                     )
-                self.mask_img = SurfaceImage(mesh=run_img.mesh, data=surf_data)
+                    for part in first_image.mesh.parts
+                }
+                mask_img = SurfaceImage(mesh=first_image.mesh, data=surf_data)
             else:
-                ref_img = check_niimg(run_img)
-                self.mask_img = Nifti1Image(
+                ref_img = check_niimg(first_image)
+                mask_img = Nifti1Image(
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
 
-        if isinstance(run_img, SurfaceImage) and not isinstance(
-            self.mask_img, SurfaceMasker
-        ):
-            self.masker_ = SurfaceMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                standardize=self.standardize,
-                t_r=self.t_r,
-                memory=self.memory,
-                memory_level=self.memory_level,
-            )
-            self.masker_.fit(run_img)
-
-        elif not isinstance(
-            self.mask_img, (NiftiMasker, SurfaceMasker, SurfaceImage)
-        ):
-            self.masker_ = NiftiMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                target_affine=self.target_affine,
-                standardize=self.standardize,
-                mask_strategy="epi",
-                t_r=self.t_r,
-                memory=self.memory,
-                verbose=max(0, self.verbose - 2),
-                target_shape=self.target_shape,
-                memory_level=self.memory_level,
-            )
-            self.masker_.fit(run_img)
+            self._set_fitted_masker(masker_type, mask_img)
 
         else:
-            # Make sure masker has been fitted otherwise no attribute mask_img_
-            self.mask_img._check_fitted()
-            if self.mask_img.mask_img_ is None and self.masker_ is None:
-                self.masker_ = clone(self.mask_img)
-                for param_name in [
-                    "target_affine",
-                    "target_shape",
-                    "smoothing_fwhm",
-                    "t_r",
-                    "memory",
-                    "memory_level",
-                ]:
-                    our_param = getattr(self, param_name)
-                    if our_param is None:
-                        continue
-                    if getattr(self.masker_, param_name) is not None:
-                        warn(
-                            f"Parameter {param_name} of the masker overridden"
-                        )
-                    if isinstance(self.masker_, SurfaceMasker):
-                        if param_name not in ["target_affine", "target_shape"]:
-                            setattr(self.masker_, param_name, our_param)
-                    else:
-                        setattr(self.masker_, param_name, our_param)
-                self.masker_.fit(run_img)
+            check_compatibility_mask_and_images(self.mask_img, first_image)
+
+            if (  # deal with self.mask_img as image, str, path, none
+                (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
+                or
+                # edge case:
+                # If fitted NiftiMasker with a None mask_img_ attribute
+                # the masker parameters are overridden
+                # by the FirstLevelModel parameters
+                (
+                    getattr(self.mask_img, "mask_img_", "not_none") is None
+                    and self.masker_ is None
+                )
+            ):
+                masker = check_embedded_masker(
+                    self, ignore=["high_pass"], masker_type=masker_type
+                )
+                masker.memory_level = self.memory_level
+                if masker_type == "multi_nii":
+                    masker.mask_strategy = "epi"
+
+                # We ignore warning in case the masker
+                # was initialized in check_embedded_masker
+                # with a mask image (obtained from the FLM):
+                # the user has no control over this warning,
+                # so it would just add noise.
+                with catch_warnings():
+                    filterwarnings(
+                        "ignore",
+                        message=r".*Generation of a mask.*",
+                    )
+                    masker.fit(run_imgs)
+
+                # reuse mask_img to initialize a non-multi masker
+                self._set_fitted_masker(masker_type, masker.mask_img_)
+
             else:
+                check_is_fitted(self.mask_img)
+
                 self.masker_ = self.mask_img
+
+        # override value of the masker standardize
+        # with standardize_ that takes into account
+        # whether to do signal_scaling or not
+        self.masker_.standardize = self.standardize_
+
+        self.n_elements_ = self.masker_.n_elements_
+
+    def _set_fitted_masker(self, masker_type, mask_img):
+        """Define a masker for the model with an implicit mask."""
+        self.masker_ = check_embedded_masker(
+            self,
+            ignore=["high_pass"],
+            masker_type=masker_type.replace("multi_", ""),
+        )
+        self.masker_.memory_level = self.memory_level
+        self.masker_.mask_img = mask_img
+        self.masker_.fit()
 
 
 def _check_events_file_uses_tab_separators(events_files):
     """Raise a ValueError if provided list of text based data files \
-    (.csv, .tsv, etc) do not enforce \
+    (CSV, TSV, etc) do not enforce \
     the :term:`BIDS` convention of using Tabs as separators.
 
     Only scans their first row.
@@ -990,20 +1473,15 @@ def _check_events_file_uses_tab_separators(events_files):
 
     Parameters
     ----------
-    events_files : str, List/Tuple[str]
+    events_files : :obj:`str`, List/Tuple[str]
         A single file's path or a collection of filepaths.
         Files are expected to be text files.
         Non-text files will raise ValueError.
-
-    Returns
-    -------
-    None
 
     Raises
     ------
     ValueError:
         If value separators are not Tabs (or commas)
-
     """
     valid_separators = [",", "\t"]
     if not isinstance(events_files, (list, tuple)):
@@ -1012,14 +1490,12 @@ def _check_events_file_uses_tab_separators(events_files):
         if isinstance(events_file_, (pd.DataFrame)):
             continue
         try:
-            with open(events_file_) as events_file_obj:
+            with Path(events_file_).open(encoding="utf-8") as events_file_obj:
                 events_file_sample = events_file_obj.readline()
-            """
-            The following errors are not being handled here,
-            as they are handled elsewhere in the calling code.
-            Handling them here will beak the calling code,
-            and refactoring that is not straightforward.
-            """
+            # The following errors are not being handled here,
+            # as they are handled elsewhere in the calling code.
+            # Handling them here will break the calling code,
+            # and refactoring is not straightforward.
         except OSError:  # if invalid filepath.
             pass
         else:
@@ -1037,91 +1513,40 @@ def _check_events_file_uses_tab_separators(events_files):
                 ) from e
 
 
-def _check_run_tables(run_imgs, tables_, tables_name):
+def _check_run_tables(
+    run_imgs, tables_, tables_name
+) -> list[pd.DataFrame | np.ndarray]:
     """Check fMRI runs and corresponding tables to raise error if necessary."""
-    if isinstance(tables_, (str, pd.DataFrame, np.ndarray)):
-        tables_ = [tables_]
-    _check_list_length_match(run_imgs, tables_, "run_imgs", tables_name)
-    tables_ = _check_and_load_tables(tables_, tables_name)
+    _check_length_match(run_imgs, tables_, "run_imgs", tables_name)
+    tables_ = check_and_load_tables(tables_, tables_name)
     return tables_
 
 
-def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
-    """Check length match of two given lists to raise error if necessary."""
+def _check_length_match(list_1, list_2, var_name_1, var_name_2) -> None:
+    """Check length match of two given inputs to raise error if necessary."""
+    if not isinstance(list_1, list):
+        list_1 = [list_1]
+    if not isinstance(list_2, list):
+        list_2 = [list_2]
     if len(list_1) != len(list_2):
         raise ValueError(
-            "len(%s) %d does not match len(%s) %d"
-            % (str(var_name_1), len(list_1), str(var_name_2), len(list_2))
+            f"len({var_name_1}) {len(list_1)} does not match "
+            f"len({var_name_2}) {len(list_2)}"
         )
 
 
-def _check_and_load_tables(tables_, var_name):
-    """Check tables can be loaded in DataFrame to raise error if necessary."""
-    tables = []
-    for table_idx, table in enumerate(tables_):
-        table = stringify_path(table)
-        if isinstance(table, str):
-            loaded = _read_events_table(table)
-            tables.append(loaded)
-        elif isinstance(table, pd.DataFrame):
-            tables.append(table)
-        elif isinstance(table, np.ndarray):
-            pass
-        else:
-            raise TypeError(
-                f"{var_name} can only be a pandas DataFrames or a string. "
-                f"A {type(table)} was provided at idx {table_idx}"
-            )
-    return tables
-
-
-def _read_events_table(table):
-    """Accept the path to en event.tsv file \
-    and loads it as a Pandas Dataframe.
-
-    Raises an error if loading fails.
-
-    Parameters
-    ----------
-    table : string
-        Accepts the path to an events file.
-
-    Returns
-    -------
-    loaded : pandas.Dataframe object
-        Pandas Dataframe with e events data.
-
-    """
-    try:
-        # kept for historical reasons, a lot of tests use csv with index column
-        loaded = pd.read_csv(table, index_col=0)
-    except:  # noqa: E722 B001
-        raise ValueError(f"table path {table} could not be loaded")
-    if loaded.empty:
-        try:
-            loaded = pd.read_csv(table, sep="\t")
-        except:  # noqa: E722 B001
-            raise ValueError(f"table path {table} could not be loaded")
-    return loaded
-
-
-def _check_repetition_time(t_r):
+def _check_repetition_time(t_r) -> None:
     """Check that the repetition time is a positive number."""
-    if not isinstance(t_r, (float, int)):
-        raise TypeError(
-            f"'t_r' must be a float or an integer. Got {type(t_r)} instead."
-        )
+    check_is_of_allowed_type(t_r, Tr, "t_r")
     if t_r <= 0:
         raise ValueError(f"'t_r' must be positive. Got {t_r} instead.")
 
 
-def _check_slice_time_ref(slice_time_ref):
+def _check_slice_time_ref(slice_time_ref: Any) -> None:
     """Check that slice_time_ref is a number between 0 and 1."""
-    if not isinstance(slice_time_ref, (float, int)):
-        raise TypeError(
-            "'slice_time_ref' must be a float or an integer. "
-            f"Got {type(slice_time_ref)} instead."
-        )
+    check_is_of_allowed_type(
+        slice_time_ref, (float, int, np.floating, np.integer), "slice_time_ref"
+    )
     if slice_time_ref < 0 or slice_time_ref > 1:
         raise ValueError(
             "'slice_time_ref' must be between 0 and 1. "
@@ -1134,30 +1559,36 @@ def first_level_from_bids(
     task_label,
     space_label=None,
     sub_labels=None,
+    exclude_subjects=None,
     img_filters=None,
-    t_r=None,
-    slice_time_ref=0.0,
-    hrf_model="glover",
-    drift_model="cosine",
-    high_pass=0.01,
-    drift_order=1,
+    t_r: Tr = None,
+    slice_time_ref: NonNullScalar | None = None,
+    hrf_model: HrfModel = "glover",
+    drift_model: Literal["cosine", "polynomial", None] = "cosine",
+    high_pass: float = 0.01,
+    drift_order: int = 1,
     fir_delays=None,
-    min_onset=-24,
+    min_onset: float = -24.0,
     mask_img=None,
-    target_affine=None,
-    target_shape=None,
-    smoothing_fwhm=None,
-    memory=None,
-    memory_level=1,
-    standardize=False,
+    target_affine: TargetAffine = None,
+    target_shape: TargetShape = None,
+    smoothing_fwhm: SmoothingFwhm = None,
+    memory: MemoryLike = None,
+    memory_level: MemoryLevel = 1,
+    standardize: Standardize = None,
     signal_scaling=0,
-    noise_model="ar1",
-    verbose=0,
-    n_jobs=1,
+    noise_model: NoiseModel = "ar1",
+    verbose: Verbose = 0,
+    n_jobs: NJobs = 1,
     minimize_memory=True,
     derivatives_folder="derivatives",
     **kwargs,
-):
+) -> tuple[
+    list[FirstLevelModel],
+    list[list[str] | list[SurfaceImage]],
+    list[list[pd.DataFrame]],
+    list[list[pd.DataFrame] | None],
+]:
     """Create FirstLevelModel objects and fit arguments \
        from a :term:`BIDS` dataset.
 
@@ -1184,18 +1615,25 @@ def first_level_from_bids(
     task_label : :obj:`str`
         Task_label as specified in the file names like ``_task-<task_label>_``.
 
-    space_label : :obj:`str`, optional
+    space_label : :obj:`str` or None, default=None
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like ``_space-<space_label>_``.
+        If "fsaverage5" is passed as a value
+        then the GLM will be run on pial surface data.
 
-    sub_labels : :obj:`list` of :obj:`str`, optional
+    sub_labels : :obj:`list` of :obj:`str` or None, default=None
         Specifies the subset of subject labels to model.
         If ``None``, will model all subjects in the dataset.
 
-        .. versionadded:: 0.10.1
+        .. nilearn_versionadded:: 0.10.1
+
+    exclude_subjects : :obj:`list` of :obj:`str` or None, default=None
+        Specifies the subset of subject labels to skip.
+
+        .. nilearn_versionadded:: 0.13.0
 
     img_filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), \
-        optional
+        default=None
         Filters are of the form ``(field, label)``. Only one filter per field
         allowed.
         A file that does not match a filter will be discarded.
@@ -1204,22 +1642,33 @@ def first_level_from_bids(
         Filter examples would be ``('desc', 'preproc')``, ``('dir', 'pa')``
         and ``('run', '10')``.
 
-    slice_time_ref : :obj:`float` between ``0.0`` and ``1.0``, default= ``0.0``
+    mask_img : Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
+             :obj:`~nilearn.maskers.SurfaceMasker`, False \
+             or ``"derivatives"``, or \
+             None, default=None
+        Mask to be used on data.
+        If ``"derivatives"`` is passed, a mask image is generated
+        from the intersection of the relevant mask images
+        of all the runs of a subject
+        and used for the model of that subject.
+
+    slice_time_ref : :obj:`float` between ``0.0`` and ``1.0``, or None, \
+                     default= None
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
         expressed as a fraction of the ``t_r`` (time repetition), so it can
         have values between ``0.`` and ``1.``
-
-        .. deprecated:: 0.10.1
-
-            The default= ``0`` for ``slice_time_ref`` will be deprecated.
-            The default value will change to ``None`` in 0.12.
+        If ``slice_time_ref`` is  ``None``, this function will attempt
+        to infer it from the metadata found in a ``bold.json``.
+        If it cannot be inferred from metadata, it will be set to 0.
 
     derivatives_folder : :obj:`str`, default= ``"derivatives"``.
         derivatives and app folder path containing preprocessed files.
         Like ``"derivatives/FMRIPREP"``.
 
     kwargs : :obj:`dict`
+
+        .. nilearn_versionadded:: 0.10.3
 
         Keyword arguments to be passed to functions called within this
         function.
@@ -1230,12 +1679,78 @@ def first_level_from_bids(
         a specific set of confounds by relying on confound loading strategies
         defined in :func:`~nilearn.interfaces.fmriprep.load_confounds`.
         If no kwargs are passed, ``first_level_from_bids`` will return
-        all the confounds available in the confounds TSV files.
+        all the confounds available in the confounds TSV files. If
+        no confounds are available, or if ``confounds_strategy`` is
+        set to ``None``, a list of ``None`` is returned for the confounds.
 
-        .. versionadded:: 0.10.3
+        Please refer to the documentation
+        of :func:`~nilearn.interfaces.fmriprep.load_confounds`
+        for more details on the confounds loading strategies.
+
+    .. do not check for missing parameters in docstring
+
+    Returns
+    -------
+    models : :obj:`list` \
+        of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
+        Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
+        corresponds to a subject.
+        All runs from different sessions are considered together
+        for the same subject to run a fixed effects analysis on them.
+
+    models_run_imgs : :obj:`list` of :obj:`list` of Niimg-like objects
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_run_imgs[i][j]`` corresponds to the j\\ :sup:`th` run
+        of the i\\ :sup:`th` subject.
+
+    models_events : :obj:`list` of :obj:`list` of pandas DataFrames
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_events[i][j]`` corresponds to the j\\ :sup:`th` event file
+        of the i\\ :sup:`th` subject.
+
+        Currently we only support 2 cases:
+
+        - raw BIDS datasets with one events file per run
+          stored along the bold file
+
+        - raw BIDS dataset with a single events file at its root,
+          (it is then assumed that this events file should be used
+          for all runs and the list contains j copies of the same dataframe)
+
+    models_confounds : :obj:`list` of :obj:`list` of pandas DataFrames or
+        ``None``
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
+        ``models_confounds[i][j]`` corresponds to the j\\ :sup:`th`
+        confound file of the i\\ :sup:`th` subject.
+
+        .. note::
+
+            Any NaN values on the first row of the loaded confounds
+            will be replaced by 0 to avoid later errors
+            during design matrix creation.
+
+    Notes
+    -----
+    See :obj:`~nilearn.glm.first_level.FirstLevelModel` for further details
+    on other parameters.
 
     Examples
     --------
+    If you want to load only models, images and events:
+
+    .. code-block:: python
+
+        models, imgs, events, _ = first_level_from_bids(
+            dataset_path=path_to_a_bids_dataset,
+            task_label="TaskName",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=None,
+        )
+
     If you want to only load
     the rotation and translation motion parameters confounds:
 
@@ -1295,48 +1810,23 @@ def first_level_from_bids(
             confounds_fd_threshold=0.2,
             confounds_std_dvars_threshold=0,
         )
-
-    Please refer to the documentation
-    of :func:`~nilearn.interfaces.fmriprep.load_confounds`
-    for more details on the confounds loading strategies.
-
-    Returns
-    -------
-    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
-        Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
-        corresponds to a subject.
-        All runs from different sessions are considered together
-        for the same subject to run a fixed effects analysis on them.
-
-    models_run_imgs : list of list of Niimg-like objects,
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-
-    models_events : list of list of pandas DataFrames,
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-
-    models_confounds : list of list of pandas DataFrames or ``None``,
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
-        fit function of their respective model.
-
     """
+    check_params(locals())
     if memory is None:
         memory = Memory(None)
-    if slice_time_ref == 0:
-        warn(
-            "Starting in version 0.12, slice_time_ref will default to None.",
-            DeprecationWarning,
-        )
+    if space_label is None:
+        space_label = "MNI152NLin2009cAsym"
 
     sub_labels = sub_labels or []
     img_filters = img_filters or []
+    exclude_subjects = exclude_subjects or []
 
     _check_args_first_level_from_bids(
         dataset_path=dataset_path,
         task_label=task_label,
         space_label=space_label,
         sub_labels=sub_labels,
+        exclude_subjects=exclude_subjects,
         img_filters=img_filters,
         derivatives_folder=derivatives_folder,
     )
@@ -1353,20 +1843,23 @@ def first_level_from_bids(
             f"`confounds_` prefix: {remaining_kwargs}"
         )
 
-    if drift_model is not None and kwargs_load_confounds is not None:
-        if "high_pass" in kwargs_load_confounds.get("strategy"):
-            if drift_model == "cosine":
-                verb = "duplicate"
-            if drift_model == "polynomial":
-                verb = "conflict with"
+    if (
+        drift_model is not None
+        and kwargs_load_confounds is not None
+        and "high_pass" in kwargs_load_confounds.get("strategy", [])
+    ):
+        verb = "duplicate"
+        if drift_model == "polynomial":
+            verb = "conflict with"
 
-            warn(
-                f"""Confounds will contain a high pass filter,
+        warn(
+            f"""Confounds will contain a high pass filter,
  that may {verb} the {drift_model} one used in the model.
  Remember to visualize your design matrix before fitting your model
  to check that your model is not overspecified.""",
-                UserWarning,
-            )
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
     derivatives_path = derivatives_path.absolute()
@@ -1398,7 +1891,7 @@ def first_level_from_bids(
         filters = _make_bids_files_filter(
             task_label=task_label,
             supported_filters=[*bids_entities()["raw"]],
-            extra_filter=img_filters,
+            extra_filter=[x for x in img_filters if x[0] != "desc"],
             verbose=verbose,
         )
         inferred_t_r = infer_repetition_time_from_dataset(
@@ -1412,7 +1905,8 @@ def first_level_from_bids(
             f"\n't_r' provided ({t_r}) is different "
             f"from the value found in the BIDS dataset ({inferred_t_r}).\n"
             "Note this may lead to the wrong model specification.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
+            category=RuntimeWarning,
         )
     if t_r is not None:
         _check_repetition_time(t_r)
@@ -1421,7 +1915,8 @@ def first_level_from_bids(
             "\n't_r' not provided and cannot be inferred from BIDS metadata.\n"
             "It will need to be set manually in the list of models, "
             "otherwise their fit will throw an exception.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
+            category=RuntimeWarning,
         )
 
     # Slice time correction reference time
@@ -1453,24 +1948,23 @@ def first_level_from_bids(
                 "It will be assumed that the slice timing reference "
                 "is 0.0 percent of the repetition time.\n"
                 "If it is not the case it will need to "
-                "be set manually in the generated list of models."
+                "be set manually in the generated list of models.",
+                stacklevel=find_stack_level(),
             )
         inferred_slice_time_ref = 0.0
 
-    if slice_time_ref is None and inferred_slice_time_ref is not None:
+    if slice_time_ref is None:
         slice_time_ref = inferred_slice_time_ref
-    if (
-        slice_time_ref is not None
-        and slice_time_ref != inferred_slice_time_ref
-    ):
+    elif slice_time_ref != inferred_slice_time_ref:
         warn(
             f"'slice_time_ref' provided ({slice_time_ref}) is different "
             f"from the value found in the BIDS dataset "
             f"({inferred_slice_time_ref}).\n"
-            "Note this may lead to the wrong model specification."
+            "Note this may lead to the wrong model specification.",
+            stacklevel=find_stack_level(),
         )
-    if slice_time_ref is not None:
-        _check_slice_time_ref(slice_time_ref)
+
+    _check_slice_time_ref(slice_time_ref)
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)
@@ -1482,6 +1976,9 @@ def first_level_from_bids(
     sub_labels = _list_valid_subjects(derivatives_path, sub_labels)
     if len(sub_labels) == 0:
         raise RuntimeError(f"\nNo subject found in:\n {derivatives_path}")
+
+    sub_labels = sorted(set(sub_labels) - set(exclude_subjects))
+
     for sub_label_ in sub_labels:
         # Create model
         model = FirstLevelModel(
@@ -1493,7 +1990,7 @@ def first_level_from_bids(
             drift_order=drift_order,
             fir_delays=fir_delays,
             min_onset=min_onset,
-            mask_img=mask_img,
+            mask_img=None if mask_img == "derivatives" else mask_img,
             target_affine=target_affine,
             target_shape=target_shape,
             smoothing_fwhm=smoothing_fwhm,
@@ -1509,7 +2006,7 @@ def first_level_from_bids(
         )
         models.append(model)
 
-        imgs = _get_processed_imgs(
+        imgs, files_to_check = _get_processed_imgs(
             derivatives_path=derivatives_path,
             sub_label=sub_label_,
             task_label=task_label,
@@ -1524,7 +2021,7 @@ def first_level_from_bids(
             sub_label=sub_label_,
             task_label=task_label,
             img_filters=img_filters,
-            imgs=imgs,
+            imgs=files_to_check,
             verbose=verbose,
         )
         events = [
@@ -1537,16 +2034,32 @@ def first_level_from_bids(
             sub_label=sub_label_,
             task_label=task_label,
             img_filters=img_filters,
-            imgs=imgs,
+            imgs=files_to_check,
             verbose=verbose,
             kwargs_load_confounds=kwargs_load_confounds,
         )
         models_confounds.append(confounds)
 
+        if mask_img == "derivatives":
+            masks = _get_masks_files(
+                derivatives_path=derivatives_path,
+                sub_label=sub_label_,
+                task_label=task_label,
+                space_label=space_label,
+                img_filters=img_filters,
+                imgs=files_to_check,
+                verbose=verbose,
+            )
+            if masks:
+                mask_img = intersect_masks(
+                    masks, threshold=0.5, connected=False
+                )
+                model.mask_img = mask_img
+
     return models, models_run_imgs, models_events, models_confounds
 
 
-def _list_valid_subjects(derivatives_path, sub_labels):
+def _list_valid_subjects(derivatives_path, sub_labels) -> list[str]:
     """List valid subjects in the dataset.
 
     - Include all subjects if no subject pre-selection is passed.
@@ -1555,49 +2068,48 @@ def _list_valid_subjects(derivatives_path, sub_labels):
 
     Parameters
     ----------
-    derivatives_path : :obj:`str`
+    derivatives_path : :obj:`str` or :obj:`pathlib.Path`
         Path to the BIDS derivatives folder.
 
-    sub_labels : :obj:`list` of :obj:`str`, optional
+    sub_labels : :obj:`list` of :obj:`str`
         List of subject labels to process.
         If None, all subjects in the dataset will be processed.
 
     Returns
     -------
-    sub_labels : :obj:`list` of :obj:`str`, optional
+    sub_labels : :obj:`list` of :obj:`str`
         List of subject labels that will be processed.
     """
+    derivatives_path = Path(derivatives_path)
     # Infer subjects in dataset if not provided
     if not sub_labels:
-        sub_folders = glob.glob(os.path.join(derivatives_path, "sub-*/"))
-        sub_labels = [
-            os.path.basename(s[:-1]).split("-")[1] for s in sub_folders
-        ]
-        sub_labels = sorted(list(set(sub_labels)))
+        sub_folders = derivatives_path.glob("sub-*/")
+        sub_labels = [s.name.split("-")[1] for s in sub_folders if s.is_dir()]
 
     # keep only existing subjects
     sub_labels_exist = []
     for sub_label_ in sub_labels:
-        if os.path.exists(os.path.join(derivatives_path, f"sub-{sub_label_}")):
+        if (derivatives_path / f"sub-{sub_label_}").exists():
             sub_labels_exist.append(sub_label_)
         else:
             warn(
                 f"\nSubject label '{sub_label_}' is not present "
                 "in the following dataset and cannot be processed:\n"
                 f" {derivatives_path}",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
-    return set(sub_labels_exist)
+    return sorted(set(sub_labels_exist))
 
 
-def _report_found_files(files, text, sub_label, filters):
+@fill_doc
+def _report_found_files(files, text, sub_label, filters, verbose) -> None:
     """Print list of files found for a given subject and filter.
 
     Parameters
     ----------
     files : :obj:`list` of :obj:`str`
-        List of fullpath of files.
+        List of full path of files.
 
     text :  :obj:`str`
         Text description of the file type.
@@ -1609,12 +2121,15 @@ def _report_found_files(files, text, sub_label, filters):
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
+    %(verbose)s
     """
-    print(
-        f"Found the following {len(files)} {text} files\n",
-        f"for subject {sub_label}\n",
-        f"for filter: {filters}:\n",
-        f"{files}\n",
+    unordered_list_string = "\n\t- ".join(files)
+    logger.log(
+        f"\nFound the following {len(files)} {text} files\n"
+        f"- for subject {sub_label}\n"
+        f"- for filter: {filters}:\n\t"
+        f"- {unordered_list_string}\n",
+        verbose=verbose,
     )
 
 
@@ -1636,18 +2151,27 @@ def _get_processed_imgs(
     task_label : :obj:`str`
         Task label as specified in the file names like _task-<task_label>_.
 
+    space_label : None or :obj:`str`
+
     img_filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
-    verbose : :obj:`integer`
+    verbose : :obj:`int`
         Indicate the level of verbosity.
 
     Returns
     -------
-    imgs : :obj:`list` of :obj:`str`
-        List of fullpath to the imgs files
+    imgs : :obj:`list` of :obj:`str`, \
+        or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`
+        List of full path to the imgs files
+        If fsaverage5 is passed then both hemisphere for each run
+        will be loaded into a single SurfaceImage.
 
+    files_to_check : : :obj:`list` of :obj:`str`
+        List of full path to imgs files.
+        Used for validation
+        when finding events or confounds associated with images.
     """
     filters = _make_bids_files_filter(
         task_label=task_label,
@@ -1657,23 +2181,76 @@ def _get_processed_imgs(
         extra_filter=img_filters,
         verbose=verbose,
     )
-    imgs = get_bids_files(
-        main_path=derivatives_path,
-        modality_folder="func",
-        file_tag="bold",
-        file_type="nii*",
-        sub_label=sub_label,
-        filters=filters,
-    )
-    if verbose:
-        _report_found_files(
-            files=imgs,
-            text="preprocessed BOLD",
+
+    if space_label is not None and (
+        space_label == "" or space_label not in ("fsaverage5")
+    ):
+        imgs = get_bids_files(
+            main_path=derivatives_path,
+            modality_folder="func",
+            file_tag="bold",
+            file_type="nii*",
             sub_label=sub_label,
             filters=filters,
         )
-    _check_bids_image_list(imgs, sub_label, filters)
-    return imgs
+        files_to_report = imgs
+        files_to_check = imgs
+
+    else:
+        tmp_filter = filters.copy()
+        tmp_filter.append(("hemi", "L"))
+        imgs_left = get_bids_files(
+            main_path=derivatives_path,
+            modality_folder="func",
+            file_tag="bold",
+            file_type="func.gii",
+            sub_label=sub_label,
+            filters=tmp_filter,
+        )
+        tmp_filter[-1] = ("hemi", "R")
+        imgs_right = get_bids_files(
+            main_path=derivatives_path,
+            modality_folder="func",
+            file_tag="bold",
+            file_type="func.gii",
+            sub_label=sub_label,
+            filters=tmp_filter,
+        )
+
+        # Sanity check to make sure we have the same number of files
+        # for each hemisphere
+        assert len(imgs_left) == len(imgs_right)
+
+        imgs = []
+        for data_left, data_right in zip(imgs_left, imgs_right, strict=False):
+            # make sure that filenames only differ by hemisphere
+            assert (
+                Path(data_left).stem.replace("hemi-L", "hemi-R")
+                == Path(data_right).stem
+            )
+            # Assumption: we are loading the data on the pial surface.
+            imgs.append(
+                SurfaceImage(
+                    mesh=load_fsaverage()["pial"],
+                    data={"left": data_left, "right": data_right},
+                )
+            )
+
+        files_to_report = imgs_left + imgs_right
+
+        # Only check the left files
+        # as we know they have a right counterpart.
+        files_to_check = imgs_left
+
+    _report_found_files(
+        files=files_to_report,
+        text="preprocessed BOLD",
+        sub_label=sub_label,
+        filters=filters,
+        verbose=verbose,
+    )
+    _check_bids_image_list(files_to_check, sub_label, filters)
+    return imgs, files_to_check
 
 
 def _get_events_files(
@@ -1705,22 +2282,29 @@ def _get_events_files(
         Only one filter per field allowed.
 
     imgs : :obj:`list` of :obj:`str`
-        List of fullpath to the preprocessed images
+        List of full path to the preprocessed images
 
-    verbose : :obj:`integer`
+    verbose : :obj:`int`
         Indicate the level of verbosity.
 
     Returns
     -------
     events : :obj:`list` of :obj:`str`
-        List of fullpath to the events files
+        List of full path to the events files.
     """
+    # pop the derivatives filter
+    # it would otherwise trigger some meaningless warnings
+    # as the derivatives entity are not supported in BIDS raw datasets
+    img_filters = [
+        x for x in img_filters if x[0] not in bids_entities()["derivatives"]
+    ]
     events_filters = _make_bids_files_filter(
         task_label=task_label,
         supported_filters=bids_entities()["raw"],
         extra_filter=img_filters,
         verbose=verbose,
     )
+
     events = get_bids_files(
         dataset_path,
         modality_folder="func",
@@ -1729,13 +2313,34 @@ def _get_events_files(
         sub_label=sub_label,
         filters=events_filters,
     )
-    if verbose:
-        _report_found_files(
-            files=events,
-            text="events",
-            sub_label=sub_label,
-            filters=events_filters,
-        )
+
+    # looking for file in the root of the raw data
+    global_events_file = get_bids_files(
+        dataset_path,
+        modality_folder="func",
+        file_tag="events",
+        file_type="tsv",
+        sub_label=sub_label,
+        filters=events_filters,
+        sub_folder=False,
+    )
+
+    if len(events) == 0 and len(global_events_file) == 1:
+        # if we found something this means
+        # that all runs haves the same events.tsv
+        events = global_events_file * len(imgs)
+    else:
+        # otherwise we pull all events together
+        # and let _check_bids_events_list decide what to do
+        events.extend(global_events_file)
+
+    _report_found_files(
+        files=events,
+        text="events",
+        sub_label=sub_label,
+        filters=events_filters,
+        verbose=verbose,
+    )
     _check_bids_events_list(
         events=events,
         imgs=imgs,
@@ -1748,6 +2353,103 @@ def _get_events_files(
     return events
 
 
+def _get_masks_files(
+    derivatives_path: Path,
+    sub_label: str,
+    task_label: str,
+    space_label: str,
+    img_filters: list[tuple[str, str]],
+    imgs: list[str],
+    verbose: Verbose,
+) -> list[str]:
+    """Get mask images for a given subject, task, space and filters.
+
+    Parameters
+    ----------
+    derivatives_path : :obj:`pathlib.Path`
+        Directory of the derivatives BIDS dataset.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like sub-<sub_label>_.
+
+    task_label : :obj:`str`
+        Space label as specified in the file names like _task-<task_label>_.
+
+    space_label : :obj:`str`
+        Space label as specified in the file names like _space-<space_label>_.
+
+    img_filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    imgs : :obj:`list` of :obj:`str`
+        List of full path to the preprocessed images
+
+    verbose : :obj:`int`
+        Indicate the level of verbosity.
+
+    Returns
+    -------
+    events : :obj:`list` of :obj:`str`
+        List of full path to the masks files.
+    """
+    if space_label in (None, "", "fsaverage5"):
+        # TODO for surface data?
+        return []
+
+    img_filters = [x for x in img_filters if x[0] != "desc"]
+    filters = _make_bids_files_filter(
+        task_label=task_label,
+        space_label=space_label,
+        supported_filters=bids_entities()["raw"]
+        + bids_entities()["derivatives"],
+        extra_filter=img_filters,
+        verbose=verbose,
+    )
+
+    masks_files = get_bids_files(
+        main_path=derivatives_path,
+        modality_folder="func",
+        file_tag="mask",
+        file_type="nii*",
+        sub_label=sub_label,
+        filters=filters,
+    )
+
+    _report_found_files(
+        files=masks_files,
+        text="masks",
+        sub_label=sub_label,
+        filters=filters,
+        verbose=verbose,
+    )
+    _check_masks_list(masks_files, imgs)
+
+    return masks_files
+
+
+def _check_masks_list(masks_files: list[str], imgs: list[str]) -> None:
+    """Check the number of confounds.tsv files.
+
+    If no file is found, it will be assumed there are none,
+    but if there are any confounds files, there must be one per run.
+
+    Parameters
+    ----------
+    masks_files : :obj:`list` of :obj:`str`
+        List of full path to the mask files
+
+    imgs : :obj:`list` of :obj:`str`
+        List of full path to the preprocessed images
+    """
+    if len(masks_files) != len(imgs):
+        warn(
+            f"{len(masks_files)} mask files found "
+            f"for {len(imgs)} bold files. ",
+            stacklevel=find_stack_level(),
+        )
+
+
 def _get_confounds(
     derivatives_path,
     sub_label,
@@ -1756,7 +2458,7 @@ def _get_confounds(
     imgs,
     verbose,
     kwargs_load_confounds,
-):
+) -> list[pd.DataFrame] | None:
     """Get confounds.tsv files for a given subject, task and filters.
 
     Also checks that the number of confounds.tsv files
@@ -1778,23 +2480,27 @@ def _get_confounds(
         Only one filter per field allowed.
 
     imgs : :obj:`list` of :obj:`str`
-        List of fullpath to the preprocessed images
+        List of full path to the preprocessed images
 
-    verbose : :obj:`integer`
+    verbose : :obj:`int`
         Indicate the level of verbosity.
 
     Returns
     -------
-    confounds : :obj:`list` of :class:`pandas.DataFrame`
-
+    confounds : :obj:`list` of :class:`pandas.DataFrame` or None
     """
+    # pop the 'desc' filter
+    # it would otherwise trigger some meaningless warnings
+    # as desc entity are not supported in BIDS raw datasets
+    # and we add a desc-confounds 'filter' later on
+    img_filters = [x for x in img_filters if x[0] != "desc"]
     filters = _make_bids_files_filter(
         task_label=task_label,
         supported_filters=bids_entities()["raw"],
         extra_filter=img_filters,
         verbose=verbose,
     )
-    confounds = get_bids_files(
+    confounds_files = get_bids_files(
         derivatives_path,
         modality_folder="func",
         file_tag="desc-confounds*",
@@ -1802,28 +2508,35 @@ def _get_confounds(
         sub_label=sub_label,
         filters=filters,
     )
-    if verbose:
-        _report_found_files(
-            files=confounds,
-            text="confounds",
-            sub_label=sub_label,
-            filters=filters,
-        )
-    _check_confounds_list(confounds=confounds, imgs=imgs)
+    _report_found_files(
+        files=confounds_files,
+        text="confounds",
+        sub_label=sub_label,
+        filters=filters,
+        verbose=verbose,
+    )
+    if confounds_files:
+        check_n_confounds_match_n_images(confounds_files, imgs)
 
-    if confounds:
-        if kwargs_load_confounds is None:
-            confounds = [
-                pd.read_csv(c, sep="\t", index_col=None) for c in confounds
-            ]
-            return confounds or None
+    if not confounds_files or kwargs_load_confounds is None:
+        return None
 
-        confounds, _ = load_confounds(img_files=imgs, **kwargs_load_confounds)
-
+    if len(kwargs_load_confounds) == 0:
+        confounds = [
+            pd.read_csv(c, sep="\t", index_col=None) for c in confounds_files
+        ]
+        # filling the first row of na with 0
+        # (happens for framewise displacement and a few other confounds)
+        # because this would lead to errors
+        # when building the design matrix later
+        for c in confounds:
+            c.iloc[0] = c.iloc[0].fillna(0.0)
         return confounds
 
+    return load_confounds(img_files=imgs, **kwargs_load_confounds)[0]
 
-def _check_confounds_list(confounds, imgs):
+
+def _check_confounds_list(confounds, imgs) -> None:
     """Check the number of confounds.tsv files.
 
     If no file is found, it will be assumed there are none,
@@ -1832,11 +2545,10 @@ def _check_confounds_list(confounds, imgs):
     Parameters
     ----------
     confounds : :obj:`list` of :obj:`str`
-        List of fullpath to the confounds.tsv files
+        List of full path to the confounds.tsv files
 
     imgs : :obj:`list` of :obj:`str`
-        List of fullpath to the preprocessed images
-
+        List of full path to the preprocessed images
     """
     if confounds and len(confounds) != len(imgs):
         raise ValueError(
@@ -1851,10 +2563,11 @@ def _check_args_first_level_from_bids(
     dataset_path,
     task_label,
     space_label,
+    exclude_subjects,
     sub_labels,
     img_filters,
     derivatives_folder,
-):
+) -> None:
     """Check type and value of arguments of first_level_from_bids.
 
     Check that:
@@ -1868,7 +2581,7 @@ def _check_args_first_level_from_bids(
     Parameters
     ----------
     dataset_path : :obj:`str`
-        Fullpath of the BIDS dataset root folder.
+        Full path of the BIDS dataset root folder.
 
     task_label : :obj:`str`
         Task_label as specified in the file names like _task-<task_label>_.
@@ -1877,32 +2590,25 @@ def _check_args_first_level_from_bids(
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
-    sub_labels : :obj:`list` of :obj:`str`, optional
+    sub_labels : :obj:`list` of :obj:`str`
         Specifies the subset of subject labels to model.
-        If 'None', will model all subjects in the dataset.
+
+    exclude_subjects : :obj:`list` of :obj:`str`
+        Specifies the subset of subject labels to skip.
 
     img_filters : :obj:`list` of :obj:`tuples` (str, str)
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
-    derivatives_path : :obj:`str`
-        Fullpath of the BIDS dataset derivative folder.
-
+    derivatives_folder : :obj:`str`
+        Full path of the BIDS dataset derivative folder.
     """
-    if not isinstance(dataset_path, (str, Path)):
-        raise TypeError(
-            "'dataset_path' must be a string or pathlike. "
-            f"Got {type(dataset_path)} instead."
-        )
+    check_is_of_allowed_type(dataset_path, (str, Path), "dataset_path")
     dataset_path = Path(dataset_path)
     if not dataset_path.exists():
         raise ValueError(f"'dataset_path' does not exist:\n{dataset_path}")
 
-    if not isinstance(derivatives_folder, str):
-        raise TypeError(
-            "'derivatives_folder' must be a string. "
-            f"Got {type(derivatives_folder)} instead."
-        )
+    check_is_of_allowed_type(derivatives_folder, (str,), "derivatives_folder")
     derivatives_folder = dataset_path / derivatives_folder
     if not derivatives_folder.exists():
         raise ValueError(
@@ -1915,18 +2621,13 @@ def _check_args_first_level_from_bids(
     if space_label is not None:
         check_bids_label(space_label)
 
-    if not isinstance(sub_labels, list):
-        raise TypeError(
-            f"sub_labels must be a list, instead {type(sub_labels)} was given"
-        )
+    check_is_of_allowed_type(sub_labels, (list,), "sub_labels")
     for sub_label_ in sub_labels:
         check_bids_label(sub_label_)
 
-    if not isinstance(img_filters, list):
-        raise TypeError(
-            f"'img_filters' must be a list. "
-            f"Got {type(img_filters)} instead."
-        )
+    check_is_of_allowed_type(exclude_subjects, (list,), "exclude_subjects")
+
+    check_is_of_allowed_type(img_filters, (list,), "img_filters")
     supported_filters = [
         *bids_entities()["raw"],
         *bids_entities()["derivatives"],
@@ -1937,11 +2638,9 @@ def _check_args_first_level_from_bids(
                 "Filters in img_filters must be (str, str). "
                 f"Got {filter_} instead."
             )
-        if filter_[0] not in supported_filters:
-            raise ValueError(
-                f"Entity {filter_[0]} for {filter_} is not a possible filter. "
-                f"Only {supported_filters} are allowed."
-            )
+        check_parameter_in_allowed(
+            filter_[0], supported_filters, f"{filter_[0]} in {filter_}"
+        )
         check_bids_label(filter_[1])
 
 
@@ -1951,8 +2650,8 @@ def _check_kwargs_load_confounds(**kwargs):
         "strategy": ("motion", "high_pass", "wm_csf"),
         "motion": "full",
         "scrub": 5,
-        "fd_threshold": 0.2,
-        "std_dvars_threshold": 3,
+        "fd_threshold": 0.5,
+        "std_dvars_threshold": 1.5,
         "wm_csf": "basic",
         "global_signal": "basic",
         "compcor": "anat_combined",
@@ -1961,8 +2660,12 @@ def _check_kwargs_load_confounds(**kwargs):
         "demean": True,
     }
 
-    if kwargs.get("confounds_strategy") is None:
+    if "confounds_strategy" in kwargs and kwargs["confounds_strategy"] is None:
+        kwargs.pop("confounds_strategy")
         return None, kwargs
+
+    elif "confounds_strategy" not in kwargs:
+        return {}, kwargs
 
     remaining_kwargs = kwargs.copy()
     kwargs_load_confounds = {}
@@ -1976,13 +2679,14 @@ def _check_kwargs_load_confounds(**kwargs):
     return kwargs_load_confounds, remaining_kwargs
 
 
+@fill_doc
 def _make_bids_files_filter(
     task_label,
     space_label=None,
     supported_filters=None,
     extra_filter=None,
     verbose=0,
-):
+) -> list[tuple[str, str]]:
     """Return a filter to specific files from a BIDS dataset.
 
     Parameters
@@ -1990,26 +2694,23 @@ def _make_bids_files_filter(
     task_label : :obj:`str`
         Task label as specified in the file names like _task-<task_label>_.
 
-    space_label : :obj:`str` or None, optional
+    space_label : :obj:`str` or None, default=None
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
-    supported_filters : :obj:`list` of :obj:`str` or None, optional
+    supported_filters : :obj:`list` of :obj:`str` or None, default=None
         List of authorized BIDS entities
 
-    extra_filter : :obj:`list` of :obj:`tuple` (str, str) or None, optional
+    extra_filter : :obj:`list` of :obj:`tuple` (str, str) or None, default=None
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
-    verbose : :obj:`integer`
-        Indicate the level of verbosity.
+    %(verbose0)s
 
     Returns
     -------
-    Filter to be used by :func:`get_bids_files`: \
-        :obj:`list` of :obj:`tuple` (str, str)
-        filters
-
+    :obj:`list` of :obj:`tuple` (str, str)
+        Filters to be used by :func:`get_bids_files`.
     """
     filters = [("task", task_label)]
 
@@ -2024,7 +2725,7 @@ def _make_bids_files_filter(
                         f"The filter {filter_} will be skipped. "
                         f"'{filter_[0]}' is not among the supported filters. "
                         f"Allowed filters include: {supported_filters}",
-                        stacklevel=3,
+                        stacklevel=find_stack_level(),
                     )
                 continue
 
@@ -2044,7 +2745,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
     Parameters
     ----------
     imgs : :obj:`list` of :obj:`str` or None
-        List of image fullpath filenames.
+        List of image full path filenames.
 
     sub_label : :obj:`str`
         Subject label as specified in the file names like _sub-<sub_label>_.
@@ -2052,7 +2753,6 @@ def _check_bids_image_list(imgs, sub_label, filters):
     filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters of the form (field, label) used to select the files.
         See :func:`get_bids_files`.
-
     """
     if not imgs:
         raise ValueError(
@@ -2075,12 +2775,12 @@ def _check_bids_image_list(imgs, sub_label, filters):
         "space_label or img_filters"
     )
 
-    run_check_list: list = []
+    run_check_list = []
 
     for img_ in imgs:
         parsed_filename = parse_bids_filename(img_)
-        session = parsed_filename.get("ses", None)
-        run = parsed_filename.get("run", None)
+        session = parsed_filename["entities"].get("ses")
+        run = parsed_filename["entities"].get("run")
 
         if session and run:
             if (session, run) in set(run_check_list):
@@ -2104,14 +2804,15 @@ def _check_bids_image_list(imgs, sub_label, filters):
         elif run:
             if run in set(run_check_list):
                 raise ValueError(
-                    f"{msg_start}" f"for the same run {run}. " f"{msg_end}"
+                    f"{msg_start}for the same run {run}. {msg_end}"
                 )
             run_check_list.append(run)
 
 
+@fill_doc
 def _check_bids_events_list(
     events, imgs, sub_label, task_label, dataset_path, events_filters, verbose
-):
+) -> None:
     """Check input BIDS events.
 
     Check that:
@@ -2123,10 +2824,10 @@ def _check_bids_events_list(
     Parameters
     ----------
     events : :obj:`list` of :obj:`str` or None
-        List of events.tsv fullpath filenames.
+        List of events.tsv full path filenames.
 
     imgs : :obj:`list` of :obj:`str`
-        List of image fullpath filenames.
+        List of image full path filenames.
 
     sub_label : :obj:`str`
         Subject label as specified in the file names like sub-<sub_label>_.
@@ -2135,12 +2836,13 @@ def _check_bids_events_list(
         Task label as specified in the file names like _task-<task_label>_.
 
     dataset_path : :obj:`str`
-        Fullpath to the BIDS dataset.
+        Full path to the BIDS dataset.
 
     events_filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters of the form (field, label) used to select the files.
         See :func:`get_bids_files`.
 
+    %(verbose)s
     """
     if not events:
         raise ValueError(
@@ -2157,6 +2859,17 @@ def _check_bids_events_list(
         )
     _check_trial_type(events=events)
 
+    # all events file are the same
+    # or we have single event file that does not
+    # contain the sub entity:
+    # we have a single event file in the root of the dataset
+    if len(events) > 1 and all(x == events[0] for x in events):
+        return None
+    elif len(events) == 1:
+        ref = parse_bids_filename(events[0])
+        if "sub" not in ref["entities"]:
+            return None
+
     supported_filters = [
         "sub",
         "ses",
@@ -2166,9 +2879,9 @@ def _check_bids_events_list(
     for this_img in imgs:
         parsed_filename = parse_bids_filename(this_img)
         extra_filter = [
-            (key, parsed_filename[key])
-            for key in parsed_filename
-            if key in supported_filters
+            (entity, parsed_filename["entities"][entity])
+            for entity in parsed_filename["entities"]
+            if entity in supported_filters
         ]
         filters = _make_bids_files_filter(
             task_label=task_label,
@@ -2186,18 +2899,17 @@ def _check_bids_events_list(
             filters=filters,
         )
         msg_suffix = (
-            f" bold file:\n{this_img}\nfilter:\n{filters})\n"
+            f"bold file:\n{this_img}\nfilter:\n{filters})\n"
             "Found all the following events files "
             f"for filter:\n{events}\n"
         )
         if len(this_event) == 0:
             raise ValueError(
-                f"No events.tsv files " f"corresponding to {msg_suffix}"
+                f"No events.tsv files corresponding to {msg_suffix}"
             )
         if len(this_event) > 1:
             raise ValueError(
-                f"More than 1 events.tsv files "
-                f"corresponding to {msg_suffix}"
+                f"More than 1 events.tsv files corresponding to {msg_suffix}"
             )
         if this_event[0] not in events:
             raise ValueError(

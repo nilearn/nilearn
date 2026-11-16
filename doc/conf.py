@@ -14,10 +14,13 @@ values that are commented out serve to show the default.
 import os
 import re
 import sys
+import warnings
+from pathlib import Path
 
-import sphinx
+from nilearn._version import __version__
+from sphinx.domains import changeset
+from sphinx.locale import _
 
-from nilearn._utils import compare_version
 
 # ----------------------------------------------------------------------------
 
@@ -26,31 +29,63 @@ from nilearn._utils import compare_version
 # directory, add these directories to sys.path here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
-sys.path.insert(0, os.path.abspath("sphinxext"))
+sys.path.insert(0, str(Path("sphinxext").absolute()))
+
+# See https://www.sphinx-doc.org/en/master/usage/extensions/linkcode.html
 from github_link import make_linkcode_resolve
 
+linkcode_resolve = make_linkcode_resolve
+
 # We also add the directory just above to enable local imports of nilearn
-sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, str(Path("..").absolute()))
+
+# -- Plotly Configuration ----------------------------------------------------
+
+try:
+    import plotly.io as pio
+
+    pio.renderers.default = "sphinx_gallery"
+except ImportError:
+    import warnings
+
+    warnings.warn(
+        stacklevel=2,
+        message="Plotly is not installed. Plotly figures will not be shown.",
+        category=UserWarning,
+    )
 
 # -- General configuration ---------------------------------------------------
+
+# avoid some warnings to show in the the sphinx gallery
+# https://sphinx-gallery.github.io/stable/configuration.html#removing-warnings
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message=".*matplotlib backend that is non-interactive.*",
+)
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
+    "changelog_anchors",
+    "dataset_descriptions",
+    "gh_substitutions",
+    "myst_parser",
+    "numpydoc",
+    "sphinx_copybutton",
+    "sphinx_prompt",
+    "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx.ext.extlinks",
     "sphinx.ext.imgmath",
     "sphinx.ext.intersphinx",
-    "sphinxcontrib.bibtex",
-    "numpydoc",
+    "matplotlib.sphinxext.plot_directive",
     "sphinx.ext.linkcode",
-    "gh_substitutions",
-    "sphinx_copybutton",
+    "sphinxcontrib.bibtex",
+    "sphinxcontrib.mermaid",
     "sphinxext.opengraph",
-    "myst_parser",
-    "sphinx_design",
-    "sphinx.ext.extlinks",
 ]
 
 autosummary_generate = True
@@ -60,11 +95,25 @@ autodoc_typehints = "none"
 autodoc_default_options = {
     "imported-members": True,
     "inherited-members": True,
-    "undoc-members": True,
     "member-order": "bysource",
-    #  We cannot have __init__: it causes duplicated entries
-    #  'special-members': '__init__',
 }
+
+try:
+    import jupyterlite_sphinx  # noqa: F401
+
+    extensions.append("jupyterlite_sphinx")
+    with_jupyterlite = True
+except ImportError:
+    # In some cases we don't want to require jupyterlite_sphinx
+    # to be installed,
+    # e.g. the doc-min-dependencies build
+    warnings.warn(
+        "jupyterlite_sphinx is not installed, you need to install it "
+        "if you want JupyterLite links to appear in the API documentation",
+        stacklevel=2,
+    )
+    with_jupyterlite = False
+
 
 # Get rid of spurious warnings due to some interaction between
 # autosummary and numpydoc. See
@@ -78,13 +127,20 @@ templates_path = ["templates"]
 autosummary_generate = True
 
 # The suffix of source filenames.
-source_suffix = [".rst", ".md"]
+source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 
 # The encoding of source files.
 # source_encoding = 'utf-8'
 
 # Generate the plots for the gallery
 plot_gallery = "True"
+
+# Always include the source code
+# when using the ..plot directive from matplotlib
+plot_include_source = True
+plot_formats = ["png"]
+plot_html_show_formats = False
+plot_html_show_source_link = False
 
 # The master toctree document.
 master_doc = "index"
@@ -97,22 +153,28 @@ bibtex_footbibliography_header = ""
 
 # General information about the project.
 project = "Nilearn"
-copyright = "The nilearn developers"
+
+copyright = """The nilearn developers
+- Code and documentation distributed under BSD license."""
+
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
 # Latest release version
-latest_release = re.match(
-    r"v?([0-9]+.[0-9]+.[0-9]+).*",
-    os.popen("git describe --tags").read().strip(),
-).groups()[0]
+try:
+    latest_release = re.match(
+        r"v?([0-9]+.[0-9]+.[0-9]+).*",
+        os.popen("git describe --tags").read().strip(),
+    ).groups()[0]
+except AttributeError:
+    # This may fail in case the git tags were not fetched.
+    # So let's have a back up.
+    latest_release = "0.11.0"
 
 # The full current version, including alpha/beta/rc tags.
-import nilearn
-
-current_version = nilearn.__version__
+current_version = __version__
 
 # The language for content autogenerated by Sphinx. Refer to documentation
 # for a list of supported languages.
@@ -130,6 +192,15 @@ exclude_patterns = [
     "tune_toc.rst",
     "includes/big_toc_css.rst",
     "includes/bigger_toc_css.rst",
+    # Per-version changelog fragments are only ever meant to be pulled into
+    # changes/whats_new.rst via ".. include::"; building them as their own
+    # standalone pages as well duplicates every anchor they define and
+    # trips Sphinx's duplicate-label warning.
+    *(
+        str(p.relative_to(Path(__file__).parent))
+        for p in Path(__file__).parent.glob("changes/*.rst")
+        if p.name not in ("whats_new.rst", "names.rst")
+    ),
 ]
 
 # List of directories, relative to source directory, that shouldn't be
@@ -152,17 +223,83 @@ add_function_parentheses = False
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-# pygments_style = 'friendly'
-# pygments_style = 'manni'
+# https://pygments.org/styles/
 pygments_style = "sas"
-pygments_dark_style = "stata-dark"
-
+pygments_dark_style = "monokai"
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
 
 # A list of warning types to suppress arbitrary warning messages
 suppress_warnings = ["image.not_readable", "config.cache"]
+
+linkcheck_allowed_redirects = {
+    "https://balsa.wustl.edu": r"https://balsa.wustl.eduapp/template/.*",
+    r"http://humanconnectome.org/.*": r"https://store.humanconnectome.org/.*",
+    # Issue redirect to PR
+    r"https://github.com/nilearn/nilearn/issues/.*": r"https://github.com/nilearn/nilearn/pull/.*",
+    # OSF downloads
+    r"https://osf.io/.*/download": r"https://files.osf.io/.*",
+    # doi redirect
+    "https://doi.org/": r"https://.*",
+}
+
+linkcheck_ignore = [
+    # ignore nilearn github issues mostly for the sake of speed
+    # given that there many of those in our changelog
+    r"https://github.com/nilearn/nilearn/issues.*",
+    r"https://github.com/nilearn/nilearn/XXXX",
+    r"https://hal\.science/.*",
+    r"https://inria\.hal\.science/.*",
+    # those are needed because figures
+    # cannot take sphinx gallery reference as target
+    r"../auto_examples/.*html",
+    r"auto_examples/.*html",
+    "https://github.com/nilearn/nilearn/issues/new/choose",
+    (
+        "https://www.info.gouv.fr/"
+        "organisation/"  # codespell:ignore organisation
+        "secretariat-general-pour-l-investissement-sgpi"
+    ),
+    # give a 403 Client Error: Forbidden for url:
+    r"https://sites.wustl.edu/oasisbrains/.*",
+    # similarly below are publishers that do not like doi redirects:
+    r"https://doi.org/.*",
+    # do not check download links for OSF
+    r"https://osf.io/.*/download",
+    # neurovault and some of our datasets websites can be flaky
+    r"https://neurovault.org.*",
+    r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
+    r"https://fcon_1000.projects.nitrc.org.*",
+    r"https://pkgs.org/search.*",
+    r"https://pmc.ncbi.nlm.nih.gov/articles.*",
+    r"https://pubmed.ncbi.nlm.nih.gov.*",
+    r"https://rrid.site/data/record.*",
+    r"https://sites.wustl.edu/oasisbrains.*",
+    r"https://www.cambridge.org/be/universitypress.*",
+    r"https://www.talairach.org.*",
+    r"../../_static/notebook_reports_.*",
+    "http://brainomics.cea.fr/localizer/",
+    "https://childmind.org/science/global-open-science/healthy-brain-network/",
+    "https://digicosme.cnrs.fr/en/digicosme-paris-saclay-english/",
+    "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
+    "https://imaging.mrc-cbu.cam.ac.uk/imaging/DesignEfficiency",
+    "https://octave.org",
+    "https://pages.saclay.inria.fr/bertrand.thirion/",
+    "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
+    "https://surfer.nmr.mgh.harvard.edu/",
+    "https://www.gin.cnrs.fr/en/tools/aal",
+    "https://www.youtube.com/@nilearnevents5116",
+]
+
+linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
+
+linkcheck_allow_unauthorized = True
+
+linkcheck_report_timeouts_as_broken = False
+
+# double default rate_limit_timeout
+linkcheck_rate_limit_timeout = 600.0
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -171,17 +308,20 @@ suppress_warnings = ["image.not_readable", "config.cache"]
 html_theme = "furo"
 
 # Add custom css instructions from themes/custom.css
-font_awesome = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/"
+font_awesome = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/"
 html_css_files = [
     "custom.css",
-    (
-        "https://cdnjs.cloudflare.com/ajax/libs/"
-        "font-awesome/5.15.4/css/all.min.css"
-    ),
+    "button_styling.css",
+    f"{font_awesome}all.min.css",
     f"{font_awesome}fontawesome.min.css",
     f"{font_awesome}solid.min.css",
     f"{font_awesome}brands.min.css",
 ]
+
+# Privacy-friendly page view analytics with GoatCounter
+# (https://nilearn.goatcounter.com).
+# Only active on https://nilearn.github.io (see themes/goatcounter.js).
+html_js_files = ["goatcounter.js"]
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
@@ -215,10 +355,10 @@ html_theme_options = {
             "class": "fa-brands fa-solid fa-github fa-2x",
         },
         {
-            "name": "Twitter",
-            "url": "https://twitter.com/nilearn",
+            "name": "Bluesky",
+            "url": "https://bsky.app/profile/nilearn.bsky.social",
             "html": "",
-            "class": "fa-brands fa-solid fa-twitter fa-2x",
+            "class": "fa-brands fa-solid fa-bluesky fa-2x",
         },
         {
             "name": "Mastodon",
@@ -228,9 +368,15 @@ html_theme_options = {
         },
         {
             "name": "Discord",
-            "url": "https://discord.gg/SsQABEJHkZ",
+            "url": "https://discord.com/invite/SsQABEJHkZ",
             "html": "",
             "class": "fa-brands fa-solid fa-discord fa-2x",
+        },
+        {
+            "name": "Youtube",
+            "url": "https://www.youtube.com/channel/UCU6BMAi2zOhNFnDkbdevmPw",
+            "html": "",
+            "class": "fa-brands fa-solid fa-youtube fa-2x",
         },
     ],
 }
@@ -268,7 +414,7 @@ html_favicon = "logos/favicon.ico"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["images", "themes"]
+html_static_path = ["images", "themes", "reports"]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -311,81 +457,17 @@ html_context = {"build_dev_html": build_dev_html}
 # html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "PythonScientic"
+htmlhelp_basename = "PythonScientific"
 
-# Sphinx copybutton config
-copybutton_prompt_text = ">>> "
-
-# -- Options for LaTeX output ------------------------------------------------
-
-# The paper size ('letter' or 'a4').
-# latex_paper_size = 'letter'
-
-# The font size ('10pt', '11pt' or '12pt').
-# latex_font_size = '10pt'
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass
-# [howto/manual]).
-latex_documents = [
-    (
-        "index",
-        "nilearn.tex",
-        "NeuroImaging with scikit-learn",
-        "Gaël Varoquaux and Alexandre Abraham"
-        + r"\\\relax ~\\\relax https://nilearn.github.io",
-        "manual",
-    ),
-]
-
-# The name of an image file (relative to this directory) to place at the top of
-# the title page.
-latex_logo = "logos/nilearn-transparent.png"
-
-# For "manual" documents, if this is true, then toplevel headings are parts,
-# not chapters.
-# latex_use_parts = False
-
-# Additional stuff for the LaTeX preamble.
-
-# Documents to append as an appendix to all manuals.
-# latex_appendices = []
-latex_elements = {
-    "classoptions": ",oneside",
-    "babel": "\\usepackage[english]{babel}",
-    # Get completely rid of index
-    "printindex": "",
-}
-
-if compare_version(sphinx.__version__, "<", "1.5"):
-    latex_preamble = r"""
-    \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
-    \let\oldfootnote\footnote
-    \def\footnote#1{\oldfootnote{\small #1}}
-    """
-    # If false, no module index is generated.
-    latex_use_modindex = False
-else:
-    latex_elements[
-        "preamble"
-    ] = r"""
-    \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
-    \let\oldfootnote\footnote
-    \def\footnote#1{\oldfootnote{\small #1}}
-    """
-
-
-latex_domain_indices = False
-
-# Show the page numbers in the references
-latex_show_pagerefs = True
-
-# Show URLs in footnotes
-latex_show_urls = "footnote"
+# sphinx-copybutton configurations
+copybutton_prompt_text = (
+    r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+)
+copybutton_prompt_is_regexp = True
 
 trim_doctests_flags = True
 
-_python_doc_base = "https://docs.python.org/3.9"
+_python_doc_base = "https://docs.python.org/3.11"
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
@@ -398,13 +480,14 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
     "nistats": ("https://nistats.github.io", None),
     "joblib": ("https://joblib.readthedocs.io/en/latest/", None),
+    "plotly": ("https://plotly.com/python-api-reference/", None),
 }
 
 extlinks = {
     "sklearn": ("https://scikit-learn.org/stable/%s", None),
     "inria": ("https://team.inria.fr/%s", None),
     "nilearn-gh": ("https://github.com/nilearn/nilearn/%s", None),
-    "neurostars": ("https://neurostars.org/tag/nilearn/%s", None),
+    "neurostars": ("https://neurostars.org/tag/nilearn/19%s", None),
     "nipy": ("https://nipy.org/%s", None),
 }
 
@@ -419,7 +502,7 @@ binder_branch = "main" if "dev" in current_version else current_version
 
 sphinx_gallery_conf = {
     "doc_module": "nilearn",
-    "backreferences_dir": os.path.join("modules", "generated"),
+    "backreferences_dir": Path("modules", "generated"),
     "reference_url": {"nilearn": None},
     "junit": "../test-results/sphinx-gallery/junit.xml",
     "examples_dirs": "../examples/",
@@ -438,31 +521,71 @@ sphinx_gallery_conf = {
         "use_jupyter_lab": True,
     },
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
+    "within_subsection_order": "ExampleTitleSortKey",
+    # Disallow jupyterlite for examples in gallery
+    # as most of them requires loading too much data in the browser
+    "jupyterlite": None,
 }
 
 
-def touch_example_backreferences(app, what, name, obj, options, lines):
+if with_jupyterlite:
+    global_enable_try_examples = True
+    jupyterlite_bind_ipynb_suffix = False
+    try_examples_global_button_text = "Try it in your browser!"
+    try_examples_global_warning_text = (
+        "Running the Nilearn examples in JupyterLite is experimental"
+        " and you may encounter unexpected behavior.\n\n"
+        " In particular, note that load times may take a lot longer"
+        " than usual—for example, the `%pip install -q nilearn`"
+        " call can take roughly 10-20s—and that the "
+        " version of Nilearn used in Jupyterlite might be different "
+        " than the one used to generate the documentation.\n\n"
+        " If you encounter any problems, please report them in a new"
+        " [issue](https://github.com/nilearn/nilearn/issues/new/choose)."
+    )
+    try_examples_preamble = "%pip install -q nilearn"
+
+mermaid_version = "11.4.0"
+
+
+def touch_example_backreferences(
+    app,
+    what,  # noqa: ARG001
+    name,
+    obj,  # noqa: ARG001
+    options,  # noqa: ARG001
+    lines,  # noqa: ARG001
+):
     # generate empty examples files, so that we don't get
     # inclusion errors if there are no examples for a class / module
-    examples_path = os.path.join(
+    examples_path = Path(
         app.srcdir, "modules", "generated", f"{name}.examples"
     )
-    if not os.path.exists(examples_path):
-        # touch file
-        open(examples_path, "w").close()
+    if not examples_path.exists():
+        examples_path.touch()
+
+
+# adapting https://github.com/sphinx-doc/sphinx/blob/master/sphinx/domains/changeset.py
+changeset.versionlabels["nilearn_versionadded"] = _("Added in Nilearn %s")
+changeset.versionlabels["nilearn_versionchanged"] = _("Changed in Nilearn %s")
+changeset.versionlabels["nilearn_deprecated"] = _(
+    "Deprecated since Nilearn %s"
+)
+changeset.versionlabels["nilearn_versionremoved"] = _("Removed in Nilearn %s")
+changeset.versionlabel_classes["nilearn_versionadded"] = "added"
+changeset.versionlabel_classes["nilearn_versionchanged"] = "changed"
+changeset.versionlabel_classes["nilearn_deprecated"] = "deprecated"
+changeset.versionlabel_classes["nilearn_versionremoved"] = "removed"
 
 
 def setup(app):
+    app.add_directive("nilearn_versionadded", changeset.VersionChange)
+    app.add_directive("nilearn_versionchanged", changeset.VersionChange)
+    app.add_directive("nilearn_deprecated", changeset.VersionChange)
+    app.add_directive("nilearn_versionremoved", changeset.VersionChange)
+
     app.connect("autodoc-process-docstring", touch_example_backreferences)
 
-
-# The following is used by sphinx.ext.linkcode to provide links to github
-linkcode_resolve = make_linkcode_resolve(
-    "nilearn",
-    "https://github.com/nilearn/"
-    "nilearn/blob/{revision}/"
-    "{package}/{path}#L{lineno}",
-)
 
 # -- sphinxext.opengraph configuration -------------------------------------
 ogp_site_url = "https://nilearn.github.io/"

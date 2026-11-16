@@ -13,4 +13,5 @@ terms of data processing.
 .. toctree::
 
    manual_pipeline.rst
+   gpu_usage.rst
    neurovault.rst

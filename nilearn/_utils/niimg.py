@@ -1,22 +1,22 @@
 """Neuroimaging file input and output."""
 
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-
 import collections.abc
-import copy
-import gc
+from copy import deepcopy
 from pathlib import Path
 from warnings import warn
 
-import nibabel
 import numpy as np
+from nibabel import Nifti1Image, is_proxy, load, spatialimages
 
-from .helpers import stringify_path
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import stringify_path
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.numpy_conversions import get_target_dtype
 
 
-def _get_data(img):
+def _get_data(img: Nifti1Image) -> np.ndarray:
     # copy-pasted from
-    # https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204 # noqa
+    # https://github.com/nipy/nibabel/blob/de44a10/nibabel/dataobj_images.py#L204
     #
     # get_data is removed from nibabel because:
     # see https://github.com/nipy/nibabel/wiki/BIAP8
@@ -27,194 +27,228 @@ def _get_data(img):
     return data
 
 
-def safe_get_data(img, ensure_finite=False, copy_data=False):
+def safe_get_data(
+    img: Nifti1Image, ensure_finite: bool = False, copy_data: bool = False
+) -> np.ndarray:
     """Get the data in the image without having a side effect \
     on the Nifti1Image object.
 
+    This function will create a copy of the image and load data to new image's
+    cache, leaving image's state unchanged if:
+
+    - image data is not loaded to cache,
+    - ``copy_data`` is `True`,
+
+    If ``ensure_finite`` is set to `True`, this is no more guaranteed. If data
+    is not cached, it will be cached and infinite values are replaced with 0.
+
     Parameters
     ----------
-    img: Nifti image/object
+    img : Nifti image/object
         Image to get data.
 
-    ensure_finite: bool
+    ensure_finite : :obj:`bool`
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
-    copy_data: bool, default=False
+    copy_data : :obj:`bool`, default=False
         If true, the returned data is a copy of the img data.
 
     Returns
     -------
-    data: numpy array
-        nilearn.image.get_data return from Nifti image.
+    data : numpy array
+        Data returned by nilearn.image.get_data from a Nifti image.
     """
-    if copy_data:
-        img = copy.deepcopy(img)
-
-    # typically the line below can double memory usage
-    # that's why we invoke a forced call to the garbage collector
-    gc.collect()
+    if not img.in_memory or copy_data:
+        img = deepcopy(img)
 
     data = _get_data(img)
-    if ensure_finite:
-        non_finite_mask = np.logical_not(np.isfinite(data))
-        if non_finite_mask.sum() > 0:  # any non_finite_mask values?
-            warn(
-                "Non-finite values detected. "
-                "These values will be replaced with zeros.",
-                stacklevel=2,
-            )
-            data[non_finite_mask] = 0
 
+    if ensure_finite:
+        ensure_finite_data(data)
     return data
 
 
-def _get_target_dtype(dtype, target_dtype):
-    """Return a new dtype if conversion is needed.
+def has_non_finite(data: np.ndarray) -> tuple[bool, np.ndarray]:
+    """Return True if data contains at least one NaN or inf value; False if
+    there are no NaN and inf values.
 
-    Parameters
-    ----------
-    dtype: dtype
-        Data type of the original data
-
-    target_dtype: {None, dtype, "auto"}
-        If None, no conversion is required. If a type is provided, the
-        function will check if a conversion is needed. The "auto" mode will
-        automatically convert to int32 if dtype is discrete and float32 if it
-        is continuous.
-
-    Returns
-    -------
-    dtype: dtype
-        The data type toward which the original data should be converted.
+    Besides boolean value, return the mask.
     """
-    if target_dtype is None:
-        return None
-    if target_dtype == "auto":
-        if dtype.kind == "i":
-            target_dtype = np.int32
-        else:
-            target_dtype = np.float32
-    if target_dtype == dtype:
-        return None
-    return target_dtype
+    non_finite_mask = ~np.isfinite(data)
+    has_not_finite = bool(non_finite_mask.any())
+    return has_not_finite, non_finite_mask
 
 
+def ensure_finite_data(
+    data: np.ndarray, raise_warning: bool = True
+) -> np.ndarray:
+    """Check if data contains NaN or inf values, set infinite values
+    to 0 inplace if exists and return data.
+    """
+    has_not_finite, non_finite_mask = has_non_finite(data)
+    if has_not_finite:
+        if raise_warning:
+            warn(
+                "Non-finite values detected. "
+                "These values will be replaced with zeros.",
+                stacklevel=find_stack_level(),
+            )
+        data[non_finite_mask] = 0
+    return data
+
+
+@fill_doc
 def load_niimg(niimg, dtype=None):
     """Load a niimg, check if it is a nibabel SpatialImage and cast if needed.
 
     Parameters
     ----------
-    niimg: Niimg-like object
+    niimg : Niimg-like object
         See :ref:`extracting_data`.
         Image to load.
 
-    dtype: {dtype, "auto"}
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     Returns
     -------
-    img: image
+    img : image
         A loaded image object.
     """
-    from ..image import new_img_like  # avoid circular imports
+    from nilearn.image.image import new_img_like  # avoid circular imports
 
     niimg = stringify_path(niimg)
     if isinstance(niimg, str):
         # data is a filename, we load it
-        niimg = nibabel.load(niimg)
-    elif not isinstance(niimg, nibabel.spatialimages.SpatialImage):
+        niimg = load(niimg)
+    elif not isinstance(niimg, spatialimages.SpatialImage):
         raise TypeError(
             "Data given cannot be loaded because it is"
             " not compatible with nibabel format:\n"
-            + _repr_niimgs(niimg, shorten=True)
+            + repr_niimgs(niimg, shorten=True)
         )
 
-    dtype = _get_target_dtype(_get_data(niimg).dtype, dtype)
-
+    # avoid loading data if dtype is None
     if dtype is not None:
-        # Copyheader and set dtype in header if header exists
-        if niimg.header is not None:
+        img_data = _get_data(niimg)
+        target_dtype = get_target_dtype(img_data.dtype, dtype)
+
+        if target_dtype is not None:
+            copy_header = niimg.header is not None
             niimg = new_img_like(
-                niimg,
-                _get_data(niimg).astype(dtype),
-                niimg.affine,
-                copy_header=True,
+                niimg, img_data.astype(target_dtype), niimg.affine
             )
-            niimg.header.set_data_dtype(dtype)
-        else:
-            niimg = new_img_like(
-                niimg, _get_data(niimg).astype(dtype), niimg.affine
-            )
+            if copy_header:
+                niimg.header.set_data_dtype(target_dtype)
 
     return niimg
 
 
-def is_binary_niimg(niimg):
+def is_binary_niimg(
+    niimg: Nifti1Image,
+    block_size: int = 1_000_000,
+    accept_non_finite: bool = True,
+) -> bool:
     """Return whether a given niimg is binary or not.
 
     Parameters
     ----------
-    niimg: Niimg-like object
+    niimg : Niimg-like object
         See :ref:`extracting_data`.
         Image to test.
 
+    block_size : :obj:`int`, default = 1_000_000
+
+    accept_non_finite : :obj:`bool`, default = True
+
     Returns
     -------
-    is_binary: Boolean
+    is_binary : :obj:`bool`
         True if binary, False otherwise.
-
     """
     niimg = load_niimg(niimg)
-    data = safe_get_data(niimg, ensure_finite=True)
-    unique_values = np.unique(data)
-    if len(unique_values) != 2:
-        return False
-    return sorted(list(unique_values)) == [0, 1]
+    data = niimg.dataobj
+    return is_binary_data(data, block_size, accept_non_finite)
 
 
-def _repr_niimgs(niimgs, shorten=True):
+def _binary_mask(block: np.ndarray) -> np.ndarray:
+    """Create a boolean mask for values equal to 0 or 1."""
+    return (block == 0) | (block == 1)
+
+
+def _binary_mask_with_nonfinite(block: np.ndarray) -> np.ndarray:
+    """Create a boolean mask for values equal to 0, 1, nan, or +-inf."""
+    return _binary_mask(block) | ~np.isfinite(block)
+
+
+def is_binary_data(data, block_size=1_000_000, accept_non_finite=True) -> bool:
+    """Return whether a given proxy array or ndarray is binary or not.
+    If accept_non_finite is True, NaN and inf values are ignored.
+    """
+    flat = np.ravel(data)
+
+    mask_func = (
+        _binary_mask_with_nonfinite if accept_non_finite else _binary_mask
+    )
+
+    for i in range(0, flat.size, block_size):
+        block = flat[i : i + block_size]
+
+        mask = mask_func(block)
+        if not mask.all():
+            return False
+
+    return True
+
+
+def repr_niimgs(niimgs, shorten=True):
     """Pretty printing of niimg or niimgs.
 
     Parameters
     ----------
-    niimgs: image or collection of images
-        nibabel SpatialImage to repr.
+    niimgs : image or collection of images
+        nibabel SpatialImage or SurfaceImage to repr.
 
-    shorten: boolean, default=True
+    shorten : :obj:`bool`, default=True
         If True, filenames with more than 20 characters will be
         truncated, and lists of more than 3 file names will be
         printed with only first and last element.
 
     Returns
     -------
-    repr: str
+    repr : :obj:`str`
         String representation of the image.
     """
-    # Maximum number of elements to be displayed
-    # Note: should be >= 3 to make sense...
-    list_max_display = 3
     # Simple string case
     if isinstance(niimgs, (str, Path)):
         return _short_repr(niimgs, shorten=shorten)
+
+    # SurfaceImage imports repr_niimgs, so import locally to avoid a cycle.
+    from nilearn.surface.surface import SurfaceImage
+
+    if isinstance(niimgs, SurfaceImage):
+        return repr(niimgs)
+
     # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
-        if shorten and len(niimgs) > list_max_display:
-            tmp = ",\n         ...\n ".join(
-                _repr_niimgs(niimg, shorten=shorten)
-                for niimg in [niimgs[0], niimgs[-1]]
-            )
-            return f"[{tmp}]"
-        elif len(niimgs) > list_max_display:
-            tmp = ",\n ".join(
-                _repr_niimgs(niimg, shorten=shorten) for niimg in niimgs
-            )
-            return f"[{tmp}]"
+        # Maximum number of elements to be displayed
+        # Note: should be >= 3 to make sense...
+        list_max_display = 3
+        if len(niimgs) > list_max_display:
+            if shorten:
+                tmp = ",\n         ...\n ".join(
+                    repr_niimgs(niimg, shorten=shorten)
+                    for niimg in [niimgs[0], niimgs[-1]]
+                )
+            else:
+                tmp = ",\n ".join(
+                    repr_niimgs(niimg, shorten=shorten) for niimg in niimgs
+                )
+            return f"[\n {tmp},\n]"
         else:
-            tmp = [_repr_niimgs(niimg, shorten=shorten) for niimg in niimgs]
-            return f"[{', '.join(tmp)}]"
+            tmp = [repr_niimgs(niimg, shorten=shorten) for niimg in niimgs]
+            return f"[\n {', '.join(tmp)},\n]"
+
     # Nibabel objects have a 'get_filename'
     try:
         filename = niimgs.get_filename()
@@ -227,55 +261,52 @@ def _repr_niimgs(niimgs, shorten=True):
             # No shortening in this case
             return (
                 f"{niimgs.__class__.__name__}"
-                f"(\nshape={repr(niimgs.shape)},"
-                f"\naffine={repr(niimgs.affine)}\n)"
+                f"(\nshape={niimgs.shape!r},"
+                f"\naffine={niimgs.affine!r}\n)"
             )
     except Exception:
         pass
     return _short_repr(repr(niimgs), shorten=shorten)
 
 
-def _short_repr(niimg_rep, shorten=True, truncate=20):
+def _short_repr(niimg_rep, shorten: bool = True, truncate: int = 20) -> str:
     """Give a shorter version of niimg representation."""
     # Make sure truncate has a reasonable value
     truncate = max(truncate, 10)
     path_to_niimg = Path(niimg_rep)
     if not shorten:
         return str(path_to_niimg)
-    # If the name of the file itself is larger than
-    # truncate, then shorten the name only
+    # If the name of the file itself
+    # is larger than truncate,
+    # then shorten the name only
+    # else add some folder structure if available
     if len(path_to_niimg.name) > truncate:
         return f"{path_to_niimg.name[: (truncate - 2)]}..."
-    # Else add some folder structure if available
-    else:
-        rep = path_to_niimg.name
-        if len(path_to_niimg.parts) > 1:
-            for p in path_to_niimg.parts[::-1][1:]:
-                if len(rep) + len(p) < truncate - 3:
-                    rep = str(Path(p, rep))
-                else:
-                    rep = str(Path("...", rep))
-                    break
-        return rep
+    rep = path_to_niimg.name
+    if len(path_to_niimg.parts) > 1:
+        for p in path_to_niimg.parts[::-1][1:]:
+            if len(rep) + len(p) < truncate - 3:
+                rep = str(Path(p, rep))
+            else:
+                rep = str(Path("...", rep))
+                break
+    return rep
 
 
-def img_data_dtype(niimg):
+def img_data_dtype(img):
     """Determine type of data contained in image.
 
     Based on the information contained in ``niimg.dataobj``, determine the
     dtype of ``np.array(niimg.dataobj).dtype``.
     """
-    dataobj = niimg.dataobj
+    dataobj = img.dataobj
 
     # Neuroimages that scale data should be interpreted as floating point
-    if nibabel.is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (
+    if is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (
         1.0,
         0.0,
     ):
         return np.float64
 
     # ArrayProxy gained the dtype attribute in nibabel 2.2
-    if hasattr(dataobj, "dtype"):
-        return dataobj.dtype
-
-    return niimg.get_data_dtype()
+    return dataobj.dtype if hasattr(dataobj, "dtype") else img.get_data_dtype()

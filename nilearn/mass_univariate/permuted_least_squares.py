@@ -1,20 +1,26 @@
 """Massively Univariate Linear Model estimated \
-with OLS and permutation test."""
+with OLS and permutation test.
+"""
 
-# Author: Benoit Da Mota, <benoit.da_mota@inria.fr>, sept. 2011
-#         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
-import sys
 import time
 import warnings
 
 import joblib
-import nibabel as nib
 import numpy as np
+from nibabel import Nifti1Image
 from scipy import stats
 from scipy.ndimage import generate_binary_structure, label
 from sklearn.utils import check_random_state
 
 from nilearn import image
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level, readable_time
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
@@ -26,7 +32,8 @@ from nilearn.mass_univariate._utils import (
 )
 
 
-def _permuted_ols_on_chunk(
+@fill_doc
+def _permuted_ols_on_chunk(  # numpydoc ignore=RT05
     scores_original_data,
     tested_vars,
     target_vars,
@@ -67,20 +74,21 @@ def _permuted_ols_on_chunk(
         If ``threshold`` is not None, but ``masker`` is, an exception will be
         raised.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
-    confounding_vars : array-like, shape=(n_samples, n_covars), optional
+    confounding_vars : array-like of shape=(n_samples, n_covars) \
+             or None, default=None
         Clinical data (covariates).
 
     masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
-            :class:`~nilearn.maskers.MultiNiftiMasker`, optional
+            :class:`~nilearn.maskers.MultiNiftiMasker` or None, default=None
         A mask to be used on the data.
         This is used for cluster-level inference and :term:`TFCE`-based
         inference, if either is enabled.
         If ``threshold`` is not None, but ``masker`` is, an exception will be
         raised.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     n_perm : int, default=10000
         Total number of permutations to perform, only used for
@@ -89,11 +97,11 @@ def _permuted_ols_on_chunk(
     n_perm_chunk : int, default=10000
         Number of permutations to be performed.
 
-    intercept_test : boolean, default=True
+    intercept_test : :obj:`bool`, default=True
         Change the permutation scheme (swap signs for intercept,
         switch labels otherwise). See :footcite:t:`Fisher1935`.
 
-    two_sided_test : boolean, default=True
+    two_sided_test : :obj:`bool`, default=True
         If True, performs an unsigned t-test. Both positive and negative
         effects are considered; the null hypothesis is that the effect is zero.
         If False, only positive effects are considered as relevant. The null
@@ -107,20 +115,17 @@ def _permuted_ols_on_chunk(
         The TFCE calculation is implemented as described in
         :footcite:t:`Smith2009a`.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     tfce_original_data : None or array-like, \
-            shape=(n_descriptors, n_regressors), optional
+            shape=(n_descriptors, n_regressors), default=None
         TFCE values obtained for the original (non-permuted) data.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
-    random_state : int or None, optional
-        Seed for random number generator, to have the same permutations
-        in each computing units.
+    %(random_state)s
 
-    verbose : int, default=0
-        Defines the verbosity level.
+    %(verbose0)s
 
     Returns
     -------
@@ -141,7 +146,7 @@ def _permuted_ols_on_chunk(
         Only calculated if ``masker`` is not None.
         Otherwise, these will both be None.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     tfce_scores_as_ranks_part : array-like, shape=(n_regressors, n_descriptors)
         The ranks of the original TFCE values in ``h0_tfce_part``.
@@ -150,18 +155,17 @@ def _permuted_ols_on_chunk(
         Here, it is performed in parallel by the workers involved in the
         permutation computation.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     h0_tfce_part : array-like, shape=(n_perm_chunk, n_regressors)
         Distribution of the (max) TFCE value under the null hypothesis
         (limited to this permutation chunk).
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     References
     ----------
     .. footbibliography::
-
     """
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
@@ -176,17 +180,15 @@ def _permuted_ols_on_chunk(
 
     # Preallocate null arrays for optional outputs
     # Any unselected outputs will just return a None
+    h0_tfce_part, tfce_scores_as_ranks_part = None, None
     if tfce:
         h0_tfce_part = np.empty((n_regressors, n_perm_chunk))
         tfce_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
-    else:
-        h0_tfce_part, tfce_scores_as_ranks_part = None, None
 
+    h0_csfwe_part, h0_cmfwe_part = None, None
     if threshold is not None:
         h0_csfwe_part = np.empty((n_regressors, n_perm_chunk))
         h0_cmfwe_part = np.empty((n_regressors, n_perm_chunk))
-    else:
-        h0_csfwe_part, h0_cmfwe_part = None, None
 
     for i_perm in range(n_perm_chunk):
         if intercept_test:
@@ -194,7 +196,6 @@ def _permuted_ols_on_chunk(
             target_vars = target_vars * (
                 rng.randint(2, size=(n_samples, 1)) * 2 - 1
             )
-
         else:
             # shuffle data
             # Regarding computation costs, we choose to shuffle testvars
@@ -268,23 +269,24 @@ def _permuted_ols_on_chunk(
                 two_sided_test=two_sided_test,
             )
 
-        if verbose > 0:
-            step = 11 - min(verbose, 10)
-            if i_perm % step == 0:
-                # If there is only one job, progress information is fixed
-                crlf = "\n"
-                if n_perm == n_perm_chunk:
-                    crlf = "\r"
+        step = 11 - min(verbose, 10)
+        if i_perm % step == 0:
+            # If there is only one job, progress information is fixed
+            crlf = "\n"
+            if n_perm == n_perm_chunk:
+                crlf = "\r"
 
-                percent = float(i_perm) / n_perm_chunk
-                percent = round(percent * 100, 2)
-                dt = time.time() - t0
-                remaining = (100.0 - percent) / max(0.01, percent) * dt
-                sys.stderr.write(
-                    f"Job #{thread_id}, processed {i_perm}/{n_perm_chunk} "
-                    f"permutations ({percent:0.2f}%, {remaining} seconds "
-                    f"remaining){crlf}"
-                )
+            percent = float(i_perm) / n_perm_chunk
+            percent = round(percent * 100, 2)
+            dt = time.time() - t0
+            remaining = (100.0 - percent) / max(0.01, percent) * dt
+
+            logger.log(
+                f"Job #{thread_id}, processed {i_perm}/{n_perm_chunk} "
+                f"permutations ({percent:0.2f}%, {readable_time(remaining)} "
+                f"remaining){crlf}",
+                verbose=verbose,
+            )
 
     return (
         scores_as_ranks_part,
@@ -296,7 +298,8 @@ def _permuted_ols_on_chunk(
     )
 
 
-def permuted_ols(
+@fill_doc
+def permuted_ols(  # numpydoc ignore=RT05
     tested_vars,
     target_vars,
     confounding_vars=None,
@@ -309,8 +312,7 @@ def permuted_ols(
     masker=None,
     tfce=False,
     threshold=None,
-    output_type="legacy",
-):
+) -> dict[str, np.ndarray]:
     """Massively univariate group analysis with permuted OLS.
 
     Tested variates are independently fitted to target variates descriptors
@@ -342,7 +344,16 @@ def permuted_ols(
     Parameters
     ----------
     tested_vars : array-like, shape=(n_samples, n_regressors)
-        Explanatory variates, fitted and tested independently from each others.
+        Numerical or boolean labels for explanatory variates; fitted and tested
+        independently of each other.
+
+        .. note::
+
+            ``permuted_ols`` can support a wide range of analysis designs,
+            depending on the numerical labels in ``tested_var``.
+            For example, if you wished to perform a one-sample test,
+            you could simply provide an array of ones
+            (e.g., ``np.ones(n_samples)``).
 
     target_vars : array-like, shape=(n_samples, n_descriptors)
         :term:`fMRI` data to analyze according
@@ -353,7 +364,7 @@ def permuted_ols(
         while the descriptors will generally be images,
         such as run-wise z-statistic maps.
 
-    confounding_vars : array-like, shape=(n_samples, n_covars), optional
+    confounding_vars : array-like, shape=(n_samples, n_covars), default=None
         Confounding variates (covariates), fitted but not tested.
         If None, no confounding variate is added to the model
         (except maybe a constant column according to the value of
@@ -364,21 +375,12 @@ def permuted_ols(
         unless the tested variate is already the intercept or when
         confounding variates already contain an intercept.
 
-    n_perm : :obj:`int`, default=10000
-        Number of permutations to perform.
-        Permutations are costly but the more are performed, the more precision
-        one gets in the p-values estimation.
+    %(n_perm)s
         If ``n_perm`` is set to 0, then no p-values will be estimated.
 
-    two_sided_test : :obj:`bool`, default=True
-        If True, performs an unsigned t-test. Both positive and negative
-        effects are considered; the null hypothesis is that the effect is zero.
-        If False, only positive effects are considered as relevant. The null
-        hypothesis is that the effect is zero or negative.
+    %(two_sided_test)s
 
-    random_state : :obj:`int` or np.random.RandomState or None, optional
-        Seed for random number generator, to have the same permutations
-        in each computing units.
+    %(random_state)s
 
     n_jobs : :obj:`int`, default=1
         Number of parallel workers.
@@ -386,16 +388,15 @@ def permuted_ols(
         A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
         ones will be used.
 
-    verbose : :obj:`int`, default=0
-        verbosity level (0 means no message).
+    %(verbose0)s
 
     masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
-            :class:`~nilearn.maskers.MultiNiftiMasker`, optional
+            :class:`~nilearn.maskers.MultiNiftiMasker`, default=None
         A mask to be used on the data.
         This is required for cluster-level inference, so it must be provided
         if ``threshold`` is not None.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     threshold : None or :obj:`float`, default=None
         Cluster-forming threshold in p-scale.
@@ -407,105 +408,18 @@ def permuted_ols(
             Performing cluster-level inference will increase the computation
             time of the permutation procedure.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
-    tfce : :obj:`bool`, default=False
-        Whether to calculate :term:`TFCE` as part of the permutation procedure
-        or not.
-        The TFCE calculation is implemented as described in
-        :footcite:t:`Smith2009a`.
+    %(tfce)s
 
-        .. warning::
-
-            Performing TFCE-based inference will increase the computation
-            time of the permutation procedure considerably.
-            The permutations may take multiple hours, depending on how many
-            permutations are requested and how many jobs are performed in
-            parallel.
-
-        .. versionadded:: 0.9.2
-
-    output_type : {'legacy', 'dict'}, optional
-        Determines how outputs should be returned.
-        The two options are:
-
-        -   'legacy': return a pvals, score_orig_data, and h0_fmax.
-            This option is the default, but it is deprecated until 0.13,
-            when the default will be changed to 'dict'.
-            It will be removed in 0.15.
-        -   'dict': return a dictionary containing output arrays.
-            This option will be made the default in 0.13.
-            Additionally, if ``tfce`` is True or ``threshold`` is not None,
-            ``output_type`` will automatically be set to 'dict'.
-
-        .. deprecated:: 0.9.2
-
-            The default value for this parameter will change from 'legacy' to
-            'dict' in 0.13, and the parameter will be removed completely in
-            0.15.
-
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     Returns
     -------
-    pvals : array-like, shape=(n_regressors, n_descriptors)
-        Negative log10 p-values associated with the significance test of the
-        n_regressors explanatory variates against the n_descriptors target
-        variates. Family-wise corrected p-values.
-
-        .. note::
-
-            This is returned if ``output_type`` == 'legacy'.
-
-        .. deprecated:: 0.9.2
-
-            The 'legacy' option for ``output_type`` is deprecated.
-            The default value will change to 'dict' in 0.13,
-            and the ``output_type`` parameter will be removed in 0.15.
-
-    score_orig_data : numpy.ndarray, shape=(n_regressors, n_descriptors)
-        t-statistic associated with the significance test of the n_regressors
-        explanatory variates against the n_descriptors target variates.
-        The ranks of the scores into the h0 distribution correspond to the
-        p-values.
-
-        .. note::
-
-            This is returned if ``output_type`` == 'legacy'.
-
-        .. deprecated:: 0.9.2
-
-            The 'legacy' option for ``output_type`` is deprecated.
-            The default value will change to 'dict' in 0.13,
-            and the ``output_type`` parameter will be removed in 0.15.
-
-    h0_fmax : array-like, shape=(n_regressors, n_perm)
-        Distribution of the (max) t-statistic under the null hypothesis
-        (obtained from the permutations). Array is sorted.
-
-        .. note::
-
-            This is returned if ``output_type`` == 'legacy'.
-
-        .. deprecated:: 0.9.2
-
-            The 'legacy' option for ``output_type`` is deprecated.
-            The default value will change to 'dict' in 0.13,
-            and the ``output_type`` parameter will be removed in 0.15.
-
-        .. versionchanged:: 0.9.2
-
-            Return H0 for all regressors, instead of only the first one.
-
     outputs : :obj:`dict`
         Output arrays, organized in a dictionary.
 
-        .. note::
-
-            This is returned if ``output_type`` == 'dict'.
-            This will be the default output starting in version 0.13.
-
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
         Here are the keys:
 
@@ -605,85 +519,60 @@ def permuted_ols(
     ----------
     .. footbibliography::
 
+    Examples
+    --------
+
+    .. plot::
+
+        >>> import numpy as np
+        >>>
+        >>> from matplotlib import pyplot as plt
+        >>>
+        >>> from nilearn.mass_univariate import permuted_ols
+        >>>
+        >>> n_samples = 1000
+        >>> seed = 42
+        >>> target_var = np.random.RandomState(seed).randn(n_samples, 1)
+        >>> tested_var = np.ones(n_samples, dtype="f8").reshape((-1, 1))
+        >>>
+        >>> output = permuted_ols(tested_var,
+        ...                       target_var,
+        ...                       model_intercept=False,
+        ...                       n_perm=2000,
+        ...                       random_state=seed,
+        ... )
+        >>>
+        >>> _, ax = plt.subplots()
+        >>> _ = ax.hist(output["h0_max_t"][0], bins=100)
+        >>> _ = ax.plot([output["t"][0], output["t"][0]],
+        ...              [0, 60],
+        ...              color="r",
+        ...              linewidth=3,
+        ... )
+        >>> _ = ax.text(x=output["t"][0][0],
+        ...              y=61,
+        ...              s=f"-log(p) = {output['logp_max_t'][0]}",
+        ...              size=14,
+        ... )
+        >>> _ = ax.set(xlabel="t-statistic",
+        ...            title="Distribution max t-statistic under $H_0$")
+        >>> plt.show()
     """
+    check_params(locals())
+    _check_inputs_permuted_ols(n_jobs, target_vars)
+
+    n_jobs, target_vars, tested_vars = _sanitize_inputs_permuted_ols(
+        n_jobs, target_vars, tested_vars
+    )
+
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
 
-    # check n_jobs (number of CPUs)
-    if n_jobs == 0:  # invalid according to joblib's conventions
-        raise ValueError(
-            "'n_jobs == 0' is not a valid choice. "
-            "Please provide a positive number of CPUs, or -1 for all CPUs, "
-            "or a negative number (-i) for 'all but (i-1)' CPUs "
-            "(joblib conventions)."
-        )
-    elif n_jobs < 0:
-        n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
-    else:
-        n_jobs = min(n_jobs, joblib.cpu_count())
-
-    # check that masker is provided if it is needed
-    if tfce and not masker:
-        raise ValueError("A masker must be provided if tfce is True.")
-
-    if (threshold is not None) and (masker is None):
-        raise ValueError(
-            'If "threshold" is not None, masker must be defined as well.'
-        )
-
-    # Resolve the output_type as well
-    if tfce and output_type == "legacy":
-        warnings.warn(
-            'If "tfce" is set to True, "output_type" must be set to "dict". '
-            "Overriding."
-        )
-        output_type = "dict"
-
-    if (threshold is not None) and (output_type == "legacy"):
-        warnings.warn(
-            'If "threshold" is not None, "output_type" must be set to "dict". '
-            "Overriding."
-        )
-        output_type = "dict"
-
-    if output_type == "legacy":
-        warnings.warn(
-            category=DeprecationWarning,
-            message=(
-                'The "legacy" output structure for "permuted_ols" is '
-                "deprecated. "
-                'The default output structure will be changed to "dict" '
-                "in version 0.13."
-            ),
-            stacklevel=3,
-        )
-
-    # make target_vars F-ordered to speed-up computation
-    if target_vars.ndim != 2:
-        raise ValueError(
-            "'target_vars' should be a 2D array. "
-            f"An array with {target_vars.ndim} dimension(s) was passed."
-        )
-
-    target_vars = np.asfortranarray(target_vars)  # efficient for chunking
     n_descriptors = target_vars.shape[1]
-    if np.any(np.all(target_vars == 0, axis=0)):
-        warnings.warn(
-            "Some descriptors in 'target_vars' have zeros across all samples. "
-            "These descriptors will be ignored during null distribution "
-            "generation."
-        )
-
-    # check explanatory variates' dimensions
-    if tested_vars.ndim == 1:
-        tested_vars = np.atleast_2d(tested_vars).T
 
     n_samples, n_regressors = tested_vars.shape
 
-    # check if explanatory variates contain an intercept (constant) or not
-    intercept_test = False
-    if n_regressors == np.unique(tested_vars).size == 1:
-        intercept_test = True
+    intercept_test = n_regressors == np.unique(tested_vars).size == 1
 
     # check if confounding vars contains an intercept
     if confounding_vars is not None:
@@ -706,6 +595,7 @@ def permuted_ols(
                     '"target_vars" are constant. Only one will be used '
                     "as intercept."
                 ),
+                stacklevel=find_stack_level(),
             )
             model_intercept = True
 
@@ -727,12 +617,16 @@ def permuted_ols(
             confounding_vars = np.ones((n_samples, 1))
 
     # OLS regression on original data
+    covars_orthonormalized = None
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
         covars_orthonormalized = orthonormalize_matrix(confounding_vars)
         if not covars_orthonormalized.flags["C_CONTIGUOUS"]:
             # useful to developer
-            warnings.warn("Confounding variates not C_CONTIGUOUS.")
+            warnings.warn(
+                "Confounding variates not C_CONTIGUOUS.",
+                stacklevel=find_stack_level(),
+            )
             covars_orthonormalized = np.ascontiguousarray(
                 covars_orthonormalized
             )
@@ -742,7 +636,10 @@ def permuted_ols(
         ).T  # faster with F-ordered target_vars_chunk
         if not targetvars_normalized.flags["C_CONTIGUOUS"]:
             # useful to developer
-            warnings.warn("Target variates not C_CONTIGUOUS.")
+            warnings.warn(
+                "Target variates not C_CONTIGUOUS.",
+                stacklevel=find_stack_level(),
+            )
             targetvars_normalized = np.ascontiguousarray(targetvars_normalized)
 
         beta_targetvars_covars = np.dot(
@@ -767,24 +664,13 @@ def permuted_ols(
             testedvars_resid_covars, axis=1
         ).T.copy()
 
-        n_covars = confounding_vars.shape[1]
-
     else:
         targetvars_resid_covars = normalize_matrix_on_axis(target_vars).T
         testedvars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
-        covars_orthonormalized = None
-        n_covars = 0
 
-    # check arrays contiguousity (for the sake of code efficiency)
-    if not targetvars_resid_covars.flags["C_CONTIGUOUS"]:
-        # useful to developer
-        warnings.warn("Target variates not C_CONTIGUOUS.")
-        targetvars_resid_covars = np.ascontiguousarray(targetvars_resid_covars)
-
-    if not testedvars_resid_covars.flags["C_CONTIGUOUS"]:
-        # useful to developer
-        warnings.warn("Tested variates not C_CONTIGUOUS.")
-        testedvars_resid_covars = np.ascontiguousarray(testedvars_resid_covars)
+    # check arrays contiguousity for the sake of code efficiency
+    targetvars_resid_covars = _make_array_contiguous(targetvars_resid_covars)
+    testedvars_resid_covars = _make_array_contiguous(testedvars_resid_covars)
 
     # step 3: original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
@@ -798,7 +684,13 @@ def permuted_ols(
     # Define connectivity for TFCE and/or cluster measures
     bin_struct = generate_binary_structure(3, 1)
 
+    tfce_original_data = None
+
     if tfce:
+        masker = _ensure_masker(
+            masker, "A masker must be provided if tfce is True."
+        )
+
         scores_4d = masker.inverse_transform(
             scores_original_data.T
         ).get_fdata()
@@ -808,7 +700,7 @@ def permuted_ols(
             two_sided_test=two_sided_test,
         )
         tfce_original_data = apply_mask(
-            nib.Nifti1Image(
+            Nifti1Image(
                 tfce_original_data,
                 masker.mask_img_.affine,
                 masker.mask_img_.header,
@@ -816,43 +708,41 @@ def permuted_ols(
             masker.mask_img_,
         ).T
 
-    else:
-        tfce_original_data = None
+    # 0 or negative number of permutations => original data scores only
+    if n_perm <= 0:
+        out = {"t": scores_original_data.T}
+        if tfce and tfce_original_data is not None:
+            out["tfce"] = tfce_original_data.T
+        return out
 
-    if threshold is not None:
-        # determine t-statistic threshold
-        dof = n_samples - (n_regressors + n_covars)
-        if two_sided_test:
-            threshold_t = stats.t.isf(threshold / 2, df=dof)
-        else:
-            threshold_t = stats.t.isf(threshold, df=dof)
-    else:
-        threshold_t = None
+    if tfce or threshold is not None:
+        masker = _ensure_masker(
+            masker,
+            "A masker must be provided if tfce is True "
+            "or threshold is not None.",
+        )
 
     # Permutations
     # parallel computing units perform a reduced number of permutations each
     if n_perm > n_jobs:
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
         n_perm_chunks[-1] += n_perm % n_jobs
-
-    elif n_perm > 0:
+    else:
         warnings.warn(
-            f"The specified number of permutations is {n_perm} and the number "
-            f"of jobs to be performed in parallel has set to {n_jobs}. "
+            f"The specified number of permutations is {n_perm} "
+            "and the number of jobs to be performed in parallel "
+            f"has set to {n_jobs}. "
             f"This is incompatible so only {n_perm} jobs will be running. "
-            "You may want to perform more permutations in order to take the "
-            "most of the available computing resources."
+            "You may want to perform more permutations "
+            "in order to take the most of the available computing resources.",
+            UserWarning,
+            stacklevel=find_stack_level(),
         )
         n_perm_chunks = np.ones(n_perm, dtype=int)
-    else:  # 0 or negative number of permutations => original data scores only
-        if output_type == "legacy":
-            return np.asarray([]), scores_original_data.T, np.asarray([])
 
-        out = {"t": scores_original_data.T}
-        if tfce:
-            out["tfce"] = tfce_original_data.T
-
-        return out
+    threshold_t = _compute_t_stat_threshold(
+        threshold, two_sided_test, tested_vars, confounding_vars
+    )
 
     # actual permutations, seeded from a random integer between 0 and maximum
     # value represented by np.int32 (to have a large entropy).
@@ -885,7 +775,7 @@ def permuted_ols(
         cmfwe_h0_parts,
         tfce_scores_as_ranks_parts,
         h0_tfce_parts,
-    ) = zip(*ret)
+    ) = zip(*ret, strict=False)
 
     # Voxel-level FWE
     vfwe_h0 = np.hstack(h0_vfwe_parts)
@@ -895,120 +785,269 @@ def permuted_ols(
 
     vfwe_pvals = (n_perm + 1 - vfwe_scores_as_ranks) / float(1 + n_perm)
 
-    if tfce:
-        # We can use the same approach for TFCE that we use for vFWE
-        h0_tfcemax = np.hstack(h0_tfce_parts)
-        tfce_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
-        for tfce_scores_as_ranks_part in tfce_scores_as_ranks_parts:
-            tfce_scores_as_ranks += tfce_scores_as_ranks_part
+    outputs = {
+        "t": scores_original_data.T,
+        "logp_max_t": -np.log10(vfwe_pvals),
+        "h0_max_t": vfwe_h0,
+    }
 
-        tfce_pvals = (n_perm + 1 - tfce_scores_as_ranks) / float(1 + n_perm)
-        neg_log10_tfce_pvals = -np.log10(tfce_pvals)
+    if not tfce and threshold is None:
+        return outputs
 
-    if threshold is not None:
-        # Cluster-size and cluster-mass FWE
-        # a dictionary to collect mass/size measures
-        cluster_dict = {
-            "size_h0": np.hstack(csfwe_h0_parts),
-            "mass_h0": np.hstack(cmfwe_h0_parts),
-            "size": np.zeros_like(vfwe_pvals).astype(int),
-            "mass": np.zeros_like(vfwe_pvals),
-            "size_pvals": np.zeros_like(vfwe_pvals),
-            "mass_pvals": np.zeros_like(vfwe_pvals),
-        }
+    outputs = _update_outputs_for_tfce(
+        outputs,
+        tfce,
+        tfce_original_data,
+        h0_tfce_parts,
+        n_regressors,
+        n_descriptors,
+        tfce_scores_as_ranks_parts,
+        n_perm,
+    )
 
-        scores_original_data_4d = masker.inverse_transform(
-            scores_original_data.T
-        ).get_fdata()
+    return _prepare_output_permuted_ols(
+        outputs,
+        vfwe_pvals,
+        scores_original_data,
+        n_regressors,
+        threshold,
+        csfwe_h0_parts,
+        cmfwe_h0_parts,
+        masker,
+        threshold_t,
+        bin_struct,
+        two_sided_test,
+    )
 
-        for i_regressor in range(n_regressors):
-            scores_original_data_3d = scores_original_data_4d[..., i_regressor]
 
-            # Label the clusters for both cluster mass and size inference
-            labeled_arr3d, _ = label(
-                scores_original_data_3d > threshold_t,
+def _make_array_contiguous(array):
+    """Make arrays contiguous for code efficiency."""
+    if not array.flags["C_CONTIGUOUS"]:
+        # useful to developer
+        warnings.warn(
+            "Target variates not C_CONTIGUOUS.", stacklevel=find_stack_level()
+        )
+        array = np.ascontiguousarray(array)
+    return array
+
+
+def _compute_t_stat_threshold(
+    threshold, two_sided_test, tested_vars, confounding_vars
+):
+    """Compute t-stat threshold if needed based on degrees of freedom."""
+    if threshold is None:
+        return None
+    n_samples, n_regressors = tested_vars.shape
+    n_covars = 0 if confounding_vars is None else confounding_vars.shape[1]
+    # determine t-statistic threshold
+    degrees_of_freedom = n_samples - (n_regressors + n_covars)
+    return (
+        stats.t.isf(threshold / 2, df=degrees_of_freedom)
+        if two_sided_test
+        else stats.t.isf(threshold, df=degrees_of_freedom)
+    )
+
+
+def _ensure_masker(
+    masker: NiftiMasker | MultiNiftiMasker | None, message: str
+) -> NiftiMasker | MultiNiftiMasker:
+    """Raise if ``masker`` is None, otherwise return it fitted."""
+    if masker is None:
+        raise ValueError(message)
+    check_is_of_allowed_type(masker, (NiftiMasker, MultiNiftiMasker), "masker")
+    if not masker.__sklearn_is_fitted__():
+        masker.fit()
+    return masker
+
+
+def _check_inputs_permuted_ols(n_jobs, target_vars) -> None:
+    # invalid according to joblib's conventions
+    if n_jobs == 0:
+        raise ValueError(
+            "'n_jobs == 0' is not a valid choice. "
+            "Please provide a positive number of CPUs, "
+            "or -1 for all CPUs, "
+            "or a negative number (-i) for 'all but (i-1)' CPUs "
+            "(joblib conventions)."
+        )
+
+    # make target_vars F-ordered to speed-up computation
+    if target_vars.ndim != 2:
+        raise ValueError(
+            "'target_vars' should be a 2D array. "
+            f"An array with {target_vars.ndim} dimension(s) was passed."
+        )
+
+
+def _sanitize_inputs_permuted_ols(n_jobs, target_vars, tested_vars):
+    tested_vars = np.asanyarray(tested_vars)
+    if not (
+        np.issubdtype(tested_vars.dtype, np.number)
+        or np.issubdtype(tested_vars.dtype, np.bool_)
+    ):
+        raise TypeError(
+            "'tested_vars' must contain numerical or boolean values."
+        )
+
+    # check n_jobs (number of CPUs)
+    if n_jobs < 0:
+        n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
+    else:
+        n_jobs = min(n_jobs, joblib.cpu_count())
+
+    target_vars = np.asfortranarray(target_vars)  # efficient for chunking
+
+    if np.any(np.all(target_vars == 0, axis=0)):
+        warnings.warn(
+            "Some descriptors in 'target_vars' have zeros across all samples. "
+            "These descriptors will be ignored "
+            "during null distribution generation.",
+            stacklevel=find_stack_level(),
+        )
+
+    # check explanatory variates' dimensions
+    if tested_vars.ndim == 1:
+        tested_vars = np.atleast_2d(tested_vars).T
+
+    return n_jobs, target_vars, tested_vars
+
+
+def _prepare_output_permuted_ols(
+    outputs,
+    vfwe_pvals,
+    scores_original_data,
+    n_regressors,
+    threshold,
+    csfwe_h0_parts,
+    cmfwe_h0_parts,
+    masker,
+    threshold_t,
+    bin_struct,
+    two_sided_test,
+):
+    if threshold is None:
+        return outputs
+
+    # Cluster-size and cluster-mass FWE
+    # a dictionary to collect mass/size measures
+    cluster_dict = {
+        "size_h0": np.hstack(csfwe_h0_parts),
+        "mass_h0": np.hstack(cmfwe_h0_parts),
+        "size": np.zeros_like(vfwe_pvals).astype(int),
+        "mass": np.zeros_like(vfwe_pvals),
+        "size_pvals": np.zeros_like(vfwe_pvals),
+        "mass_pvals": np.zeros_like(vfwe_pvals),
+    }
+
+    scores_original_data_4d = masker.inverse_transform(
+        scores_original_data.T
+    ).get_fdata()
+
+    for i_regressor in range(n_regressors):
+        scores_original_data_3d = scores_original_data_4d[..., i_regressor]
+
+        # Label the clusters for both cluster mass and size inference
+        labeled_arr3d, _ = label(
+            scores_original_data_3d > threshold_t,
+            bin_struct,
+        )
+
+        if two_sided_test:
+            # Add negative cluster labels
+            temp_labeled_arr3d, _ = label(
+                scores_original_data_3d < -threshold_t,
                 bin_struct,
             )
+            n_negative_clusters = np.max(temp_labeled_arr3d)
+            labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
+            labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
+            del temp_labeled_arr3d
 
-            if two_sided_test:
-                # Add negative cluster labels
-                temp_labeled_arr3d, _ = label(
-                    scores_original_data_3d < -threshold_t,
-                    bin_struct,
-                )
-                n_negative_clusters = np.max(temp_labeled_arr3d)
-                labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
-                labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
-                del temp_labeled_arr3d
+        cluster_labels, idx, cluster_dict["size_regressor"] = np.unique(
+            labeled_arr3d,
+            return_inverse=True,
+            return_counts=True,
+        )
+        assert cluster_labels[0] == 0  # the background
 
-            cluster_labels, idx, cluster_dict["size_regressor"] = np.unique(
-                labeled_arr3d,
-                return_inverse=True,
-                return_counts=True,
+        # int32 avoids nifti int64 warnings when building images from sizes
+        cluster_dict["size_regressor"] = cluster_dict["size_regressor"].astype(
+            np.int32
+        )
+
+        # Replace background's "cluster size" w zeros
+        cluster_dict["size_regressor"][0] = 0
+
+        # Calculate mass for each cluster
+        cluster_dict["mass_regressor"] = np.zeros(cluster_labels.shape)
+        for j_val in cluster_labels[1:]:  # skip background
+            cluster_mass = np.sum(
+                np.fabs(scores_original_data_3d[labeled_arr3d == j_val])
+                - threshold_t
             )
-            assert cluster_labels[0] == 0  # the background
+            cluster_dict["mass_regressor"][j_val] = cluster_mass
 
-            # Replace background's "cluster size" w zeros
-            cluster_dict["size_regressor"][0] = 0
+        # Calculate p-values from size/mass values and associated h0s
+        for metric in ["mass", "size"]:
+            p_vals = null_to_p(
+                cluster_dict[f"{metric}_regressor"],
+                cluster_dict[f"{metric}_h0"][i_regressor, :],
+                "larger",
+            )
+            p_map = p_vals[np.reshape(idx, labeled_arr3d.shape)]
+            metric_map = cluster_dict[f"{metric}_regressor"][
+                np.reshape(idx, labeled_arr3d.shape)
+            ]
 
-            # Calculate mass for each cluster
-            cluster_dict["mass_regressor"] = np.zeros(cluster_labels.shape)
-            for j_val in cluster_labels[1:]:  # skip background
-                cluster_mass = np.sum(
-                    np.fabs(scores_original_data_3d[labeled_arr3d == j_val])
-                    - threshold_t
+            # Convert 3D to image, then to 1D
+            # There is a problem if the masker performs preprocessing,
+            # so we use apply_mask here.
+            cluster_dict[f"{metric}_pvals"][i_regressor, :] = np.squeeze(
+                apply_mask(
+                    image.new_img_like(masker.mask_img_, p_map),
+                    masker.mask_img_,
                 )
-                cluster_dict["mass_regressor"][j_val] = cluster_mass
-
-            # Calculate p-values from size/mass values and associated h0s
-            for metric in ["mass", "size"]:
-                p_vals = null_to_p(
-                    cluster_dict[f"{metric}_regressor"],
-                    cluster_dict[f"{metric}_h0"][i_regressor, :],
-                    "larger",
+            )
+            cluster_dict[metric][i_regressor, :] = np.squeeze(
+                apply_mask(
+                    image.new_img_like(masker.mask_img_, metric_map),
+                    masker.mask_img_,
                 )
-                p_map = p_vals[np.reshape(idx, labeled_arr3d.shape)]
-                metric_map = cluster_dict[f"{metric}_regressor"][
-                    np.reshape(idx, labeled_arr3d.shape)
-                ]
+            )
 
-                # Convert 3D to image, then to 1D
-                # There is a problem if the masker performs preprocessing,
-                # so we use apply_mask here.
-                cluster_dict[f"{metric}_pvals"][i_regressor, :] = np.squeeze(
-                    apply_mask(
-                        image.new_img_like(masker.mask_img_, p_map),
-                        masker.mask_img_,
-                    )
-                )
-                cluster_dict[metric][i_regressor, :] = np.squeeze(
-                    apply_mask(
-                        image.new_img_like(masker.mask_img_, metric_map),
-                        masker.mask_img_,
-                    )
-                )
+    outputs["size"] = cluster_dict["size"]
+    outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
+    outputs["h0_max_size"] = cluster_dict["size_h0"]
+    outputs["mass"] = cluster_dict["mass"]
+    outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
+    outputs["h0_max_mass"] = cluster_dict["mass_h0"]
 
-    if output_type == "legacy":
-        outputs = (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
+    return outputs
 
-    else:
-        outputs = {
-            "t": scores_original_data.T,
-            "logp_max_t": -np.log10(vfwe_pvals),
-            "h0_max_t": vfwe_h0,
-        }
 
-        if tfce:
-            outputs["tfce"] = tfce_original_data.T
-            outputs["logp_max_tfce"] = neg_log10_tfce_pvals
-            outputs["h0_max_tfce"] = h0_tfcemax
+def _update_outputs_for_tfce(
+    outputs,
+    tfce,
+    tfce_original_data,
+    h0_tfce_parts,
+    n_regressors,
+    n_descriptors,
+    tfce_scores_as_ranks_parts,
+    n_perm,
+):
+    if not tfce:
+        return outputs
 
-        if threshold is not None:
-            outputs["size"] = cluster_dict["size"]
-            outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
-            outputs["h0_max_size"] = cluster_dict["size_h0"]
-            outputs["mass"] = cluster_dict["mass"]
-            outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
-            outputs["h0_max_mass"] = cluster_dict["mass_h0"]
+    outputs["tfce"] = tfce_original_data.T
+
+    # We can use the same approach for TFCE that we use for vFWE
+    outputs["h0_max_tfce"] = np.hstack(h0_tfce_parts)
+
+    tfce_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
+    for tfce_scores_as_ranks_part in tfce_scores_as_ranks_parts:
+        tfce_scores_as_ranks += tfce_scores_as_ranks_part
+
+    tfce_pvals = (n_perm + 1 - tfce_scores_as_ranks) / float(1 + n_perm)
+    outputs["logp_max_tfce"] = -np.log10(tfce_pvals)
 
     return outputs

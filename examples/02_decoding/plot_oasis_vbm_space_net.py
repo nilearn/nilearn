@@ -1,13 +1,18 @@
 """
-Voxel-Based Morphometry on Oasis dataset with Space-Net prior
-=============================================================
+Voxel-Based Morphometry with Space-Net prior
+============================================
 
 Predicting age from gray-matter concentration maps from OASIS
 dataset. Note that age is a continuous variable, we use the regressor
 here, and not the classification object.
 
-See also the documentation: :ref:`space_net`.
+.. seealso::
 
+    The documentation: :ref:`space_net`.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`OASIS VBM dataset <oasis_vbm>`.
 """
 
 # %%
@@ -17,10 +22,8 @@ import numpy as np
 
 from nilearn import datasets
 
-n_subjects = 200  # increase this number if you have more RAM on your box
-dataset_files = datasets.fetch_oasis_vbm(
-    n_subjects=n_subjects, legacy_format=False
-)
+n_subjects = 200
+dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 age = dataset_files.ext_vars["age"].astype(float)
 age = np.array(age)
 gm_imgs = np.array(dataset_files.gray_matter_maps)
@@ -59,8 +62,8 @@ decoder = SpaceNetRegressor(
     penalty="graph-net",
     screening_percentile=5.0,
     memory_level=2,
-    standardize="zscore_sample",
     n_jobs=2,
+    verbose=1,
 )
 decoder.fit(gm_imgs_train, age_train)  # fit
 coef_img = decoder.coef_img_
@@ -72,7 +75,8 @@ print(f"Mean square error (MSE) on the predicted age: {mse:.2f}")
 # %%
 # Visualize the decoding maps and quality of predictions
 # ------------------------------------------------------
-# Visualize the resulting maps
+import matplotlib.pyplot as plt
+
 from nilearn.plotting import plot_stat_map, show
 
 # weights map
@@ -86,8 +90,6 @@ plot_stat_map(
 )
 
 # Plot the prediction errors.
-import matplotlib.pyplot as plt
-
 plt.figure()
 plt.suptitle(f"graph-net: Mean Absolute Error {mse:.2f} years")
 linewidth = 3

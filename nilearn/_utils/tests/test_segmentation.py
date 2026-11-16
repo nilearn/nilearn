@@ -10,6 +10,13 @@ import pytest
 from nilearn._utils.segmentation import random_walker
 
 
+def test_modes_in_random_walker_spacing(rng):
+    """Smoke test for spacing in random_walker."""
+    img = rng.standard_normal(size=(30, 30, 30))
+    labels = np.zeros_like(img)
+    random_walker(img, labels, beta=90, spacing=(3, 3, 3))
+
+
 def test_modes_in_random_walker(rng):
     img = np.zeros((30, 30, 30)) + 0.1 * rng.standard_normal(size=(30, 30, 30))
     img[9:21, 9:21, 9:21] = 1

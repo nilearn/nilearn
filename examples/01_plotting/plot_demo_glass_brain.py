@@ -3,8 +3,13 @@ Glass brain plotting in nilearn
 ===============================
 
 See :ref:`plotting` for more plotting functionalities.
-"""
 
+.. admonition:: dataset
+
+    This example uses a sample motor activation statistical map (`image 10426
+    <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
+    <neurovault_dataset>`).
+"""
 # %%
 # Load data
 # ---------------------------

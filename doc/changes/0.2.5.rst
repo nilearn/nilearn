@@ -1,10 +1,8 @@
 
 .. currentmodule:: nilearn
 
-.. include:: names.rst
-
-0.2.5.1
-=======
+Version 0.2.5.1
+===============
 
 **Released August 2016**
 
@@ -33,8 +31,8 @@ Fixes
 - :bdg-secondary:`Maint` Broken links and references fixed in docs.
 
 
-0.2.5
-=====
+Version 0.2.5
+=============
 
 **Released June 2016**
 
@@ -49,7 +47,7 @@ New
 
 - :bdg-success:`API` New function :func:`~datasets.load_mni152_brain_mask` to load canonical brain mask image in :term:`MNI` template space.
 
-- :bdg-success:`API` New function :func:`~datasets.fetch_icbm152_brain_gm_mask` to load brain grey matter mask image.
+- :bdg-success:`API` New function :func:`~datasets.fetch_icbm152_brain_gm_mask` to load brain gray matter mask image.
 
 - :bdg-success:`API` New function :func:`~image.load_img` loads data from a filename or a list of filenames.
 
@@ -66,17 +64,17 @@ Contributors
 
 Contributors (from ``git shortlog -ns 0.2.4..0.2.5``):
 
-    * `Gael Varoquaux`_ (55)
-    * `Alexandre Abraham`_ (39)
-    * `Martin Perez-Guevara`_ (26)
-    * `Kamalakar Reddy Daddy`_ (20)
-    * `Amadeus Kanaan`_ (8)
-    * `Alexandre Abadie`_ (3)
-    * `Arthur Mensch`_ (3)
-    * `Elvis Dohmatob`_ (3)
-    * `Loic Estève`_ (3)
-    * `Jerome Dockes`_ (2)
-    * Alexandre M. S (1)
-    * `Bertrand Thirion`_ (1)
-    * Ivan Gonzalez (1)
-    * `Roberto Guidotti`_ (1)
+* `Gael Varoquaux`_ (55)
+* `Alexandre Abraham`_ (39)
+* `Martin Perez-Guevara`_ (26)
+* `Kamalakar Reddy Daddy`_ (20)
+* Amadeus Kanaan (8)
+* `Alexandre Abadie`_ (3)
+* `Arthur Mensch`_ (3)
+* `Elvis Dohmatob`_ (3)
+* `Loic Estève`_ (3)
+* `Jerome Dockes`_ (2)
+* Alexandre M. S (1)
+* `Bertrand Thirion`_ (1)
+* Ivan Gonzalez (1)
+* `Roberto Guidotti`_ (1)

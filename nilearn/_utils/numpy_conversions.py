@@ -1,44 +1,20 @@
 """Validation and conversion utilities for numpy."""
 
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-
 import csv
+from pathlib import Path
 
 import numpy as np
 
-from .helpers import stringify_path
+from nilearn._utils.param_validation import check_is_of_allowed_type
 
 
-def _asarray(arr, dtype=None, order=None):
-    # np.asarray does not take "K" and "A" orders in version 1.3.0
-    if order in ("K", "A", None):
-        if (arr.itemsize == 1 and dtype in (bool, np.bool_)) or (
-            arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1
-        ):
-            ret = arr.view(dtype=dtype)
-        else:
-            ret = np.asarray(arr, dtype=dtype)
-    else:
-        if (
-            (arr.itemsize == 1 and dtype in (bool, np.bool_))
-            or (
-                arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1
-            )
-        ) and (
-            order == "F"
-            and arr.flags["F_CONTIGUOUS"]
-            or order == "C"
-            and arr.flags["C_CONTIGUOUS"]
-        ):
-            ret = arr.view(dtype=dtype)
-        else:
-            ret = np.asarray(arr, dtype=dtype, order=order)
-
-    return ret
-
-
-def as_ndarray(arr, copy=False, dtype=None, order="K"):
-    """Convert to numpy.ndarray starting with an arbitrary array, .
+def as_ndarray(
+    arr,
+    copy: bool = False,
+    dtype=None,
+    order="K",
+) -> np.ndarray:
+    """Convert to numpy.ndarray starting with an arbitrary array.
 
     In the case of a memmap array, a copy is automatically made to break the
     link with the underlying file (whatever the value of the "copy" keyword).
@@ -54,8 +30,31 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
     Caveat: this function does not copy during bool to/from 1-byte dtype
     conversions. This can lead to some surprising results in some rare cases.
 
-    Example:
+    Parameters
+    ----------
+    arr : array-like
+        input array. Any value accepted by numpy.asarray is valid.
 
+    copy : :obj:`bool`
+        if True, force a copy of the array. Always True when arr is a memmap.
+
+    dtype : any numpy dtype
+        dtype of the returned array. Performing copy and type conversion at the
+        same time can in some cases avoid an additional copy.
+
+    order : :obj:`str`, default='K'
+        gives the order of the returned array.
+        Valid values are: "C", "F", "A", "K", None.
+        See ndarray.copy() for more information.
+
+    Returns
+    -------
+    ret : numpy.ndarray
+        Numpy array containing the same data as arr, always of class
+        numpy.ndarray, and with no link to any underlying file.
+
+    Examples
+    --------
     >>> import numpy
     >>> a = numpy.asarray([0, 1, 2], dtype=numpy.int8)
     >>> b = as_ndarray(a, dtype=bool)
@@ -68,107 +67,55 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
     The usually expected result for the last line would be array([0, 1, 1])
     because True evaluates to 1. Since there is no copy made here, the original
     array is recovered.
-
-    Parameters
-    ----------
-    arr: array-like
-        input array. Any value accepted by numpy.asarray is valid.
-
-    copy: bool
-        if True, force a copy of the array. Always True when arr is a memmap.
-
-    dtype: any numpy dtype
-        dtype of the returned array. Performing copy and type conversion at the
-        same time can in some cases avoid an additional copy.
-
-    order: :obj:`str`, default='K'
-        gives the order of the returned array.
-        Valid values are: "C", "F", "A", "K", None.
-        See ndarray.copy() for more information.
-
-    Returns
-    -------
-    ret: numpy.ndarray
-        Numpy array containing the same data as arr, always of class
-        numpy.ndarray, and with no link to any underlying file.
     """
-    # This function should work on numpy 1.3
-    # in this version, astype() and copy() have no "order" keyword.
-    # and asarray() does not accept the "K" and "A" values for order.
-
-    # numpy.asarray never copies a subclass of numpy.ndarray (even for
-    #     memmaps) when dtype is unchanged.
-    # .astype() always copies
-
     if order not in ("C", "F", "A", "K", None):
-        raise ValueError(f"Invalid value for 'order': {str(order)}")
+        raise ValueError(f"Invalid value for 'order': {order!s}")
 
-    if isinstance(arr, np.memmap):
-        if dtype is None:
-            if order in ("K", "A", None):
-                ret = np.array(np.asarray(arr), copy=True)
-            else:
-                ret = np.array(np.asarray(arr), copy=True, order=order)
-        else:
-            if order in ("K", "A", None):
-                # always copy (even when dtype does not change)
-                ret = np.asarray(arr).astype(dtype)
-            else:
-                # First load data from disk without changing order
-                # Changing order while reading through a memmap is incredibly
-                # inefficient.
-                ret = np.array(arr, copy=True)
-                ret = _asarray(ret, dtype=dtype, order=order)
+    check_is_of_allowed_type(arr, (np.memmap, np.ndarray, list, tuple), "arr")
 
-    elif isinstance(arr, np.ndarray):
-        ret = _asarray(arr, dtype=dtype, order=order)
-        # In the present cas, np.may_share_memory result is always reliable.
-        if np.may_share_memory(ret, arr) and copy:
-            # order-preserving copy
-            if ret.flags["F_CONTIGUOUS"]:
-                ret = ret.T.copy().T
-            else:
-                ret = ret.copy()
-
-    elif isinstance(arr, (list, tuple)):
-        if order in ("A", "K"):
-            ret = np.asarray(arr, dtype=dtype)
-        else:
-            ret = np.asarray(arr, dtype=dtype, order=order)
-
+    # the cases where we have to create a copy of the underlying array
+    if isinstance(arr, (np.memmap, list, tuple)) or (
+        isinstance(arr, np.ndarray) and copy
+    ):
+        return np.array(arr, copy=True, dtype=dtype, order=order)
+    # if the order does not change and dtype does not change or
+    # bool to/from 1-byte dtype,
+    # no need to create a copy
+    elif (
+        (arr.itemsize == 1 and dtype in (bool, np.bool_))
+        or (arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1)
+        or arr.dtype == dtype
+    ) and (
+        (order == "F" and arr.flags["F_CONTIGUOUS"])
+        or (order == "C" and arr.flags["C_CONTIGUOUS"])
+        or order in ("K", "A", None)
+    ):
+        return arr.view(dtype=dtype)
     else:
-        raise ValueError(f"Type not handled: {arr.__class__}")
-
-    return ret
+        return np.asarray(arr, dtype=dtype, order=order)
 
 
-def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
+def csv_to_array(csv_path, delimiters=" \t,;", **kwargs) -> np.ndarray:
     """Read a CSV file by trying to guess its delimiter.
 
     Parameters
     ----------
-    csv_path: string or pathlib.Path
+    csv_path : :obj:`str` or pathlib.Path
         Path of the CSV file to load.
 
-    delimiters: string
+    delimiters : :obj:`str`
         Each character of the delimiters string is a potential delimiters for
         the CSV file.
 
-    kwargs: keyword arguments
+    kwargs : keyword arguments
         The additional keyword arguments are passed to numpy.genfromtxt when
         loading the CSV.
 
     Returns
     -------
-    array: numpy.ndarray
+    array : numpy.ndarray
         An array containing the data loaded from the CSV file.
     """
-    csv_path = stringify_path(csv_path)
-    if not isinstance(csv_path, str):
-        raise TypeError(
-            f"CSV must be a file path. Got a CSV of type: {type(csv_path)}"
-        )
-
     try:
         # First, we try genfromtxt which works in most cases.
         array = np.genfromtxt(csv_path, loose=False, encoding=None, **kwargs)
@@ -177,15 +124,41 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
         # because the delimiter is wrong.
         # In that case, we try to guess the delimiter.
         try:
-            with open(csv_path) as csv_file:
+            with Path(csv_path).open(encoding="utf-8") as csv_file:
                 dialect = csv.Sniffer().sniff(csv_file.readline(), delimiters)
         except csv.Error as e:
             raise TypeError(
                 f"Could not read CSV file [{csv_path}]: {e.args[0]}"
-            )
+            ) from e
 
         array = np.genfromtxt(
             csv_path, delimiter=dialect.delimiter, encoding=None, **kwargs
         )
 
     return array
+
+
+def get_target_dtype(dtype, target_dtype):
+    """Return a new dtype if conversion is needed.
+
+    Parameters
+    ----------
+    dtype : dtype
+        Data type of the original data
+
+    target_dtype : {None, dtype, "auto"}
+        If None, no conversion is required. If a type is provided, the
+        function will check if a conversion is needed. The "auto" mode will
+        automatically convert to int32 if dtype is discrete and float32 if it
+        is continuous.
+
+    Returns
+    -------
+    dtype : dtype
+        The data type toward which the original data should be converted.
+    """
+    if target_dtype is None:
+        return None
+    if target_dtype == "auto":
+        target_dtype = np.int32 if dtype.kind == "i" else np.float32
+    return None if target_dtype == dtype else target_dtype

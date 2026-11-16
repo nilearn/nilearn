@@ -1,6 +1,6 @@
 """
-Reconstruction of visual stimuli from Miyawaki et al. 2008
-==========================================================
+Reconstruction of visual stimuli
+================================
 
 This example reproduces the experiment presented in :footcite:t:`Miyawaki2008`.
 
@@ -10,11 +10,14 @@ are used as training set and structured images are used for reconstruction.
 The code is a bit elaborate as the example uses, as the original article,
 a multiscale prediction on the images seen by the subject.
 
-For an encoding approach for the same dataset, see also
-:ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
+.. seealso::
 
-.. include:: ../../../examples/masker_note.rst
+    For an encoding approach for the same dataset, see
+    :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
 
+.. admonition:: dataset
+
+    This example uses the :ref:`Miyawaki 2008 dataset <miyawaki_dataset>`.
 """
 
 # %%
@@ -58,7 +61,10 @@ t0 = time.time()
 
 # Load and mask fMRI data
 masker = MultiNiftiMasker(
-    mask_img=miyawaki_dataset.mask, detrend=True, standardize=False, n_jobs=2
+    mask_img=miyawaki_dataset.mask,
+    detrend=True,
+    n_jobs=2,
+    verbose=1,
 )
 masker.fit()
 X_train = masker.transform(X_random_filenames)
@@ -66,13 +72,13 @@ X_test = masker.transform(X_figure_filenames)
 
 y_train = [
     np.reshape(
-        np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
+        np.loadtxt(y, dtype=int, delimiter=","), (-1, *y_shape), order="F"
     )
     for y in y_random_filenames
 ]
 y_test = [
     np.reshape(
-        np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
+        np.loadtxt(y, dtype=int, delimiter=","), (-1, *y_shape), order="F"
     )
     for y in y_figure_filenames
 ]
@@ -120,7 +126,7 @@ yt_big = [np.dot(height_tf, np.dot(m, width_tf)) for m in y_train]
 # Add it to the training set
 y_train = [
     np.r_[y.ravel(), t.ravel(), l.ravel(), b.ravel()]
-    for y, t, l, b in zip(y_train, yt_tall, yt_large, yt_big)
+    for y, t, l, b in zip(y_train, yt_tall, yt_large, yt_big, strict=False)
 ]
 
 y_test = np.asarray(flatten(y_test))
@@ -141,11 +147,11 @@ sys.stderr.write("Training classifiers... \r")
 t0 = time.time()
 
 from sklearn.feature_selection import SelectKBest, f_classif
-from sklearn.linear_model import OrthogonalMatchingPursuit as OMP
+from sklearn.linear_model import OrthogonalMatchingPursuit
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-# Create as many OMP as voxels to predict
+# Create as many OrthogonalMatchingPursuit as voxels to predict
 clfs = []
 n_clfs = y_train.shape[1]
 for i in range(y_train.shape[1]):
@@ -157,7 +163,7 @@ for i in range(y_train.shape[1]):
         [
             ("selection", SelectKBest(f_classif, k=500)),
             ("scl", StandardScaler()),
-            ("clf", OMP(n_nonzero_coefs=10)),
+            ("clf", OrthogonalMatchingPursuit(n_nonzero_coefs=10)),
         ]
     )
     clf.fit(X_train, y_train[:, i])
@@ -180,7 +186,7 @@ y_pred = np.asarray(y_pred).T
 
 # We need to the multi scale reconstruction
 def split_multi_scale(y, y_shape):
-    """Split data into 4 original multi_scale images"""
+    """Split data into 4 original multi_scale images."""
     yw, yh = y_shape
 
     # Index of original image
@@ -261,31 +267,28 @@ from sklearn.metrics import (
 
 print("Scores")
 print("------")
-print(
-    "  - Accuracy (percent): %f"
-    % np.mean(
-        [accuracy_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
-    )
+accuracy_to_print = np.mean(
+    [accuracy_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
 )
-print(
-    "  - Precision: %f"
-    % np.mean(
-        [precision_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
-    )
+print(f"  - Accuracy (percent): {accuracy_to_print:f}")
+
+precision_to_print = np.mean(
+    [precision_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
 )
-print(
-    "  - Recall: %f"
-    % np.mean(
-        [
-            recall_score(y_test[:, i], y_pred[:, i] > 0.5, zero_division=0)
-            for i in range(100)
-        ]
-    )
+print(f"  - Precision: {precision_to_print:f}")
+
+recall_to_print = np.mean(
+    [
+        recall_score(y_test[:, i], y_pred[:, i] > 0.5, zero_division=0)
+        for i in range(100)
+    ]
 )
-print(
-    "  - F1-score: %f"
-    % np.mean([f1_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)])
+print(f"  - Recall: {recall_to_print:f}")
+
+f1_score_to_print = np.mean(
+    [f1_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
 )
+print(f"  - F1-score: {f1_score_to_print:f}")
 
 
 # %%
@@ -314,17 +317,17 @@ for i in range(6):
     plt.title("Binarized")
     sp1.imshow(
         np.reshape(y_test[j], (10, 10)),
-        cmap=plt.cm.gray,
+        cmap="gray",
         interpolation="nearest",
     )
     sp2.imshow(
         np.reshape(y_pred[j], (10, 10)),
-        cmap=plt.cm.gray,
+        cmap="gray",
         interpolation="nearest",
     )
     sp3.imshow(
         np.reshape(y_pred[j] > 0.5, (10, 10)),
-        cmap=plt.cm.gray,
+        cmap="gray",
         interpolation="nearest",
     )
     plt.savefig(output_dir / f"miyawaki2008_reconstruction_{int(i)}.png")
@@ -335,4 +338,4 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

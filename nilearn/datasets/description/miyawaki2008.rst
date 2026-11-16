@@ -20,18 +20,17 @@ See :footcite:t:`Miyawaki2008`.
 
 Content
 -------
+
     :'label': Paths to text files containing run and target data
     :'func': Paths to nifti files with :term:`BOLD` data
     :'mask': Path to general mask nifti that defines target volume in visual cortex
-    :'mask_roi': List of paths to images with specific data ('RH' for right hemisphere, 'LH' for left hemisphere, 'Vxxx' denote visual areas)
+    :'mask_roi': List of paths to images with specific data
+                 ('RH' for right hemisphere, 'LH' for left hemisphere, 'Vxxx' denote visual areas)
 
 References
 ----------
 
 .. footbibliography::
-
-For more information on this dataset's structure, see
-http://www.cns.atr.jp/dni/en/downloads/fmri-data-set-for-visual-image-reconstruction
 
 
 License

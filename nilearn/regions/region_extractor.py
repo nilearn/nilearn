@@ -2,25 +2,40 @@
 
 import collections.abc
 import numbers
+import warnings
+from copy import deepcopy
+from typing import Self, overload
 
 import numpy as np
-from joblib import Memory
+from nibabel import Nifti1Image
 from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
 
+from nilearn import masking
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.ndimage import peak_local_max
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
+from nilearn._utils.segmentation import random_walker
+from nilearn.image.image import (
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
+    check_same_fov,
+    concat_imgs,
+    new_img_like,
+    smooth_array,
+    threshold_img,
+)
+from nilearn.image.resampling import resample_img
 from nilearn.maskers import NiftiMapsMasker
 
-from .. import masking
-from .._utils import check_niimg, check_niimg_3d, check_niimg_4d, fill_doc
-from .._utils.ndimage import peak_local_max
-from .._utils.niimg import safe_get_data
-from .._utils.niimg_conversions import check_same_fov
-from .._utils.segmentation import random_walker
-from ..image import new_img_like, resample_img
-from ..image.image import concat_imgs, smooth_array, threshold_img
 
-
-def _threshold_maps_ratio(maps_img, threshold):
+def _threshold_maps_ratio(maps_img, threshold) -> Nifti1Image:
     """Automatic thresholding of atlas maps image.
 
     Considers the given threshold as a ratio to the total number of voxels
@@ -33,7 +48,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     maps_img : Niimg-like object
         An image of brain atlas maps.
 
-    threshold : float
+    threshold : :obj:`float`
         If float, value is used as a ratio to n_voxels
         to get a certain threshold size in number to threshold the image.
         The value should be positive and
@@ -43,14 +58,13 @@ def _threshold_maps_ratio(maps_img, threshold):
     -------
     threshold_maps_img : Nifti1Image
         Gives us thresholded image.
-
     """
     maps = check_niimg(maps_img)
     n_maps = maps.shape[-1]
     if (
         not isinstance(threshold, numbers.Real)
         or threshold <= 0
-        or threshold > n_maps
+        or float(threshold) > n_maps
     ):
         raise ValueError(
             "threshold given as ratio to the number of voxels must "
@@ -58,8 +72,8 @@ def _threshold_maps_ratio(maps_img, threshold):
             f"total number of maps i.e. n_maps={n_maps}. "
             f"You provided {threshold}"
         )
-    else:
-        ratio = threshold
+
+    ratio = float(threshold)
 
     # Get a copy of the data
     maps_data = safe_get_data(maps, ensure_finite=True, copy_data=True)
@@ -71,9 +85,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     )
     maps_data[abs_maps < cutoff_threshold] = 0.0
 
-    threshold_maps_img = new_img_like(maps, maps_data)
-
-    return threshold_maps_img
+    return new_img_like(maps, maps_data)
 
 
 def _remove_small_regions(input_data, affine, min_size):
@@ -92,7 +104,7 @@ def _remove_small_regions(input_data, affine, min_size):
         Affine of input_data is used to convert size in voxels to size in
         volume of region in mm^3.
 
-    min_size : float in mm^3
+    min_size : :obj:`float` in mm^3
         Size of regions in input_data which falls below the specified min_size
         of volume in mm^3 will be discarded.
 
@@ -102,7 +114,6 @@ def _remove_small_regions(input_data, affine, min_size):
         Data returned will have regions removed specified by min_size
         Otherwise, if criterion is not met then same input data will be
         returned.
-
     """
     # with return_counts argument is introduced from numpy 1.9.0.
     # _, region_sizes = np.unique(input_data, return_counts=True)
@@ -116,7 +127,7 @@ def _remove_small_regions(input_data, affine, min_size):
     labels_kept = region_sizes > size_in_vox
     if not np.all(labels_kept):
         # Put to zero the indices not kept
-        rejected_labels_mask = np.in1d(
+        rejected_labels_mask = np.isin(
             input_data, np.where(np.logical_not(labels_kept))[0]
         ).reshape(input_data.shape)
         # Avoid modifying the input:
@@ -134,14 +145,14 @@ def connected_regions(
     extract_type="local_regions",
     smoothing_fwhm=6,
     mask_img=None,
-):
+) -> tuple[Nifti1Image, list[int]] | tuple[None, None]:
     """Extract brain connected regions into separate regions.
 
     .. note::
         The region size should be defined in mm^3.
         See the documentation for more details.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
@@ -153,7 +164,7 @@ def connected_regions(
         Minimum volume in mm3 for a region to be kept.
         For example, if the :term:`voxel` size is 3x3x3 mm
         then the volume of the :term:`voxel` is 27mm^3.
-        Default=1350mm^3, which means
+        default=1350mm^3, which means
         we take minimum size of 1350 / 27 = 50 voxels.
     %(extract_type)s
     %(smoothing_fwhm)s
@@ -164,21 +175,23 @@ def connected_regions(
             This parameter is passed to `nilearn.image.image.smooth_array`.
             It will be used only if ``extract_type='local_regions'``.
 
-        Default=6.
+        default=6.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         If given, mask image is applied to input data.
         If None, no masking is applied.
 
     Returns
     -------
-    regions_extracted_img : :class:`nibabel.nifti1.Nifti1Image`
+    regions_extracted_img : :class:`nibabel.nifti1.Nifti1Image` or None
         Gives the image in 4D of extracted brain regions.
         Each 3D image consists of only one separated region.
+        Returns None if no supra-threshold regions are found.
 
-    index_of_each_map : :class:`numpy.ndarray`
-        An array of list of indices where each index denotes the identity
+    index_of_each_map : :obj:`list` of :obj:`int` or None
+        List of indices where each index denotes the identity
         of each extracted region to their family of brain maps.
+        Returns None if no supra-threshold regions are found.
 
     See Also
     --------
@@ -189,6 +202,8 @@ def connected_regions(
         region extraction on continuous type atlas images and
         also time series signals extraction from regions extracted.
     """
+    check_params(locals())
+
     all_regions_imgs = []
     index_of_each_map = []
     maps_img = check_niimg(maps_img, atleast_4d=True)
@@ -197,13 +212,9 @@ def connected_regions(
     min_region_size = min_region_size / np.abs(np.linalg.det(affine[:3, :3]))
 
     allowed_extract_types = ["connected_components", "local_regions"]
-    if extract_type not in allowed_extract_types:
-        message = (
-            "'extract_type' should be given "
-            f"either of these {allowed_extract_types} "
-            f"You provided extract_type='{extract_type}'"
-        )
-        raise ValueError(message)
+    check_parameter_in_allowed(
+        extract_type, allowed_extract_types, "extract_type"
+    )
 
     if mask_img is not None:
         if not check_same_fov(maps_img, mask_img):
@@ -235,7 +246,7 @@ def connected_regions(
             label_maps = rw_maps
         else:
             # Connected component extraction
-            label_maps, n_labels = label(map_3d)
+            label_maps, _ = label(map_3d)
 
         # Takes the size of each labelized region data
         labels_size = np.bincount(label_maps.ravel())
@@ -250,6 +261,13 @@ def connected_regions(
         index_of_each_map.extend([index] * len(regions))
         all_regions_imgs.extend(regions)
 
+    if not all_regions_imgs:
+        warnings.warn(
+            "No supra threshold regions was found",
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
+        return None, None
     regions_extracted_img = concat_imgs(all_regions_imgs)
 
     return regions_extracted_img, index_of_each_map
@@ -267,15 +285,15 @@ class RegionExtractor(NiftiMapsMasker):
 
     See :footcite:t:`Abraham2014`.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
-    maps_img : 4D Niimg-like object
+    maps_img : 4D Niimg-like object or None, default=None
         Image containing a set of whole brain atlas maps or statistically
         decomposed brain maps.
 
-    mask_img : Niimg-like object or None, optional
+    mask_img : Niimg-like object or None, default=None
         Mask to be applied to input data, passed to NiftiMapsMasker.
         If None, no masking is applied.
 
@@ -306,7 +324,15 @@ class RegionExtractor(NiftiMapsMasker):
         intensities across all maps. A value given in `threshold`
         parameter indicates that we keep only those voxels which have
         intensities more than this value.
+
+    two_sided : :obj:`bool`, default=False
+        Whether the thresholding should yield both positive and negative
+        part of the maps.
+
+        .. nilearn_versionadded:: 0.11.1
+
     %(extractor)s
+
     %(smoothing_fwhm)s
         Use this parameter to smooth an image
         to extract most sparser regions.
@@ -322,8 +348,9 @@ class RegionExtractor(NiftiMapsMasker):
             Please set this parameter according to maps resolution,
             otherwise extraction will fail.
 
-        Default=6mm.
-    %(standardize_false)s
+        default=6mm.
+
+    %(standardize_none)s
 
         .. note::
             Recommended to set to True if signals are not already standardized.
@@ -331,12 +358,17 @@ class RegionExtractor(NiftiMapsMasker):
 
     %(standardize_confounds)s
 
+    high_variance_confounds : :obj:`bool`, default=False
+        If True, high variance confounds are computed on provided image with
+        :func:`nilearn.image.high_variance_confounds` and default parameters
+        and regressed out.
+
     %(detrend)s
 
         .. note::
             Passed to :func:`nilearn.signal.clean`.
 
-        Default=False.
+        default=False.
 
     %(low_pass)s
 
@@ -353,84 +385,162 @@ class RegionExtractor(NiftiMapsMasker):
         .. note::
             Passed to :func:`nilearn.signal.clean`.
 
+    %(dtype)s
+
+    resampling_target : {"data", "mask", "maps", None}, default="data"
+        Defines which image gives the final shape/size.
+
+        - ``"data"`` means that the atlas is resampled
+          to the shape of the data if needed
+        - ``"mask"`` means that the ``maps_img`` and images provided
+          to ``fit()`` are
+          resampled to the shape and affine of ``mask_img``
+        - ``"maps"`` means the ``mask_img`` and images provided
+          to ``fit()`` are
+          resampled to the shape and affine of ``maps_img``
+        - ``None`` means no resampling: if shapes and affines do not match,
+          a :obj:`ValueError` is raised.
+
     %(memory)s
+
     %(memory_level)s
+
     %(verbose0)s
+
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+    %(cmap)s
+        default="CMRmap_r"
+        Only relevant for the report figures.
+
+    allow_overlap : True
+        If False, an error is raised if the maps overlaps
+        (ie at least two maps have a non-zero value for the same voxel).
+
+    %(clean_args)s
+
+        .. nilearn_versionadded:: 0.12.1
 
     Attributes
     ----------
+    %(clean_args_)s
+
     index_ : :class:`numpy.ndarray`
         Array of list of indices where each index value is assigned to
         each separate region of its corresponding family of brain maps.
 
+    maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
+        The maps mask of the data.
+
+    %(nifti_mask_img_)s
+
+    memory_ : joblib memory cache
+
+    n_elements_ : :obj:`int`
+        The number of overlapping maps in the mask.
+        This is equivalent to the number of volumes in the mask image.
+
+        .. nilearn_versionadded:: 0.9.2
+
     regions_img_ : :class:`nibabel.nifti1.Nifti1Image`
         List of separated regions with each region lying on an
         original volume concatenated into a 4D image.
-
-    References
-    ----------
-    .. footbibliography::
 
     See Also
     --------
     nilearn.regions.connected_label_regions : A function can be readily
         used for extraction of regions on labels based atlas images.
 
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(
         self,
-        maps_img,
+        maps_img=None,
         mask_img=None,
         min_region_size=1350,
         threshold=1.0,
         thresholding_strategy="ratio_n_voxels",
+        two_sided=False,
         extractor="local_regions",
         smoothing_fwhm=6,
-        standardize=False,
+        standardize=None,
         standardize_confounds=True,
+        high_variance_confounds=False,
         detrend=False,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
+        resampling_target="data",
         memory=None,
         memory_level=0,
         verbose=0,
+        reports=True,
+        cmap="CMRmap_r",
+        allow_overlap=True,
+        clean_args=None,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         super().__init__(
             maps_img=maps_img,
             mask_img=mask_img,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
             standardize_confounds=standardize_confounds,
+            high_variance_confounds=high_variance_confounds,
             detrend=detrend,
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
+            resampling_target=resampling_target,
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
+            reports=reports,
+            cmap=cmap,
+            clean_args=clean_args,
+            allow_overlap=allow_overlap,
         )
         self.maps_img = maps_img
         self.min_region_size = min_region_size
         self.thresholding_strategy = thresholding_strategy
         self.threshold = threshold
+        self.two_sided = two_sided
         self.extractor = extractor
         self.smoothing_fwhm = smoothing_fwhm
 
-    def fit(self, X=None, y=None):
-        """Prepare the data and setup for the region extraction."""
-        maps_img = check_niimg_4d(self.maps_img)
+    @fill_doc
+    def fit(self, imgs=None, y: None = None) -> Self:
+        """Prepare signal extraction from regions.
+
+        Parameters
+        ----------
+        imgs : :obj:`list` of Niimg-like objects or None, default=None
+            See :ref:`extracting_data`.
+            Image data passed to the reporter.
+
+        %(y_dummy)s
+        """
+        del y
+        check_params(self.__dict__)
+        maps_img = deepcopy(self.maps_img)
+        maps_img = check_niimg_4d(maps_img)
+
+        self.mask_img_ = self._load_mask(imgs)
+
+        if imgs is not None:
+            check_niimg(imgs)
 
         list_of_strategies = ["ratio_n_voxels", "img_value", "percentile"]
-        if self.thresholding_strategy not in list_of_strategies:
-            message = (
-                "'thresholding_strategy' should be "
-                f"either of these {list_of_strategies}"
-            )
-            raise ValueError(message)
+        check_parameter_in_allowed(
+            self.thresholding_strategy,
+            list_of_strategies,
+            "thresholding_strategy",
+        )
 
         if self.threshold is None or isinstance(self.threshold, str):
             raise ValueError(
@@ -438,21 +548,20 @@ class RegionExtractor(NiftiMapsMasker):
                 "Please submit a valid number specific to either of "
                 f"the strategy in {list_of_strategies}"
             )
-        elif isinstance(self.threshold, numbers.Number):
-            # foreground extraction
-            if self.thresholding_strategy == "ratio_n_voxels":
-                threshold_maps = _threshold_maps_ratio(
-                    maps_img, self.threshold
-                )
-            else:
-                if self.thresholding_strategy == "percentile":
-                    self.threshold = f"{self.threshold}%"
-                threshold_maps = threshold_img(
-                    maps_img,
-                    mask_img=self.mask_img,
-                    copy=True,
-                    threshold=self.threshold,
-                )
+
+        # foreground extraction
+        if self.thresholding_strategy == "ratio_n_voxels":
+            threshold_maps = _threshold_maps_ratio(maps_img, self.threshold)
+        else:
+            if self.thresholding_strategy == "percentile":
+                self.threshold = f"{self.threshold}%"
+            threshold_maps = threshold_img(
+                maps_img,
+                mask_img=self.mask_img_,
+                copy=True,
+                threshold=self.threshold,
+                two_sided=self.two_sided,
+            )
 
         # connected component extraction
         self.regions_img_, self.index_ = connected_regions(
@@ -460,18 +569,38 @@ class RegionExtractor(NiftiMapsMasker):
             self.min_region_size,
             self.extractor,
             self.smoothing_fwhm,
-            mask_img=self.mask_img,
+            mask_img=self.mask_img_,
         )
 
-        self.maps_img = self.regions_img_
-        super().fit()
+        self._fit_cache()
+
+        self._maps_img = self.regions_img_
+        super().fit(imgs)
 
         return self
 
 
+@overload
+def connected_label_regions(
+    labels_img,
+    min_size: float | None = ...,
+    connect_diag: bool = ...,
+    labels: None = ...,
+) -> Nifti1Image: ...
+
+
+@overload
+def connected_label_regions(
+    labels_img,
+    min_size: float | None = ...,
+    connect_diag: bool = ...,
+    labels: list[str] | np.ndarray = ...,
+) -> tuple[Nifti1Image, list[str]]: ...
+
+
 def connected_label_regions(
     labels_img, min_size=None, connect_diag=True, labels=None
-):
+) -> Nifti1Image | tuple[Nifti1Image, list[str]]:
     """Extract connected regions from a brain atlas image \
     defined by labels (integers).
 
@@ -484,7 +613,7 @@ def connected_label_regions(
         A 3D image which contains regions denoted as labels. Each region
         is assigned with integers.
 
-    min_size : :obj:`float`, optional
+    min_size : :obj:`float`, default=None
         Minimum region size (in mm^3) in volume required
         to keep after extraction.
         Removes small or spurious regions.
@@ -495,27 +624,23 @@ def connected_label_regions(
         False, two voxels are considered connected only if they are within the
         same x, y, or z direction.
 
-    labels : 1D :class:`numpy.ndarray` or :obj:`list` of :obj:`str`, optional
+    labels : 1D :class:`numpy.ndarray` or :obj:`list` of :obj:`str`, \
+        default=None
         Each string in a list or array denote the name of the brain atlas
         regions given in labels_img input. If provided, same names will be
         re-assigned corresponding to each connected component based extraction
         of regions relabelling. The total number of names should match with the
         number of labels assigned in the image.
 
-    Notes
-    -----
-    The order of the names given in labels should be appropriately matched with
-    the unique labels (integers) assigned to each region given in labels_img
-    (also excluding 'Background' label).
-
     Returns
     -------
     new_labels_img : :class:`nibabel.nifti1.Nifti1Image`
         A new image comprising of regions extracted on an input labels_img.
 
-    new_labels : :obj:`list`, optional
-        If labels are provided, new labels assigned to region extracted will
-        be returned. Otherwise, only new labels image will be returned.
+    new_labels : :obj:`list` of :obj:`str`
+        If ``labels`` are provided,
+        new labels assigned to region extracted will be returned.
+        Otherwise, only ``new_labels_img`` will be returned.
 
     See Also
     --------
@@ -528,6 +653,11 @@ def connected_label_regions(
     nilearn.regions.connected_regions : A function used for region extraction
         on continuous type atlas images.
 
+    Notes
+    -----
+    The order of the names given in labels should be appropriately matched with
+    the unique labels (integers) assigned to each region given in labels_img
+    (also excluding 'Background' label).
     """
     labels_img = check_niimg_3d(labels_img)
     labels_data = safe_get_data(labels_img, ensure_finite=True)
@@ -553,16 +683,17 @@ def connected_label_regions(
             "integers assigned as labels."
         )
 
-    unique_labels = set(check_unique_labels)
-    # check for background label indicated as 0
-    if np.any(check_unique_labels == 0):
-        unique_labels.remove(0)
+    # np.unique returns them sorted; keep that order, since the names in
+    # labels are expected to match it. Background label 0 is not a region.
+    unique_labels = check_unique_labels[check_unique_labels != 0]
 
     if labels is not None:
-        if not isinstance(labels, collections.abc.Iterable) or isinstance(
-            labels, str
-        ):
-            labels = [labels]
+        labels = (
+            [labels]
+            if not isinstance(labels, collections.abc.Iterable)
+            or isinstance(labels, str)
+            else list(labels)
+        )
         if len(unique_labels) != len(labels):
             raise ValueError(
                 f"The number of labels: {len(labels)} provided as input "
@@ -571,22 +702,23 @@ def connected_label_regions(
                 "Please provide appropriate match with unique "
                 "number of labels in labels_img."
             )
-        new_names = []
+
+    new_names = []
 
     this_labels = [None] * len(unique_labels) if labels is None else labels
 
-    new_labels_data = np.zeros(labels_data.shape, dtype=int)
+    new_labels_data = np.zeros(labels_data.shape, dtype=np.int32)
     current_max_label = 0
-    for label_id, name in zip(unique_labels, this_labels):
+    for label_id, name in zip(unique_labels, this_labels, strict=False):
         this_label_mask = labels_data == label_id
         # Extract regions assigned to each label id
         if connect_diag:
-            structure = np.ones((3, 3, 3), dtype=int)
+            structure = np.ones((3, 3, 3), dtype=np.int32)
             regions, this_n_labels = label(
-                this_label_mask.astype(int), structure=structure
+                this_label_mask.astype(np.int32), structure=structure
             )
         else:
-            regions, this_n_labels = label(this_label_mask.astype(int))
+            regions, this_n_labels = label(this_label_mask.astype(np.int32))
 
         if min_size is not None:
             regions = _remove_small_regions(regions, affine, min_size=min_size)

@@ -4,12 +4,12 @@ Nilearn
 .. container:: index-paragraph
 
     Nilearn enables **approachable and versatile analyses of brain
-    volumes**. It provides statistical and machine-learning tools, with
+    volumes and surfaces**. It provides statistical and machine-learning tools, with
     **instructive documentation & open community**.
 
     It supports general linear model (GLM) based analysis and leverages
     the :sklearn:`scikit-learn <>` Python toolbox
-    for multivariate statistics with applications such as predictive modelling,
+    for multivariate statistics with applications such as predictive modeling,
     classification, decoding, or connectivity analysis.
 
 
@@ -302,6 +302,7 @@ Featured examples
    :titlesonly:
 
    quickstart.md
+   install.rst
    auto_examples/index.rst
    user_guide.rst
    modules/index.rst
@@ -312,9 +313,11 @@ Featured examples
    :caption: Development
 
    development.rst
+   ci.rst
    maintenance.rst
    changes/whats_new.rst
    authors.rst
+   Versions <versions.rst>
    GitHub Repository <https://github.com/nilearn/nilearn>
 
 

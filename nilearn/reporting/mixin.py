@@ -1,0 +1,442 @@
+"""Define ReportMixin to be extended by the classes that require reporting
+functionality.
+"""
+
+import abc
+import uuid
+import warnings
+from copy import deepcopy
+from datetime import datetime
+from typing import Any, ClassVar, TypedDict
+
+import pandas as pd
+
+from nilearn._assets import get_template
+from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.versions import SKLEARN_GTE_1_7, __short_version__
+from nilearn.nilearn_typing import ReportEngine
+from nilearn.reporting._utils import (
+    dataframe_to_html,
+)
+from nilearn.reporting.html_report import (
+    MISSING_ENGINE_MSG,
+    UNFITTED_MSG,
+    HTMLReport,
+    assemble_report,
+)
+from nilearn.reporting.utils import figure_to_svg_base64
+
+DEFAULT_ENGINE: ReportEngine = "matplotlib"
+
+
+class _ReportDefaults(TypedDict, total=False):
+    """Type of the default content of reports.
+
+    Classes inheriting from ReportMixin that add new keys
+    to their ``_REPORT_DEFAULTS``
+    should define a subclass of this TypedDict.
+    """
+
+    unique_id: str
+    title: str
+    page_title: str
+    engine: ReportEngine
+    has_plotting_engine: bool
+    docstring: str
+    parameters: str
+    date: str
+    version: str
+    warning_messages: list[str]
+
+
+class ReportMixin:
+    """A mixin class to be used with classes that require reporting
+    functionality. It provides generic methods for report generation.
+
+    ReportMixin uses one public attribute of type bool:
+
+    reports: The value to indicate if reporting is enabled.
+
+    ReportMixin uses two private attributes of type dict:
+
+    _report_content : The content to enrich the report. Some fields can be
+    initialized in estimator constructor. Others can be added after model fit.
+
+    Possible generic keys are:
+
+        - unique_id : id generated for the report
+        - title : title to be used for the report
+        - page_title : title for browser page; generated from title
+        - engine : engine to generate plots
+        - has_plotting_engine : :obj:`bool` value to indicate if matplotlib is
+          installed
+        - docstring : docstring of estimator
+        - parameters : estimator parameters
+        - date : date of report generation
+        - version : nilearn version used for report generation
+        - warning_messages : possible warning messages
+
+    _report_data : Contains data from model fit. If reporting is disabled, or
+    the model is not fit, this attribute does not exist.
+
+    Classes inheriting from ReportMixin should implement
+    ``_model_attributes_to_dataframe`` and ``generate_report`` methods and
+    should should define ``_template_name`` and ``_estimator_type`` attributes.
+    """
+
+    _REPORT_DEFAULTS: ClassVar[_ReportDefaults] = {
+        "unique_id": "",
+        "title": "",
+        "page_title": "",
+        "engine": DEFAULT_ENGINE,
+        "has_plotting_engine": False,
+        "docstring": "",
+        "parameters": "",
+        "date": "",
+        "version": __short_version__,
+        "warning_messages": [],
+    }
+
+    _allowed_engines: tuple[ReportEngine, ...] = (DEFAULT_ENGINE,)
+    reports: bool = True
+
+    # report body template name for the estimator
+    _template_name: str = ""
+    # inheriting estimator should have _estimator_type
+    _estimator_type: str = ""
+    _report_content: ClassVar[dict[str, Any]] = {}
+
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+        # sets implementing class _REPORT_DEFAULTS
+        # updating the base class value with implementing class value
+        cls._REPORT_DEFAULTS = cls._update_defaults(
+            ReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
+        )
+
+    @classmethod
+    def _update_defaults(cls, base_dict: dict, update_dict: dict):
+        """Return a new dictionary with the values of dictionary base_dict
+        updated recursively with the values of update_dict.
+
+        This method is used to update _REPORT_DEFAULTS with the key-value pairs
+        specified in inheriting class _REPORT_DEFAULTS.
+        """
+        new_dict = deepcopy(base_dict)
+        for k, v in update_dict.items():
+            if (
+                k in new_dict
+                and isinstance(new_dict[k], dict)
+                and isinstance(v, dict)
+            ):
+                v = cls._update_defaults(new_dict[k], v)
+            new_dict[k] = v
+        return new_dict
+
+    def _reset_report(self):
+        """Reset _report_content to its initial state and delete
+        _reporting_data if it exists.
+        """
+        self._report_content = deepcopy(self._REPORT_DEFAULTS)
+
+        if self._has_report_data():
+            del self._reporting_data
+
+    def _has_report_data(self):
+        """
+        Check if _reporting_data is set.
+
+        Returns
+        -------
+        bool
+            True if _reporting_data is set; False otherwise.
+        """
+        return hasattr(self, "_reporting_data")
+
+    @property
+    def _report_warnings(self):
+        """Return the sorted list of report warnings without duplicates.
+
+        Returns
+        -------
+        list of str
+            The list of warnings, empty list if there are no warnings.
+        """
+        return sorted(set(self._report_content["warning_messages"]))
+
+    def _append_report_warning(self, warning: str):
+        """Append the specified warning to the warning list of the report.
+
+        Parameters
+        ----------
+        warning : :obj:`str`
+            warning to be added to the list of warnings.
+        """
+        self._report_content["warning_messages"].append(warning)
+
+    def _reset_report_warnings(self):
+        """Delete existing warnings."""
+        self._report_content["warning_messages"] = []
+
+    def _display_report_warnings(self):
+        """Raise warnings that are in warning_messages list."""
+        report_warnings = self._report_warnings
+
+        if report_warnings:
+            for msg in report_warnings:
+                warnings.warn(
+                    msg,
+                    stacklevel=find_stack_level(),
+                    category=UserWarning,
+                )
+
+    def _set_report_basics(
+        self, engine: ReportEngine, title: str | None
+    ) -> None:
+        """Populate `_report_content` with values that will be used in report
+        body template.
+
+        The fields are:
+        - unique_id
+        - title
+        - page_title
+        - engine
+        - has_plotting_engine
+        - docstring
+        - parameters
+        - date
+
+        Checks if:
+        - the report engine is supported
+        """
+        report_content = self._report_content
+        # Generate a unique ID for report
+        report_content["unique_id"] = str(uuid.uuid4()).replace("-", "")
+
+        # Set title for report
+        report_content["title"] = (
+            title if title is not None else self.__class__.__name__
+        )
+        report_content["page_title"] = report_content["title"]
+
+        report_content["has_plotting_engine"] = is_matplotlib_installed()
+        report_content["engine"] = self._validate_engine(engine)
+
+        # TODO clean up docstring from RST formatting
+        report_content["docstring"] = (
+            self.__doc__.split("Parameters\n")[0]
+            if self.__doc__ is not None
+            else ""
+        )
+        report_content["parameters"] = self._model_params_to_html()
+
+        report_content["date"] = (
+            datetime.now().replace(microsecond=0).isoformat()
+        )
+
+    def _validate_engine(self, engine: ReportEngine) -> ReportEngine:
+        """Check that the report engine is supported by this estimator.
+
+        Fall back to the default engine with a warning if it is not.
+
+        Estimators supporting other engines should override this method
+        to pass the list of engines they support.
+        """
+        if engine not in self._allowed_engines:
+            warnings.warn(
+                f"'engine' must be one of {self._allowed_engines} "
+                f"for {self.__class__.__name__}. "
+                f"Got {engine!r} instead. "
+                f"Falling back to {DEFAULT_ENGINE!r}.",
+                stacklevel=find_stack_level(),
+            )
+            engine = DEFAULT_ENGINE
+        return engine
+
+    def _run_report_checks(self, **kwargs):
+        """Run standard checks before report is generated.
+
+        Update warnings depending if:
+        - reporting is enabled
+        - model is fitted
+        - reporting was enabled at the time of fit
+        - matplotlib is installed
+        """
+        _ = kwargs
+
+        if self.reports is False:
+            self._append_report_warning(
+                "\nReport generation not enabled!\nNo visual outputs created."
+            )
+
+        if not self.__sklearn_is_fitted__():
+            self._append_report_warning(UNFITTED_MSG)
+
+        report = self._report_content
+        if self.__sklearn_is_fitted__() and not report["reports_at_fit_time"]:
+            self._append_report_warning(
+                "\nReport generation was disabled when fit was run. "
+                "No reporting data is available.\n"
+                "Make sure to set self.reports=True before fit."
+            )
+
+        if not is_matplotlib_installed():
+            self._append_report_warning(MISSING_ENGINE_MSG)
+
+    def _dataframe_to_html(
+        self,
+        df_cvrt: pd.DataFrame,
+        precision: int = 2,
+        header: bool = True,
+        index: bool = False,
+        sparsify: bool = False,
+    ) -> str:
+        """Create html content from the specified dataframe content."""
+        return dataframe_to_html(
+            df_cvrt,
+            precision=precision,
+            header=header,
+            index=index,
+            sparsify=sparsify,
+        )
+
+    def _dict_to_html(
+        self,
+        dict_cvrt: dict | pd.DataFrame,
+        precision: int = 2,
+        header: bool = True,
+        index: bool = False,
+        sparsify: bool = False,
+    ) -> str:
+        """Create html content from the specified dictionary content. The
+        dictionary is expected to be key value pairs without depth.
+        """
+        if not isinstance(dict_cvrt, pd.DataFrame):
+            df_cvrt = pd.DataFrame.from_dict(dict_cvrt)
+        else:
+            df_cvrt = dict_cvrt
+        return self._dataframe_to_html(
+            df_cvrt,
+            precision=precision,
+            header=header,
+            index=index,
+            sparsify=sparsify,
+        )
+
+    # TODO (sklearn > 1.6.2) replace this method with self._repr_html_()
+    def _model_params_to_html(self):
+        """List model attributes and values in html."""
+        if SKLEARN_GTE_1_7:
+            parameters = self._repr_html_()
+        else:
+            parameters = self._model_attributes_to_dataframe(self)
+            with pd.option_context("display.max_colwidth", 100):
+                parameters = dataframe_to_html(
+                    parameters,
+                    precision=2,
+                    header=True,
+                    sparsify=False,
+                )
+        return parameters
+
+    def _embed_img(self, display) -> str | None:
+        """Embed an image or just return its instance if already embedded.
+
+        Parameters
+        ----------
+        display : obj
+            A Nilearn plotting object to display.
+
+        Returns
+        -------
+        embed : :obj:`str`
+            Binary image string.
+        """
+        if display is None:  # no image to display
+            return None
+        # If already embedded, simply return as is
+        if isinstance(display, str):
+            return display
+        return figure_to_svg_base64(display.frame_axes.figure)
+
+    def _get_body_template(self, estimator_type: str):
+        """Return body template for this estimator depending on the specified
+        `estimator_type`.
+        """
+        if estimator_type != "":
+            estimator_type = "/" + estimator_type
+        body_tpl_path = f"html{estimator_type}/{self._template_name}"
+        return get_template(body_tpl_path)
+
+    def _assemble_report(self) -> HTMLReport:
+        """Assemble report head and body acquiring body template corresponding
+        to estimator type and populating it with report data.
+        """
+        if self._report_content["engine"] == "brainsprite":
+            self._set_brainsprite_data()
+
+        estimator_type = self._report_content.get("estimator_type", "")
+        body_tpl = self._get_body_template(estimator_type)
+
+        body = body_tpl.render(**self._report_content)
+
+        html_report = assemble_report(body, self._report_content["page_title"])
+
+        return html_report
+
+    def _set_brainsprite_data(self):
+        from nilearn.plotting.html_stat_map import _get_brainsprite_html_ids
+
+        report_content = self._report_content
+        report_content["html_ids"] = _get_brainsprite_html_ids(
+            report_content["unique_id"]
+        )
+
+        if self._has_report_data():
+            report_content["bg_base64"] = self._reporting_data["bg_base64"]
+            report_content["cm_base64"] = self._reporting_data["cm_base64"]
+            report_content["params"] = self._reporting_data["params"]
+            report_content["stat_map_base64"] = self._reporting_data[
+                "stat_map_base64"
+            ]
+
+    @abc.abstractmethod
+    def _model_attributes_to_dataframe(self, model):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def generate_report(
+        self,
+        engine: ReportEngine = DEFAULT_ENGINE,
+        title: str | None = None,
+        **kwargs,
+    ) -> HTMLReport:
+        """Generate an HTML report for this object.
+
+        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
+        browser, displayed in a notebook, or saved to disk as a standalone
+        HTML file.
+
+        .. note::
+            This functionality requires to have ``Matplotlib`` installed.
+
+        Parameters
+        ----------
+        engine : {"matplotlib", "brainsprite", "plotly"}, default="matplotlib"
+            Choice of engine to generate plots.
+            If the engine is not supported by the estimator,
+            a warning is thrown and ``"matplotlib"`` is used instead.
+
+        title : :obj:`str` or None, default=None
+            title for the report. If None, title will be the class name.
+
+        kwargs : :obj:`dict` [ :obj:`str` , Any]
+            Dictionary of key-word arguments necessary for report generation.
+
+        Returns
+        -------
+        report : `nilearn.reporting.HTMLReport`
+            HTML report for the masker.
+        """
+        raise NotImplementedError()

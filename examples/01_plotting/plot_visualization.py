@@ -3,6 +3,10 @@ NeuroImaging volumes visualization
 ==================================
 
 Simple example to show Nifti data visualization.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
 """
 
 # %%
@@ -15,7 +19,7 @@ haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print(
-    f"First anatomical nifti image (3D) located is at: {haxby_dataset.anat[0]}"
+    f"First anatomical nifti image (3D) is located at: {haxby_dataset.anat[0]}"
 )
 print(
     f"First functional nifti image (4D) is located at: {haxby_dataset.func[0]}"
@@ -32,7 +36,7 @@ mean_haxby = mean_img(func_filename)
 
 from nilearn.plotting import plot_epi, show
 
-plot_epi(mean_haxby, colorbar=True, cbar_tick_format="%i")
+plot_epi(mean_haxby, cbar_tick_format="%i")
 
 # %%
 # Extracting a brain mask
@@ -45,7 +49,7 @@ mask_img = compute_epi_mask(func_filename)
 # Visualize it as an ROI
 from nilearn.plotting import plot_roi
 
-plot_roi(mask_img, mean_haxby)
+plot_roi(mask_img, mean_haxby, colorbar=False)
 
 # %%
 # Applying the mask to extract the corresponding time series

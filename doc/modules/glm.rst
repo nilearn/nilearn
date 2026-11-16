@@ -9,7 +9,8 @@
 
 .. No relevant user manual section yet.
 
-**Classes**:
+Classes
+-------
 
 .. currentmodule:: nilearn.glm
 
@@ -26,7 +27,11 @@
     RegressionResults
     SimpleRegressionResults
 
-**Functions**:
+.. autoclasstree:: nilearn.glm
+   :full:
+
+Functions
+---------
 
 .. currentmodule:: nilearn.glm
 
@@ -40,6 +45,7 @@
     fdr_threshold
     cluster_level_inference
     threshold_stats_img
+    save_glm_to_bids
 
 
 :mod:`nilearn.glm.first_level`
@@ -49,7 +55,8 @@
    :no-members:
    :no-inherited-members:
 
-**Classes**:
+Classes
+^^^^^^^
 
 .. currentmodule:: nilearn.glm.first_level
 
@@ -59,7 +66,8 @@
 
    FirstLevelModel
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.glm.first_level
 
@@ -87,7 +95,8 @@
    :no-members:
    :no-inherited-members:
 
-**Classes**:
+Classes
+^^^^^^^
 
 .. currentmodule:: nilearn.glm.second_level
 
@@ -97,7 +106,8 @@
 
    SecondLevelModel
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.glm.second_level
 
@@ -107,3 +117,7 @@
 
     make_second_level_design_matrix
     non_parametric_inference
+
+
+.. autoclasstree:: nilearn.glm.first_level.FirstLevelModel nilearn.glm.second_level.SecondLevelModel
+   :full:

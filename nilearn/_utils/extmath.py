@@ -1,11 +1,11 @@
 """Extended math utilities."""
 
-# Author: Gael Varoquaux
-
 import numpy as np
 
+from nilearn._utils import logger
 
-def fast_abs_percentile(data, percentile=80):
+
+def fast_abs_percentile(data: np.ndarray, percentile=80) -> np.ndarray:
     """Implement a fast version of the percentile of the absolute value.
 
     Parameters
@@ -25,7 +25,6 @@ def fast_abs_percentile(data, percentile=80):
     -----
     This is a faster, and less accurate version of
     scipy.stats.scoreatpercentile(np.abs(data), percentile)
-
     """
     if hasattr(data, "mask"):
         # Catter for masked arrays
@@ -38,7 +37,7 @@ def fast_abs_percentile(data, percentile=80):
     return data[index]
 
 
-def is_spd(M, decimal=15, verbose=1):
+def is_spd(M: np.ndarray, decimal: int = 15) -> bool:
     """Assert that input matrix is symmetric positive definite.
 
     M must be symmetric down to specified decimal places.
@@ -52,21 +51,22 @@ def is_spd(M, decimal=15, verbose=1):
     decimal : int, default=15
         Decimal.
 
-    verbose : int, default=1
-        Verbosity level (0 means no message).
-
     Returns
     -------
-    answer : boolean
+    answer : :obj:`bool`
         True if matrix is symmetric positive definite, False otherwise.
-
     """
     if not np.allclose(M, M.T, atol=0, rtol=10**-decimal):
-        if verbose > 0:
-            print(f"matrix not symmetric to {decimal:d} decimals")
+        logger.log(f"matrix not symmetric to {decimal:d} decimals", verbose=1)
         return False
+
     eigvalsh = np.linalg.eigvalsh(M)
     ispd = eigvalsh.min() > 0
-    if not ispd and verbose > 0:
-        print(f"matrix has a negative eigenvalue: {eigvalsh.min():.3f}")
+
+    if not ispd:
+        logger.log(
+            f"matrix has a negative eigenvalue: {eigvalsh.min():.3f}",
+            verbose=1,
+        )
+
     return ispd

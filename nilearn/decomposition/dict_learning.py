@@ -5,21 +5,25 @@ a temporal dense dictionary along with sparse spatial loadings, that
 constitutes output maps
 """
 
-# Author: Arthur Mensch
-
 import warnings
+from typing import get_args
 
 import numpy as np
-import sklearn
-from joblib import Memory
 from sklearn.decomposition import dict_learning_online
 from sklearn.linear_model import Ridge
 
-from nilearn._utils import fill_doc
-from nilearn._utils.helpers import _transfer_deprecated_param_vals
-
-from ._base import _BaseDecomposition
-from .canica import CanICA
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import transfer_deprecated_param_vals
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    sanitize_verbose,
+)
+from nilearn.decomposition._base import _BaseDecomposition
+from nilearn.decomposition.canica import CanICA
+from nilearn.maskers import MultiNiftiMasker, MultiSurfaceMasker
+from nilearn.nilearn_typing import NiimgLike
+from nilearn.surface import SurfaceImage
 
 # check_input=False is an optimization available in sklearn.
 sparse_encode_args = {"check_input": False}
@@ -45,37 +49,34 @@ class DictLearning(_BaseDecomposition):
 
     See :footcite:t:`Mensch2016`.
 
-     .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
-    mask : Niimg-like object or MultiNiftiMasker instance, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters.
-
-    n_components : int, default=20
+    n_components : :obj:`int`, default=20
         Number of components to extract.
 
-    batch_size : int, default=20
-        The number of samples to take in each batch.
-
-    n_epochs : float, default=1
+    n_epochs : :obj:`float`, default=1
         Number of epochs the algorithm should run on the data.
 
-    alpha : float, default=10
+    alpha : :obj:`float`, default=10
         Sparsity controlling parameter.
 
-    dict_init : Niimg-like object, optional
-        Initial estimation of dictionary maps. Would be computed from CanICA if
-        not provided.
-
-    reduction_ratio : 'auto' or float between 0. and 1., default='auto'
+    reduction_ratio : 'auto' or :obj:`float` between 0. and 1., default='auto'
         - Between 0. or 1. : controls data reduction in the temporal domain.
           1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per
           reduced session to be n_components.
+
+    dict_init : Niimg-like object or \
+           :obj:`~nilearn.surface.SurfaceImage` or None, default=None
+        Initial estimation of dictionary maps. Would be computed from CanICA if
+        not provided.
+
+    %(random_state)s
+
+    batch_size : :obj:`int`, default=20
+        The number of samples to take in each batch.
 
     method : {'cd', 'lars'}, default='cd'
         Coding method used by sklearn backend. Below are the possible values.
@@ -85,102 +86,82 @@ class DictLearning(_BaseDecomposition):
         Lasso solution (linear_model.Lasso). Lars will be faster if
         the estimated components are sparse.
 
-    random_state : int or RandomState, optional
-        Pseudo number generator state used for random sampling.
+    %(mask_decomposition)s
+
     %(smoothing_fwhm)s
-        Default=4mm.
+        default=4mm.
 
-    standardize : boolean, default=True
-        If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
+    %(standardize_zscore)s
 
-    detrend : boolean, default=True
-        If detrend is True, the time-series will be detrended before
-        components extraction.
+    %(standardize_confounds)s
 
-    target_affine : 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+    %(detrend)s
 
-    target_shape : 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+    %(low_pass)s
 
-    low_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    high_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+    %(high_pass)s
 
-    t_r : float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(t_r)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(dtype)s
+
+        ..versionadded:: 0.14.0
+
+    %(target_affine)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(target_shape)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(mask_strategy)s
 
+        default='epi'.
+
         .. note::
-             Depending on this value, the mask will be computed from
-             :func:`nilearn.masking.compute_background_mask`,
-             :func:`nilearn.masking.compute_epi_mask`, or
-             :func:`nilearn.masking.compute_brain_mask`.
+            These strategies are only relevant for Nifti images and the
+            parameter is ignored for SurfaceImage objects.
 
-        Default='epi'.
-
-    mask_args : dict, optional
+    mask_args : :obj:`dict` or None, default=None
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
-    memory : instance of joblib.Memory or string, default=None
-        Used to cache the masking process.
-        By default, no caching is done.
-        If a string is given, it is the path to the caching directory.
-        If ``None`` is passed will default to ``Memory(location=None)``.
+    %(n_jobs)s
 
-    memory_level : integer, default=0
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
+    %(verbose0)s
 
-    n_jobs : integer, default=1
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on.
+    %(memory)s
 
-    verbose : integer, default=0
-        Indicate the level of verbosity. By default, nothing is printed.
+    %(memory_level)s
 
-    Attributes
-    ----------
-    components_ : 2D numpy array (n_components x n-voxels)
-        Masked dictionary components extracted from the input images.
+    %(base_decomposition_fit_attributes)s
 
-        .. note::
+    %(multi_pca_fit_attributes)s
 
-            Use attribute `components_img_` rather than manually unmasking
-            `components_` with `masker_` attribute.
+    components_init_ : 2D numpy array (n_components x n-voxels or n-vertices)
+        Array of components used for initialization.
 
-    components_img_ : 4D Nifti image
-        4D image giving the extracted components. Each 3D image is a component.
-
-        .. versionadded:: 0.4.1
-
-    masker_ : instance of MultiNiftiMasker
-        Masker used to filter and mask data as first step. If an instance of
-        MultiNiftiMasker is given in `mask` parameter,
-        this is a copy of it. Otherwise, a masker is created using the value
-        of `mask` and other NiftiMasker related parameters as initialization.
-
-    mask_img_ : Niimg-like object
-        See :ref:`extracting_data`.
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
+    loadings_init_ : 2D numpy array
+        Initial loadings.
 
     References
     ----------
     .. footbibliography::
-
     """
 
     def __init__(
@@ -195,11 +176,13 @@ class DictLearning(_BaseDecomposition):
         method="cd",
         mask=None,
         smoothing_fwhm=4,
-        standardize=True,
+        standardize="zscore_sample",
+        standardize_confounds=True,
         detrend=True,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -209,19 +192,18 @@ class DictLearning(_BaseDecomposition):
         memory=None,
         memory_level=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
-        _BaseDecomposition.__init__(
-            self,
+        super().__init__(
             n_components=n_components,
             random_state=random_state,
             mask=mask,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
+            standardize_confounds=standardize_confounds,
             detrend=detrend,
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
             target_affine=target_affine,
             target_shape=target_shape,
             mask_strategy=mask_strategy,
@@ -279,33 +261,32 @@ class DictLearning(_BaseDecomposition):
         ----------
         data : ndarray,
             Shape (n_samples, n_features)
-
         """
-        if self.verbose:
-            print("[DictLearning] Learning initial components")
+        logger.log("Learning initial components", self.verbose)
         self._init_dict(data)
 
         _, n_features = data.shape
 
-        if self.verbose:
-            print("[DictLearning] Computing initial loadings")
+        verbose = sanitize_verbose(self.verbose)
+
+        logger.log(
+            "Computing initial loadings",
+            verbose=verbose,
+        )
         self._init_loadings(data)
 
         dict_init = self.loadings_init_
 
         max_iter = ((n_features - 1) // self.batch_size + 1) * self.n_epochs
 
-        if self.verbose:
-            print("[DictLearning] Learning dictionary")
+        logger.log(
+            " Learning dictionary",
+            verbose=verbose,
+        )
 
-        # TODO: remove this when sklearn 1.0 not supported anymore;
-        # replace kwargs with actual parameter name
-        if sklearn.__version__ <= "1.0":
-            kwargs = {"n_iter": max_iter}
-        else:
-            kwargs = _transfer_deprecated_param_vals(
-                {"n_iter": "max_iter"}, {"max_iter": max_iter}
-            )
+        kwargs = transfer_deprecated_param_vals(
+            {"n_iter": "max_iter"}, {"max_iter": max_iter}
+        )
         self.components_, _ = self._cache(dict_learning_online)(
             data.T,
             self.n_components,
@@ -313,7 +294,7 @@ class DictLearning(_BaseDecomposition):
             batch_size=self.batch_size,
             method=self.method,
             dict_init=dict_init,
-            verbose=max(0, self.verbose - 1),
+            verbose=max(0, verbose - 1),
             random_state=self.random_state,
             return_code=True,
             shuffle=True,
@@ -326,7 +307,7 @@ class DictLearning(_BaseDecomposition):
         S[S == 0] = 1
         self.components_ /= S[:, np.newaxis]
 
-        # Flip signs in each composant so that positive part is l1 larger
+        # Flip signs in each component so that positive part is l1 larger
         # than negative part. Empirically this yield more positive looking maps
         # than with setting the max to be positive.
         for component in self.components_:
@@ -338,3 +319,16 @@ class DictLearning(_BaseDecomposition):
             )
 
         return self
+
+    def _validate_mask(self):
+        if self.mask is not None:
+            check_is_of_allowed_type(
+                self.mask,
+                (
+                    MultiSurfaceMasker,
+                    SurfaceImage,
+                    MultiNiftiMasker,
+                    *get_args(NiimgLike),
+                ),
+                "mask",
+            )

@@ -1,34 +1,113 @@
 .. currentmodule:: nilearn
 
-.. include:: names.rst
+Version 0.15.0dev
+=================
 
-0.11.0.dev
-==========
+HIGHLIGHTS
+----------
 
-NEW
----
+.. warning::
+
+ | **Support for Python 3.10 has been dropped.**
+ | **We recommend upgrading to Python 3.13 or above.**
+ |
+ | **Minimum supported versions of the following packages have been bumped up:**
+ | - joblib -- 1.5.0
+ | - scikit-learn -- 1.6.0
+ | - scipy -- 1.12.0
+ |
+
+..
+    Each changelog entry should begin with one of the following badges:
+    - :bdg-primary:`Doc`
+    - :bdg-secondary:`Maint`
+    - :bdg-success:`API`
+    - :bdg-info:`Plotting`
+    - :bdg-warning:`Test`
+    - :bdg-danger:`Deprecation`
+    - :bdg-dark:`Code`
+
 
 Fixes
 -----
 
-- :bdg-dark:`Code` Fix failing test in ``test_nilearn_standardize`` on MacOS 14 by adding trend in simulated data (:gh:`4411` by `Hao-Ting Wang`_).
+- :bdg-dark:`Code` Fix :func:`~nilearn.image.clean_img` reshaping its output using the raw ``sample_mask`` shape instead of the actual cleaned-signal shape, which raised a ``ValueError`` whenever ``sample_mask`` was passed as a boolean array (:gh:`6709` by `Siddhardha Nanda`_).
+
+- :bdg-dark:`Code` Check tar extraction destinations by path components so sibling directories with a shared name prefix are rejected (:gh:`6654` by `Jeffrey Cooney <https://github.com/jdotc1>`_).
+
+- :bdg-warning:`Test` Use deterministic parameter order in plotting tests so parallel workers collect the same cases (:gh:`6664` by `Jeffrey Cooney`_).
+
+- :bdg-dark:`Code` Fix :meth:`~nilearn.glm.Contrast.z_score` returning stale z-scores when called with a different ``baseline`` than a previous call on the same object (:gh:`6642` by `Ishaan Gupta`_).
+
+- :bdg-dark:`Code` Use mesh faces, rather than adjacent vertex indices, when computing clusters for surface cluster-level inference (:gh:`6608` by `Donncha O'Toole`_).
+
+- :bdg-primary:`Doc` Use run-aware cross-validation in the Haxby multiclass decoding example to avoid splitting samples from the same run between training and validation sets (:gh:`6591` by `Mohammad Sadeghi Hardengi`_).
+
+- :bdg-primary:`Doc` Fix documented defaults that did not match the signatures in :func:`~nilearn.datasets.fetch_atlas_smith_2009`, :func:`~nilearn.datasets.fetch_atlas_difumo`, :func:`~nilearn.datasets.fetch_atlas_schaefer_2018` and in several private helpers (:gh:`6582` by `Venish Paneliya`_).
+
+- :bdg-primary:`Doc` Replace the removed boolean values of ``standardize`` in code examples of the user guide and in the ``FirstLevelModel.standardize_`` docstring (:gh:`6597` by `Reyyi Shreyas`_).
+
+- :bdg-info:`Plotting` Avoid overlapping colorbar tick labels when ``0`` is very close to the minimum or maximum value of the colorbar (:gh:`6609` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Fixes a bug where calling :func:`~nilearn.plotting.plot_anat` with ``black_bg=False`` inadvertently introduced spurious negative values into non-negative structural scans (:gh:`6625` by `Achintya Singh`_).
+
+- :bdg-dark:`Code` Fix :meth:`~nilearn.decoding.Decoder.fit` logging ``The decoding model will be trained on N features`` twice per fit (:gh:`6614` by `Reyyi Shreyas`_).
+
+- :bdg-dark:`Code` Fix residual variance of :class:`~nilearn.glm.OLSModel` and :class:`~nilearn.glm.ARModel` being divided by the number of design columns instead of the design rank, which made t and F statistics too small for rank-deficient designs in :class:`~nilearn.glm.first_level.FirstLevelModel` and :class:`~nilearn.glm.second_level.SecondLevelModel` (:gh:`6611` by `Wolfgang Aura`_).
+
+
+- :bdg-dark:`Code` Fix dataset downloads failing with ``Only one live display may be active at once`` after a failed download when `rich <https://github.com/Textualize/rich>`_ is installed (:gh:`6624` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Fix :func:`~nilearn.image.crop_img` computing a wrong cropping threshold for images with integer data, because negating the minimum of the data could overflow (:gh:`6735` by `Rémi Gau`_).
+
 
 Enhancements
 ------------
 
-- :bdg-success:`API` Add option to resize output image width ``width_view`` in :func:`nilearn.plotting.view_img` (:gh:`4416` by `Alexandre Sayal`_).
+- :bdg-primary:`Doc` Add privacy-friendly page view analytics with `GoatCounter <https://www.goatcounter.com/>`_ to the documentation website (:gh:`6393` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
+
+- :bdg-primary:`Doc` Add an example comparing the effect of ``standardize="zscore_sample"``, ``standardize="psc"`` and ``standardize=None`` on decoding performance (:gh:`6597` by `Reyyi Shreyas`_).
+
+- :bdg-primary:`Doc` Docstring examples can now be run in the browser via `jupyterlite <https://jupyterlite.readthedocs.io/en/stable/>`_ (:gh:`6581` by `Elizabeth DuPre`_).
+
+- :bdg-primary:`Doc` Consolidation of the datasets documentation: for most datasets fetcher the type and description of the values they return should be accessible via ``description.content`` (:gh:`6624` by `Rémi Gau`_).
+
+- :bdg-success:`API` :class:`~nilearn.utils.InputTags` is now part of the public API in :mod:`nilearn.utils`, so that third-party estimators can declare whether they accept Nifti and / or surface images (:gh:`6563` by `Aniket Singh Yadav`_).
+
+- :bdg-dark:`Code` Name columns of signals extracted as dataframes by :meth:`~maskers.NiftiSpheresMasker.transform` (:gh:`6599` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` add a ``plot_predicted_signal_and_residuals`` method to :class:`~glm.first_level.FirstLevelModel` and :class:`~glm.second_level.SecondLevelModel` to easily visualize predicted VS observed time series as well as residuals time series and distribution at given coordinates or for some regions (:gh:`5761` by `Fernanda Ponce`_).
+
+- :bdg-secondary:`Maint` Refactor ``math_img`` and ``new_img_like`` to reduce complexity (:gh:`6676` by `Akaash P`_)
+
+- :bdg-success:`API` The ``seeds`` parameter of :class:`~maskers.NiftiSpheresMasker` now also accepts a single triplet of coordinates, for example ``NiftiSpheresMasker(seeds=(0, -52, 18))`` (:gh:`6700` by `Rémi Gau`_).
 
 Changes
 -------
 
-- :bdg-dark:`Code` Remove the unused argument ``url`` from  :func:`nilearn.datasets.fetch_localizer_contrasts`, :func:`nilearn.datasets.fetch_localizer_calculation_task` and :func:`nilearn.datasets.fetch_localizer_button_task` (:gh:`4273` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Remove the unused argument ``rank`` from the constructor of :class:`nilearn.glm.LikelihoodModelResults` (:gh:`4273` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` The ``return_label_maps`` parameter of :func:`~reporting.get_clusters_table` is deprecated and will be removed in version 0.17.0, when cluster label maps will always be returned together with the table (:gh:`6376` by `Mohammad Sadeghi Hardengi`_).
 
-- :bdg-dark:`Code` Implement argument ``sample_mask`` for :meth:`nilearn.maskers.MultiNiftiMasker.transform_imgs` (:gh:`4273` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` The functions ``nilearn.reporting.make_glm_report`` and ``nilearn.interfaces.bids.glm.save_glm_to_bids`` have been removed: instead now use :meth:`~nilearn.glm.first_level.FirstLevelModel.generate_report` or :meth:`~nilearn.glm.second_level.SecondLevelModel.generate_report`, and :func:`nilearn.glm.save_glm_to_bids` respectively (:gh:`6548` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Remove the unused arguments ``upper_cutoff`` and ``exclude_zeros`` for :func:`nilearn.masking.compute_multi_background_mask` (:gh:`4273` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` The parameter ``keep_masked_maps`` (and respectively the parameter ``keep_masked_labels``) has been removed from :func:`~nilearn.regions.img_to_signals_maps`, :class:`~nilearn.maskers.NiftiMapsMasker` and :class:`~nilearn.maskers.MultiNiftiMapsMasker` (and respectively from :func:`~nilearn.regions.img_to_signals_labels`, :class:`~nilearn.maskers.NiftiLabelsMasker` and :class:`~nilearn.maskers.MultiNiftiLabelsMasker`). In practice, this means that data will not be extracted from maps or labels that are excluded by a mask image (:gh:`6551` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Throw error in :func:`nilearn.glm.first_level.first_level_from_bids` if unknown ``kwargs`` are passed (:gh:`4414` by `Michelle Wang`_).
+- :bdg-danger:`Deprecation` The value ``filename`` has been removed from the ``Bunch`` returned by :func:`~nilearn.datasets.fetch_atlas_harvard_oxford` and :func:`~nilearn.datasets.fetch_atlas_juelich`, its content can now be used via ``maps`` (:gh:`6624` by `Rémi Gau`_).
 
-- :bdg-primary:`Doc` Refactor design matrix and contrast formula for the two-sample T-test example in :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_two_sample_test.py` (:gh:`4407` by `Yichun Huang`_).
+- :bdg-danger:`Deprecation` Boolean values for the ``standardize`` parameter (for maskers, glm, decoders...) are no longer supported. Use ``standardize="z_score_sample"`` instead of ``True`` and ``None`` instead of ``False`` (:gh:`6553` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The parameter name ``filename`` of the :meth:`~nilearn.plotting.displays.BaseSlicer.savefig` will be permanently replaced by ``output_file`` in version 0.17.0 (:gh:`6471` by `Aniket Singh Yadav`_).
+
+- :bdg-danger:`Deprecation` The parameter name ``output_dict`` of the :func:`~nilearn.mass_univariate.permuted_ols` has been removed and the function will only output its results as :obj:`dict` (:gh:`6550` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` The parameter ``n_jobs`` of the ``transform_imgs`` method of the all multi maskers has been removed, since it conflicted with the maskers ``n_jobs`` attribute  (:gh:`6638` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The parameter name ``subjects`` of the :func:`~nilearn.datasets.fetch_haxby` is deprecated will be completely removed in version 0.17.0. Use ``n_subjects`` instead (:gh:`6462` by `Mohammad Sadeghi Hardengi`_).
+
+- :bdg-danger:`Deprecation` The function :func:`~nilearn.datasets.fetch_localizer_calculation_task` is deprecated and will be removed in version 0.17.0. Use :func:`~nilearn.datasets.fetch_localizer_contrasts` with ``contrasts=["calculation (auditory and visual cue)"]`` instead (:gh:`6538` by `Aniket Singh Yadav`_).
+
+- :bdg-success:`API` The default value of ``n_clusters`` parameter of :class:`~nilearn.regions.HierarchicalKMeans` is changed from ``None`` to ``2``. (:gh:`6585` by `Hande Gözükan`_).
+
+- :bdg-danger:`Deprecation` The parameter ``data_name`` of the :func:`~datasets.fetch_spm_multimodal_fmri` is deprecated and will be removed in Nilearn version 0.17.0 (:gh:`6624` by `Rémi Gau`_).

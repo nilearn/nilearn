@@ -11,25 +11,26 @@ sub functions in skimage.segmentation
 import warnings
 
 import numpy as np
-from scipy import __version__, ndimage as ndi, sparse
+from scipy import ndimage as ndi
+from scipy.sparse import coo_array, csr_array
 from scipy.sparse.linalg import cg
 from sklearn.utils import as_float_array
 
-from nilearn._utils.helpers import compare_version
+from nilearn._utils.logger import find_stack_level
 
 
-def _make_graph_edges_3d(n_x, n_y, n_z):
+def _make_graph_edges_3d(n_x: int, n_y: int, n_z: int) -> np.ndarray:
     """Return a list of edges for a 3D image.
 
     Parameters
     ----------
-    n_x : integer
+    n_x : :obj:`int`
         The size of the grid in the x direction.
 
-    n_y : integer
+    n_y : :obj:`int`
         The size of the grid in the y direction.
 
-    n_z : integer
+    n_z : :obj:`int`
         The size of the grid in the z direction.
 
     Returns
@@ -42,7 +43,6 @@ def _make_graph_edges_3d(n_x, n_y, n_z):
                 (n_x - 1) * n_y * nz
 
         Graph edges with each column describing a node-id pair.
-
     """
     vertices = np.arange(n_x * n_y * n_z).reshape((n_x, n_y, n_z))
     edges_deep = np.vstack(
@@ -59,9 +59,10 @@ def _make_graph_edges_3d(n_x, n_y, n_z):
 def _compute_weights_3d(data, spacing, beta=130, eps=1.0e-6):
     # Weight calculation is main difference in multispectral version
     # Original gradient**2 replaced with sum of gradients ** 2
-    gradients = 0
-    for channel in range(0, data.shape[-1]):
-        gradients += _compute_gradients_3d(data[..., channel], spacing) ** 2
+    gradients = sum(
+        _compute_gradients_3d(data[..., channel], spacing) ** 2
+        for channel in range(data.shape[-1])
+    )
     # All channels considered together in this standard deviation
     beta /= 10 * data.std()
     gradients *= beta
@@ -84,11 +85,9 @@ def _make_laplacian_sparse(edges, weights):
     i_indices = np.hstack((edges[0], edges[1]))
     j_indices = np.hstack((edges[1], edges[0]))
     data = np.hstack((-weights, -weights))
-    lap = sparse.coo_matrix(
-        (data, (i_indices, j_indices)), shape=(pixel_nb, pixel_nb)
-    )
+    lap = coo_array((data, (i_indices, j_indices)), shape=(pixel_nb, pixel_nb))
     connect = -np.ravel(lap.sum(axis=1))
-    lap = sparse.coo_matrix(
+    lap = coo_array(
         (
             np.hstack((data, connect)),
             (np.hstack((i_indices, diag)), np.hstack((j_indices, diag))),
@@ -98,14 +97,14 @@ def _make_laplacian_sparse(edges, weights):
     return lap.tocsr()
 
 
-def _clean_labels_ar(X, labels):
+def _clean_labels_ar(X: np.ndarray, labels: np.ndarray) -> np.ndarray:
     X = X.astype(labels.dtype)
     labels = np.ravel(labels)
     labels[labels == 0] = X
     return labels
 
 
-def _buildAB(lap_sparse, labels):
+def _build_ab(lap_sparse, labels):
     """Build the matrix A and rhs B of the linear system to solve.
 
     A and B are two block of the laplacian of the image graph.
@@ -121,15 +120,16 @@ def _buildAB(lap_sparse, labels):
     rhs = []
     for lab in range(1, nlabels + 1):
         mask = labels[seeds_indices] == lab
-        fs = sparse.csr_matrix(mask)
+        fs = csr_array(mask)
         fs = fs.transpose()
-        rhs.append(B * fs)
+        rhs.append(B @ fs)
     return lap_sparse, rhs
 
 
 def _mask_edges_weights(edges, weights, mask):
     """Remove edges of the graph connected to masked nodes, \
-    as well as corresponding weights of the edges."""
+    as well as corresponding weights of the edges.
+    """
     mask0 = np.hstack(
         (mask[:, :, :-1].ravel(), mask[:, :-1].ravel(), mask[:-1].ravel())
     )
@@ -158,7 +158,14 @@ def _build_laplacian(data, spacing, mask=None, beta=50):
     return lap
 
 
-def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
+def random_walker(
+    data,
+    labels: np.ndarray,
+    beta: float = 130.0,
+    tol: float = 1.0e-3,
+    copy: bool = True,
+    spacing=None,
+):
     """Random walker algorithm for segmentation from markers.
 
     Parameters
@@ -176,21 +183,21 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
         consecutive integers, the labels array will be transformed so that
         labels are consecutive.
 
-    beta : float, default=130
+    beta : :obj:`float`, default=130
         Penalization coefficient for the random walker motion
         (the greater `beta`, the more difficult the diffusion).
 
-    tol : float, default=1e-3
+    tol : :obj:`float`, default=1e-3
         Tolerance to achieve when solving the linear system, in
         cg' mode.
 
-    copy : bool, default=True
+    copy : :obj:`bool`, default=True
         If copy is False, the `labels` array will be overwritten with
         the result of the segmentation. Use copy=False if you want to
         save on memory.
 
-    spacing : iterable of floats, optional
-        Spacing between voxels in each spatial dimension. If `None`, then
+    spacing : iterable of floats, default=None
+        Spacing between voxels in each spatial dimension. If ``None``, then
         the spacing between pixels/voxels in each dimension is assumed 1.
 
     Returns
@@ -245,20 +252,21 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
     ----------
     .. [1] Random walks for image segmentation, Leo Grady, IEEE Trans Pattern
        Anal Mach Intell. 2006 Nov;28(11):1768-83.
-
     """
     out_labels = np.copy(labels)
     if (labels != 0).all():
         warnings.warn(
             "Random walker only segments unlabeled areas, where "
             "labels == 0. No zero valued areas in labels were "
-            "found. Returning provided labels."
+            "found. Returning provided labels.",
+            stacklevel=find_stack_level(),
         )
         return out_labels
 
     if (labels == 0).all():
         warnings.warn(
-            "Random walker received no seed label. Returning provided labels."
+            "Random walker received no seed label. Returning provided labels.",
+            stacklevel=find_stack_level(),
         )
         return out_labels
 
@@ -268,8 +276,7 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
     if not multichannel:
         if data.ndim < 2 or data.ndim > 3:
             raise ValueError(
-                "For non-multichannel input, data must be of "
-                "dimension 2 or 3."
+                "For non-multichannel input, data must be of dimension 2 or 3."
             )
         dims = data.shape  # To reshape final labeled result
         data = np.atleast_3d(as_float_array(data))[..., np.newaxis]
@@ -278,10 +285,9 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
     if spacing is None:
         spacing = np.asarray((1.0,) * 3)
     elif len(spacing) == len(dims):
-        if len(spacing) == 2:  # Need a dummy spacing for singleton 3rd dim
-            spacing = np.r_[spacing, 1.0]
-        else:  # Convert to array
-            spacing = np.asarray(spacing)
+        spacing = (
+            np.r_[spacing, 1.0] if len(spacing) == 2 else np.asarray(spacing)
+        )
     else:
         raise ValueError(
             "Input argument `spacing` incorrect, should be an "
@@ -323,7 +329,8 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
         warnings.warn(
             "Random walker only segments unlabeled areas, where "
             "labels == 0. Data provided only contains isolated seeds "
-            "and isolated pixels. Returning provided labels."
+            "and isolated pixels. Returning provided labels.",
+            stacklevel=find_stack_level(),
         )
         return out_labels
 
@@ -335,7 +342,7 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
     else:
         lap_sparse = _build_laplacian(data, spacing, beta=beta)
 
-    lap_sparse, B = _buildAB(lap_sparse, labels)
+    lap_sparse, B = _build_ab(lap_sparse, labels)
 
     # We solve the linear system
     # lap_sparse X = B
@@ -355,17 +362,7 @@ def _solve_cg(lap_sparse, B, tol):
     For each pixel, the label i corresponding to the maximal X_i is returned.
     """
     lap_sparse = lap_sparse.tocsc()
-    X = []
-    for i in range(len(B)):
-        # TODO Python 3.8
-        # consider remove if/else block when dropping support for 3.8
-        # would require pinning scipy to >= 1.12
-        # See https://github.com/nilearn/nilearn/pull/4394
-        if compare_version(__version__, ">=", "1.12"):
-            x0 = cg(lap_sparse, -B[i].todense(), rtol=tol, atol=0)[0]
-        else:
-            x0 = cg(lap_sparse, -B[i].todense(), tol=tol, atol="legacy")[0]
-        X.append(x0)
+    X = [cg(lap_sparse, -b_i.todense(), rtol=tol, atol=0)[0] for b_i in B]
 
     X = np.array(X)
     X = np.argmax(X, axis=0)

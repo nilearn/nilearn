@@ -1,0 +1,21 @@
+flowchart TD
+subgraph Circle-CI
+nilearn_CCI(["host_docs job"])
+end
+
+subgraph GitHub - nilearn.github.io
+nilearn_doc_dev["<code>/dev"]
+nilearn_doc_stable["<code>/stable"]
+end
+
+subgraph GitHub - nilearn
+DocumentationBuilder["build-docs.yml"]
+trigger_hosting["trigger_hosting_on_pr.yml"]
+artifacts@{ shape: docs, label: "doc build artifacts" }
+end
+
+DocumentationBuilder -- on main --> nilearn_doc_dev
+DocumentationBuilder -- on GitHub release ---> nilearn_doc_stable
+DocumentationBuilder -- on PR --> trigger_hosting & artifacts
+trigger_hosting -- triggers --> nilearn_CCI
+artifacts -. fetched by .-> nilearn_CCI

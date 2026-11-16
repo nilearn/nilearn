@@ -1,14 +1,13 @@
 """Implementation of multiple proximal operators for TV-L1, Graph-Net, etc."""
 
-# Author: DOHMATOB Elvis Dopgima,
-#         VAROQUAUX Gael,
-#         GRAMFORT Alexandre,
-
 from math import sqrt
 
 import numpy as np
 
-from ._objective_functions import (
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.param_validation import check_params
+from nilearn.decoding._objective_functions import (
     divergence_id,
     gradient_id,
     tv_l1_from_gradient,
@@ -79,17 +78,18 @@ def _objective_function_prox_tvl1(input_img, output_img, gradient, weight):
     return 0.5 * (diff * diff).sum() + weight * tv_l1_from_gradient(gradient)
 
 
+@fill_doc
 def prox_tvl1(
     input_img,
     l1_ratio=0.05,
-    weight=50,
+    weight=50.0,
     dgap_tol=5.0e-5,
     x_tol=None,
     max_iter=200,
     check_gap_frequency=4,
     val_min=None,
     val_max=None,
-    verbose=False,
+    verbose=0,
     fista=True,
     init=None,
 ):
@@ -106,44 +106,40 @@ def prox_tvl1(
         but it is cast into an ndarray of floats for the computation
         of the denoised image.
 
-    weight : float, optional
+    l1_ratio : :obj:`float`, default=0.05
+
+    weight : :obj:`float`, default=50.0
         Denoising weight. The greater ``weight``, the more denoising (at
         the expense of fidelity to ``input``)
 
-    dgap_tol : float, optional
+    dgap_tol : :obj:`float`, default=5.0e-5
         Precision required. The distance to the exact solution is computed
         by the dual gap of the optimization problem and rescaled by the
         squared l2 norm of the image (for contrast invariance).
 
-    x_tol : float or None, optional
+    x_tol : :obj:`float` or None, default=None
         The maximal relative difference between input and output. If
         specified, this specifies a stopping criterion on x, rather than
         the dual gap.
 
-    max_iter : int, optional
-        Maximal number of iterations used for the optimization.
+    %(max_iter)s
 
-    val_min : None or float, optional
+    val_min : None or float, default=None
         An optional lower bound constraint on the reconstructed image.
 
-    val_max : None or float, optional
+    val_max : None or float, default=None
         An optional upper bound constraint on the reconstructed image.
 
-    verbose : bool, optional
-        If True, print the dual gap of the optimization
+    %(verbose0)s
 
-    fista : bool, optional
+    fista : :obj:`bool`, default=True
         If True, uses a FISTA loop to perform the optimization.
         if False, uses an ISTA loop.
-
-    callback : callable
-        Callable that takes the local variables at each
-        steps. Useful for tracking.
 
     init : array of shape as im
         Starting point for the optimization.
 
-    check_gap_frequency : int, optional (default 4)
+    check_gap_frequency : int, default=4
         Frequency at which duality gap is checked for convergence.
 
     Returns
@@ -171,13 +167,15 @@ def prox_tvl1(
     For details on implementing the bound constraints, read the aforementioned
     Beck and Teboulle paper.
     """
+    check_params(locals())
+
     weight = float(weight)
     input_img_flat = input_img.view()
-    input_img_flat.shape = input_img.size
+    input_img_flat = input_img_flat.reshape(input_img.size)
     input_img_norm = np.dot(input_img_flat, input_img_flat)
-    if not input_img.dtype.kind == "f":
+    if input_img.dtype.kind != "f":
         input_img = input_img.astype(np.float64)
-    shape = [len(input_img.shape) + 1] + list(input_img.shape)
+    shape = [len(input_img.shape) + 1, *input_img.shape]
     grad_im = np.zeros(shape)
     grad_aux = np.zeros(shape)
     t = 1.0
@@ -218,10 +216,11 @@ def prox_tvl1(
         # on the input array
         t_new = 0.5 * (1.0 + sqrt(1.0 + 4.0 * t * t))
         t_factor = (t - 1.0) / t_new
+
+        grad_aux = grad_tmp
         if fista_step:
             grad_aux = (1 + t_factor) * grad_tmp - t_factor * grad_im
-        else:
-            grad_aux = grad_tmp
+
         grad_im = grad_tmp
         t = t_new
         gap = weight * divergence_id(grad_aux, l1_ratio=l1_ratio)
@@ -246,12 +245,15 @@ def prox_tvl1(
                     weight,
                     l1_ratio=l1_ratio,
                 )
-                if verbose:
-                    print(
-                        f"\tProxTVl1: Iteration {i: 2}, dual gap: {dgap: 6.3e}"
-                    )
+
+                logger.log(
+                    f"\tProxTVl1: Iteration {i: 2}, dual gap: {dgap: 6.3e}",
+                    verbose,
+                )
+
                 if dgap < dgap_tol:
                     break
+
                 if old_dgap < dgap:
                     # M-FISTA strategy: switch to an ISTA to have
                     # monotone convergence
@@ -262,16 +264,18 @@ def prox_tvl1(
                 # Stopping criterion based on x_tol
                 diff = np.max(np.abs(negated_output_old - negated_output))
                 diff /= np.max(np.abs(negated_output))
-                if verbose:
-                    gid = gradient_id(negated_output, l1_ratio=l1_ratio)
-                    energy = _objective_function_prox_tvl1(
-                        input_img, -negated_output, gid, weight
-                    )
-                    print(
-                        f"\tProxTVl1 iteration {i: 2}, "
-                        f"relative difference: {diff: 6.3e}, "
-                        f"energy: {energy: 6.3e}"
-                    )
+
+                gid = gradient_id(negated_output, l1_ratio=l1_ratio)
+                energy = _objective_function_prox_tvl1(
+                    input_img, -negated_output, gid, weight
+                )
+                logger.log(
+                    f"\tProxTVl1 iteration {i: 2}, "
+                    f"relative difference: {diff: 6.3e}, "
+                    f"energy: {energy: 6.3e}",
+                    verbose,
+                )
+
                 if diff < x_tol:
                     break
                 negated_output_old = negated_output
@@ -282,9 +286,10 @@ def prox_tvl1(
     output = input_img - weight * divergence_id(grad_im, l1_ratio=l1_ratio)
     if val_min is not None or val_max is not None:
         output = output.clip(val_min, val_max, out=output)
-    return output, dict(converged=(i < max_iter))
+    return output, {"converged": (i < max_iter)}
 
 
+@fill_doc
 def prox_tvl1_with_intercept(
     w,
     shape,
@@ -293,32 +298,35 @@ def prox_tvl1_with_intercept(
     dgap_tol,
     max_iter=5000,
     init=None,
-    verbose=False,
+    verbose=0,
 ):
     """Compute TV-L1 prox taking into account the intercept.
 
     Parameters
     ----------
-    weight : float
-       Weight in prox. This would be something like `alpha_ * stepsize`,
-       where `alpha_` is the effective (i.e. re-scaled) alpha.
-
     w : ndarray, shape (w_size,)
         The point at which the prox is being computed
 
-    init : ndarray, shape (w_size - 1,), optional (default None)
-        Initialization vector for the prox.
+    shape
 
-    max_iter : int
-        Maximum number of iterations for the solver.
+    l1_ratio : :obj:`float`
 
-    verbose : int, optional (default 0)
-        Verbosity level.
+    weight : :obj:`float`
+       Weight in prox. This would be something like `alpha_ * stepsize`,
+       where `alpha_` is the effective (i.e. re-scaled) alpha.
 
-    dgap_tol : float
+    dgap_tol : :obj:`float`
         Dual-gap tolerance for TV-L1 prox operator approximation loop.
 
+    init : ndarray, shape (w_size - 1,), default=None
+        Initialization vector for the prox.
+
+    %(max_iter5000)s
+
+    %(verbose0)s
     """
+    check_params(locals())
+
     init = init.reshape(shape) if init is not None else init
     out, prox_info = prox_tvl1(
         w[:-1].reshape(shape),

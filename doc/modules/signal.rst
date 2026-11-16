@@ -9,7 +9,8 @@
 
 .. No relevant user manual section yet.
 
-**Functions**:
+Functions
+---------
 
 .. currentmodule:: nilearn.signal
 

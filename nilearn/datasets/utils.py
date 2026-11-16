@@ -1,20 +1,17 @@
 """Downloading NeuroImaging datasets: utility functions."""
 
 import os
-from warnings import warn
+from pathlib import Path
 
-from .._utils import fill_doc
-
-_GENERAL_MESSAGE = (
-    "The import path 'nilearn.datasets.utils'\n"
-    "will be deprecated in version 0.13.\n"
-    "Importing from 'nilearn.datasets.utils will be possible\n"
-    "at least until release 0.13.0."
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.param_validation import (
+    check_params,
 )
+from nilearn.nilearn_typing import DataDir
 
 
 @fill_doc
-def get_data_dirs(data_dir=None):
+def get_data_dirs(data_dir: DataDir = None) -> list[str]:
     """Return the directories in which nilearn looks for data.
 
     This is typically useful for the end-user to check where the data is
@@ -26,7 +23,7 @@ def get_data_dirs(data_dir=None):
 
     Returns
     -------
-    paths : list of strings
+    paths : :obj:`list` of strings
         Paths of the dataset directories.
 
     Notes
@@ -40,7 +37,14 @@ def get_data_dirs(data_dir=None):
     4. the user environment variable NILEARN_DATA
     5. nilearn_data in the user home folder
 
+    Examples
+    --------
+    >>> from nilearn.datasets import get_data_dirs
+    >>> directories = get_data_dirs()
+    >>> print(directories)  # doctest: +SKIP
     """
+    check_params(locals())
+
     # We build an array of successive paths by priority
     # The boolean indicates if it is a pre_dir: in that case, we won't add the
     # dataset name to the path.
@@ -60,25 +64,5 @@ def get_data_dirs(data_dir=None):
         if local_data is not None:
             paths.extend(local_data.split(os.pathsep))
 
-        paths.append(os.path.expanduser("~/nilearn_data"))
+        paths.append(str(Path("~/nilearn_data").expanduser()))
     return paths
-
-
-def load_sample_motor_activation_image():
-    """Load a single functional image showing motor activations.
-
-    Returns
-    -------
-    str
-        Path to the sample functional image.
-    """
-    from .func import load_sample_motor_activation_image as tmp
-
-    warn(
-        (
-            f"{_GENERAL_MESSAGE}"
-            "Please import this function from 'nilearn.datasets.func' instead."
-        ),
-        DeprecationWarning,
-    )
-    return tmp()

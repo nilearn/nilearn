@@ -1,11 +1,14 @@
-"""Predefined denoising strategies.
-
-Authors: Hao-Ting Wang, Pierre Bellec
-"""
+"""Predefined denoising strategies."""
 
 import warnings
+from typing import Literal, overload
 
-from . import load_confounds
+import numpy as np
+import pandas as pd
+
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 
 # defining a preset strategy with python dictionary:
 # key:
@@ -28,8 +31,8 @@ preset_strategies = {
         "motion": "full",
         "wm_csf": "full",
         "scrub": 5,
-        "fd_threshold": 0.2,  # updated here and doc to 0.5 in v0.13
-        "std_dvars_threshold": 3,  # updated here and doc to 1.5 in v0.13
+        "fd_threshold": 0.5,
+        "std_dvars_threshold": 1.5,
         "global_signal": None,
         "demean": True,
     },
@@ -51,14 +54,39 @@ preset_strategies = {
 }
 
 
-def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
+@overload
+def load_confounds_strategy(
+    img_files: str,
+    denoise_strategy=...,
+    **kwargs,
+) -> tuple[pd.DataFrame | None, np.ndarray | None]: ...
+
+
+@overload
+def load_confounds_strategy(
+    img_files: list[str] | list[list[str]],
+    denoise_strategy=...,
+    **kwargs,
+) -> tuple[list[pd.DataFrame] | None, list[np.ndarray | None]]: ...
+
+
+def load_confounds_strategy(
+    img_files,
+    denoise_strategy: Literal[
+        "simple", "scrubbing", "compcor", "ica_aroma"
+    ] = "simple",
+    **kwargs,
+) -> tuple[
+    pd.DataFrame | list[pd.DataFrame] | None,
+    np.ndarray | list[np.ndarray | None] | None,
+]:
     """
     Use preset strategy to load confounds from :term:`fMRIPrep`.
 
     `load_confounds_strategy` provides an interface to select confounds
-    based on past literature with limited parameters for user customisation.
+    based on past literature with limited parameters for user customization.
 
-    .. versionadded:: 0.9.0
+    .. nilearn_versionadded:: 0.9.0
 
     Parameters
     ----------
@@ -66,7 +94,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         Processed nii.gz/dtseries.nii/func.gii file reside in a
         :term:`fMRIPrep` generated functional derivative directory (i.e.The
         associated confound files should be in the same directory as the image
-        file). As long as the image file, confound related tsv and json are in
+        file). As long as the image file, confound related TSV and json are in
         the same directory with BIDS-compliant names,
         :func:`nilearn.interfaces.fmriprep.load_confounds` can retrieve the
         relevant files correctly.
@@ -75,7 +103,8 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         - `func.gii`: list of a pair of paths to files, optionally as a list
           of lists.
 
-    denoise_strategy : :obj:`str`, default="simple"
+    denoise_strategy : {"simple", "scrubbing", "compcor", "ica_aroma"}, \
+                       default="simple"
         Name of preset denoising strategies. Each strategy has a set of
         associated configurable parameters. For customiseable parameters,
         please see the table in Notes.
@@ -85,13 +114,15 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           :footcite:t:`Fox2005`. With the global signal regression,
           this approach can remove confounds
           without compromising the temporal degrees of freedom.
-        - 'srubbing': Load confounds for scrubbing described in
+
+        - 'scrubbing': Load confounds for scrubbing described in
           :footcite:t:`Power2012`. This approach can reliably remove the
           impact of high motion volumes in functional connectome, however, it
           might not be suitable with subjects with high motion (more than 50%
           timeseries flagged as high motion). One should adjust the threshold
           based on the characteristics of the dataset, or remove high motion
           subjects from the dataset.
+
         - 'compcor': Load confounds using the CompCor strategy from
           :footcite:t:`Behzadi2007`. CompCor estimates noise through principal
           component analysis on regions that are unlikely to contain signal.
@@ -104,10 +135,10 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           component can be really high. Please refer to :term:`fMRIPrep`
           documentation for more details.
 
-          .. versionadded:: 0.10.3
-            `golobal_signal` is now a tunable parameter for compcor.
+          .. nilearn_versionadded:: 0.10.3
+            ``global_signal`` is now a tunable parameter for compcor.
 
-        - 'ica_aroma': Load confounds for non-aggresive ICA-AROMA strategy
+        - 'ica_aroma': Load confounds for non-aggressive ICA-AROMA strategy
           described in :footcite:t:`Pruim2015`. The strategy requires
           :term:`fMRIPrep` outputs generated with `--use-aroma` suffixed with
           `desc-smoothAROMAnonaggr_bold`. ICA-AROMA increases the run time of
@@ -115,7 +146,13 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           benchmarks (:footcite:t:`Ciric2017`, :footcite:t:`Parker2018`).
           See Notes for more details about this option.
 
-    Other keyword arguments:
+          .. attention::
+            The `--use-aroma` option is deprecated in :term:`fMRIPrep`
+            version 23.2.3 and no longer works since version 24.0.0.
+            See `fmripost-aroma docs <https://fmripost-aroma.readthedocs.io/latest/usage.html>`_
+            for the new ICA-AROMA implementation.
+
+    **kwargs :
         See additional parameters associated with `denoise_strategy` in
         Notes and refer to the documentation of
         :func:`nilearn.interfaces.fmriprep.load_confounds`.
@@ -142,69 +179,72 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         - Non-steady-state volumes (if present)
         - Motion outliers detected by scrubbing
 
-    Notes
-    -----
-    1. The following table details the default options of each preset
-       strategies. Parameters with `*` denote customisable parameters. Please
-       see :func:`nilearn.interfaces.fmriprep.load_confounds`.
-
-        ========= ========= ====== ====== ============= ===== ============ \
-        =================== ============== ========= ========= ======
-        strategy  high_pass motion wm_csf global_signal scrub fd_threshold \
-        std_dvars_threshold compcor        n_compcor ica_aroma demean
-        ========= ========= ====== ====== ============= ===== ============ \
-        =================== ============== ========= ========= ======
-        simple    True      full*  basic* None*         N/A   N/A          \
-        N/A                 N/A            N/A       N/A       True*
-        scrubbing True      full*  full   None*         5*    0.2*         \
-        3*                  N/A            N/A       N/A       True*
-        compcor   True      full*  N/A    None*         N/A   N/A          \
-        N/A                 anat_combined* all*      N/A       True*
-        ica_aroma True      N/A    basic* None*         N/A   N/A          \
-        N/A                 N/A            N/A       full      True*
-        ========= ========= ====== ====== ============= ===== ============ \
-        =================== ============== ========= ========= ======
-
-    2. ICA-AROMA is implemented in two steps in :footcite:t:`Pruim2015`:
-
-        i. A non-aggressive denoising immediately after :term:`ICA`
-        classification.
-        A linear regression estimates signals with all independent
-        components as predictors. A partial regression is then applied to
-        remove variance associated with noise independent components.
-        :term:`fMRIPrep` performs this step and generates files in
-        `MNI152NLin6Asym` template, suffixed with
-        `desc-smoothAROMAnonaggr_bold`.
-
-        One can produce `desc-smoothAROMAnonaggr_bold` in other spatial
-        templates, please refer to :term:`fMRIPrep` documentation on ICA-AROMA
-        `<https://fmriprep.org/en/latest/workflows.html#ica-aroma>`_
-
-        ii. Confound regression step (mean signals from WM and CSF).
-        Confound regressors generated by this function with
-        `denoise_strategy="ica_aroma"`.
-
-        For more discussion regarding choosing the nuisance regressors before
-        or after denoising with ICA-AROMA has a detriment on outcome measures,
-        please see notebook 5.
-        `<https://github.com/nipreps/fmriprep-notebooks/>`_
-
     See Also
     --------
     :func:`nilearn.interfaces.fmriprep.load_confounds`
 
+    Notes
+    -----
+    1. The following table details the default options of each preset
+       strategies. Parameters with `*` denote customizable parameters. Please
+       see :func:`nilearn.interfaces.fmriprep.load_confounds`.
+
+       ========= ========= ====== ====== ============= ===== ============ \
+       =================== ============== ========= ========= ======
+       strategy  high_pass motion wm_csf global_signal scrub fd_threshold \
+       std_dvars_threshold compcor        n_compcor ica_aroma demean
+       ========= ========= ====== ====== ============= ===== ============ \
+       =================== ============== ========= ========= ======
+       simple    True      full*  basic* None*         N/A   N/A          \
+       N/A                 N/A            N/A       N/A       True*
+       scrubbing True      full*  full   None*         5*    0.2*         \
+       3*                  N/A            N/A       N/A       True*
+       compcor   True      full*  N/A    None*         N/A   N/A          \
+       N/A                 anat_combined* all*      N/A       True*
+       ica_aroma True      N/A    basic* None*         N/A   N/A          \
+       N/A                 N/A            N/A       full      True*
+       ========= ========= ====== ====== ============= ===== ============ \
+       =================== ============== ========= ========= ======
+
+    2. ICA-AROMA is implemented in two steps in :footcite:t:`Pruim2015`:
+
+       i. A non-aggressive denoising immediately after :term:`ICA`
+       classification.
+       A linear regression estimates signals with all independent
+       components as predictors. A partial regression is then applied to
+       remove variance associated with noise independent components.
+       :term:`fMRIPrep` performs this step and generates files in
+       `MNI152NLin6Asym` template, suffixed with
+       `desc-smoothAROMAnonaggr_bold`.
+
+       One can produce `desc-smoothAROMAnonaggr_bold` in other spatial
+       templates, please refer to :term:`fMRIPrep` documentation on ICA-AROMA
+       `<https://fmriprep.org/en/23.2.3/usage.html#%5Bdeprecated%5D-options-for-running-ica_aroma>`_
+
+       ii. Confound regression step (mean signals from WM and CSF).
+       Confound regressors generated by this function with
+       `denoise_strategy="ica_aroma"`.
+
+       For more discussion regarding choosing the nuisance regressors before
+       or after denoising with ICA-AROMA has a detriment on outcome measures,
+       please see notebook 5.
+       `<https://github.com/nipreps/fmriprep-notebooks/>`_
+
+       .. attention::
+            Since version 24.0.0 `fMRIPrep` does not perform ICA-AROMA anymore.
+            This feature has been replaced by `fmripost-aroma <https://fmripost-aroma.readthedocs.io/latest/usage.html>`_
+            and consequently the suffixes of files produced by `fmripost-aroma`
+            may differ from the ones produced by `fMRIPrep < 24.0.0`.
+
     References
     ----------
     .. footbibliography::
-
     """
-    default_parameters = preset_strategies.get(denoise_strategy, False)
-    if not default_parameters:
-        raise KeyError(
-            f"Provided strategy '{denoise_strategy}' is not a "
-            "preset strategy. Valid strategy: "
-            f"{preset_strategies.keys()}"
-        )
+    check_parameter_in_allowed(
+        denoise_strategy, preset_strategies.keys(), "denoise_strategy"
+    )
+    default_parameters = preset_strategies.get(denoise_strategy)
+    assert isinstance(default_parameters, dict)
 
     check_parameters = list(default_parameters.keys())
     check_parameters.remove("strategy")
@@ -222,7 +262,8 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         warnings.warn(
             "The following parameters are not needed for the "
             f"selected strategy '{denoise_strategy}': {not_needed}; "
-            f"parameters accepted: {check_parameters}"
+            f"parameters accepted: {check_parameters}",
+            stacklevel=find_stack_level(),
         )
     return load_confounds(img_files, **user_parameters)
 
@@ -261,7 +302,7 @@ def _update_user_inputs(kwargs, default_parameters, check_parameters):
         # global_signal parameter is not in default strategy, but
         # applicable to every strategy other than compcor
         # global signal strategy will only be added if user has passed a
-        # recognisable value to the global_signal parameter
+        # recognizable value to the global_signal parameter
         if key == "global_signal":
             if isinstance(value, str):
                 parameters["strategy"] += ("global_signal",)
