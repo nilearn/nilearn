@@ -368,7 +368,13 @@ filterwarnings = [
     'ignore:.*you are using the.*:UserWarning',
     # ignoring warnings from pytest-reporter-html1 when rendering docstrings
     # with docutils>=0.22 in the HTML test report
-    'ignore:Argument "writer_name" will be removed:PendingDeprecationWarning'
+    'ignore:Argument "writer_name" will be removed:PendingDeprecationWarning',
+    # ignore deprecation warnings we have no control over coming
+    # from lower level dependencies
+    # TODO: warnings are only thrown when testing oldest supported versions
+    # of our dependencies,
+    # so this ignore could be removed in the future
+    'ignore:.*:PyparsingDeprecationWarning'
 ]
 junit_family = "xunit2"
 log_cli_level = "INFO"
