@@ -506,7 +506,6 @@ def test_plot_surf_colorbar_no_overlapping_ticks():
     return plot_surf(surf_map=surf_img, title="fsaverage thickness")
 
 
-@pytest.mark.ai_generated
 @pytest.mark.mpl_image_compare(tolerance=5)
 @mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("hemi", ["left", "right"])
@@ -528,7 +527,6 @@ def test_plot_surf_flat_aspect_ratio(hemi):
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.skipif(
     not (is_plotly_installed() and is_kaleido_installed()),
     reason="This test requires plotly and kaleido to be installed",
