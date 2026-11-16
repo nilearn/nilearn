@@ -20,7 +20,7 @@ The unrestricted analysis ignores the pairing between each subject's two maps.
 # returns subjects in the same order for each requested contrast.
 from nilearn.datasets import fetch_localizer_contrasts
 
-n_subjects = 16
+n_subjects = 47
 horizontal = fetch_localizer_contrasts(
     ["horizontal checkerboard"], n_subjects=n_subjects
 )
@@ -90,28 +90,32 @@ reference_result = non_parametric_inference(
 # Display the family-wise-error-corrected negative log10 p-values. The blocked
 # result and the direct-contrast reference should be similar; finite
 # permutation counts can make their maps differ slightly.
-import matplotlib.pyplot as plt
+from nilearn.plotting import plot_bland_altman, plot_img_comparison, show
 
-from nilearn.plotting import plot_glass_brain, show
+plot_img_comparison(
+    reference_result,
+    unrestricted_result,
+    ref_label="Direct within-subject contrast",
+    src_label="Unrestricted row permutations",
+)
+plot_img_comparison(
+    reference_result,
+    blocked_result,
+    ref_label="Direct within-subject contrast",
+    src_label="Permutations within subjects",
+)
 
-fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-results = [unrestricted_result, blocked_result, reference_result]
-titles = [
-    "Unrestricted row permutations",
-    "Permutations within subjects",
-    "Direct within-subject contrast",
-]
-for result, title, ax in zip(results, titles, axes, strict=True):
-    plot_glass_brain(
-        result,
-        axes=ax,
-        figure=fig,
-        display_mode="z",
-        threshold=-np.log10(0.05),
-        vmin=-np.log10(0.05),
-        vmax=3.0,
-        title=title,
-        colorbar=False,
-    )
-fig.suptitle("Non-parametric repeated-measures inference")
+plot_bland_altman(
+    reference_result,
+    unrestricted_result,
+    ref_label="Direct within-subject contrast",
+    src_label="Unrestricted row permutations",
+)
+plot_bland_altman(
+    reference_result,
+    blocked_result,
+    ref_label="Direct within-subject contrast",
+    src_label="Permutations within subjects",
+)
+
 show()
