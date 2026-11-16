@@ -3,13 +3,22 @@
 Making a surface plot of a 3D statistical map
 =============================================
 
-In this example, we will project a 3D statistical map onto a cortical mesh
-using :class:`~nilearn.surface.SurfaceImage`,
-display a surface plot of the projected map
-using :func:`~nilearn.plotting.plot_surf_stat_map`
-with different plotting engines,
-and add contours of regions of interest using
-:func:`~nilearn.plotting.plot_surf_contours`.
+In this example, we will:
+
+- project a 3D statistical map onto a cortical mesh of different resolution
+  using :class:`~nilearn.surface.SurfaceImage`,
+- display a surface plot of the projected map
+  using :func:`~nilearn.plotting.plot_surf_stat_map`
+  with different plotting engines,
+- add contours of regions of interest using
+  :func:`~nilearn.plotting.plot_surf_contours`,
+- use :func:`~nilearn.plotting.plot_img_on_surf` to directly
+  project and display the same map on a surface
+- use :func:`~nilearn.plotting.view_surf`
+  and :func:`~nilearn.plotting.view_img_on_surf`
+  for interactive visualization of surface data
+- explain how to tweak how volume data are projected on surfaces
+  and important details to look out for when doing so.
 
 .. admonition:: dataset
 
@@ -83,7 +92,6 @@ fig = plot_surf_stat_map(
     threshold=1.0,
     bg_map=curv_sign,
 )
-fig.show()
 
 # %%
 # If you have a recent version of Nilearn (>=0.8.2),
@@ -98,7 +106,7 @@ engine = "plotly" if is_plotly_installed() else "matplotlib"
 
 print(f"Using plotting engine {engine}.")
 
-figure = plot_surf_stat_map(
+fig = plot_surf_stat_map(
     stat_map=surface_image,
     surf_mesh=fsaverage_meshes["inflated"],
     hemi=hemi,
@@ -108,7 +116,6 @@ figure = plot_surf_stat_map(
     bg_on_data=True,
     engine=engine,  # Specify the plotting engine here
 )
-figure.show()
 
 # Uncomment the line below to have interactive
 # visualization in the browser
@@ -148,6 +155,44 @@ print(f"Output will be saved to: {output_dir}")
 fig.savefig(output_dir / "both_hemisphere.png")
 
 # %%
+# Plot with higher-resolution mesh
+# --------------------------------
+# :func:`~nilearn.datasets.load_fsaverage`
+# and :func:`~nilearn.datasets.load_fsaverage_data`
+# take a ``mesh`` argument
+# which specifies whether to fetch
+# the low-resolution ``fsaverage5`` mesh,
+# or another mesh
+# like the high-resolution fsaverage mesh.
+# Using ``mesh="fsaverage"`` will result
+# in more memory usage and computation time,
+# but finer visualizations.
+
+big_fsaverage_meshes = load_fsaverage(mesh="fsaverage")
+
+big_img = SurfaceImage.from_volume(
+    mesh=big_fsaverage_meshes["pial"],
+    volume_img=stat_img,
+)
+
+big_curv_sign = load_fsaverage_data(
+    mesh="fsaverage",
+    data_type="curvature",
+    mesh_type="inflated",
+)
+for hs, data in big_curv_sign.data.parts.items():
+    big_curv_sign.data.parts[hs] = np.sign(data)
+
+fig = plot_surf_stat_map(
+    stat_map=big_img,
+    surf_mesh=big_fsaverage_meshes["inflated"],
+    hemi=hemi,
+    title="Surface fine mesh",
+    threshold=1.0,
+    bg_map=big_curv_sign,
+)
+
+# %%
 # Plot 3D image for comparison
 # ----------------------------
 from nilearn.plotting import plot_glass_brain, plot_stat_map, show
@@ -167,6 +212,8 @@ plot_stat_map(
     cut_coords=list(range(0, 51, 10)),
     title="Slices",
 )
+
+show()
 
 # %%
 # Extracting region contours with an atlas
@@ -205,7 +252,7 @@ from nilearn.plotting import plot_surf_contours
 
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal", mesh_type="pial")
 
-figure = plot_surf_stat_map(
+fig = plot_surf_stat_map(
     stat_map=surface_image,
     surf_mesh=fsaverage_meshes["inflated"],
     hemi=hemi,
@@ -215,17 +262,17 @@ figure = plot_surf_stat_map(
     engine=engine,
 )
 if engine == "matplotlib":
-    figure = plot_surf_contours(
+    fig = plot_surf_contours(
         roi_map=labels_img,
         hemi=hemi,
         labels=labels,
         levels=regions_indices,
-        figure=figure,
+        figure=fig,
         legend=True,
         colors=["g", "k"],
     )
 elif engine == "plotly":
-    figure.add_contours(
+    fig.add_contours(
         roi_map=labels_img,
         levels=regions_indices,
         labels=labels,
@@ -234,46 +281,9 @@ elif engine == "plotly":
     # Uncomment the line below to have interactive
     # visualization in the browser
     #
-    # figure.show(renderer="browser")
+    # fig.show(renderer="browser")
 
-figure.show()
-
-# %%
-# Plot with higher-resolution mesh
-# --------------------------------
-# :func:`~nilearn.datasets.load_fsaverage`
-# and :func:`~nilearn.datasets.load_fsaverage_data`
-# take a ``mesh`` argument
-# which specifies whether to fetch
-# the low-resolution ``fsaverage5`` mesh,
-# or another mesh
-# like the high-resolution fsaverage mesh.
-# Using ``mesh="fsaverage"`` will result
-# in more memory usage and computation time,
-# but finer visualizations.
-
-big_fsaverage_meshes = load_fsaverage(mesh="fsaverage")
-
-big_fsaverage_sulcal = load_fsaverage_data(
-    mesh="fsaverage",
-    data_type="sulcal",
-    mesh_type="inflated",
-)
-
-big_img = SurfaceImage.from_volume(
-    mesh=big_fsaverage_meshes["pial"],
-    volume_img=stat_img,
-)
-
-plot_surf_stat_map(
-    stat_map=big_img,
-    surf_mesh=big_fsaverage_meshes["inflated"],
-    hemi=hemi,
-    title="Surface fine mesh",
-    threshold=1.0,
-    bg_map=big_fsaverage_sulcal,
-)
-show()
+fig.show()
 
 # %%
 # Plot multiple views of the 3D volume on a surface
@@ -288,7 +298,7 @@ show()
 # `FreeSurfer <https://surfer.nmr.mgh.harvard.edu/>`_\'s fsaverage5.
 from nilearn.plotting import plot_img_on_surf
 
-plot_img_on_surf(
+fig = plot_img_on_surf(
     stat_map=stat_img,
     views=["lateral", "medial"],
     hemispheres=["left", "right"],
@@ -398,5 +408,45 @@ view
 # browser by uncommenting the below line.
 #
 # view.open_in_browser()
+
+# %%
+# Impact of surface mesh on projection
+# ------------------------------------
+# We originally projected our 3D volume on a 'pial mesh':
+# this is an important detail as the choice of mesh
+# can drastically alter the outcome.
+# Let's compare our original projection
+# to one on a 'white matter' or 'inflated' mesh.
+surface_image_inflated_mesh = SurfaceImage.from_volume(
+    mesh=fsaverage_meshes["inflated"],
+    volume_img=stat_img,
+)
+
+surface_image_white_mesh = SurfaceImage.from_volume(
+    mesh=fsaverage_meshes["white_matter"],
+    volume_img=stat_img,
+)
+
+for stat_map, label in zip(
+    [surface_image_white_mesh, surface_image, surface_image_inflated_mesh],
+    ["white", "pial", "inflated"],
+    strict=False,
+):
+    fig = plot_surf_stat_map(
+        stat_map=stat_map,
+        surf_mesh=fsaverage_meshes["inflated"],
+        hemi=hemi,
+        title=f"projection on {label} mesh",
+        threshold=1.0,
+        bg_map=curv_sign,
+    )
+
+show()
+
+# %%
+# "Pial" and "white matter" meshes are fairly close to each other
+# so the change is not drastic,
+# if by mistake you project your data on an inflated mesh,
+# the results may look like what you expected.
 
 # sphinx_gallery_dummy_images=1
