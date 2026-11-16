@@ -75,7 +75,7 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import SurfaceImage, at_least_2d
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import (
     assert_polymesh_equal,
@@ -1076,6 +1076,7 @@ def test_iter_surface_img(surf_img_2d):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.ai_generated
 def test_iter_img_surface_2d(surf_img_1d, surf_img_2d):
     """Return as is if surface image is 2D."""
     input = surf_img_2d(1)
@@ -1085,7 +1086,9 @@ def test_iter_img_surface_2d(surf_img_1d, surf_img_2d):
 
     output = list(iter_img(surf_img_1d))
 
-    assert_surface_image_equal(output[0], surf_img_1d)
+    assert_surface_image_equal(output[0], at_least_2d(surf_img_1d))
+    # input must not be modified
+    assert len(surf_img_1d.shape) == 1
 
 
 def test_new_img_like_mgz():
@@ -2282,6 +2285,21 @@ def test_concat_imgs_surface(surf_img_2d):
     for value in img.data.parts.values():
         assert value.ndim == 2
         assert value.dtype == np.float16
+
+
+@pytest.mark.ai_generated
+def test_concat_imgs_surface_1d_input_unchanged(surf_img_1d):
+    """Check concat_imgs does not modify the 1D surface images it is given."""
+    n_vertices = surf_img_1d.shape[0]
+    imgs = [surf_img_1d, new_img_like(surf_img_1d, surf_img_1d.data)]
+
+    img = concat_imgs(imgs)
+
+    assert img.shape == (n_vertices, 2)
+    for input_img in imgs:
+        assert input_img.shape == (n_vertices,)
+        for value in input_img.data.parts.values():
+            assert value.ndim == 1
 
 
 def nifti_generator(buffer):

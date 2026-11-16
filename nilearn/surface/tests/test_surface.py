@@ -33,6 +33,7 @@ from nilearn.surface.surface import (
     _sample_locations_between_surfaces,
     _uniform_ball_cloud,
     _vertex_outer_normals,
+    at_least_2d,
     check_mesh_and_data,
     check_mesh_is_fsaverage,
     check_surf_img,
@@ -1411,3 +1412,23 @@ def test_find_surface_clusters_4_faces(mask, expected_n_clusters, surf_mesh):
 def test_find_surface_clusters_5_faces(mask, expected_n_clusters, surf_mesh):
     clusters, _ = find_surface_clusters(surf_mesh.parts["right"], mask)
     assert len(clusters) == expected_n_clusters
+
+
+def test_at_least_2d_does_not_modify_input(surf_img_1d):
+    """Check at_least_2d returns 2D data and leaves its input unchanged."""
+    n_vertices = surf_img_1d.shape[0]
+    parts_shapes = {k: v.shape for k, v in surf_img_1d.data.parts.items()}
+    assert len(surf_img_1d.shape) == 1
+
+    img_2d = at_least_2d(surf_img_1d)
+
+    assert img_2d.shape == (n_vertices, 1)
+    assert surf_img_1d.shape == (n_vertices,)
+    assert {
+        k: v.shape for k, v in surf_img_1d.data.parts.items()
+    } == parts_shapes
+
+    data_2d = at_least_2d(surf_img_1d.data)
+
+    assert data_2d.shape == (n_vertices, 1)
+    assert surf_img_1d.data.shape == (n_vertices,)
