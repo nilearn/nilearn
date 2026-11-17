@@ -4007,7 +4007,6 @@ def check_multimasker_generate_report(estimator) -> None:
         )
 
 
-
 def check_img_estimator_inverse_transform_non_finite(estimator):
     """Check that inverse_transform raises a ValueError on non-finite inputs."""
     if not hasattr(estimator, "inverse_transform"):

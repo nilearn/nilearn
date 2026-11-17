@@ -24,6 +24,7 @@ from nilearn._estimator_checks.nilearn_checks import (
     check_img_estimator_fit_check_is_fitted,
     check_img_estimator_fit_idempotent,
     check_img_estimator_fit_score_takes_y,
+    check_img_estimator_inverse_transform_non_finite,
     check_img_estimator_n_elements,
     check_img_estimator_overwrite_params,
     check_img_estimator_pickle,
@@ -79,8 +80,6 @@ from nilearn._estimator_checks.nilearn_checks import (
     check_verbose,
     check_verbosity_embedded_masker,
     check_warning_embedded_masker,
-    check_img_estimator_inverse_transform_non_finite,
-
 )
 from nilearn._estimator_checks.utils import accepts_image, clone, requires_y
 from nilearn.decomposition._base import _BaseDecomposition
@@ -266,8 +265,7 @@ CHECK_SELECTOR = [
     # ----------DECOMPOSITION----------
     # checks for decomposition
     (lambda e: isinstance(e, _BaseDecomposition), DECOMPOSITION_CHECKS),
-
-# ----------INVERSE TRANSFORM NON-FINITE CHECK----------
+    # ----------INVERSE TRANSFORM NON-FINITE CHECK----------
     (
         lambda e: hasattr(e, "inverse_transform"),
         [check_img_estimator_inverse_transform_non_finite],

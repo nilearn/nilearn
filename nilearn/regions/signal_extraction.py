@@ -431,7 +431,6 @@ def signals_to_img_labels(
 
     signals = np.asarray(signals)
 
-
     if not np.all(np.isfinite(signals)):
         warnings.warn(
             "Input signals contain non-finite values (NaN or infinity). "
