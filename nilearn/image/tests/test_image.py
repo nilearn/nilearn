@@ -2276,7 +2276,6 @@ def test_concat_imgs_surface(surf_img_2d):
         assert value.dtype == np.float16
 
 
-@pytest.mark.ai_generated
 def test_concat_imgs_single_surface_respects_dtype(surf_img_2d):
     input_img = surf_img_2d(3)
     img = concat_imgs([input_img], dtype=np.float16)
