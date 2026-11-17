@@ -173,7 +173,7 @@ def test_colorscale_asymmetric_cmap(
     ],
 )
 def test_to_color_strings(colors):
-    """Tests for function to_color_strings with different color inputs."""
+    """Test for function to_color_strings with different color inputs."""
     if len(colors) == 3:
         expected = ["#0000ff", "#ff0000", "#7f7f7f"]
     else:

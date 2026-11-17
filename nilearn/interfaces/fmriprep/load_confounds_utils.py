@@ -327,7 +327,7 @@ def get_confounds_file(image_file, flag_full_aroma, flag_tedana):
 
 
 def get_json(confounds_raw_path, flag_tedana=False):
-    """Return json data companion file to the confounds tsv file."""
+    """Return json data companion file to the confounds TSV file."""
     if flag_tedana:
         # TEDANA does not have a json confound companion file
         return None
@@ -336,7 +336,7 @@ def get_json(confounds_raw_path, flag_tedana=False):
 
 
 def load_confounds_json(confounds_json, flag_acompcor):
-    """Load json data companion to the confounds tsv file.
+    """Load json data companion to the confounds TSV file.
 
     Parameters
     ----------

@@ -1,4 +1,4 @@
-"""Tests for the permuted_ols function."""
+"""Test for the permuted_ols function."""
 
 import warnings
 
@@ -823,6 +823,10 @@ def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
         permuted_ols(tested_var, target_var, n_perm=1, masker=masker, n_jobs=2)
 
 
+# normalizing the all-zeros voxel divides 0 by 0
+@pytest.mark.filterwarnings(
+    "ignore:invalid value encountered in divide:RuntimeWarning"
+)
 def test_permuted_ols_no_covar_warning(rng):
     """Ensure that a warning is raised when a given voxel has all zeros."""
     target_var, tested_var, *_ = _create_design(
@@ -895,7 +899,7 @@ def test_permuted_ols_no_covar_n_job_error(dummy_design):
 
 
 def test_permuted_ols_target_vars_error(dummy_design):
-    """Checks dimension of target_var."""
+    """Check dimension of target_var."""
     target_var, tested_var, *_ = dummy_design
 
     with pytest.raises(
@@ -929,8 +933,9 @@ def test_permuted_ols_boolean_tested_vars(dummy_design):
     assert output["t"].shape == (1, target_var.shape[1])
 
 
+@pytest.mark.ai_generated
 def test_permuted_ols_type_n_perm(dummy_design):
-    """Checks type n_perm."""
+    """Check type n_perm."""
     target_var, tested_var, *_ = dummy_design
 
     with pytest.raises(TypeError, match="'n_perm' must be of type"):

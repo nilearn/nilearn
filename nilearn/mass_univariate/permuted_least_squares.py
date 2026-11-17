@@ -33,7 +33,7 @@ from nilearn.mass_univariate._utils import (
 
 
 @fill_doc
-def _permuted_ols_on_chunk(
+def _permuted_ols_on_chunk(  # numpydoc ignore=RT05
     scores_original_data,
     tested_vars,
     target_vars,
@@ -166,7 +166,6 @@ def _permuted_ols_on_chunk(
     References
     ----------
     .. footbibliography::
-
     """
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
@@ -300,7 +299,7 @@ def _permuted_ols_on_chunk(
 
 
 @fill_doc
-def permuted_ols(
+def permuted_ols(  # numpydoc ignore=RT05
     tested_vars,
     target_vars,
     confounding_vars=None,
@@ -520,7 +519,6 @@ def permuted_ols(
     ----------
     .. footbibliography::
 
-
     Examples
     --------
 
@@ -559,7 +557,6 @@ def permuted_ols(
         >>> _ = ax.set(xlabel="t-statistic",
         ...            title="Distribution max t-statistic under $H_0$")
         >>> plt.show()
-
     """
     check_params(locals())
     _check_inputs_permuted_ols(n_jobs, target_vars)
@@ -972,6 +969,11 @@ def _prepare_output_permuted_ols(
             return_counts=True,
         )
         assert cluster_labels[0] == 0  # the background
+
+        # int32 avoids nifti int64 warnings when building images from sizes
+        cluster_dict["size_regressor"] = cluster_dict["size_regressor"].astype(
+            np.int32
+        )
 
         # Replace background's "cluster size" w zeros
         cluster_dict["size_regressor"][0] = 0

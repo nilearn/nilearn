@@ -8,7 +8,6 @@
 """Check if some words are not linked to the glossary.
 
 Check rst files in doc, py files in examples and py files in nilearn.
-
 """
 
 import ast

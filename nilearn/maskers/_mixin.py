@@ -6,7 +6,7 @@ import warnings
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, ClassVar, get_args
+from typing import Any, ClassVar, Protocol, Self, get_args
 
 import numpy as np
 import pandas as pd
@@ -20,21 +20,103 @@ from nilearn._utils.bids import (
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg import repr_niimgs
 from nilearn._utils.numpy_conversions import csv_to_array
+from nilearn._utils.param_validation import check_n_confounds_match_n_images
 from nilearn.image import high_variance_confounds
 from nilearn.image.image import get_indices_from_image, iter_check_niimg
-from nilearn.nilearn_typing import NiimgLike
-from nilearn.reporting.mixin import HTMLReport, ReportMixin
+from nilearn.nilearn_typing import (
+    MemoryLevel,
+    NiimgLike,
+    NJobs,
+    ReportEngine,
+    Signals,
+    SingleConfound,
+)
+from nilearn.reporting.mixin import (
+    DEFAULT_ENGINE,
+    HTMLReport,
+    ReportMixin,
+    _ReportDefaults,
+)
 from nilearn.surface.surface import SurfaceImage
+
+# The protocols below are only used for static type checking.
+#
+# The mixin classes of this module are not maskers themselves:
+# they are combined with a masker class
+# (e.g. ``class MultiNiftiMasker(_MultiMixin, NiftiMasker)``)
+# and their methods rely on attributes and methods
+# provided by that masker class.
+# A type checker only sees the mixin itself
+# and would therefore report those as missing.
+# Annotating ``self`` with one of these protocols
+# tells the type checker what the mixin expects
+# from the class it is combined with.
+
+
+class _Masker(Protocol):
+    """Attributes and methods of maskers that mixins rely on."""
+
+    memory_level: MemoryLevel
+    high_variance_confounds: bool
+
+    def _cache(self, func, func_memory_level=1, shelve=False): ...
+
+    def fit(self, imgs=None, y: None = None) -> Self: ...
+
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound] | None = None,
+        sample_mask=None,
+    ): ...
+
+
+class _MultiMasker(_Masker, Protocol):
+    """Additional attributes and methods specific to multi maskers.
+
+    Methods defined in ``_MultiMixin`` and called via ``self``
+    must also be listed here,
+    because once ``self`` is annotated with this protocol
+    the type checker only knows about the members of the protocol.
+
+    ``transform`` is only declared here and not in ``_Masker``
+    because multi maskers can return a list of signals.
+    """
+
+    n_jobs: NJobs
+
+    def _prepare_confounds(self, imgs_list, confounds): ...
+
+    def _prepare_sample_mask(self, imgs_list, sample_mask): ...
+
+    def transform(
+        self, imgs, confounds=None, sample_mask=None
+    ) -> Signals | list[Signals]: ...
+
+    def transform_imgs(
+        self,
+        imgs_list,
+        confounds: list[SingleConfound | None] | None = None,
+        sample_mask=None,
+    ) -> Signals | list[Signals]: ...
 
 
 @fill_doc
 class _MultiMixin:
     """Mixin class to add common MultiMasker functionalities."""
 
+    n_jobs: NJobs
+    high_variance_confounds: bool
+
     @fill_doc
     def fit_transform(
-        self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
-    ):
+        self: _MultiMasker,
+        imgs,
+        y: None = None,
+        confounds: SingleConfound | list[SingleConfound | None] | None = None,
+        sample_mask=None,
+        **fit_params,
+    ) -> Signals | list[Signals]:
         """
         Fit to data, then transform it.
 
@@ -76,7 +158,10 @@ class _MultiMixin:
 
     @fill_doc
     def transform_imgs(
-        self, imgs_list, confounds=None, n_jobs=1, sample_mask=None
+        self: _MultiMasker,
+        imgs_list,
+        confounds: list[SingleConfound | None] | None = None,
+        sample_mask=None,
     ):
         """Extract signals from a list of 4D niimgs.
 
@@ -87,14 +172,11 @@ class _MultiMixin:
 
         %(confounds_multi)s
 
-        %(n_jobs)s
-
         %(sample_mask_multi)s
 
         Returns
         -------
         %(signals_transform_imgs_multi_nifti)s
-
         """
         # We handle the resampling of maps and mask separately because the
         # affine of the maps and mask images should not impact the extraction
@@ -110,7 +192,7 @@ class _MultiMixin:
             memory_level=self.memory_level,
         )
 
-        confounds = self._prepare_confounds(imgs_list, confounds)
+        prepared_confounds = self._prepare_confounds(imgs_list, confounds)
 
         sample_mask = self._prepare_sample_mask(imgs_list, sample_mask)
 
@@ -118,16 +200,21 @@ class _MultiMixin:
         # defined in each child class
         func = self._cache(self.transform_single_imgs)
 
-        region_signals = Parallel(n_jobs=n_jobs)(
+        region_signals = Parallel(n_jobs=self.n_jobs)(
             delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sms)
             for imgs, cfs, sms in zip(
-                niimg_iter, confounds, sample_mask, strict=False
+                niimg_iter, prepared_confounds, sample_mask, strict=False
             )
         )
         return region_signals
 
     @fill_doc
-    def transform(self, imgs, confounds=None, sample_mask=None):
+    def transform(
+        self: _MultiMasker,
+        imgs,
+        confounds: SingleConfound | list[SingleConfound | None] | None = None,
+        sample_mask=None,
+    ) -> Signals | list[Signals]:
         """Apply mask, spatial and temporal preprocessing.
 
         Parameters
@@ -143,7 +230,6 @@ class _MultiMixin:
         Returns
         -------
         %(signals_transform_multi_nifti)s
-
         """
         check_is_fitted(self)
 
@@ -162,7 +248,7 @@ class _MultiMixin:
                 confounds = confounds[0]
             if isinstance(sample_mask, list):
                 sample_mask = sample_mask[0]
-            return super().transform(
+            return super().transform(  # type: ignore[missing-attribute]
                 imgs, confounds=confounds, sample_mask=sample_mask
             )
 
@@ -172,21 +258,14 @@ class _MultiMixin:
             assert all(isinstance(x, SurfaceImage) for x in imgs)
 
         return self.transform_imgs(
-            imgs,
-            confounds=confounds,
-            sample_mask=sample_mask,
-            n_jobs=self.n_jobs,
+            imgs, confounds=confounds, sample_mask=sample_mask
         )
 
-    def _prepare_confounds(self, imgs_list, confounds):
+    def _prepare_confounds(self: _MultiMasker, imgs_list, confounds):
         """Check and prepare confounds."""
         if confounds is None:
             confounds = list(itertools.repeat(None, len(imgs_list)))
-        elif len(confounds) != len(imgs_list):
-            raise ValueError(
-                f"number of confounds ({len(confounds)}) unequal to "
-                f"number of images ({len(imgs_list)})."
-            )
+        check_n_confounds_match_n_images(confounds, imgs_list)
 
         if self.high_variance_confounds:
             for i, img in enumerate(imgs_list):
@@ -213,7 +292,7 @@ class _MultiMixin:
 
         return confounds
 
-    def _prepare_sample_mask(self, imgs_list, sample_mask):
+    def _prepare_sample_mask(self: _MultiMasker, imgs_list, sample_mask):
         """Check and prepare sample_mask."""
         if sample_mask is None:
             sample_mask = itertools.repeat(None, len(imgs_list))
@@ -227,9 +306,9 @@ class _MultiMixin:
 
 
 class _LabelMaskerMixin:
+    background_label: int | float
     lut_: pd.DataFrame
     _lut_: pd.DataFrame
-    background_label: int | float
 
     @property
     def n_elements_(self) -> int:
@@ -386,6 +465,19 @@ class _LabelMaskerMixin:
         )
 
 
+class _MaskerReportDefaults(_ReportDefaults, total=False):
+    """Type of the default content of masker reports."""
+
+    description: str
+    summary: dict[str, Any] | pd.DataFrame
+    coverage: str | float
+    n_elements: int
+    displayed_maps: list[int]
+    number_of_maps: int
+    number_of_regions: int | None
+    n_vertices: dict[str, int]
+
+
 @fill_doc
 class MaskerReportMixin(ReportMixin):
     """A mixin class that adapts ``ReportMixin`` to masker classes for
@@ -403,7 +495,7 @@ class MaskerReportMixin(ReportMixin):
         - displayed_maps :
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": "",
         "summary": {},
         "coverage": "",
@@ -418,7 +510,9 @@ class MaskerReportMixin(ReportMixin):
             MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
 
-    def _set_report_basics(self, engine, title):
+    def _set_report_basics(
+        self, engine: ReportEngine, title: str | None
+    ) -> None:
         """Set masker specific report attributes."""
         super()._set_report_basics(engine, title)
         report_content = self._report_content
@@ -467,7 +561,10 @@ class MaskerReportMixin(ReportMixin):
 
     @fill_doc
     def generate_report(
-        self, engine="matplotlib", title: str | None = None, **kwargs
+        self,
+        engine: ReportEngine = DEFAULT_ENGINE,
+        title: str | None = None,
+        **kwargs,
     ) -> HTMLReport:
         """Generate an HTML report for this masker.
 
@@ -480,7 +577,7 @@ class MaskerReportMixin(ReportMixin):
 
         Parameters
         ----------
-        engine : :obj:`str`, default="matplotlib"
+        engine : {"matplotlib", "brainsprite", "plotly"}, default="matplotlib"
             Choice of engine to display report figures.
 
             All maskers support ``"matplotlib"`` as engine.
@@ -490,13 +587,14 @@ class MaskerReportMixin(ReportMixin):
             - ``"brainsprite"`` :
 
               NiftiMasker, MultiNiftiMasker, NiftiLabelsMasker,
-              MultiNiftiLabelsMasker:
+              MultiNiftiLabelsMasker
 
             - ``"plotly"``:
 
-              SurfaceMasker, MultiSurfaceMasker, SurfaceLabelsMasker,
-              MultiSurfaceLabelsMasker, SurfaceMapsMasker,
-              MultiSurfaceMapsMasker:
+              SurfaceMapsMasker, MultiSurfaceMapsMasker
+
+            If the engine is not supported by the masker,
+            a warning is thrown and ``"matplotlib"`` is used instead.
 
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
@@ -563,15 +661,16 @@ class MaskerReportMixin(ReportMixin):
 
         Returns
         -------
-        displays : :obj:`list` of :class:`~matplotlib.figure.Figure`, None or
-                   bytes
+        displays : :obj:`list` of :class:`~matplotlib.figure.Figure`, \
+                   None or bytes
             A list of all displays to be rendered, either as figures encoded as
-        bytes or Matplotlib figures.
-        When masker is not fitted, return a list with a single None element.
+            bytes or Matplotlib figures.
+            When masker is not fitted,
+            return a list with a single None element.
         """
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _get_summary_html(self):
+    def _get_summary_html(self, summary):
         """Convert summary part of the report content to html and return."""
         raise NotImplementedError()

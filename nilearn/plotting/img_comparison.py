@@ -17,7 +17,10 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
 from nilearn.image import check_niimg_3d
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.nilearn_typing import ColorBar, NiimgLike, OutputFile, Title
@@ -98,7 +101,6 @@ def plot_img_comparison(
     -------
     corrs : :obj:`list` of :obj:`float`
         Pearson correlation between the images.
-
     """
     check_params(locals())
     # Cast to list
@@ -323,12 +325,10 @@ def plot_bland_altman(
     from :footcite:t:`Bowring2019`
     and its associated `code base <https://github.com/AlexBowring/Software_Comparison/blob/master/figures/lib/bland_altman.py>`_.
 
-
     References
     ----------
 
     .. footbibliography::
-
     """
     check_params(locals())
     data_ref, data_src = _extract_data_2_images(
@@ -444,7 +444,6 @@ def _extract_data_2_images(ref_img, src_img, masker=None):
         Its type must be compatible with that of the ``ref_img``.
         If None is passed,
         an appropriate masker will be fitted on the reference image.
-
     """
     if isinstance(ref_img, NiimgLike) and isinstance(src_img, NiimgLike):
         image_type = "volume"
@@ -495,6 +494,11 @@ def _sanitize_masker(masker, image_type, ref_img):
         else:
             masker = SurfaceMasker(standardize=None)
 
+    check_is_of_allowed_type(
+        masker,
+        (*get_args(NiimgLike), NiftiMasker, SurfaceImage, SurfaceMasker),
+        "masker",
+    )
     check_compatibility_mask_and_images(masker, ref_img)
 
     if isinstance(masker, NiimgLike):

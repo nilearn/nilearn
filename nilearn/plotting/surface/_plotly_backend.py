@@ -379,7 +379,6 @@ def _one_mesh_info(
     This computes the dictionary that gets inserted in the web page,
     which contains the encoded mesh, colors, min and max values, and
     background color.
-
     """
     info: dict[str, Any] = {}
 

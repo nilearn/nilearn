@@ -18,8 +18,13 @@ statistical maps.
     and available at
     `neurovault_analysis <https://github.com/NeuroVault/neurovault_analysis>`_.
 
-"""
+.. admonition:: dataset
 
+   This example uses:
+
+   - data from :ref:`Neurovault <neurovault_dataset>`
+   - the :ref:`ICBM 152 template <icbm152_2009>`
+"""
 # %%
 # Get image and associated term data
 # ----------------------------------

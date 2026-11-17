@@ -4,7 +4,7 @@ import json
 
 import numpy as np
 from matplotlib import cm as mpl_cm
-from scipy import sparse
+from scipy.sparse import coo_array
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._assets import get_template
@@ -38,7 +38,7 @@ def _encode_coordinates(coords, prefix):
     Returns
     -------
     coordinates : :obj:`dict`
-        Dictionary containing base64 values for each axis
+        Dictionary containing base64 values for each axis.
     """
     coords = np.asarray(coords, dtype="<f4")
     marker_x, marker_y, marker_z = coords.T
@@ -97,7 +97,7 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
     Returns
     -------
     markers_colors : :obj:`list`
-        List of `number_of_nodes` colors as hexadecimal values
+        List of `number_of_nodes` colors as hexadecimal values.
     """
     if isinstance(marker_color, str) and marker_color == "auto":
         colors = mpl_cm.viridis(np.linspace(0, 1, number_of_nodes))
@@ -139,7 +139,7 @@ def _prepare_lines_metadata(
     Returns
     -------
     coordinates : :obj:`dict`
-        Dictionary containing base64 values for each axis
+        Dictionary containing base64 values for each axis.
     """
     adjacency_matrix = np.nan_to_num(adjacency_matrix, copy=True)
     colors = colorscale(
@@ -157,7 +157,7 @@ def _prepare_lines_metadata(
         adjacency_matrix[
             np.abs(adjacency_matrix) <= colors["abs_threshold"]
         ] = 0
-    s = sparse.coo_matrix(adjacency_matrix)
+    s = coo_array(adjacency_matrix)
     nodes = np.asarray([s.row, s.col], dtype=int).T
     edges = np.arange(len(nodes))
     path_edges, path_nodes = _prepare_line(edges, nodes)
@@ -330,7 +330,6 @@ def view_connectome(
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
-
     """
     check_params(locals())
     node_coords = np.asarray(node_coords)
@@ -421,7 +420,6 @@ def view_markers(
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
-
     """
     check_params(locals())
 

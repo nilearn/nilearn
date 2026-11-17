@@ -7,7 +7,6 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn._utils.helpers import is_windows_platform
 from nilearn.conftest import _affine_eye
 from nilearn.maskers import (
     MultiNiftiMasker,
@@ -68,7 +67,6 @@ def test_errors_raised_in_check_parameters_fit(method, image_1):
 
 
 @pytest.mark.slow
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5, 10, 15])
 def test_fit_on_single_nifti_image(method, n_parcel, image_1):
@@ -113,7 +111,6 @@ def test_warnings(img_4d_zeros_eye):
         parcellator.fit(img_4d_zeros_eye)
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_no_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=1)
     with warnings.catch_warnings(record=True) as record:
@@ -121,7 +118,6 @@ def test_no_warnings(img_4d_zeros_eye):
     assert all(r.category is not UserWarning for r in record)
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_no_int64_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=1)
     with warnings.catch_warnings(record=True) as record:
@@ -400,10 +396,14 @@ def surface_img_for_parcellation(rng, n_samples) -> SurfaceImage:
     return SurfaceImage(mesh=mesh, data=data)
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
+# surface masks span 2 hemispheres: connectivity has several components
+@pytest.mark.filterwarnings(
+    "ignore:the number of connected components:UserWarning"
+)
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcels", [5, 9])
-def test_parcellation_all_methods_with_surface(
+def test_all_methods_with_surface(
     method, n_parcels, surface_img_for_parcellation, n_samples
 ):
     """Test if all parcellation methods work on surface."""
@@ -420,9 +420,13 @@ def test_parcellation_all_methods_with_surface(
     assert X_inverse.shape == surface_img_for_parcellation.shape
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
+# surface masks span 2 hemispheres: connectivity has several components
+@pytest.mark.filterwarnings(
+    "ignore:the number of connected components:UserWarning"
+)
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellation_with_surface_and_confounds(
+def test_with_surface_and_confounds(
     method, rng, surface_img_for_parcellation, n_samples
 ):
     """Test if parcellation works on surface with confounds."""
@@ -441,11 +445,13 @@ def test_parcellation_with_surface_and_confounds(
     assert X_transformed.shape == (n_samples, n_parcels)
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
+# surface masks span 2 hemispheres: connectivity has several components
+@pytest.mark.filterwarnings(
+    "ignore:the number of connected components:UserWarning"
+)
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellation_with_multi_surface(
-    method, surface_img_for_parcellation, n_samples
-):
+def test_with_multi_surface(method, surface_img_for_parcellation, n_samples):
     """Test if parcellation works with surface data from multiple
     'subjects'.
     """
@@ -457,11 +463,13 @@ def test_parcellation_with_multi_surface(
     assert len(X_transformed) == 3
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
+# surface masks span 2 hemispheres: connectivity has several components
+@pytest.mark.filterwarnings(
+    "ignore:the number of connected components:UserWarning"
+)
+@pytest.mark.ai_generated
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellation_with_surface_mask(
-    method, surface_img_for_parcellation, n_samples
-):
+def test_with_surface_mask(method, surface_img_for_parcellation, n_samples):
     """Test if parcellation works with surface data and a mask."""
     mask_data = {
         "left": np.ones(

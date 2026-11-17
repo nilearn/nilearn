@@ -113,7 +113,6 @@ def all_estimators(
     31
     >>> estimators[0]
     ('CanICA', <class 'nilearn.decomposition.canica.CanICA'>)
-
     """
     # lazy import to avoid circular imports from nilearn._base
     from nilearn._base import NilearnBaseEstimator
@@ -207,7 +206,6 @@ def all_functions() -> list[tuple[str, Callable]]:
     >>>
     >>> print(f"Nilearn's API has {len(functions)} public functions.")
     Nilearn's API has 170 public functions.
-
     """
     all_functions = []
     # Ignore deprecation warnings triggered at import time and from walking
@@ -270,7 +268,6 @@ def all_displays(type_filter=None) -> list[tuple[str, type]]:
     >>>
     >>> print(f"Nilearn's API has {len(displays)} display functions.")
     Nilearn's API has 27 display functions.
-
     """
     # lazy import to avoid circular imports from nilearn._base
     from nilearn._utils.helpers import is_matplotlib_installed

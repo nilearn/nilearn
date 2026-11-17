@@ -4,6 +4,10 @@ Basic nilearn example: manipulating and looking at data
 
 A simple example showing how to load an existing Nifti file and use
 basic nilearn functionalities.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
 """
 
 # Let us use a Nifti file that is shipped with nilearn
@@ -82,7 +86,7 @@ show()
 # First let's fetch Haxby dataset for subject 1 and 2
 from nilearn.datasets import fetch_haxby
 
-haxby = fetch_haxby(subjects=[1, 2])
+haxby = fetch_haxby(n_subjects=[1, 2])
 
 # %%
 # Now we can find the anatomical images from both

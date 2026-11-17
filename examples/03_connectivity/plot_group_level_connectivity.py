@@ -10,6 +10,13 @@ The resulting connectivity coefficients can be used to
 discriminate children from adults. In general, the tangent space embedding
 **outperforms** the standard correlations: see :footcite:t:`Dadi2019`
 for a careful study.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`MSDL atlas <msdl_atlas>`
+    to extract time series
+    from the :ref:`development fMRI dataset <development_dataset>`
+    with the :class:`~nilearn.maskers.MultiNiftiMapsMasker`.
 """
 
 # overall verbosity of the example
@@ -31,6 +38,10 @@ development_dataset = fetch_development_fmri(n_subjects=30, verbose=verbose)
 # %%
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
 msdl_data = fetch_atlas_msdl()
+
+# %%
+print(msdl_data.description.content)
+
 msdl_coords = msdl_data.region_coords
 n_regions = len(msdl_coords)
 

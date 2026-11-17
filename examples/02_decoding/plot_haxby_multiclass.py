@@ -1,6 +1,6 @@
 """
-The Haxby dataset: different multi-class strategies
-===================================================
+Multi-class strategies
+======================
 
 In this example,
 we compare ``one vs all`` and ``one vs one`` multi-class strategies:
@@ -9,6 +9,9 @@ We compare their overall cross-validated accuracy and their confusion matrix.
 See the scikit-learn documentation
 about `multiclass classification <https://scikit-learn.org/stable/modules/multiclass.html>`_.
 
+.. admonition:: dataset
+
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
 """
 
 import numpy as np
