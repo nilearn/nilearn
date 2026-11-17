@@ -94,17 +94,12 @@ fig = plot_surf_stat_map(
 )
 
 # %%
-# If you have a recent version of Nilearn (>=0.8.2),
-# and if ``plotly`` is installed
+# If ``plotly`` is installed
 # (see the :ref:`installation instructions <quickstart>`)
 # you can configure :func:`~nilearn.plotting.plot_surf_stat_map`
 # to use ``plotly`` instead of ``matplotlib``:
 
-from nilearn._utils.helpers import is_plotly_installed
-
-engine = "plotly" if is_plotly_installed() else "matplotlib"
-
-print(f"Using plotting engine {engine}.")
+engine = "plotly"
 
 fig = plot_surf_stat_map(
     stat_map=surface_image,
@@ -117,10 +112,10 @@ fig = plot_surf_stat_map(
     engine=engine,  # Specify the plotting engine here
 )
 
-# Uncomment the line below to have interactive
-# visualization in the browser
-#
-# figure.show(renderer="browser")
+# %%
+# Uncomment this to open the plot in a web browser:
+
+# view.open_in_browser()
 
 # %%
 # When using ``matplotlib`` as the plotting engine, a standard
@@ -338,10 +333,9 @@ view = view_surf(
 # it will be displayed below the cell
 view
 
-# If plotly is not installed or the code is run in script mode,
-# it is still possible to have interactive visualization in the
-# browser by uncommenting the below line.
-#
+# %%
+# Uncomment this to open the plot in a web browser:
+
 # view.open_in_browser()
 
 # %%
@@ -368,10 +362,9 @@ view = view_img_on_surf(stat_img, threshold="90%")
 
 view
 
-# If plotly is not installed or the code is run in script mode,
-# it is still possible to have interactive visualization in the
-# browser by uncommenting the below line.
-#
+# %%
+# Uncomment this to open the plot in a web browser:
+
 # view.open_in_browser()
 
 # %%
@@ -403,10 +396,9 @@ view = view_img_on_surf(
 
 view
 
-# If plotly is not installed or the code is run in script mode,
-# it is still possible to have interactive visualization in the
-# browser by uncommenting the below line.
-#
+# %%
+# Uncomment this to open the plot in a web browser:
+
 # view.open_in_browser()
 
 # %%
