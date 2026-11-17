@@ -41,6 +41,8 @@ def plot_img_comparison(
     output_dir: str | Path | None = None,
     axes: Axes | None = None,
     colorbar: ColorBar = True,
+    cmap=DEFAULT_SEQUENTIAL_CMAP,
+    gridsize=100,
 ) -> list[float]:
     """Create plots to compare two lists of images and measure correlation.
 
@@ -96,6 +98,13 @@ def plot_img_comparison(
 
     %(colorbar)s
         default=True
+
+    %(cmap)s
+        default="inferno"
+
+    gridsize : :obj:`int`, default=100
+        Number of hexagons along the x axis of the correlation plot,
+        and number of bins of the two histograms.
 
     Returns
     -------
@@ -171,8 +180,6 @@ def plot_img_comparison(
         # when plot_hist is False creates two empty axes
         # and doesn't plot anything
         if plot_hist:
-            gridsize = 100
-
             lims = [
                 np.min(ref_data),
                 np.max(ref_data),
@@ -185,7 +192,7 @@ def plot_img_comparison(
                 ref_data,
                 src_data,
                 bins="log",
-                cmap=DEFAULT_SEQUENTIAL_CMAP,
+                cmap=cmap,
                 gridsize=gridsize,
                 extent=lims,
             )

@@ -282,3 +282,25 @@ def test_plot_bland_altman_incompatible_errors(
 
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(surf_img_1d, surf_img_1d, masker=img_3d_ones_eye)
+
+@pytest.mark.thread_unsafe
+def test_plot_img_comparison_cmap_and_gridsize(matplotlib_pyplot, rng):
+    """The colormap and gridsize reach the correlation and histogram plots."""
+    images, mask_img = generate_fake_fmri(
+        rand_gen=rng, shape=(2, 3, 4), length=2
+    )
+    images = list(iter_img(images))
+    _, axes = plt.subplots(2, 1)
+
+    plot_img_comparison(
+        ref_imgs=images,
+        src_imgs=images,
+        masker=NiftiMasker(mask_img).fit(),
+        axes=list(axes),
+        cmap="viridis",
+        gridsize=10,
+        colorbar=False,
+    )
+
+    assert axes[0].collections[0].cmap.name == "viridis"
+    assert len(axes[1].patches) == 2 * 2 * 10
