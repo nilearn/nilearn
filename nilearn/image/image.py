@@ -12,13 +12,7 @@ import warnings
 from collections.abc import Iterable, Iterator
 from copy import deepcopy
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Literal,
-    TypeGuard,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, Literal, TypeGuard, cast, overload
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -1707,7 +1701,7 @@ def threshold_img(
         check_compatibility_mask_and_images(mask_img, img)
 
     if isinstance(img, NiimgLike):
-        loaded_mask_img: Nifti1Image | None = (
+        loaded_mask_img = (
             check_niimg_3d(mask_img) if mask_img is not None else None
         )
         return _threshold_img_volume(
@@ -1720,14 +1714,12 @@ def threshold_img(
             copy_header=copy_header,
         )
 
-    if TYPE_CHECKING:
-        assert isinstance(mask_img, SurfaceImage)
     return _threshold_img_surface(
         img=img,
         threshold=threshold,
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
-        mask_img=mask_img,
+        mask_img=cast(SurfaceImage, mask_img),
         copy=copy,
     )
 
