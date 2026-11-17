@@ -51,6 +51,7 @@ Some other past or present contributors are:
 * `Achintya Singh`_
 * `Ahmad Chamma`_: Inria, Saclay, France
 * `Aina Frau-Pascual`_
+* `Akaash P`_
 * `Alex Rothberg`_: Free Agency, New York, USA
 * `Alexandre Abadie`_: Inria, Paris
 * `Alexandre Abraham`_: Bazemont, Île-de-France, France
@@ -227,6 +228,7 @@ Some other past or present contributors are:
 * `Sam Buck Johnson`_
 * `Sami Jawhar`_
 * `Sanjana Soni`_: Government Engineering College, Bilaspur, India
+* `Siddhardha Nanda`_
 * `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
 * `Sin Kim`_: Korea Advanced Institute of Science and Technology: Daejeon, KR
 * `Sourav Singh`_

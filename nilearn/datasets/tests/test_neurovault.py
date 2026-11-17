@@ -203,10 +203,10 @@ def _neurovault_file(parts, query):  # noqa: ARG001
 class _NumpyJsonEncoder(json.JSONEncoder):
     """A json encoder that can handle numpy objects."""
 
-    def default(self, obj):
-        if hasattr(obj, "tolist"):
-            return obj.tolist()
-        return json.JSONEncoder.default(self, obj)
+    def default(self, o):
+        if hasattr(o, "tolist"):
+            return o.tolist()
+        return json.JSONEncoder.default(self, o)
 
 
 def _neurovault(match, request):  # noqa: ARG001

@@ -91,11 +91,15 @@ def log(
 
     if verbose < msg_level:
         return
+
     if stack_level is None:
         stack_level = find_stack_level() - 2
     stack = inspect.stack()
+
     object_frame = None
     object_self = None
+    func_name = ""
+
     for f in reversed(stack):
         frame = f[0]
         current_self = frame.f_locals.get("self", None)

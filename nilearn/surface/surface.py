@@ -287,8 +287,7 @@ class PolyMesh:
                 )
             return None
 
-        if "hemi-L" in filename.stem:
-            mesh = self.parts["left"]
+        mesh = self.parts["left"]
         if "hemi-R" in filename.stem:
             mesh = self.parts["right"]
 
@@ -499,8 +498,7 @@ class PolyData:
                 )
             return None
 
-        if "hemi-L" in filename.stem:
-            data = self.parts["left"]
+        data = self.parts["left"]
         if "hemi-R" in filename.stem:
             data = self.parts["right"]
 
@@ -1235,7 +1233,12 @@ def _interpolation_sampling(
         all_samples.append(samples)
     all_samples = np.asarray(all_samples)
     all_samples = all_samples.reshape((len(images), n_vertices, n_points))
-    texture = np.nanmean(all_samples, axis=2)
+    with warnings.catch_warnings():
+        # vertices with only NaN samples are expected to get NaN
+        warnings.filterwarnings(
+            "ignore", message="Mean of empty slice", category=RuntimeWarning
+        )
+        texture = np.nanmean(all_samples, axis=2)
     return texture
 
 
@@ -1572,6 +1575,8 @@ def load_surf_data(surf_data) -> np.ndarray:
         file_list = resolve_globbing(surf_data)
         # resolve_globbing handles empty lists
 
+        data = np.empty(1)
+        data_part = np.empty(1)
         for i, surf_data in enumerate(file_list):
             surf_data = str(surf_data)
 

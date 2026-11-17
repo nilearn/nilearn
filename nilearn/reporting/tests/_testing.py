@@ -101,6 +101,7 @@ def generate_and_check_report(
         title = estimator.__class__.__name__
     includes.append(title)
 
+    warnings_list = []
     if len(warnings_msg_to_check) > 0:
         with pytest.warns(UserWarning) as warnings_list:
             report = estimator.generate_report(title=title, **kwargs)

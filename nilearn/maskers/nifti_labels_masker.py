@@ -26,7 +26,10 @@ from nilearn.image import (
     resample_img,
 )
 from nilearn.image.image import check_same_fov
-from nilearn.maskers._mixin import _LabelMaskerMixin
+from nilearn.maskers._mixin import (
+    _LabelMaskerMixin,
+    _MaskerReportDefaults,
+)
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -53,6 +56,7 @@ from nilearn.nilearn_typing import (
     Tr,
     Verbose,
 )
+from nilearn.reporting.mixin import DEFAULT_ENGINE
 
 
 class _ExtractionFunctor:
@@ -212,7 +216,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
     nilearn.maskers.NiftiMasker
     """
 
-    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _REPORT_DEFAULTS: ClassVar[_MaskerReportDefaults] = {
         "description": (
             "This report shows the regions defined by the labels of the mask."
         ),
@@ -220,7 +224,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
     }
     _template_name = "body_nifti_labels_masker.jinja"
 
-    # memory and memory_level are used by _utils.CacheMixin.
+    _allowed_engines = (DEFAULT_ENGINE, "brainsprite")
 
     def __init__(
         self,
@@ -335,6 +339,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         return masked_atlas, removed_region_ids, removed_region_names, display
 
     def _run_report_checks(self, **kwargs):
+
         super()._run_report_checks(**kwargs)
 
         if self._has_report_data():

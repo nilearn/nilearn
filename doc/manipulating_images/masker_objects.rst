@@ -493,7 +493,8 @@ A single seed is a sphere defined by the radius (in millimeters) and the
 coordinates (typically :term:`MNI` or TAL) of its center.
 
 Using :class:`NiftiSpheresMasker` needs to define a list of coordinates.
-``seeds`` argument takes a list of 3D coordinates (tuples) of the spheres centers,
+``seeds`` argument takes a list of 3D coordinates (tuples) of the spheres centers
+(or a single tuple for a single sphere),
 they should be in the same space as the images.
 Seeds can overlap spatially and are represented in a binary present/nonpresent
 coding (no weighting).

@@ -41,10 +41,7 @@ Templates descriptions
 
     description/icbm152_2009.rst
     description/fsaverage.rst
-    description/fsaverage3.rst
-    description/fsaverage4.rst
-    description/fsaverage5.rst
-    description/fsaverage6.rst
+    description/fsaverage_polymesh.rst
 
 Atlases
 -------
@@ -199,7 +196,7 @@ Statistical maps/derivatives descriptions
 
     description/Megatrawls.rst
     description/mixed_gambles.rst
-    description/oasis1.rst
+    description/oasis_vbm.rst
 
 General functions
 -----------------

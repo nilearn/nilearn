@@ -24,7 +24,7 @@ from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
-from nilearn._utils.versions import SKLEARN_GTE_1_8
+from nilearn._utils.versions import SKLEARN_GT_1_9, SKLEARN_GTE_1_8
 from nilearn.exceptions import MaskWarning
 from nilearn.image import get_data
 from nilearn.surface.surface import SurfaceImage
@@ -78,7 +78,9 @@ SUPPORTED_ESTIMATORS: dict[
             "estimator": LogisticRegressionCV,
             "params": {
                 "l1_ratios": (1,),
-                "solver": "liblinear",
+                # TODO (sklearn >= 1.10)
+                # simplify
+                "solver": "newton-cd" if SKLEARN_GT_1_9 else "liblinear",
                 **kwarg_logistic_regression_cv,
             },
             "extra_params": {},
@@ -87,7 +89,7 @@ SUPPORTED_ESTIMATORS: dict[
             "estimator": LogisticRegressionCV,
             "params": {
                 "l1_ratios": (0,),
-                "solver": "liblinear",
+                "solver": "newton-cd" if SKLEARN_GT_1_9 else "liblinear",
                 **kwarg_logistic_regression_cv,
             },
             "extra_params": {},
@@ -96,7 +98,7 @@ SUPPORTED_ESTIMATORS: dict[
             "estimator": LogisticRegressionCV,
             "params": {
                 "l1_ratios": (0,),
-                "solver": "liblinear",
+                "solver": "newton-cd" if SKLEARN_GT_1_9 else "liblinear",
                 **kwarg_logistic_regression_cv,
             },
             "extra_params": {},

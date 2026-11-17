@@ -57,9 +57,8 @@ def set_mpl_backend() -> None:
 
 
 def engine_warning(engine: str) -> None:
-    if engine == "matplolib":
-        option = "plotting"
-    elif engine == "plotly":
+    option = "plotting"
+    if engine == "plotly":
         option = "matplolib, plotly"
     message = (
         f"'{engine}' is not installed. To be able to use '{engine}' as "

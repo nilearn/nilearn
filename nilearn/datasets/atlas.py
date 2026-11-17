@@ -32,7 +32,7 @@ from nilearn.datasets._utils import (
     get_dataset_dir,
 )
 from nilearn.image import check_niimg, new_img_like, reorder_img
-from nilearn.nilearn_typing import DataDir, Resume, Url, Verbose
+from nilearn.nilearn_typing import DataDir, Resume, TypedBunch, Url, Verbose
 
 
 class Atlas(Bunch):
@@ -967,7 +967,7 @@ def fetch_atlas_msdl(  # numpydoc ignore=RT05
 
 
 @fill_doc
-def fetch_coords_power_2011() -> Bunch[
+def fetch_coords_power_2011() -> TypedBunch[
     str, pd.DataFrame | str
 ]:  # numpydoc ignore=RT05
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
@@ -1321,6 +1321,8 @@ def fetch_atlas_aal(  # numpydoc ignore=RT05
         "SPM5": "https://osf.io/948y2/download",
     }
 
+    basenames = ()
+    filenames = []
     if url is None:
         base_url = "https://www.gin.cnrs.fr/"
         if version == "SPM12":
@@ -1524,7 +1526,7 @@ def fetch_atlas_basc_multiscale_2015(
 @fill_doc
 def fetch_coords_dosenbach_2010(  # numpydoc ignore=RT05
     ordered_regions: bool = True,
-) -> Bunch[str, str | pd.DataFrame | list[str] | np.ndarray]:
+) -> TypedBunch[str, str | pd.DataFrame | pd.Series | list[str]]:
     """Load the Dosenbach et al 160 ROIs.
 
     These ROIs cover much of the cerebral cortex
@@ -1565,6 +1567,7 @@ def fetch_coords_dosenbach_2010(  # numpydoc ignore=RT05
         "networks": out_csv["network"],
         "description": Description.from_registry("dosenbach_2010_atlas"),
         "template": "MNI",
+        "atlas_type": "deterministic",
     }
     return Bunch(**params)
 
@@ -1572,7 +1575,7 @@ def fetch_coords_dosenbach_2010(  # numpydoc ignore=RT05
 @fill_doc
 def fetch_coords_seitzman_2018(  # numpydoc ignore=RT05
     ordered_regions: bool = True,
-) -> Bunch[str, str | pd.DataFrame | np.ndarray]:
+) -> TypedBunch[str, str | pd.DataFrame | np.ndarray]:
     """Load the Seitzman et al. 300 ROIs.
 
     For more information
@@ -1640,7 +1643,7 @@ def fetch_atlas_allen_2011(  # numpydoc ignore=RT05
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> TypedBunch[str, Any]:
     """Download and return file names for the Allen and MIALAB :term:`ICA` \
     :term:`Probabilistic atlas` (dated 2011).
 
@@ -1726,7 +1729,7 @@ def fetch_atlas_surf_destrieux(  # numpydoc ignore=RT05
     url: Url = None,
     resume: Resume = True,
     verbose: Verbose = 1,
-) -> Bunch[str, Any]:
+) -> TypedBunch[str, Any]:
     """Download and load Destrieux et al, 2010 cortical \
     :term:`Deterministic atlas`.
 

@@ -19,33 +19,6 @@ from nilearn.datasets.tests.conftest import Response
 
 datadir = _utils.PACKAGE_DIRECTORY / "data"
 
-DATASET_NAMES = {
-    "ABIDE_pcp",
-    "adhd",
-    "brainomics_localizer",
-    "development_fmri",
-    "dosenbach_2010",
-    "fiac",
-    "fsaverage3",
-    "fsaverage4",
-    "fsaverage5",
-    "fsaverage6",
-    "fsaverage",
-    "haxby2001",
-    "icbm152_2009",
-    "language_localizer_demo",
-    "localizer_first_level",
-    "Megatrawls",
-    "mixed_gambles",
-    "miyawaki2008",
-    "neurovault",
-    "nki_enhanced_surface",
-    "oasis1",
-    "power_2011",
-    "spm_auditory",
-    "spm_multimodal",
-}
-
 
 @pytest.mark.parametrize(
     ("n_subjects", "expected"),
@@ -690,7 +663,6 @@ def test_naive_ftp_adapter():
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("headers", [{}, {"Content-Length": "13"}])
 def test_chunk_read_rich(tmp_path, headers):
     """Check download with a rich progress bar with known or unknown size."""
@@ -705,7 +677,6 @@ def test_chunk_read_rich(tmp_path, headers):
     assert (tmp_path / "foo.txt").read_bytes() == b"dummy content"
 
 
-@pytest.mark.ai_generated
 def test_chunk_read_progress_stopped_if_start_fails(tmp_path, monkeypatch):
     """Check the progress bar is stopped even if it fails to start.
 

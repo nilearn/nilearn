@@ -1,4 +1,4 @@
-.. _oasis_maps:
+.. _oasis_vbm:
 
 OASIS volume based morphometry maps
 ===================================
@@ -7,12 +7,16 @@ Access
 ------
 See :func:`nilearn.datasets.fetch_oasis_vbm`.
 
+..  admonition:: Data Usage Agreement
+   :class: attention
+
+   Using data available through the OASIS project requires agreeing with
+   the Data Usage Agreement that can be found at
+   https://sites.wustl.edu/oasisbrains/
+
 Content
 -------
-:'gray_matter_maps': Nifti images with gray matter density probability
-:'white_matter_maps': Nifti images with white matter density probability maps
-:'ext_vars': Behavioral information on the participants
-:'data_usage_agreement': Text file containing the data usage agreement
+.. nilearn_dataset_content:: oasis_vbm
 
 Notes
 -----
@@ -24,13 +28,6 @@ Research Center, Dr. Randy Buckner at the Howard Hughes Medical
 Institute (HHMI) at Harvard University, the Neuroinformatics Research
 Group (NRG) at Washington University School of Medicine, and the Biomedical
 Informatics Research Network (BIRN).
-
-.. admonition:: Data Usage Agreement
-   :class: attention
-
-   Using data available through the OASIS project requires agreeing with
-   the Data Usage Agreement that can be found at
-   https://sites.wustl.edu/oasisbrains/
 
 In the DARTEL version, original Oasis data have been preprocessed
 with the following steps:
@@ -73,4 +70,4 @@ References
 
 License
 -------
-Provided under an open access data use agreement (DUA).
+.. nilearn_dataset_license:: oasis_vbm

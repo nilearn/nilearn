@@ -96,8 +96,10 @@ def _connectivity_surface(mask_img):
     # make symmetric
     connectivity = connectivity + connectivity.T
     # set diagonal to 1 for connectivity matrix
-    connectivity[np.diag_indices_from(connectivity)] = 1
-    return connectivity
+    # (use lil format as changing the sparsity structure of csr is expensive)
+    connectivity = connectivity.tolil()
+    connectivity.setdiag(1)
+    return connectivity.tocsr()
 
 
 def _estimator_fit(data, estimator, method=None):
@@ -375,7 +377,7 @@ class Parcellations(_MultiPCA):
       giving the matrix.
     """
 
-    VALID_METHODS: ClassVar[tuple[str, ...]] = (
+    _VALID_METHODS: ClassVar[tuple[str, ...]] = (
         "kmeans",
         "ward",
         "complete",
@@ -457,7 +459,7 @@ class Parcellations(_MultiPCA):
             Note that, this attribute is returned only for selected methods
             such as 'ward', 'complete', 'average'.
         """
-        valid_methods = self.VALID_METHODS
+        valid_methods = self._VALID_METHODS
         if self.method is None:
             raise ValueError(
                 "Parcellation method is specified as None. "

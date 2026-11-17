@@ -624,6 +624,8 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             )
 
         # Compute all the matrices, stored in "connectivities"
+        connectivities = []
+        covariances = []
         if self.kind == "correlation":
             covariances_std = [
                 self.cov_estimator_.fit(
