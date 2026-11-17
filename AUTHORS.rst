@@ -256,6 +256,7 @@ Some other past or present contributors are:
 * `Yasmin Mzayek`_: Inria, Saclay, France
 * `Yichun Huang`_: Peking University, Beijing, China
 * `Zvi Baratz`_: Tel-Aviv University, Israel
+* `uvcode01 max`_
 * `Óscar Nájera`_: Checkmk
 
 .. OTHER CONTRIBUTION SECTION ENDS HERE

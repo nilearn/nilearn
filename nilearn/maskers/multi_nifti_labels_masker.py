@@ -131,6 +131,10 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
 
     region_atlas_ : :obj:`nibabel.nifti1.Nifti1Image`
         Regions definition as labels after applying the mask (if any).
+        The labels correspond to the indices in ``region_ids_``.
+        The region in ``region_atlas_``
+        that takes the value ``region_ids_[i]``
+        is used to compute the signal in ``region_signal[:, i]``.
 
     See Also
     --------

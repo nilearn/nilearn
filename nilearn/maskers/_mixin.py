@@ -18,7 +18,7 @@ from nilearn._utils.bids import (
     sanitize_look_up_table,
 )
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.niimg import repr_niimgs
+from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import check_n_confounds_match_n_images
 from nilearn.image import high_variance_confounds
@@ -308,7 +308,6 @@ class _MultiMixin:
 class _LabelMaskerMixin:
     background_label: int | float
     lut_: pd.DataFrame
-    _lut_: pd.DataFrame
 
     @property
     def n_elements_(self) -> int:
@@ -319,10 +318,7 @@ class _LabelMaskerMixin:
         minus the background value.
         """
         check_is_fitted(self)
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
-        return len(lut[lut["index"] != self.background_label])
+        return len([x for x in self.labels_ if x != self.background_label])
 
     @property
     def labels_(self) -> list[int | float]:
@@ -331,10 +327,11 @@ class _LabelMaskerMixin:
         The background label is included if present in the image.
         """
         check_is_fitted(self)
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
-        return lut["index"].to_list()
+        if hasattr(self, "region_atlas_"):
+            atlas_data = safe_get_data(self.region_atlas_)
+            surviving = set(np.unique(atlas_data))
+            return [idx for idx in self.lut_["index"] if idx in surviving]
+        return self.lut_["index"].to_list()
 
     @property
     def region_names_(self) -> dict[int, str]:

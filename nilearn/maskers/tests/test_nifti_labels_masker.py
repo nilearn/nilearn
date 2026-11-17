@@ -1215,10 +1215,8 @@ def test_no_background(n_regions, img_labels, shape_3d_default, affine_eye):
     signal = masker.fit_transform(fmri_img)
 
     assert "Background" not in masker.lut_["name"].to_list()
-    assert "Background" not in masker._lut_["name"].to_list()
 
     assert 999 not in masker.lut_["index"].to_list()
-    assert 999 not in masker._lut_["index"].to_list()
 
     n_expected_regions = n_regions + 1
     assert masker.n_elements_ == n_expected_regions

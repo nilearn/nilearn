@@ -965,6 +965,9 @@ authors:
     affiliation: Tel-Aviv University, Israel
     email: z.baratz@gmail.com
     orcid: https://orcid.org/0000-0001-7159-1387
+  - given-names: uvcode01
+    family-names: max
+    website: https://github.com/uvcode01-max
   - given-names: Óscar
     family-names: Nájera
     website: https://github.com/Titan-C

@@ -9,7 +9,6 @@ import pandas as pd
 from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils.bids import sanitize_look_up_table
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
@@ -213,6 +212,10 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     region_atlas_ : :obj:`nibabel.nifti1.Nifti1Image`
         Regions definition as labels after applying the mask (if any).
+        The labels correspond to the indices in ``region_ids_``.
+        The region in ``region_atlas_``
+        that takes the value ``region_ids_[i]``
+        is used to compute the signal in ``region_signal[:, i]``.
 
     See Also
     --------
@@ -376,8 +379,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         labels_image = self._reporting_data["labels_image"]
 
         table = self.lut_.copy()
-        if hasattr(self, "_lut_"):
-            table = self._lut_.copy()
+        valid_indices = set(self.labels_)
+        table = table[table["index"].isin(valid_indices)]
 
         table = table[["index", "name"]]
 
@@ -533,7 +536,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         )
         ref_img = self._resample_at_fit(imgs_)
         self._apply_mask_to_labels(ref_img)
-        self._filter_lut_to_surviving_labels()
         self._set_report_data_at_fit(imgs)
 
         mask_logger("fit_done", verbose=self.verbose)
@@ -617,27 +619,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             labels_data.astype(np.int32), self.labels_img_.affine
         )
 
-    def _filter_lut_to_surviving_labels(self):
-        """Filter and order _lut_ based on surviving labels in atlas."""
-        labels_surviving = set(np.unique(safe_get_data(self.region_atlas_)))
-        surviving_non_bg = [
-            x
-            for x in self._original_region_ids
-            if x in labels_surviving and x != self.background_label
-        ]
-        desired_order = surviving_non_bg
-        if self.background_label in labels_surviving:
-            desired_order = [self.background_label, *surviving_non_bg]
-
-        mask = self.lut_["index"].isin(desired_order)
-        filtered_lut = self.lut_[mask]
-        filtered_lut = sanitize_look_up_table(
-            filtered_lut, atlas=np.array(desired_order)
-        )
-        self._lut_ = (
-            filtered_lut.set_index("index").loc[desired_order].reset_index()
-        )
-
     def _set_report_data_at_fit(self, imgs):
         """Initialize reporting data at fit time."""
         self._report_content["reports_at_fit_time"] = self.reports
@@ -711,7 +692,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             hasattr(self, "labels_img_")
             and hasattr(self, "lut_")
             and hasattr(self, "region_atlas_")
-            and hasattr(self, "_lut_")
         )
 
     @fill_doc
@@ -734,17 +714,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         %(sample_mask)s
 
             .. nilearn_versionadded:: 0.8.0
-
-        Attributes
-        ----------
-        region_atlas_ : Niimg-like object
-            Regions definition as labels.
-            The labels correspond to the indices in ``region_ids_``.
-            The region in ``region_atlas_``
-            that takes the value ``region_ids_[i]``
-            is used to compute the signal in ``region_signal[:, i]``.
-
-            .. nilearn_versionadded:: 0.10.3
 
         Returns
         -------
