@@ -319,6 +319,8 @@
 
 .. _Pierre-Olivier Quirion: https://github.com/poquirion
 
+.. _Plato Ism: https://github.com/aplatogg
+
 .. _Pradeep Reddy Raamana: https://github.com/raamana
 
 .. _Prakhar Jain: https://github.com/PrakharJain1509
