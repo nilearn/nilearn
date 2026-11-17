@@ -93,7 +93,7 @@ jobs:
                 source .venv/bin/activate
                 PYTEST_RUN_PARALLEL_VERBOSE=1
                 N_THREADS=16
-                pytest -m 'not flaky' --report=report.html --parallel-threads $N_THREADS nilearn
+                pytest -m 'not flaky' --report=report.html --parallel-threads $N_THREADS nilearn --max-warnings=10000
 
         -   name: Upload test report
             if: success() || failure()
