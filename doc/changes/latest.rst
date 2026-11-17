@@ -81,8 +81,6 @@ Enhancements
 
 - :bdg-secondary:`Maint` Refactor ``math_img`` and ``new_img_like`` to reduce complexity (:gh:`6676` by `Akaash P`_)
 
-- :bdg-secondary:`Maint` Remove non-failing tests from flaky tests list in conftest (:gh:`6717` by `uvcode01-max <https://github.com/uvcode01-max>`_).
-
 - :bdg-success:`API` The ``seeds`` parameter of :class:`~maskers.NiftiSpheresMasker` now also accepts a single triplet of coordinates, for example ``NiftiSpheresMasker(seeds=(0, -52, 18))`` (:gh:`6700` by `Rémi Gau`_).
 
 Changes
