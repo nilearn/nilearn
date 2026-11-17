@@ -965,6 +965,20 @@ def test_index_img_surface(surf_img_2d, index, expected_values_left):
     )
 
 
+@pytest.mark.ai_generated
+def test_index_img_surface_reverse_slice(surf_img_2d):
+    """Test index_img with a negative-step slice on surface data."""
+    input_img = surf_img_2d(8)
+    this_img = index_img(input_img, slice(None, None, -1))
+
+    assert this_img.shape == input_img.shape
+    assert_polymesh_equal(this_img.mesh, input_img.mesh)
+    for part in input_img.data.parts:
+        assert_array_equal(
+            this_img.data.parts[part], input_img.data.parts[part][:, ::-1]
+        )
+
+
 def test_index_img_error_volume_4d(affine_eye):
     """Test impossible indices with volume data."""
     img_4d, _ = generate_fake_fmri(affine=affine_eye)
