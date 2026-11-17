@@ -231,7 +231,6 @@ def _gifti_image(data_arrays):
     )
 
 
-@pytest.mark.ai_generated
 def test_load_surf_data_from_gifti_image(rng):
     """Check that in-memory GiftiImage objects can be loaded."""
     data = rng.random((20,))
@@ -246,7 +245,6 @@ def test_load_surf_data_from_gifti_image(rng):
     )
 
 
-@pytest.mark.ai_generated
 def test_load_surf_data_from_empty_gifti_image():
     """Check error for in-memory GiftiImage with no data array."""
     with pytest.raises(
@@ -255,7 +253,6 @@ def test_load_surf_data_from_empty_gifti_image():
         load_surf_data(gifti.GiftiImage())
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("n_samples", [1, 3])
 def test_surface_image_from_gifti_image(rng, surf_mesh, n_samples):
     """Check SurfaceImage and PolyData can be built from GiftiImage."""
@@ -436,7 +433,6 @@ def _gifti_mesh(mesh, intents=("POINTSET", "TRIANGLE")):
     )
 
 
-@pytest.mark.ai_generated
 def test_load_surf_mesh_gifti_image(in_memory_mesh):
     """Check that in-memory GiftiImage meshes can be loaded."""
     mesh = load_surf_mesh(_gifti_mesh(in_memory_mesh))
@@ -446,7 +442,6 @@ def test_load_surf_mesh_gifti_image(in_memory_mesh):
     assert_array_equal(mesh.faces, in_memory_mesh.faces)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "intents, missing",
     [
@@ -460,7 +455,6 @@ def test_load_surf_mesh_gifti_image_error(in_memory_mesh, intents, missing):
         load_surf_mesh(_gifti_mesh(in_memory_mesh, intents=intents))
 
 
-@pytest.mark.ai_generated
 def test_surface_image_from_gifti_image_mesh_and_data(rng, surf_mesh):
     """Check PolyMesh and SurfaceImage can be built from GiftiImage meshes."""
     gifti_meshes = {
