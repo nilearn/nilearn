@@ -123,10 +123,11 @@ print(decoder.cv_scores_["face"])
 # The returned scores measure prediction accuracy on runs that were held out
 # from all these steps.
 #
-# We use three outer folds to limit computation. ``groups`` keeps runs together
-# in the outer splits, while ``params`` also passes the training runs to the
-# decoder's internal ``LeaveOneGroupOut`` splitter. Thus, runs remain separate in
-# both cross-validation loops.
+# We use three outer folds to limit computation.
+# ``groups`` keeps runs together in the outer splits,
+# while ``params`` also passes the training runs
+# to the decoder's internal ``LeaveOneGroupOut`` splitter.
+# Thus, runs remain separate in both cross-validation loops.
 from sklearn.model_selection import GroupKFold
 
 from nilearn.decoding import cross_val_decoder_score
