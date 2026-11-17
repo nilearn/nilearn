@@ -965,7 +965,6 @@ def test_index_img_surface(surf_img_2d, index, expected_values_left):
     )
 
 
-@pytest.mark.ai_generated
 def test_index_img_surface_reverse_slice(surf_img_2d):
     """Test index_img with a negative-step slice on surface data."""
     input_img = surf_img_2d(8)
