@@ -829,6 +829,7 @@ def test_second_level_glm_computation(n_subjects):
     assert len(results1) == len(results2)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "attribute", ["residuals_", "predicted_", "r_square_"]
 )
@@ -846,27 +847,24 @@ def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
     model.fit(Y, design_matrix=X)
 
     with pytest.raises(ValueError, match=r"The model has no results."):
-        if attribute == "residuals":
-            model.residuals(Y=None)
-        elif attribute == "predicted":
-            model.predicted()
-        elif attribute == "r_square":
-            model.r_square()
-        else:
-            getattr(model, attribute)
-    with pytest.raises(ValueError, match="attribute must be one of"):
+        getattr(model, attribute)()
+    with pytest.raises(ValueError, match="'attribute' must be one of"):
         model._get_element_wise_model_attribute("foo", True)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize(
-    "attribute", ["residuals_", "predicted_", "r_square_"]
+    "attribute, match",
+    [
+        ("residuals_", "must be passed as 'Y'"),
+        ("r_square_", "To access voxelwise attributes"),
+    ],
 )
 def test_second_level_voxelwise_attribute_errors_minimize_memory(
-    attribute, n_subjects
+    attribute, match, n_subjects
 ):
-    """Test that an error is raised when trying to access \
-       voxelwise attributes before fitting the model, \
-       when not setting ``minimize_memory`` to ``True``.
+    """Test errors when accessing voxelwise attributes \
+       with ``minimize_memory=True``.
     """
     mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
 
@@ -878,17 +876,35 @@ def test_second_level_voxelwise_attribute_errors_minimize_memory(
 
     model.compute_contrast()
 
-    with pytest.raises(ValueError, match="To access voxelwise attributes"):
-        if attribute == "residuals":
-            model.residuals(Y=None)
-        elif attribute == "predicted":
-            model.predicted()
-        elif attribute == "r_square":
-            model.r_square()
-        else:
-            getattr(model, attribute)
+    with pytest.raises(ValueError, match=match):
+        getattr(model, attribute)()
 
 
+@pytest.mark.ai_generated
+def test_second_level_residuals_minimize_memory(n_subjects):
+    """Check residuals are the same whether data is stored or passed."""
+    mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
+    Y = fmri_data * n_subjects
+    X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
+
+    model_full = SecondLevelModel(mask_img=mask, minimize_memory=False)
+    model_full.fit(Y, design_matrix=X).compute_contrast()
+    model_min = SecondLevelModel(mask_img=mask, minimize_memory=True)
+    model_min.fit(Y, design_matrix=X).compute_contrast()
+
+    expected = get_data(model_full.residuals_())
+
+    assert_array_almost_equal(get_data(model_full.residuals_(Y)), expected)
+    assert_array_almost_equal(get_data(model_min.residuals_(Y)), expected)
+    assert_array_almost_equal(
+        get_data(model_min.predicted_()), get_data(model_full.predicted_())
+    )
+
+    with pytest.raises(ValueError, match="samples"):
+        model_min.residuals_(Y[:-1])
+
+
+@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "attribute", ["residuals_", "predicted_", "r_square_"]
 )
@@ -899,16 +915,10 @@ def test_second_level_voxelwise_attribute(attribute, n_subjects):
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     model.fit(Y, design_matrix=X)
     model.compute_contrast()
-    if attribute == "residuals":
-        model.residuals(Y)
-    elif attribute == "predicted":
-        model.predicted()
-    elif attribute == "r_square":
-        model.r_square()
-    else:
-        getattr(model, attribute)
+    getattr(model, attribute)()
 
 
+@pytest.mark.ai_generated
 def test_second_level_residuals(n_subjects):
     """Test residuals computation for SecondLevelModel."""
     mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
@@ -918,9 +928,10 @@ def test_second_level_residuals(n_subjects):
     model.fit(Y, design_matrix=X)
     model.compute_contrast()
 
-    assert isinstance(model.residuals(Y), Nifti1Image)
-    assert model.residuals(Y).shape == (*SHAPE[:3], n_subjects)
-    mean_residuals = model.masker_.transform(model.residuals(Y)).mean(0)
+    residuals = model.residuals_()
+    assert isinstance(residuals, Nifti1Image)
+    assert residuals.shape == (*SHAPE[:3], n_subjects)
+    mean_residuals = model.masker_.transform(residuals).mean(0)
     assert_array_almost_equal(mean_residuals, 0)
 
 

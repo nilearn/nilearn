@@ -299,6 +299,14 @@ class RegressionResults(LikelihoodModelResults):
 
     nuisance : None of ndarray, default=None
         Parameter estimates needed to compute logL.
+
+    Y : None or ndarray, default=None
+        Data the model was fitted on.
+        If provided, it is stored so that residuals can be computed
+        without passing the data again.
+        Not stored by default to save memory.
+
+        .. nilearn_versionadded:: 0.14.0
     """
 
     __static_attributes__: ClassVar[list[str]] = ["SSE", "r_square", "MSE"]
@@ -314,12 +322,14 @@ class RegressionResults(LikelihoodModelResults):
         cov=None,
         dispersion=1.0,
         nuisance=None,
+        Y=None,
     ):
         """See LikelihoodModelResults constructor.
 
         The difference is that the summary statistics (SSE, r_square, MSE)
-        are stored for a regression model, and no large arrays (Y, residuals)
-        are kept in memory.
+        are stored for a regression model,
+        and large arrays (whitened data, residuals) are not kept in memory.
+        The data Y is only kept if explicitly passed.
         """
         LikelihoodModelResults.__init__(
             self,
@@ -334,6 +344,18 @@ class RegressionResults(LikelihoodModelResults):
         self.r_square = r_square
         self.MSE = MSE
         self.whitened_design = model.whitened_design
+        self.Y = Y
+
+    def _check_Y(self, Y):  # noqa: N802
+        """Return Y if passed, otherwise fall back on the stored data."""
+        if Y is not None:
+            return Y
+        if self.Y is None:
+            raise ValueError(
+                "No data stored in this RegressionResults instance: "
+                "'Y' must be passed to compute residuals."
+            )
+        return self.Y
 
     def predicted(self):
         """Return linear predictor values from a design matrix.
@@ -348,30 +370,34 @@ class RegressionResults(LikelihoodModelResults):
         X = self.whitened_design
         return np.dot(X, beta)
 
-    def residuals(self, Y):
+    def residuals(self, Y=None):
         """Return residuals from the fit.
 
         Parameters
         ----------
-        Y : ndarray
+        Y : ndarray or None, default=None
             Data for which to compute the residuals.
+            If None, the data stored at fit time is used
+            (an error is raised if no data was stored).
 
         Returns
         -------
         residuals : ndarray
             Residuals from the fit.
         """
-        return Y - self.predicted()
+        return self._check_Y(Y) - self.predicted()
 
-    def normalized_residuals(self, Y):
+    def normalized_residuals(self, Y=None):
         """Residuals, normalized to have unit length.
 
         See :footcite:t:`Montgomery2006` and :footcite:t:`Davidson2004`.
 
         Parameters
         ----------
-        Y : ndarray
+        Y : ndarray or None, default=None
             Data for which to compute the normalized residuals.
+            If None, the data stored at fit time is used
+            (an error is raised if no data was stored).
 
         Returns
         -------
@@ -414,6 +440,10 @@ class SimpleRegressionResults(LikelihoodModelResults):
         self.cov = results.cov
         self.dispersion = results.dispersion
         self.nuisance = results.nuisance
+        # small array (n_samples, n_regressors)
+        # kept so that predictions and residuals can be computed
+        # without having to pass the design matrix
+        self.whitened_design = getattr(results, "whitened_design", None)
 
         self.df_total = results.df_total
         self.df_model = results.model.df_model
@@ -428,7 +458,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
             "Use RegressionResults"
         )
 
-    def residuals(self, Y, X):
+    def residuals(self, Y, X=None):
         """Return residuals from the fit.
 
         Parameters
@@ -436,8 +466,9 @@ class SimpleRegressionResults(LikelihoodModelResults):
         Y : ndarray
             Data for which to compute the residuals.
 
-        X : ndarray
+        X : ndarray or None, default=None
             Design matrix.
+            If None, the whitened design of the fitted model is used.
 
         Returns
         -------
@@ -446,7 +477,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
         """
         return Y - self.predicted(X)
 
-    def normalized_residuals(self, Y, X):
+    def normalized_residuals(self, Y, X=None):
         """Residuals, normalized to have unit length.
 
         See :footcite:t:`Montgomery2006` and :footcite:t:`Davidson2004`.
@@ -456,8 +487,9 @@ class SimpleRegressionResults(LikelihoodModelResults):
         Y : ndarray
             Data for which to compute the normalized residuals.
 
-        X : ndarray
+        X : ndarray or None, default=None
             Design matrix.
+            If None, the whitened design of the fitted model is used.
 
         Returns
         -------
@@ -482,18 +514,25 @@ class SimpleRegressionResults(LikelihoodModelResults):
             np.sqrt(self.dispersion)
         )
 
-    def predicted(self, X):
+    def predicted(self, X=None):
         """Return linear predictor values from a design matrix.
 
         Parameters
         ----------
-        X : ndarray
+        X : ndarray or None, default=None
             Design matrix.
+            If None, the whitened design of the fitted model is used.
 
         Returns
         -------
         predicted : ndarray
             Predicted values.
         """
+        if X is None:
+            if self.whitened_design is None:
+                raise ValueError(
+                    "No design matrix stored: 'X' must be passed."
+                )
+            X = self.whitened_design
         beta = self.theta
         return np.dot(X, beta)

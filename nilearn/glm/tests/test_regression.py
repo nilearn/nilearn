@@ -122,3 +122,31 @@ def test_simple_results(X, Y):
         results.normalized_residuals(Y),
         simple_results.normalized_residuals(Y, X),
     )
+
+
+@pytest.mark.ai_generated
+def test_residuals_stored_data(X, Y):
+    """Check residuals can use data stored in RegressionResults."""
+    model = OLSModel(design=X)
+    results = model.fit(Y)
+
+    with pytest.raises(ValueError, match="'Y' must be passed"):
+        results.residuals()
+
+    results.Y = Y
+    assert_array_equal(results.residuals(), results.residuals(Y))
+    assert_array_equal(
+        results.normalized_residuals(), results.normalized_residuals(Y)
+    )
+
+
+@pytest.mark.ai_generated
+def test_simple_results_default_design(X, Y):
+    """Check SimpleRegressionResults uses the whitened design by default."""
+    model = ARModel(design=X, rho=0.4)
+    results = model.fit(Y)
+
+    simple_results = SimpleRegressionResults(results)
+
+    assert_array_equal(results.predicted(), simple_results.predicted())
+    assert_array_equal(results.residuals(Y), simple_results.residuals(Y))

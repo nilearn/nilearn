@@ -1226,6 +1226,7 @@ def test_first_level_with_no_signal_scaling(affine_eye):
     assert flm.mask_img is False
 
 
+@pytest.mark.ai_generated
 def test_first_level_residuals(shape_4d_default):
     """Check of residuals properties."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -1241,14 +1242,73 @@ def test_first_level_residuals(shape_4d_default):
 
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    residuals = model.residuals(fmri_data)[0]
+    residuals = model.residuals_()[0]
     mean_residuals = model.masker_.transform(residuals).mean(0)
 
     assert_array_almost_equal(mean_residuals, 0)
 
 
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("noise_model", ["ols", "ar1"])
+def test_first_level_residuals_minimize_memory(shape_4d_default, noise_model):
+    """Check residuals are the same whether data is stored or passed.
+
+    With minimize_memory=False, data is stored during fit
+    and residuals can be computed without passing the data.
+    With minimize_memory=True, data must be passed.
+    """
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )
+
+    model_full = FirstLevelModel(
+        mask_img=mask, minimize_memory=False, noise_model=noise_model
+    ).fit(fmri_data, design_matrices=design_matrices)
+    model_min = FirstLevelModel(
+        mask_img=mask, minimize_memory=True, noise_model=noise_model
+    ).fit(fmri_data, design_matrices=design_matrices)
+
+    expected = get_data(model_full.residuals_()[0])
+
+    assert_array_almost_equal(
+        get_data(model_full.residuals_(fmri_data)[0]), expected
+    )
+    assert_array_almost_equal(
+        get_data(model_min.residuals_(fmri_data)[0]), expected
+    )
+    assert_array_almost_equal(
+        get_data(model_min.predicted_()[0]),
+        get_data(model_full.predicted_()[0]),
+    )
+
+
+@pytest.mark.ai_generated
+def test_first_level_residuals_minimize_memory_sample_mask(shape_4d_default):
+    """Check sample masks are applied to data passed to compute residuals."""
+    shape = (*shape_4d_default[:3], 20)
+    mask, fmri_data, design_matrix = generate_fake_fmri_data_and_design(
+        [shape]
+    )
+    sample_mask = np.arange(shape[3])[3:]
+
+    model_full = FirstLevelModel(
+        t_r=2.0, mask_img=mask, minimize_memory=False
+    ).fit(fmri_data, design_matrices=design_matrix, sample_masks=sample_mask)
+    model_min = FirstLevelModel(
+        t_r=2.0, mask_img=mask, minimize_memory=True
+    ).fit(fmri_data, design_matrices=design_matrix, sample_masks=sample_mask)
+
+    residuals = model_min.residuals_(fmri_data)[0]
+
+    assert residuals.shape[-1] == shape[3] - 3
+    assert_array_almost_equal(
+        get_data(residuals), get_data(model_full.residuals_()[0])
+    )
+
+
+@pytest.mark.ai_generated
 def test_first_level_residuals_errors(shape_4d_default):
-    """Access residuals needs fit and minimize_memory set to True."""
+    """Check errors when accessing voxelwise attributes."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default]
     )
@@ -1256,15 +1316,20 @@ def test_first_level_residuals_errors(shape_4d_default):
     for design_matrix in design_matrices:
         design_matrix[design_matrix.columns[0]] = 1
 
-    # Check that voxelwise model attributes
-    # cannot be accessed if minimize_memory is set to True
+    # With minimize_memory set to True
+    # data must be passed to compute residuals
+    # and other attributes cannot be accessed.
     model = FirstLevelModel(
         mask_img=mask, minimize_memory=True, noise_model="ols"
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
+    with pytest.raises(ValueError, match="must be passed as 'Y'"):
+        model.residuals_()
     with pytest.raises(ValueError, match="To access voxelwise attributes"):
-        model.residuals(fmri_data)[0]
+        model.r_square_()
+    with pytest.raises(ValueError, match="'Y' must contain one image per run"):
+        model.residuals_([fmri_data[0], fmri_data[0]])
 
     # Check that trying to access residuals without fitting
     # raises an error
@@ -1278,6 +1343,7 @@ def test_first_level_residuals_errors(shape_4d_default):
         model._get_element_wise_model_attribute("foo", True)
 
 
+@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "shapes",
     [
@@ -1302,10 +1368,11 @@ def test_get_element_wise_attributes_should_return_as_many_as_design_matrices(
     model.fit(fmri_data, design_matrices=design_matrices)
 
     assert len(
-        model._get_element_wise_model_attribute("residuals", True, Y=fmri_data)
+        model._get_element_wise_model_attribute("residuals", True)
     ) == len(shapes)
 
 
+@pytest.mark.ai_generated
 def test_first_level_predictions_r_square(shape_4d_default):
     """Check r_square gives sensible values."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -1323,9 +1390,9 @@ def test_first_level_predictions_r_square(shape_4d_default):
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    pred = model.predicted()[0]
+    pred = model.predicted_()[0]
     data = fmri_data[0]
-    r_square_3d = model.r_square()[0]
+    r_square_3d = model.r_square_()[0]
 
     y_predicted = model.masker_.transform(pred)
     y_measured = model.masker_.transform(data)
@@ -1376,6 +1443,7 @@ def test_first_level_hrf_model(hrf_model, spaces, shape_4d_default):
             model.compute_contrast(exp)
 
 
+@pytest.mark.ai_generated
 def test_glm_sample_mask(shape_4d_default):
     """Ensure the sample mask is performing correctly in GLM."""
     # use enough scans for the number of regressors
@@ -1392,7 +1460,7 @@ def test_glm_sample_mask(shape_4d_default):
     )
 
     assert model.design_matrices_[0].shape[0] == shape[3] - 3
-    assert model.predicted_[0].shape[-1] == shape[3] - 3
+    assert model.predicted_()[0].shape[-1] == shape[3] - 3
 
 
 def test_check_trial_type_warning(tmp_path):
@@ -1658,6 +1726,7 @@ def test_flm_compute_contrast_with_surface_data(surface_glm_data):
     assert_polymesh_equal(img.mesh, result.mesh)
 
 
+@pytest.mark.ai_generated
 def test_flm_get_element_wise_model_attribute_with_surface_data(
     surface_glm_data,
 ):
@@ -1668,12 +1737,15 @@ def test_flm_get_element_wise_model_attribute_with_surface_data(
     events = basic_paradigm()
     model.fit([img, img], events=[events, events])
 
-    assert len(model.residuals_) == 2
-    assert model.residuals_[0].shape == img.shape
-    assert len(model.predicted_) == 2
-    assert model.predicted_[0].shape == img.shape
-    assert len(model.r_square_) == 2
-    assert model.r_square_[0].shape == (img.mesh.n_vertices, 1)
+    residuals = model.residuals_()
+    assert len(residuals) == 2
+    assert residuals[0].shape == img.shape
+    predicted = model.predicted_()
+    assert len(predicted) == 2
+    assert predicted[0].shape == img.shape
+    r_square = model.r_square_()
+    assert len(r_square) == 2
+    assert r_square[0].shape == (img.mesh.n_vertices, 1)
 
 
 def test_fixed_effect_contrast_surface(surface_glm_data):

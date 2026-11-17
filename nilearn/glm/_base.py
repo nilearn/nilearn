@@ -164,14 +164,23 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         tags.estimator_type = "glm"
         return tags
 
-    def residuals_(self, Y):
+    def residuals_(self, Y=None):
         """Transform element-wise residuals to the same shape \
         as the input image.
 
         Parameters
         ----------
-        Y : Niimg-like object
-            The data from which to compute the residuals.
+        Y : Niimg-like object, :class:`~nilearn.surface.SurfaceImage`, \
+            :obj:`list` of those, or None, default=None
+            The data the model was fitted on
+            (for :class:`~nilearn.glm.first_level.FirstLevelModel`,
+            one image per run;
+            for :class:`~nilearn.glm.second_level.SecondLevelModel`,
+            the effect maps the last contrast was computed on).
+            Required if the model was initialized
+            with ``minimize_memory=True``.
+            If None, the data stored during fit is used
+            (only available if ``minimize_memory=False``).
 
         Returns
         -------
@@ -181,7 +190,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             "residuals", result_as_time_series=True, Y=Y
         )
 
-    def residuals(self, Y):
+    def residuals(self, Y=None):
         """Transform element-wise residuals to the same shape \
         as the input image.
 
@@ -189,8 +198,17 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
 
         Parameters
         ----------
-        Y : Niimg-like object
-            The data from which to compute the residuals.
+        Y : Niimg-like object, :class:`~nilearn.surface.SurfaceImage`, \
+            :obj:`list` of those, or None, default=None
+            The data the model was fitted on
+            (for :class:`~nilearn.glm.first_level.FirstLevelModel`,
+            one image per run;
+            for :class:`~nilearn.glm.second_level.SecondLevelModel`,
+            the effect maps the last contrast was computed on).
+            Required if the model was initialized
+            with ``minimize_memory=True``.
+            If None, the data stored during fit is used
+            (only available if ``minimize_memory=False``).
 
         Returns
         -------
@@ -201,7 +219,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             stacklevel=find_stack_level(),
             category=FutureWarning,
             message=(
-                "residuals' is deprecated.\n "
+                "'residuals' is deprecated.\n "
                 "It will be removed in Nilearn 0.16.0.\n"
                 "Use 'residuals_' instead."
             ),
@@ -231,12 +249,12 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             stacklevel=find_stack_level(),
             category=FutureWarning,
             message=(
-                "residuals' is deprecated.\n "
+                "'predicted' is deprecated.\n "
                 "It will be removed in Nilearn 0.16.0.\n"
-                "Use 'residuals_' instead."
+                "Use 'predicted_' instead."
             ),
         )
-        return self.predicted_
+        return self.predicted_()
 
     def r_square_(self):
         """Transform element-wise r-squared values to the same shape \
@@ -261,12 +279,12 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             stacklevel=find_stack_level(),
             category=FutureWarning,
             message=(
-                "residuals' is deprecated.\n "
+                "'r_square' is deprecated.\n "
                 "It will be removed in Nilearn 0.16.0.\n"
-                "Use 'residuals_' instead."
+                "Use 'r_square_' instead."
             ),
         )
-        return self.r_square_
+        return self.r_square_()
 
     def _generate_filenames_output(
         self, prefix, contrasts, contrast_types, out_dir, entities_to_drop=None
@@ -734,8 +752,7 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             coords = None
 
         y_pred = self.predicted_()
-        # TODO: this will break
-        resid = self.residuals_(None)
+        resid = self.residuals_()
         if not isinstance(y_pred, (Nifti1Image, SurfaceImage)):
             y_pred = y_pred[0]
             resid = resid[0]

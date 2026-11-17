@@ -534,6 +534,16 @@ class SecondLevelModel(BaseGLM):
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption.
+        If ``False``, the (masked) input data is stored
+        so that residuals can be computed
+        without passing the data again (see ``residuals_``).
+        If ``True``, the input data must be passed to ``residuals_``
+        to compute residuals,
+        and other voxelwise attributes like R-squared are not available.
+
+        .. nilearn_versionchanged:: 0.14.0
+            When ``True``, residuals and predictions
+            can still be computed.
 
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
@@ -827,6 +837,10 @@ class SecondLevelModel(BaseGLM):
         if self.minimize_memory:
             for key in results:
                 results[key] = SimpleRegressionResults(results[key])
+        else:
+            # keep the data so that residuals can be computed later
+            for key, result in results.items():
+                result.Y = Y[:, labels == key]
         self.labels_ = labels
         self.results_ = results
 
@@ -928,9 +942,13 @@ class SecondLevelModel(BaseGLM):
             whether the RegressionResult attribute has a value
             per timepoint of the input nifti image.
 
-        Y : Niimg-like object, default=None
-            The data from which to compute the attribute.
-            Required for 'residuals' and 'normalized_residuals'.
+        Y : 4D Niimg-like object, :obj:`list` of 3D Niimg-like objects, \
+            :class:`~nilearn.surface.SurfaceImage` or None, default=None
+            The effect maps the last contrast was computed on.
+            Only used for 'residuals' and 'normalized_residuals'.
+            Required for those if ``minimize_memory=True``.
+            If ``minimize_memory=False`` and ``Y`` is None,
+            the data stored when computing the contrast is used.
 
         Returns
         -------
@@ -945,16 +963,6 @@ class SecondLevelModel(BaseGLM):
         possible_attributes += RegressionResults.__static_attributes__
         check_parameter_in_allowed(attribute, possible_attributes, "attribute")
 
-        if self.minimize_memory:
-            raise AttributeError(
-                "To access voxelwise attributes like "
-                "R-squared, residuals, and predictions, "
-                "the `SecondLevelModel`-object needs to store "
-                "there attributes. "
-                "To do so, set `minimize_memory` to `False` "
-                "when initializing the `SecondLevelModel`-object."
-            )
-
         if (
             not hasattr(self, "labels_")
             or not hasattr(self, "results_")
@@ -965,26 +973,54 @@ class SecondLevelModel(BaseGLM):
                 "The model has no results. No contrast has been computed yet."
             )
 
-        if result_as_time_series:
-            voxelwise_attribute = np.zeros(
-                (self.design_matrix_.shape[0], len(self.labels_))
+        needs_data = attribute in ["residuals", "normalized_residuals"]
+
+        if self.minimize_memory and attribute in [
+            "SSE",
+            "r_square",
+            "MSE",
+        ]:
+            raise ValueError(
+                "To access voxelwise attributes like "
+                "R-squared, SSE or MSE, "
+                "the `SecondLevelModel`-object needs to store "
+                "there attributes. "
+                "To do so, set `minimize_memory` to `False` "
+                "when initializing the `SecondLevelModel`-object."
             )
+        if self.minimize_memory and needs_data and Y is None:
+            raise ValueError(
+                f"To access '{attribute}' "
+                "when 'minimize_memory=True', "
+                "the data used to compute the contrast must be passed as 'Y'. "
+                "Alternatively, set `minimize_memory` to `False` "
+                "when initializing the `SecondLevelModel`-object."
+            )
+
+        n_samples = self.design_matrix_.shape[0]
+        if result_as_time_series:
+            voxelwise_attribute = np.zeros((n_samples, len(self.labels_)))
         else:
             voxelwise_attribute = np.zeros((1, len(self.labels_)))
 
-        Y_matrix = self.masker_.transform(Y) if Y is not None else None
+        Y_matrix = None
+        if needs_data and Y is not None:
+            Y_matrix = self.masker_.transform(Y)
+            if Y_matrix.shape[0] != n_samples:
+                raise ValueError(
+                    f"The data passed has {Y_matrix.shape[0]} samples "
+                    f"but the model was fitted on {n_samples} samples."
+                )
 
-        for label_ in self.results_:
+        for label_, result in self.results_.items():
             label_mask = self.labels_ == label_
-            attr = getattr(self.results_[label_], attribute)
-            if attribute in ["residuals", "normalized_residuals"]:
-                if Y_matrix is None:
-                    raise ValueError(f"Attribute {attribute} requires data Y.")
-                val = attr(Y_matrix[:, label_mask])
+            if needs_data:
+                data = None if Y_matrix is None else Y_matrix[:, label_mask]
+                val = getattr(result, attribute)(data)
             elif attribute == "predicted":
-                val = attr()
+                val = result.predicted()
             else:
-                val = attr
+                val = getattr(result, attribute)
 
             voxelwise_attribute[:, label_mask] = val
 
