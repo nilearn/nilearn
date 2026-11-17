@@ -68,7 +68,7 @@ def cross_val_decoder_score(
 
     cv : :obj:`int`, cross-validation splitter, iterable, or None, default=None
         The outer cross-validation scheme. An integer specifies the number
-        of folds; None uses five folds. Classification with binary or
+        of folds; ``None`` uses five folds. Classification with binary or
         multiclass targets uses stratified folds, otherwise K-fold is used.
         A splitter or an iterable of (train, test) index pairs is also
         accepted. Splitters receive a list of image samples as ``X``.

@@ -125,7 +125,7 @@ print(decoder.cv_scores_["face"])
 #
 # We use three outer folds to limit computation. ``groups`` keeps runs together
 # in the outer splits, while ``params`` also passes the training runs to the
-# decoder's internal LeaveOneGroupOut splitter. Thus, runs remain separate in
+# decoder's internal ``LeaveOneGroupOut`` splitter. Thus, runs remain separate in
 # both cross-validation loops.
 from sklearn.model_selection import GroupKFold
 
