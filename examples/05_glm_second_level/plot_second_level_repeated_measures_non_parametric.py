@@ -20,7 +20,7 @@ The unrestricted analysis ignores the pairing between each subject's two maps.
 # returns subjects in the same order for each requested contrast.
 from nilearn.datasets import fetch_localizer_contrasts
 
-n_subjects = 47
+n_subjects = 16
 horizontal = fetch_localizer_contrasts(
     ["horizontal checkerboard"], n_subjects=n_subjects
 )
@@ -87,16 +87,37 @@ reference_result = non_parametric_inference(
 )
 
 # %%
-# Display the family-wise-error-corrected negative log10 p-values. The blocked
-# result and the direct-contrast reference should be similar; finite
-# permutation counts can make their maps differ slightly.
-from nilearn.plotting import plot_bland_altman, plot_img_comparison, show
+from nilearn.plotting import plot_design_matrix, show
 
+plot_design_matrix(design_matrix)
+plot_design_matrix(contrast_design_matrix)
+
+show()
+
+# %%
+# Display the difference between the results
+# using Bland-Altman plots.
+from nilearn.plotting import plot_bland_altman, plot_img_comparison
+
+plot_bland_altman(
+    reference_result,
+    unrestricted_result,
+    ref_label="Direct within-subject contrast",
+    src_label="Unrestricted row permutations",
+    cmap="plasma",
+)
 plot_img_comparison(
     reference_result,
     unrestricted_result,
     ref_label="Direct within-subject contrast",
     src_label="Unrestricted row permutations",
+)
+plot_bland_altman(
+    reference_result,
+    blocked_result,
+    ref_label="Direct within-subject contrast",
+    src_label="Permutations within subjects",
+    cmap="plasma",
 )
 plot_img_comparison(
     reference_result,
@@ -105,17 +126,5 @@ plot_img_comparison(
     src_label="Permutations within subjects",
 )
 
-plot_bland_altman(
-    reference_result,
-    unrestricted_result,
-    ref_label="Direct within-subject contrast",
-    src_label="Unrestricted row permutations",
-)
-plot_bland_altman(
-    reference_result,
-    blocked_result,
-    ref_label="Direct within-subject contrast",
-    src_label="Permutations within subjects",
-)
 
 show()
