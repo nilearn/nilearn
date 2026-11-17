@@ -1,4 +1,4 @@
-"""Tests saving glm to bids."""
+"""Test saving glm to bids."""
 
 import json
 import re
@@ -354,19 +354,20 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
             ]
         )
 
-    shapes = ((3, 3, 3, 1),)
+    # use different images for each subject
+    # to have some variance across subjects
+    shapes = ((3, 3, 3, 1),) * 2
     rk = 3
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(
         shapes,
         rk,
     )
-    fmri_data = fmri_data[0]
 
     # Ordinary Least Squares case
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
 
     # fit model
-    Y = [fmri_data] * 2
+    Y = fmri_data
     X = pd.DataFrame([[1]] * 2, columns=["intercept"])
     model = model.fit(Y, design_matrix=X)
 

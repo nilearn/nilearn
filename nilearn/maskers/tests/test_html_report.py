@@ -20,7 +20,6 @@ from nilearn._utils.helpers import (
     is_matplotlib_installed,
     is_plotly_installed,
 )
-from nilearn._utils.tags import accept_surf_img_input
 from nilearn._utils.versions import SKLEARN_GTE_1_7
 from nilearn.conftest import _img_maps, _surf_maps_img
 from nilearn.maskers import (
@@ -39,6 +38,7 @@ from nilearn.masking import apply_mask
 from nilearn.reporting import HTMLReport
 from nilearn.reporting.tests._testing import generate_and_check_report
 from nilearn.surface import SurfaceImage
+from nilearn.utils.tags import accepts_surface
 
 
 def generate_and_check_masker_report(
@@ -101,14 +101,17 @@ def generate_and_check_masker_report(
             includes.append('div id="sk-container-id')
 
         if is_matplotlib_installed():
-            if accept_surf_img_input(masker):
-                includes.append("data:image/png;base64,")
+            if accepts_surface(masker):
+                includes.append('src="data:image/png;base64,')
             elif kwargs.get("engine", "") != "brainsprite":
-                includes.append("data:image/svg+xml;base64,")
+                includes.append('src="data:image/svg+xml;base64,')
 
         else:
             excludes.extend(
-                ["data:image/svg+xml;base64,", "data:image/png;base64,"]
+                [
+                    'src="data:image/svg+xml;base64,',
+                    'src="data:image/png;base64,',
+                ]
             )
 
     if extend_includes is not None:
@@ -172,7 +175,6 @@ def input_parameters(
     return None
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
     [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
@@ -237,7 +239,6 @@ def test_displayed_maps_error(masker_class, input_parameters, displayed_maps):
             masker.generate_report(displayed_maps=displayed_maps)
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
     [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
@@ -259,7 +260,6 @@ def test_displayed_maps_warning_too_many(
             masker.generate_report(displayed_maps=displayed_maps)
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker_class",
     [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
@@ -275,7 +275,6 @@ def test_displayed_maps_warning_int_too_large(masker_class, input_parameters):
             masker.generate_report(displayed_maps=7)
 
 
-@pytest.mark.thread_unsafe
 def test_nifti_spheres_masker_report_1_sphere(
     matplotlib_pyplot,  # noqa: ARG001
 ):
@@ -329,7 +328,6 @@ EXPECTED_COLUMNS = [
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.skipif(not is_gil_enabled(), reason="may fail without GIL")
 def test_nifti_labels_masker_report(
     img_3d_rand_eye,
     img_mask_eye,
@@ -656,7 +654,6 @@ def test_surface_masker_minimal_report_no_fit(
     generate_and_check_masker_report(masker)
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize("empty_mask", [True, False])
 def test_surface_masker_minimal_report_fit(
@@ -677,19 +674,37 @@ def test_surface_masker_minimal_report_fit(
         assert float(masker._report_content["coverage"]) > 0
 
 
-def test_surface_maps_masker_generate_report_engine_error(
-    matplotlib_pyplot,  # noqa: ARG001
-    surf_maps_img,
-    surf_img_2d,
-):
-    """Test error is raised when engine is not 'plotly' or 'matplotlib'."""
-    masker = SurfaceMapsMasker(surf_maps_img)
-    masker.fit_transform(surf_img_2d(10))
-    with pytest.raises(
-        ValueError,
-        match="'engine' must be one of",
+@pytest.mark.thread_unsafe
+@pytest.mark.parametrize(
+    "masker_class, engine",
+    [
+        (NiftiMasker, "plotly"),
+        (MultiNiftiMasker, "plotly"),
+        (NiftiLabelsMasker, "plotly"),
+        (MultiNiftiLabelsMasker, "plotly"),
+        (NiftiMapsMasker, "plotly"),
+        (NiftiMapsMasker, "brainsprite"),
+        (MultiNiftiMapsMasker, "brainsprite"),
+        (NiftiSpheresMasker, "plotly"),
+        (NiftiSpheresMasker, "brainsprite"),
+        (SurfaceMasker, "plotly"),
+        (SurfaceMasker, "brainsprite"),
+        (SurfaceLabelsMasker, "plotly"),
+        (SurfaceLabelsMasker, "brainsprite"),
+        (SurfaceMapsMasker, "brainsprite"),
+    ],
+)
+def test_generate_report_unsupported_engine(masker_class, engine):
+    """Test fallback to default engine with a warning
+    when engine is not supported by the masker.
+    """
+    masker = masker_class()
+    with (
+        pytest.warns(UserWarning, match="Falling back to 'matplotlib'"),
+        pytest.warns(UserWarning, match="This estimator has not been fit yet"),
     ):
-        masker.generate_report(engine="invalid", displayed_maps=2)
+        masker.generate_report(engine=engine)
+    assert masker._report_content["engine"] == "matplotlib"
 
 
 @pytest.mark.thread_unsafe

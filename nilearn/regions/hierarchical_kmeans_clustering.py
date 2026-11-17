@@ -17,7 +17,7 @@ from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import InputTags
+from nilearn.utils.tags import InputTags
 
 
 def _remove_empty_labels(labels):
@@ -114,7 +114,7 @@ def hierarchical_k_means(
     Returns
     -------
     labels : :obj:`list` of ints (len n_features)
-        Parcellation of features in clusters
+        Parcellation of features in clusters.
     """
     check_params(locals())
 
@@ -170,8 +170,11 @@ class HierarchicalKMeans(
 
     Parameters
     ----------
-    n_clusters : :obj:`int`
+    n_clusters : :obj:`int`, default=2
         The number of clusters to find.
+
+        .. nilearn_versionchanged:: 0.15.0
+            Changed default `n_clusters` from `None` to `2`.
 
     init : {'k-means++', 'random' or an ndarray}, default='k-means++'
         Method for initialization.
@@ -222,12 +225,11 @@ class HierarchicalKMeans(
 
     sizes_ : ndarray, shape = [n_features]
         It contains the size of each cluster.
-
     """
 
     def __init__(
         self,
-        n_clusters=None,
+        n_clusters=2,
         init="k-means++",
         batch_size=1000,
         n_init=10,
@@ -256,7 +258,7 @@ class HierarchicalKMeans(
         return tags
 
     @fill_doc
-    def fit(self, X, y=None) -> Self:
+    def fit(self, X, y: None = None) -> Self:
         """Compute clustering of the data.
 
         Parameters
@@ -326,11 +328,7 @@ class HierarchicalKMeans(
         return hasattr(self, "labels_")
 
     @fill_doc
-    def transform(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-    ):
+    def transform(self, X, y: None = None):
         """Apply clustering, reduce the dimensionality of the data.
 
         Parameters
@@ -349,6 +347,7 @@ class HierarchicalKMeans(
         The type of the output is determined by ``set_output()``:
         see `the scikit-learn documentation <https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html>`_.
         """
+        del y
         check_is_fitted(self)
         X = validate_data(self, X=X, reset=False)
 
@@ -385,7 +384,7 @@ class HierarchicalKMeans(
         Returns
         -------
         X_inv : ndarray, shape = [n_samples, n_features]
-            Data reduced expanded to the original feature space
+            Data reduced expanded to the original feature space.
         """
         check_is_fitted(self)
 

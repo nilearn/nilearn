@@ -12,7 +12,6 @@ General reference for regression models:
 
 'Introduction to Linear Regression Analysis', Douglas C. Montgomery,
     Elizabeth A. Peck, G. Geoffrey Vining. Wiley, 2006.
-
 """
 
 __docformat__ = "restructuredtext en"
@@ -35,11 +34,6 @@ class OLSModel:
     design : array-like
         This is your design matrix.  Data are assumed to be column ordered
         with observations in rows.
-
-    Methods
-    -------
-    model.__init___(design)
-    model.logL(b=self.beta, Y)
 
     Attributes
     ----------
@@ -64,6 +58,10 @@ class OLSModel:
     df_model : scalar
         Degrees of freedom of the model.  The rank of the design.
 
+    Methods
+    -------
+    model.__init___(design)
+    model.logL(b=self.beta, Y)
     """
 
     def __init__(self, design):
@@ -140,7 +138,6 @@ class OLSModel:
         References
         ----------
         .. footbibliography::
-
         """
         # This is overwriting an abstract method of LikelihoodModel
         X = self.whitened_design
@@ -168,7 +165,6 @@ class OLSModel:
             used in estimating the coefficients. For OLSModel, it is
             does nothing. For WLSmodel, ARmodel, it pre-applies
             a square root of the covariance matrix to X.
-
         """
         return X
 
@@ -186,7 +182,6 @@ class OLSModel:
         Returns
         -------
         fit : RegressionResults
-
         """
         # Other estimates of the covariance matrix for a heteroscedastic
         # regression model can be implemented in WLSmodel. (Weighted least
@@ -195,10 +190,8 @@ class OLSModel:
         beta = np.dot(self.calc_beta, wY)
         wresid = wY - np.dot(self.whitened_design, beta)
         sse = np.sum(wresid**2, 0)
-        n_samples = wY.shape[0]
-        n_features = self.whitened_design.shape[1]
-        df_residuals = n_samples - n_features
-        mse = sse / df_residuals
+        n_samples = self.df_total
+        mse = sse / self.df_residuals
 
         # Calculate r_square
         # r_square = var(predicted) / var(whitened_Y)
@@ -236,7 +229,6 @@ class ARModel(OLSModel):
         If int, gives order of model, and initializes rho to zeros.  If
         ndarray, gives initial estimate of rho. Be careful as ``ARModel(X,
         1) != ARModel(X, 1.0)``.
-
     """
 
     def __init__(self, design, rho):
@@ -264,7 +256,6 @@ class ARModel(OLSModel):
         -------
         whitened_X : ndarray
             X whitened with order self.order AR.
-
         """
         X = np.asarray(X, np.float64)
         whitened_X = X.copy()
@@ -308,7 +299,6 @@ class RegressionResults(LikelihoodModelResults):
 
     nuisance : None of ndarray, default=None
         Parameter estimates needed to compute logL.
-
     """
 
     __static_attributes__: ClassVar[list[str]] = ["SSE", "r_square", "MSE"]
@@ -330,7 +320,6 @@ class RegressionResults(LikelihoodModelResults):
         The difference is that the summary statistics (SSE, r_square, MSE)
         are stored for a regression model, and no large arrays (Y, residuals)
         are kept in memory.
-
         """
         LikelihoodModelResults.__init__(
             self,
@@ -360,7 +349,7 @@ class RegressionResults(LikelihoodModelResults):
         return np.dot(X, beta)
 
     def residuals(self, Y):
-        """Residuals from the fit.
+        """Return residuals from the fit.
 
         Parameters
         ----------
@@ -402,7 +391,6 @@ class RegressionResults(LikelihoodModelResults):
         References
         ----------
         .. footbibliography::
-
         """
         return self.residuals(Y) * positive_reciprocal(
             np.sqrt(self.dispersion)
@@ -414,7 +402,6 @@ class SimpleRegressionResults(LikelihoodModelResults):
     for :term:`contrast` computation.
 
     Its intended to save memory when details of the model are unnecessary.
-
     """
 
     def __init__(self, results):
@@ -442,7 +429,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
         )
 
     def residuals(self, Y, X):
-        """Residuals from the fit.
+        """Return residuals from the fit.
 
         Parameters
         ----------
@@ -490,7 +477,6 @@ class SimpleRegressionResults(LikelihoodModelResults):
         References
         ----------
         .. footbibliography::
-
         """
         return self.residuals(Y, X) * positive_reciprocal(
             np.sqrt(self.dispersion)

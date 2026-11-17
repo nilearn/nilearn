@@ -15,6 +15,7 @@ from scipy.stats import gamma
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
+from nilearn.nilearn_typing import HrfModel
 
 
 def _gamma_difference_hrf(
@@ -62,8 +63,7 @@ def _gamma_difference_hrf(
     Returns
     -------
     hrf : array of shape (length / t_r * oversampling, dtype=float)
-         hrf sampling on the oversampled time grid
-
+         :term:`HRF` sampled on the oversampled time grid.
     """
     dt = t_r / oversampling
     time_stamps = np.linspace(
@@ -109,7 +109,7 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0) -> np.ndarray:
     Returns
     -------
     hrf : array of shape (length / t_r * oversampling, dtype=float)
-         :term:`HRF` sampling on the oversampled time grid
+         :term:`HRF` sampling on the oversampled time grid.
 
     Examples
     --------
@@ -118,7 +118,6 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0) -> np.ndarray:
     >>> hrf = spm_hrf(t_r=2.0, oversampling=1, time_length=20.0)
     >>> np.round(hrf, 3).tolist()
     [0.0, 0.0, 0.161, 0.443, 0.335, 0.139, 0.022, -0.028, -0.04, -0.033]
-
     """
     return _gamma_difference_hrf(t_r, oversampling, time_length, onset)
 
@@ -158,7 +157,6 @@ def glover_hrf(
     >>> hrf = glover_hrf(t_r=2.0, oversampling=1, time_length=20.0)
     >>> np.round(hrf, 3).tolist()
     [0.0, 0.0, 0.226, 0.741, 0.5, 0.037, -0.181, -0.176, -0.103, -0.045]
-
     """
     return _gamma_difference_hrf(
         t_r,
@@ -236,7 +234,7 @@ def spm_time_derivative(
     Returns
     -------
     dhrf : array of shape (length / t_r, dtype=float)
-          dhrf sampling on the provided grid
+          Derivative of the :term:`HRF` sampled on the provided grid.
 
     Examples
     --------
@@ -245,7 +243,6 @@ def spm_time_derivative(
     >>> dhrf = spm_time_derivative(t_r=2.0, oversampling=1, time_length=20.0)
     >>> np.round(dhrf, 3).tolist()
     [0.0, 0.0, 0.167, 0.04, -0.091, -0.072, -0.035, -0.013, -0.0, 0.005]
-
     """
     return _generic_time_derivative(
         spm_hrf,
@@ -282,7 +279,7 @@ def glover_time_derivative(
     Returns
     -------
     dhrf : array of shape (length / t_r), dtype=float
-          dhrf sampling on the provided grid
+          Derivative of the :term:`HRF` sampled on the provided grid.
 
     Examples
     --------
@@ -293,7 +290,6 @@ def glover_time_derivative(
     ... )
     >>> np.round(dhrf, 3).tolist()
     [0.0, 0.0, 0.267, 0.076, -0.215, -0.168, -0.039, 0.027, 0.033, 0.019]
-
     """
     return _generic_time_derivative(
         glover_hrf,
@@ -376,7 +372,8 @@ def spm_dispersion_derivative(
     Returns
     -------
     dhrf : array of shape (length / tr * oversampling), dtype=float
-          dhrf sampling on the oversampled time grid
+          Derivative of the :term:`HRF` sampled on the oversampled
+          time grid.
 
     Examples
     --------
@@ -387,7 +384,6 @@ def spm_dispersion_derivative(
     ... )
     >>> np.round(ddhrf, 3).tolist()
     [0.0, -0.0, -0.373, 0.282, 0.295, -0.04, -0.094, -0.048, -0.017, -0.005]
-
     """
     return _generic_dispersion_derivative(
         t_r, oversampling=oversampling, time_length=time_length, onset=onset
@@ -420,7 +416,8 @@ def glover_dispersion_derivative(
     Returns
     -------
     dhrf : array of shape (length / t_r * oversampling), dtype=float
-          dhrf sampling on the oversampled time grid
+          Derivative of the :term:`HRF` sampled on the oversampled
+          time grid.
 
     Examples
     --------
@@ -431,7 +428,6 @@ def glover_dispersion_derivative(
     ... )
     >>> np.round(ddhrf, 3).tolist()
     [0.0, -0.0, -0.373, 0.282, 0.295, -0.04, -0.094, -0.048, -0.017, -0.005]
-
     """
     return _generic_dispersion_derivative(
         t_r,
@@ -472,7 +468,6 @@ def _sample_condition(
 
     frame_times_high_res : array of shape(over_sampling * n_scans)
         Time points used for regressor sampling.
-
     """
     # Find the high-resolution frame_times
     n_frames = frame_times.size
@@ -558,7 +553,6 @@ def _resample_regressor(hr_regressor, frame_times_high_res, frame_times):
     -------
     regressor : array of shape(n_scans)
          The resampled regressor.
-
     """
     f = interp1d(frame_times_high_res, hr_regressor)
     return f(frame_times).T
@@ -580,7 +574,6 @@ def orthogonalize(X):
     Notes
     -----
     X is changed in place. The columns are not normalized.
-
     """
     if X.size == X.shape[0]:
         return X
@@ -611,8 +604,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     Returns
     -------
     names : :obj:`list` of strings,
-        regressor names
-
+        Regressor names.
     """
     check_params(locals())
     # Default value
@@ -668,7 +660,6 @@ def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
     -------
     hkernel : :obj:`list` of arrays
         Samples of the hrf (the number depends on the hrf_model used).
-
     """
     check_params(locals())
     acceptable_hrfs = [
@@ -747,7 +738,7 @@ def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
 @fill_doc
 def compute_regressor(
     exp_condition,
-    hrf_model,
+    hrf_model: HrfModel,
     frame_times,
     con_id: str = "cond",
     oversampling: int = 50,
@@ -788,7 +779,6 @@ def compute_regressor(
     reg_names : :obj:`list` of strings
         Corresponding regressor names.
 
-
     Examples
     --------
 
@@ -816,7 +806,6 @@ def compute_regressor(
         >>> ax = plot_design_matrix(pd.DataFrame(reg, columns=reg_names))
         >>>
         >>> show()
-
     """
     check_params(locals())
     # fir_delays should be integers
@@ -871,6 +860,6 @@ def _calculate_tr(frame_times):
     Returns
     -------
     :obj:`float`
-        repetition time
+        Repetition time.
     """
     return float(np.min(np.diff(frame_times)))

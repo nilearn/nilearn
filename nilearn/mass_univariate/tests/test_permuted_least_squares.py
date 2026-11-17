@@ -1,4 +1,4 @@
-"""Tests for the permuted_ols function."""
+"""Test for the permuted_ols function."""
 
 import warnings
 
@@ -11,6 +11,7 @@ from numpy.testing import (
     assert_equal,
 )
 from scipy import stats
+from sklearn import clone
 
 from nilearn.conftest import _rng
 from nilearn.maskers import NiftiMasker
@@ -732,6 +733,59 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     assert out["h0_max_mass"].size == n_perm
 
 
+@pytest.mark.ai_generated
+def test_permuted_ols_no_masker_no_tfce_no_threshold(design):
+    """Check default call with no masker, tfce, or threshold does not error.
+
+    Regression test: masker was unconditionally fitted before running
+    permutations even when not required (masker=None, tfce=False,
+    threshold=None), raising an AttributeError.
+    """
+    target_var, tested_var, *_ = design
+
+    out = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        n_perm=N_PERM,
+        random_state=0,
+    )
+
+    assert isinstance(out, dict)
+    assert "t" in out
+
+
+def test_unfitted_masker(cluster_level_design, masker):
+    """Pass unfitted masker does not raise an error."""
+    target_var, tested_var = cluster_level_design
+
+    # cloning to pass an unfitted masker
+    masker = clone(masker)
+
+    permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        n_perm=N_PERM,
+        random_state=0,
+        threshold=0.001,
+        masker=masker,
+    )
+
+
+def test_invalid_masker(cluster_level_design):
+    """Test invalid masker."""
+    target_var, tested_var = cluster_level_design
+
+    with pytest.raises(TypeError, match="'masker' must be of type"):
+        permuted_ols(
+            tested_var,
+            target_var,
+            tfce=True,
+            masker="foo",
+        )
+
+
 def test_sanitize_inputs_permuted_ols(design):
     """Smoke test for input sanitization."""
     target_vars, tested_vars, *_ = design
@@ -769,6 +823,10 @@ def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
         permuted_ols(tested_var, target_var, n_perm=1, masker=masker, n_jobs=2)
 
 
+# normalizing the all-zeros voxel divides 0 by 0
+@pytest.mark.filterwarnings(
+    "ignore:invalid value encountered in divide:RuntimeWarning"
+)
 def test_permuted_ols_no_covar_warning(rng):
     """Ensure that a warning is raised when a given voxel has all zeros."""
     target_var, tested_var, *_ = _create_design(
@@ -841,7 +899,7 @@ def test_permuted_ols_no_covar_n_job_error(dummy_design):
 
 
 def test_permuted_ols_target_vars_error(dummy_design):
-    """Checks dimension of target_var."""
+    """Check dimension of target_var."""
     target_var, tested_var, *_ = dummy_design
 
     with pytest.raises(
@@ -875,8 +933,9 @@ def test_permuted_ols_boolean_tested_vars(dummy_design):
     assert output["t"].shape == (1, target_var.shape[1])
 
 
+@pytest.mark.ai_generated
 def test_permuted_ols_type_n_perm(dummy_design):
-    """Checks type n_perm."""
+    """Check type n_perm."""
     target_var, tested_var, *_ = dummy_design
 
     with pytest.raises(TypeError, match="'n_perm' must be of type"):
@@ -906,7 +965,9 @@ def test_cluster_level_parameters_error_no_masker(cluster_level_design):
     # but masker is not defined.
     with pytest.raises(
         ValueError,
-        match=r"If 'threshold' is not None, masker must be defined as well.",
+        match=(
+            "masker must be provided if tfce is True or threshold is not None"
+        ),
     ):
         permuted_ols(
             tested_var,

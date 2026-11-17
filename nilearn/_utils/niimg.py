@@ -57,7 +57,7 @@ def safe_get_data(
     Returns
     -------
     data : numpy array
-        nilearn.image.get_data return from Nifti image.
+        Data returned by nilearn.image.get_data from a Nifti image.
     """
     if not img.in_memory or copy_data:
         img = deepcopy(img)
@@ -165,7 +165,6 @@ def is_binary_niimg(
     -------
     is_binary : :obj:`bool`
         True if binary, False otherwise.
-
     """
     niimg = load_niimg(niimg)
     data = niimg.dataobj

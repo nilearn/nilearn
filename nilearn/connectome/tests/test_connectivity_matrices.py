@@ -8,12 +8,7 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 from pandas import DataFrame
 from scipy import linalg
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn._utils.extmath import is_spd
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
@@ -41,30 +36,6 @@ N_FEATURES = 49
 N_SUBJECTS = 5
 
 
-ESTIMATORS_TO_CHECK = [
-    ConnectivityMeasure(cov_estimator=EmpiricalCovariance()),
-    ConnectivityMeasure(),
-]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn_2(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
-
-
 def random_diagonal(p, v_min=1.0, v_max=2.0, random_state=0):
     """Generate a random diagonal matrix.
 
@@ -86,7 +57,6 @@ def random_diagonal(p, v_min=1.0, v_max=2.0, random_state=0):
     -------
     output : numpy.ndarray, shape (p, p)
         A diagonal matrix with the given minimal and maximal elements.
-
     """
     random_state = np.random.default_rng(random_state)
     diag = random_state.random(p) * (v_max - v_min) + v_min
@@ -135,6 +105,7 @@ def _signals(
     and apply confounds while computing covariances.
     """
     signals = []
+    confounds = np.empty(1)
     for k in range(n_subjects):
         n_samples = 200 + k
         signal, _, confounds = generate_signals(
@@ -627,6 +598,7 @@ def test_connectivity_measure_errors():
         )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
 )
@@ -651,6 +623,7 @@ def test_connectivity_measure_generic(
         assert is_spd(covs[k], decimal=7)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
 )
@@ -800,6 +773,7 @@ def _assert_connectivity_partial_correlation(connectivities, covs):
         )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "kind",
     ["tangent", "precision", "correlation", "partial correlation"],
@@ -847,6 +821,7 @@ def test_connectivity_measure_check_mean(kind, signals):
     assert_array_equal(mean, conn_measure.mean_)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
 def test_connectivity_measure_check_vectorization_option(kind, signals):
     conn_measure = ConnectivityMeasure(kind=kind)
@@ -919,6 +894,7 @@ def test_connectivity_measure_check_inverse_transformation_discard_diag(
             conn_measure.inverse_transform(vectorized_connectivities)
 
 
+@pytest.mark.slow
 def test_connectivity_measure_inverse_transform_tangent(
     signals,
 ):

@@ -11,6 +11,7 @@ const maskers = [
   { masker: 'NiftiLabelsMasker_matplotlib', tolerance: 2600, timeout },
   { masker: 'NiftiLabelsMasker_brainsprite', tolerance: 1500, timeout },
   { masker: 'NiftiMapsMasker', tolerance: 4100, timeout },
+  { masker: 'NiftiSpheresMasker', tolerance: 1500, timeout },
   { masker: 'SurfaceMasker', tolerance: 1600, timeout },
   { masker: 'SurfaceLabelsMasker', tolerance: 1800, timeout },
   { masker: 'SurfaceMapsMasker_matplotlib', tolerance: 3000, timeout },

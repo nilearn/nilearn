@@ -162,7 +162,6 @@ class DictLearning(_BaseDecomposition):
     References
     ----------
     .. footbibliography::
-
     """
 
     def __init__(
@@ -262,7 +261,6 @@ class DictLearning(_BaseDecomposition):
         ----------
         data : ndarray,
             Shape (n_samples, n_features)
-
         """
         logger.log("Learning initial components", self.verbose)
         self._init_dict(data)

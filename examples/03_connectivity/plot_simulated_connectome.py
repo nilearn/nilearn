@@ -4,7 +4,6 @@ Connectivity structure estimation on simulated data
 
 This example shows a comparison of graph lasso and group-sparse covariance
 estimation of connectivity structure for a synthetic dataset.
-
 """
 
 from nilearn import plotting

@@ -2,16 +2,16 @@
 Visualizing multiscale functional brain parcellations
 =====================================================
 
-This example shows how to download and fetch brain parcellations of
-multiple networks using
-:func:`~nilearn.datasets.fetch_atlas_basc_multiscale_2015`
-and visualize them using plotting function :func:`~nilearn.plotting.plot_roi`.
+This example shows how to visualize brain parcellations
+using plotting function :func:`~nilearn.plotting.plot_roi`.
 
-We show here only three different networks of 'symmetric' version. For more
-details about different versions and different networks, please refer to its
-documentation.
+.. admonition:: dataset
+
+   This example uses the parcellations of multiple networks
+   from the :ref:`BASC multiscale atlas <basc_multiscale_2015_atlas>`.
+
+    We show here only three different networks of 'symmetric' version.
 """
-
 # %%
 # Retrieving multiscale group brain parcellations
 # -----------------------------------------------

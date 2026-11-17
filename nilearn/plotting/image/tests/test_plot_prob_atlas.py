@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearn.plotting.plot_prob_atlas`."""
+"""Test for :func:`nilearn.plotting.plot_prob_atlas`."""
 
 # ruff: noqa: ARG001
 

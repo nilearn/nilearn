@@ -20,7 +20,7 @@ from nilearn.glm import (
 )
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD, _compute_hommel_value
 from nilearn.image import get_data, new_img_like
-from nilearn.surface.surface import PolyData
+from nilearn.surface.surface import InMemoryMesh, PolyData, SurfaceImage
 from nilearn.surface.surface import get_data as get_surf_data
 
 
@@ -279,6 +279,10 @@ def test_hommel(alpha, expected):
     assert _compute_hommel_value(z, alpha=alpha) == expected
 
 
+# verbose=1 shows a figure, which the non-interactive test backend warns about
+@pytest.mark.filterwarnings(
+    "ignore:FigureCanvasAgg is non-interactive:UserWarning"
+)
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, expected, expected_n_unique_values",
@@ -308,6 +312,10 @@ def test_all_resolution_inference(
     assert len(np.unique(vals)) == expected_n_unique_values
 
 
+# verbose=1 shows a figure, which the non-interactive test backend warns about
+@pytest.mark.filterwarnings(
+    "ignore:FigureCanvasAgg is non-interactive:UserWarning"
+)
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs, expected_left, expected_right, expected_n_unique_values",
@@ -549,9 +557,9 @@ def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
 @pytest.mark.parametrize(
     "threshold, expected_n_unique_values",
     [
-        (2.5, 19),
-        ([2.5, 3.5], 23),
-        ([2.5, 3.0, 3.5], 27),
+        (2.5, 3),
+        ([2.5, 3.5], 7),
+        ([2.5, 3.0, 3.5], 12),
     ],
 )
 def test_cluster_level_inference_surface_realistic_data(
@@ -562,6 +570,44 @@ def test_cluster_level_inference_surface_realistic_data(
     th_map = cluster_level_inference(stat_img, threshold=threshold)
     vals = get_surf_data(th_map)
     assert len(np.unique(vals)) == expected_n_unique_values
+
+
+def test_cluster_level_inference_surface_uses_mesh_connectivity():
+    """Check clusters follow mesh edges, not consecutive vertex indices."""
+    n_vertices = 100
+    coordinates = np.column_stack(
+        [
+            np.arange(n_vertices),
+            np.arange(n_vertices) % 2,
+            np.zeros(n_vertices),
+        ]
+    ).astype(float)
+    faces = []
+    for start in (0, 1):
+        vertices = np.arange(start, n_vertices, 2)
+        faces.extend([vertices[i : i + 3] for i in range(len(vertices) - 2)])
+    mesh = InMemoryMesh(coordinates, np.asarray(faces))
+    right_mesh = InMemoryMesh(coordinates[:3], np.asarray([[0, 1, 2]]))
+
+    values = np.zeros(n_vertices)
+    values[[0, 2, 4]] = 3.1
+    stat_img = SurfaceImage(
+        mesh={"left": mesh, "right": right_mesh},
+        data={"left": values, "right": np.zeros(3)},
+    )
+    mask_img = SurfaceImage(
+        mesh=stat_img.mesh,
+        data={
+            "left": np.ones(n_vertices, dtype=bool),
+            "right": np.zeros(3, dtype=bool),
+        },
+    )
+
+    result = cluster_level_inference(
+        stat_img, mask_img=mask_img, threshold=3.0, alpha=0.05
+    )
+
+    assert_equal(result.data.parts["left"][[0, 2, 4]], 2 / 3)
 
 
 def test_threshold_stats_img_surface_output(surf_img_1d):

@@ -23,7 +23,7 @@ HEIGHT_DEFAULT = 800
 def set_max_img_views_before_warning(new_value: int | None) -> None:
     """Set the number of open views which triggers a warning.
 
-    If `None` or a negative number, disable the memory warning.
+    If ``None`` or a negative number, disable the memory warning.
     """
     global MAX_IMG_VIEWS_BEFORE_WARNING
     MAX_IMG_VIEWS_BEFORE_WARNING = new_value
@@ -80,7 +80,6 @@ class HTMLDocument:
 
     Use ``str(document)`` or ``document.html`` to get the content of the
     web page, and ``document.get_iframe()`` to have it wrapped in an iframe.
-
     """
 
     _all_open_html_repr: weakref.WeakSet = weakref.WeakSet()
@@ -162,7 +161,6 @@ class HTMLDocument:
 
         height : :obj:`int`
             New height of the document.
-
         """
         self.width = width
         self.height = height
@@ -186,7 +184,6 @@ class HTMLDocument:
         -------
         wrapped : :obj:`str`
             Raw HTML code for the inline frame.
-
         """
         if width is None:
             width = self.width
@@ -240,7 +237,6 @@ class HTMLDocument:
         ----------
         file_name : :obj:`str`
             Path to the HTML file used for saving.
-
         """
         with Path(file_name).open("wb") as f:
             f.write(self.get_iframe().encode("utf-8"))

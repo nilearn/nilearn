@@ -16,7 +16,11 @@ from nilearn import image
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level, readable_time
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
@@ -29,7 +33,7 @@ from nilearn.mass_univariate._utils import (
 
 
 @fill_doc
-def _permuted_ols_on_chunk(
+def _permuted_ols_on_chunk(  # numpydoc ignore=RT05
     scores_original_data,
     tested_vars,
     target_vars,
@@ -162,7 +166,6 @@ def _permuted_ols_on_chunk(
     References
     ----------
     .. footbibliography::
-
     """
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
@@ -296,7 +299,7 @@ def _permuted_ols_on_chunk(
 
 
 @fill_doc
-def permuted_ols(
+def permuted_ols(  # numpydoc ignore=RT05
     tested_vars,
     target_vars,
     confounding_vars=None,
@@ -516,7 +519,6 @@ def permuted_ols(
     ----------
     .. footbibliography::
 
-
     Examples
     --------
 
@@ -555,10 +557,9 @@ def permuted_ols(
         >>> _ = ax.set(xlabel="t-statistic",
         ...            title="Distribution max t-statistic under $H_0$")
         >>> plt.show()
-
     """
     check_params(locals())
-    _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars)
+    _check_inputs_permuted_ols(n_jobs, target_vars)
 
     n_jobs, target_vars, tested_vars = _sanitize_inputs_permuted_ols(
         n_jobs, target_vars, tested_vars
@@ -684,7 +685,12 @@ def permuted_ols(
     bin_struct = generate_binary_structure(3, 1)
 
     tfce_original_data = None
+
     if tfce:
+        masker = _ensure_masker(
+            masker, "A masker must be provided if tfce is True."
+        )
+
         scores_4d = masker.inverse_transform(
             scores_original_data.T
         ).get_fdata()
@@ -708,6 +714,13 @@ def permuted_ols(
         if tfce and tfce_original_data is not None:
             out["tfce"] = tfce_original_data.T
         return out
+
+    if tfce or threshold is not None:
+        masker = _ensure_masker(
+            masker,
+            "A masker must be provided if tfce is True "
+            "or threshold is not None.",
+        )
 
     # Permutations
     # parallel computing units perform a reduced number of permutations each
@@ -835,9 +848,19 @@ def _compute_t_stat_threshold(
     )
 
 
-def _check_inputs_permuted_ols(
-    n_jobs, tfce, masker, threshold, target_vars
-) -> None:
+def _ensure_masker(
+    masker: NiftiMasker | MultiNiftiMasker | None, message: str
+) -> NiftiMasker | MultiNiftiMasker:
+    """Raise if ``masker`` is None, otherwise return it fitted."""
+    if masker is None:
+        raise ValueError(message)
+    check_is_of_allowed_type(masker, (NiftiMasker, MultiNiftiMasker), "masker")
+    if not masker.__sklearn_is_fitted__():
+        masker.fit()
+    return masker
+
+
+def _check_inputs_permuted_ols(n_jobs, target_vars) -> None:
     # invalid according to joblib's conventions
     if n_jobs == 0:
         raise ValueError(
@@ -846,14 +869,6 @@ def _check_inputs_permuted_ols(
             "or -1 for all CPUs, "
             "or a negative number (-i) for 'all but (i-1)' CPUs "
             "(joblib conventions)."
-        )
-    # check that masker is provided if it is needed
-    if tfce and not masker:
-        raise ValueError("A masker must be provided if tfce is True.")
-
-    if (threshold is not None) and (masker is None):
-        raise ValueError(
-            "If 'threshold' is not None, masker must be defined as well."
         )
 
     # make target_vars F-ordered to speed-up computation
@@ -954,6 +969,11 @@ def _prepare_output_permuted_ols(
             return_counts=True,
         )
         assert cluster_labels[0] == 0  # the background
+
+        # int32 avoids nifti int64 warnings when building images from sizes
+        cluster_dict["size_regressor"] = cluster_dict["size_regressor"].astype(
+            np.int32
+        )
 
         # Replace background's "cluster size" w zeros
         cluster_dict["size_regressor"][0] = 0

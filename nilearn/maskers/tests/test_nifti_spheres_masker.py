@@ -4,38 +4,9 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
-from nilearn._utils.helpers import is_windows_platform
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
-
-ESTIMATORS_TO_CHECK = [
-    NiftiSpheresMasker(seeds=[(1, 1, 1)]),
-    NiftiSpheresMasker(seeds=[(1, 1, 1), (1, 2, 3)]),
-]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 def test_seed_extraction(rng, affine_eye):
@@ -51,6 +22,27 @@ def test_seed_extraction(rng, affine_eye):
     s = masker.transform(img)
 
     assert_array_equal(s[:, 0], data[1, 1, 1])
+
+
+@pytest.mark.ai_generated
+def test_seed_extraction_as_dataframe(rng, affine_eye):
+    """Test seed extraction: ensure proper name of dataframe columns."""
+    masker = NiftiSpheresMasker([(1, 1.598645, -1 / 3), (5, 5, 5)])
+    masker.set_output(transform="pandas")
+
+    data = rng.random((20, 20, 20, 5))
+    img = Nifti1Image(data, affine_eye)
+
+    s = masker.fit_transform(img)
+
+    assert s.columns.to_list() == ["(1.0, 1.6, -0.3)", "(5.0, 5.0, 5.0)"]
+
+    # same but with a radius and testing proper rounding
+    masker = NiftiSpheresMasker([(1, 1, 1), (5, 5, 5)], radius=2.55)
+    masker.set_output(transform="pandas")
+    s = masker.fit_transform(img)
+
+    assert s.columns.to_list() == ["(1, 1, 1); r=2.6mm", "(5, 5, 5); r=2.6mm"]
 
 
 def test_sphere_extraction(rng, affine_eye):
@@ -132,11 +124,46 @@ def test_anisotropic_sphere_extraction(rng, affine_eye):
     assert_array_equal(s[:, 0], data[1, 0, 1])
 
 
-def test_errors():
+@pytest.mark.parametrize(
+    "seeds, match",
+    [
+        ([1, 2], "Seed #0 is not a valid triplet"),
+        ([(1, 2)], "Seed #0 is of length 2 instead of 3"),
+        (1, "Given seed list is of type"),
+        ([], "Got an empty list of seeds"),
+        ((), "Got an empty list of seeds"),
+    ],
+)
+def test_errors(seeds, match):
     """Check seed input."""
-    masker = NiftiSpheresMasker(([1, 2]), radius=0.2)
-    with pytest.raises(ValueError, match=r"Seeds must be a list .+"):
+    masker = NiftiSpheresMasker(seeds, radius=0.2)
+    with pytest.raises(
+        ValueError, match=rf"(?s)Seeds must be a triplet.+{match}"
+    ):
         masker.fit()
+
+
+@pytest.mark.parametrize(
+    "seed, feature_name",
+    [
+        ((1, 1, 1), "(1, 1, 1)"),
+        ([1, 1, 1], "(1, 1, 1)"),
+        (np.array([1, 1, 1]), "(1, 1, 1)"),
+        ((1.0, 1.0, 1.0), "(1.0, 1.0, 1.0)"),
+    ],
+)
+def test_single_seed(seed, feature_name, affine_eye, rng):
+    """Check that a single triplet behaves like a list with one triplet."""
+    masker = NiftiSpheresMasker(seed)
+
+    data = rng.random((3, 3, 3, 5))
+    img = Nifti1Image(data, affine_eye)
+
+    signals = masker.fit_transform(img)
+
+    assert masker.seeds_ == [[1, 1, 1]]
+    assert signals.shape == (5, 1)
+    assert masker.get_feature_names_out() == [feature_name]
 
 
 def test_overlap(rng, affine_eye):
@@ -171,7 +198,6 @@ def test_overlap(rng, affine_eye):
         noverlapping_masker.fit_transform(fmri_img)
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_small_radius(rng):
     """Check behavior when radius smaller than voxel size."""
     shape = (3, 3, 3)

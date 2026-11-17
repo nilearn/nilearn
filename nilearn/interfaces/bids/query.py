@@ -39,12 +39,12 @@ def _get_metadata_from_bids(
         List of path to json files, for example returned by get_bids_files.
 
     bids_path : :obj:`str` or :obj:`pathlib.Path` or None, default=None
-        Fullpath to the BIDS dataset.
+        Full path to the BIDS dataset.
 
     Returns
     -------
     float or None
-        value of the field or None if the field is not found.
+        Value of the field or None if the field is not found.
     """
     if json_files:
         assert isinstance(json_files, list) and isinstance(
@@ -83,7 +83,7 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     Parameters
     ----------
     bids_path : :obj:`str` or :obj:`pathlib.Path`
-        Fullpath to the derivatives folder of the BIDS dataset.
+        Full path to the derivatives folder of the BIDS dataset.
 
     filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`)
         Filters are of the form (field, label). Only one filter per field
@@ -97,7 +97,6 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     -------
     float or None
         Value of the field or None if the field is not found.
-
     """
     check_params(locals())
 
@@ -131,7 +130,7 @@ def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
     Parameters
     ----------
     bids_path : :obj:`str` or :obj:`pathlib.Path`
-        Fullpath to the raw folder of the BIDS dataset.
+        Full path to the raw folder of the BIDS dataset.
 
     filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`)
         Filters are of the form (field, label). Only one filter per field
@@ -145,7 +144,6 @@ def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
     -------
     float or None
         Value of the field or None if the field is not found.
-
     """
     check_params(locals())
 
@@ -368,7 +366,6 @@ def parse_bids_filename(img_path) -> _BidsFileRef:
     'nii.gz'
     >>> ref["entities"] == {"sub": "01", "task": "rest"}
     True
-
     """
     file_basename = Path(img_path).name
     parts = file_basename.split("_")
