@@ -306,7 +306,7 @@ class RegressionResults(LikelihoodModelResults):
         without passing the data again.
         Not stored by default to save memory.
 
-        .. nilearn_versionadded:: 0.14.0
+        .. nilearn_versionadded:: 0.15.0
     """
 
     __static_attributes__: ClassVar[list[str]] = ["SSE", "r_square", "MSE"]

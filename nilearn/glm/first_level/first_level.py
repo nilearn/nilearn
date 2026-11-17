@@ -463,15 +463,15 @@ class FirstLevelModel(BaseGLM):
         further inspection of model details. This has an important impact
         on memory consumption.
         If ``False``, the (masked) input data is stored
-        so that residuals can be computed
-        without passing the data again (see ``residuals_``).
-        If ``True``, the input data must be passed to ``residuals_``
-        to compute residuals,
-        and other voxelwise attributes like R-squared are not available.
+        and the voxelwise attributes ``residuals_``, ``predicted_``
+        and ``r_square_`` are available.
+        If ``True``, those attributes are not available,
+        but residuals can still be computed
+        by passing the input data to the ``residuals`` method.
 
-        .. nilearn_versionchanged:: 0.14.0
-            When ``True``, residuals and predictions
-            can still be computed.
+        .. nilearn_versionchanged:: 0.15.0
+            When ``True``, residuals can be computed
+            with the ``residuals`` method.
 
     subject_label : :obj:`str` or None, default=None
         This id will be used to identify a `FirstLevelModel` when passed to
@@ -1113,6 +1113,7 @@ class FirstLevelModel(BaseGLM):
         # For each run fit the model and keep only the regression results.
         self.labels_ = []
         self.results_ = []
+        self._clear_voxelwise_attributes_cache()
         self._reporting_data["run_imgs"] = {}
         n_runs = len(run_imgs)
         t0 = time.time()

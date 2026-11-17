@@ -1242,7 +1242,7 @@ def test_first_level_residuals(shape_4d_default):
 
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    residuals = model.residuals_()[0]
+    residuals = model.residuals_[0]
     mean_residuals = model.masker_.transform(residuals).mean(0)
 
     assert_array_almost_equal(mean_residuals, 0)
@@ -1268,17 +1268,14 @@ def test_first_level_residuals_minimize_memory(shape_4d_default, noise_model):
         mask_img=mask, minimize_memory=True, noise_model=noise_model
     ).fit(fmri_data, design_matrices=design_matrices)
 
-    expected = get_data(model_full.residuals_()[0])
+    expected = get_data(model_full.residuals_[0])
 
+    assert_array_almost_equal(get_data(model_full.residuals()[0]), expected)
     assert_array_almost_equal(
-        get_data(model_full.residuals_(fmri_data)[0]), expected
+        get_data(model_full.residuals(fmri_data)[0]), expected
     )
     assert_array_almost_equal(
-        get_data(model_min.residuals_(fmri_data)[0]), expected
-    )
-    assert_array_almost_equal(
-        get_data(model_min.predicted_()[0]),
-        get_data(model_full.predicted_()[0]),
+        get_data(model_min.residuals(fmri_data)[0]), expected
     )
 
 
@@ -1298,11 +1295,11 @@ def test_first_level_residuals_minimize_memory_sample_mask(shape_4d_default):
         t_r=2.0, mask_img=mask, minimize_memory=True
     ).fit(fmri_data, design_matrices=design_matrix, sample_masks=sample_mask)
 
-    residuals = model_min.residuals_(fmri_data)[0]
+    residuals = model_min.residuals(fmri_data)[0]
 
     assert residuals.shape[-1] == shape[3] - 3
     assert_array_almost_equal(
-        get_data(residuals), get_data(model_full.residuals_()[0])
+        get_data(residuals), get_data(model_full.residuals_[0])
     )
 
 
@@ -1317,19 +1314,23 @@ def test_first_level_residuals_errors(shape_4d_default):
         design_matrix[design_matrix.columns[0]] = 1
 
     # With minimize_memory set to True
-    # data must be passed to compute residuals
-    # and other attributes cannot be accessed.
+    # voxelwise attributes cannot be accessed
+    # and data must be passed to compute residuals.
     model = FirstLevelModel(
         mask_img=mask, minimize_memory=True, noise_model="ols"
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
+    for attribute in ["residuals_", "predicted_", "r_square_"]:
+        with pytest.raises(
+            AttributeError, match="To access voxelwise attributes"
+        ):
+            getattr(model, attribute)
+
     with pytest.raises(ValueError, match="must be passed as 'Y'"):
-        model.residuals_()
-    with pytest.raises(ValueError, match="To access voxelwise attributes"):
-        model.r_square_()
+        model.residuals()
     with pytest.raises(ValueError, match="'Y' must contain one image per run"):
-        model.residuals_([fmri_data[0], fmri_data[0]])
+        model.residuals([fmri_data[0], fmri_data[0]])
 
     # Check that trying to access residuals without fitting
     # raises an error
@@ -1390,9 +1391,9 @@ def test_first_level_predictions_r_square(shape_4d_default):
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    pred = model.predicted_()[0]
+    pred = model.predicted_[0]
     data = fmri_data[0]
-    r_square_3d = model.r_square_()[0]
+    r_square_3d = model.r_square_[0]
 
     y_predicted = model.masker_.transform(pred)
     y_measured = model.masker_.transform(data)
@@ -1460,7 +1461,7 @@ def test_glm_sample_mask(shape_4d_default):
     )
 
     assert model.design_matrices_[0].shape[0] == shape[3] - 3
-    assert model.predicted_()[0].shape[-1] == shape[3] - 3
+    assert model.predicted_[0].shape[-1] == shape[3] - 3
 
 
 def test_check_trial_type_warning(tmp_path):
@@ -1737,15 +1738,13 @@ def test_flm_get_element_wise_model_attribute_with_surface_data(
     events = basic_paradigm()
     model.fit([img, img], events=[events, events])
 
-    residuals = model.residuals_()
-    assert len(residuals) == 2
-    assert residuals[0].shape == img.shape
-    predicted = model.predicted_()
-    assert len(predicted) == 2
-    assert predicted[0].shape == img.shape
-    r_square = model.r_square_()
-    assert len(r_square) == 2
-    assert r_square[0].shape == (img.mesh.n_vertices, 1)
+    assert len(model.residuals_) == 2
+    assert model.residuals_[0].shape == img.shape
+    assert len(model.residuals([img, img])) == 2
+    assert len(model.predicted_) == 2
+    assert model.predicted_[0].shape == img.shape
+    assert len(model.r_square_) == 2
+    assert model.r_square_[0].shape == (img.mesh.n_vertices, 1)
 
 
 def test_fixed_effect_contrast_surface(surface_glm_data):
@@ -1973,3 +1972,21 @@ def test_plot_predicted_signal_and_residuals_surface_errors(
             TypeError, match="Mask and input images must be of compatible"
         ):
             fitted_model.plot_predicted_signal_and_residuals(mask=mask)
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("attribute", ["predicted", "r_square"])
+def test_first_level_deprecated_voxelwise_attributes(
+    shape_4d_default, attribute
+):
+    """Check deprecated voxelwise attributes warn and match new ones."""
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )
+    model = FirstLevelModel(mask_img=mask, minimize_memory=False)
+    model.fit(fmri_data, design_matrices=design_matrices)
+
+    with pytest.warns(FutureWarning, match=f"'{attribute}' is deprecated"):
+        deprecated = getattr(model, attribute)
+
+    assert deprecated is getattr(model, f"{attribute}_")

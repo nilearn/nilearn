@@ -535,15 +535,15 @@ class SecondLevelModel(BaseGLM):
         further inspection of model details. This has an important impact
         on memory consumption.
         If ``False``, the (masked) input data is stored
-        so that residuals can be computed
-        without passing the data again (see ``residuals_``).
-        If ``True``, the input data must be passed to ``residuals_``
-        to compute residuals,
-        and other voxelwise attributes like R-squared are not available.
+        and the voxelwise attributes ``residuals_``, ``predicted_``
+        and ``r_square_`` are available.
+        If ``True``, those attributes are not available,
+        but residuals can still be computed
+        by passing the input data to the ``residuals`` method.
 
-        .. nilearn_versionchanged:: 0.14.0
-            When ``True``, residuals and predictions
-            can still be computed.
+        .. nilearn_versionchanged:: 0.15.0
+            When ``True``, residuals can be computed
+            with the ``residuals`` method.
 
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
@@ -665,6 +665,7 @@ class SecondLevelModel(BaseGLM):
         self.confounds_ = None
         self.labels_: np.ndarray | None = None
         self.results_: dict | None = None
+        self._clear_voxelwise_attributes_cache()
 
         self._fit_cache()
 
@@ -843,6 +844,7 @@ class SecondLevelModel(BaseGLM):
                 result.Y = Y[:, labels == key]
         self.labels_ = labels
         self.results_ = results
+        self._clear_voxelwise_attributes_cache()
 
         # We compute contrast object
         if self.memory_:
