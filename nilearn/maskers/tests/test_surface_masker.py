@@ -72,7 +72,7 @@ def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
 
 @pytest.mark.ai_generated
 def test_fit_masks_out_non_finite_vertices(surf_img_2d):
-    """Vertices holding non-finite values are excluded from the mask.
+    """Exclude vertices holding non-finite values from the mask.
 
     ``SurfaceMasker`` does not replace those values with zeros, it drops the
     vertices, so the computed mask has to stay a dict of boolean arrays.

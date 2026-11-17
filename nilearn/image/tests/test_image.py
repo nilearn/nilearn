@@ -582,7 +582,7 @@ def finite_img(img_3d_mni, surf_img_1d):
 @pytest.mark.parametrize("modality", MODALITIES)
 @pytest.mark.parametrize("fwhm", [None, 0.0, 4.0])
 def test_smooth_img_warns_on_non_finite(non_finite_img, modality, fwhm):
-    """Users must be told when smoothing zeroes their data.
+    """Warn users when smoothing zeroes their data.
 
     Both modalities must warn, exactly once, and the values must really be
     finite afterwards; the two branches stay in step on all three.
