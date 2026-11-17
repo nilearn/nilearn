@@ -22,6 +22,9 @@ as described in :footcite:t:`Chen2011`.
     - the :ref:`Haxby dataset <haxby_dataset>`
     - the :ref:`fsaverage template <fsaverage>`
 """
+# %%
+#
+# .. include:: ../../../examples/mni_to_fsaverage.rst
 
 # %%
 # Load Haxby dataset

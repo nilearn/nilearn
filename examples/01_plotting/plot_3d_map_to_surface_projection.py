@@ -31,6 +31,10 @@ In this example, we will:
       <neurovault_dataset>`)
 """
 # %%
+#
+# .. include:: ../../../examples/mni_to_fsaverage.rst
+
+# %%
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
 # You can create a :obj:`~nilearn.surface.SurfaceImage` object
@@ -440,5 +444,11 @@ show()
 # so the change is not drastic,
 # if by mistake you project your data on an inflated mesh,
 # the results may look like what you expected.
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::
 
 # sphinx_gallery_dummy_images=1
