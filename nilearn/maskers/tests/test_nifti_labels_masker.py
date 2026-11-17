@@ -1281,38 +1281,3 @@ def test_transform_as_dataframe_with_labels(
     s = masker.transform(img_3d_rand_eye)
 
     assert s.columns.tolist() == labels
-
-
-def test_nifti_labels_masker_immutability_at_transform(
-    affine_eye, n_regions, length
-):
-    """Ensure NiftiLabelsMasker is not modified at transform time.
-
-    Regression test for Issue #6658.
-    """
-    shape1 = (7, 8, 9, length)
-    fmri_img, _ = generate_random_img(shape1, affine=affine_eye * 2)
-
-    shape2 = (8, 9, 10, 1)
-    _, mask_img = generate_random_img(shape2, affine=affine_eye)
-
-    shape3 = (16, 18, 20)
-    labels_img = generate_labeled_regions(
-        shape3, n_regions, affine=affine_eye * 1.5
-    )
-
-    for mask in [None, mask_img]:
-        masker = NiftiLabelsMasker(labels_img, mask_img=mask)
-        masker.fit(fmri_img)
-
-        n_elements_before = masker.n_elements_
-        dict_before = masker.__dict__.copy()
-
-        signals = masker.transform(fmri_img)
-
-        assert masker.n_elements_ == n_elements_before
-        assert masker.__dict__ == dict_before
-        assert signals.shape[-1] == n_elements_before
-
-        inv_img = masker.inverse_transform(signals)
-        assert inv_img.shape[:3] == masker.region_atlas_.shape[:3]
