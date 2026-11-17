@@ -1698,23 +1698,30 @@ def threshold_img(
         )
 
     if mask_img is not None:
+        if not isinstance(mask_img, (NiimgLike, SurfaceImage)):
+            raise TypeError(
+                "'mask_img' should be "
+                "a 3D Niimg-like object or a SurfaceImage. "
+                f"Got {img.__class__.__name__}."
+            )
         check_compatibility_mask_and_images(mask_img, img)
 
     if isinstance(img, NiimgLike):
-        if TYPE_CHECKING:
-            assert not isinstance(mask_img, SurfaceImage)
+        loaded_mask_img: Nifti1Image | None = (
+            check_niimg_3d(mask_img) if mask_img is not None else None
+        )
         return _threshold_img_volume(
             img=img,
             threshold=threshold,
             cluster_threshold=cluster_threshold,
             two_sided=two_sided,
-            mask_img=mask_img,
+            mask_img=loaded_mask_img,
             copy=copy,
             copy_header=copy_header,
         )
 
     if TYPE_CHECKING:
-        assert isinstance(mask_img, (SurfaceImage, type(None)))
+        assert isinstance(mask_img, SurfaceImage)
     return _threshold_img_surface(
         img=img,
         threshold=threshold,
@@ -1730,7 +1737,7 @@ def _threshold_img_volume(
     threshold: float | str,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = True,
-    mask_img: NiimgLike | None = None,
+    mask_img: Nifti1Image | None = None,
     copy: bool = True,
     copy_header: bool = False,
 ) -> Nifti1Image:
@@ -1744,7 +1751,6 @@ def _threshold_img_volume(
     img_data_for_cutoff = img_data
 
     if mask_img is not None:
-        mask_img = check_niimg_3d(mask_img)
         if not check_same_fov(img, mask_img):
             mask_img = resample_img(
                 mask_img,
