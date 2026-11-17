@@ -79,6 +79,8 @@ from nilearn._estimator_checks.nilearn_checks import (
     check_verbose,
     check_verbosity_embedded_masker,
     check_warning_embedded_masker,
+    check_img_estimator_inverse_transform_non_finite,
+
 )
 from nilearn._estimator_checks.utils import accepts_image, clone, requires_y
 from nilearn.decomposition._base import _BaseDecomposition
@@ -264,6 +266,12 @@ CHECK_SELECTOR = [
     # ----------DECOMPOSITION----------
     # checks for decomposition
     (lambda e: isinstance(e, _BaseDecomposition), DECOMPOSITION_CHECKS),
+
+# ----------INVERSE TRANSFORM NON-FINITE CHECK----------
+    (
+        lambda e: hasattr(e, "inverse_transform"),
+        [check_img_estimator_inverse_transform_non_finite],
+    ),  # <-- ADD THIS TUPLE
 ]
 
 
@@ -292,3 +300,22 @@ def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
         )
 
     return checks_to_run
+
+
+def check_img_estimator_inverse_transform_non_finite(name, estimator):
+    """Check that inverse_transform raises a ValueError on non-finite inputs."""
+    if not hasattr(estimator, "inverse_transform"):
+        return
+
+    # Look at how other checks in nilearn_checks.py generate or fit dummy data
+    # for this estimator, or construct a small valid input X and fit/transform it:
+    # X = ... # dummy image or array
+    # estimator.fit(X)
+    # X_trans = estimator.transform(X) # or equivalent feature representation
+
+    # Create a non-finite array based on expected input shape
+    # non_finite_data = np.full_like(X_trans, np.nan, dtype=float)
+    # or: non_finite_data = np.array([[np.nan]])
+
+    with pytest.raises(ValueError, match="inf or NaN"):
+        estimator.inverse_transform(non_finite_data)
