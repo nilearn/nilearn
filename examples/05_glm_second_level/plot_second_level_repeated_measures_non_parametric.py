@@ -105,6 +105,7 @@ plot_bland_altman(
     ref_label="Direct within-subject contrast",
     src_label="Unrestricted row permutations",
     cmap="plasma",
+    gridsize=25,
 )
 plot_img_comparison(
     reference_result,
@@ -118,6 +119,7 @@ plot_bland_altman(
     ref_label="Direct within-subject contrast",
     src_label="Permutations within subjects",
     cmap="plasma",
+    gridsize=25,
 )
 plot_img_comparison(
     reference_result,
