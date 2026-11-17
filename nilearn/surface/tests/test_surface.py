@@ -218,6 +218,71 @@ def test_load_surf_data_from_gifti_file(tmp_path):
     assert_array_equal(load_surf_data(filename_gii), np.zeros((20,)))
 
 
+def _gifti_image(data_arrays):
+    """Create an in-memory GiftiImage with one darray per input array."""
+    return gifti.GiftiImage(
+        darrays=[
+            gifti.GiftiDataArray(
+                data=np.asarray(x, dtype=np.float32),
+                datatype="NIFTI_TYPE_FLOAT32",
+            )
+            for x in data_arrays
+        ]
+    )
+
+
+@pytest.mark.ai_generated
+def test_load_surf_data_from_gifti_image(rng):
+    """Check that in-memory GiftiImage objects can be loaded."""
+    data = rng.random((20,))
+    assert_array_almost_equal(
+        load_surf_data(_gifti_image([data])), data.astype(np.float32)
+    )
+
+    # several data arrays: one column per data array
+    data_2d = rng.random((20, 3))
+    assert_array_almost_equal(
+        load_surf_data(_gifti_image(data_2d.T)), data_2d.astype(np.float32)
+    )
+
+
+@pytest.mark.ai_generated
+def test_load_surf_data_from_empty_gifti_image():
+    """Check error for in-memory GiftiImage with no data array."""
+    with pytest.raises(
+        ValueError, match="must contain at least one data array"
+    ):
+        load_surf_data(gifti.GiftiImage())
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("n_samples", [1, 3])
+def test_surface_image_from_gifti_image(rng, surf_mesh, n_samples):
+    """Check SurfaceImage and PolyData can be built from GiftiImage."""
+    data = {
+        hemi: rng.random((part.n_vertices, n_samples))
+        for hemi, part in surf_mesh.parts.items()
+    }
+    gifti_data = {hemi: _gifti_image(x.T) for hemi, x in data.items()}
+
+    img = SurfaceImage(mesh=surf_mesh, data=gifti_data)
+
+    expected_shape = (surf_mesh.n_vertices,)
+    if n_samples > 1:
+        expected_shape = (surf_mesh.n_vertices, n_samples)
+    assert img.shape == expected_shape
+    for hemi, x in data.items():
+        assert_array_almost_equal(
+            img.data.parts[hemi], x.astype(np.float32).squeeze()
+        )
+
+    poly_data = PolyData(**gifti_data)
+    for hemi, x in data.items():
+        assert_array_almost_equal(
+            poly_data.parts[hemi], x.astype(np.float32).squeeze()
+        )
+
+
 def test_load_surf_data_from_empty_gifti_file(tmp_path):
     filename_gii_empty = tmp_path / "tmp.gii"
     gii_empty = gifti.GiftiImage()
@@ -351,6 +416,80 @@ def test_gifti_img_to_mesh(in_memory_mesh):
     coords, faces = _gifti_img_to_mesh(gii)
     assert_array_equal(coords, in_memory_mesh.coordinates)
     assert_array_equal(faces, in_memory_mesh.faces)
+
+
+def _gifti_mesh(mesh, intents=("POINTSET", "TRIANGLE")):
+    """Create an in-memory GiftiImage mesh from an InMemoryMesh."""
+    arrays = {
+        "POINTSET": (mesh.coordinates, "NIFTI_TYPE_FLOAT32"),
+        "TRIANGLE": (mesh.faces, "NIFTI_TYPE_INT32"),
+    }
+    return gifti.GiftiImage(
+        darrays=[
+            gifti.GiftiDataArray(
+                data=arrays[intent][0],
+                intent=nifti1.intent_codes[f"NIFTI_INTENT_{intent}"],
+                datatype=arrays[intent][1],
+            )
+            for intent in intents
+        ]
+    )
+
+
+@pytest.mark.ai_generated
+def test_load_surf_mesh_gifti_image(in_memory_mesh):
+    """Check that in-memory GiftiImage meshes can be loaded."""
+    mesh = load_surf_mesh(_gifti_mesh(in_memory_mesh))
+
+    assert isinstance(mesh, InMemoryMesh)
+    assert_array_almost_equal(mesh.coordinates, in_memory_mesh.coordinates)
+    assert_array_equal(mesh.faces, in_memory_mesh.faces)
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize(
+    "intents, missing",
+    [
+        (("TRIANGLE", "TRIANGLE"), "NIFTI_INTENT_POINTSET"),
+        (("POINTSET", "POINTSET"), "NIFTI_INTENT_TRIANGLE"),
+    ],
+)
+def test_load_surf_mesh_gifti_image_error(in_memory_mesh, intents, missing):
+    """Check error for in-memory GiftiImage missing coordinates or faces."""
+    with pytest.raises(ValueError, match=f"no {missing}"):
+        load_surf_mesh(_gifti_mesh(in_memory_mesh, intents=intents))
+
+
+@pytest.mark.ai_generated
+def test_surface_image_from_gifti_image_mesh_and_data(rng, surf_mesh):
+    """Check PolyMesh and SurfaceImage can be built from GiftiImage meshes."""
+    gifti_meshes = {
+        hemi: _gifti_mesh(part) for hemi, part in surf_mesh.parts.items()
+    }
+
+    poly_mesh = PolyMesh(**gifti_meshes)
+    assert poly_mesh.n_vertices == surf_mesh.n_vertices
+    for hemi, part in surf_mesh.parts.items():
+        assert isinstance(poly_mesh.parts[hemi], InMemoryMesh)
+        assert_array_almost_equal(
+            poly_mesh.parts[hemi].coordinates, part.coordinates
+        )
+        assert_array_equal(poly_mesh.parts[hemi].faces, part.faces)
+
+    data = {
+        hemi: rng.random((part.n_vertices,)).astype(np.float32)
+        for hemi, part in surf_mesh.parts.items()
+    }
+    img = SurfaceImage(
+        mesh=gifti_meshes,
+        data={
+            hemi: gifti.GiftiImage(darrays=[gifti.GiftiDataArray(x)])
+            for hemi, x in data.items()
+        },
+    )
+    assert img.shape == (surf_mesh.n_vertices,)
+    for hemi, x in data.items():
+        assert_array_almost_equal(img.data.parts[hemi], x)
 
 
 def test_load_surf_mesh_file_gii_gz():

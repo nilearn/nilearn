@@ -12,8 +12,8 @@ import numpy as np
 import pandas as pd
 import sklearn.cluster
 import sklearn.preprocessing
+from nibabel import GiftiImage, gifti, load, nifti1
 from nibabel import freesurfer as fs
-from nibabel import gifti, load, nifti1
 from nibabel.spatialimages import SpatialImage
 from scipy import interpolate
 from scipy.sparse import csr_array
@@ -230,12 +230,22 @@ class PolyMesh:
     Parameters
     ----------
     left : :obj:`str` or :obj:`pathlib.Path` \
-                or :obj:`nilearn.surface.SurfaceMesh` or None, default=None
+                or :obj:`nilearn.surface.SurfaceMesh` \
+                or :obj:`nibabel.gifti.GiftiImage` or None, default=None
             SurfaceMesh for the left hemisphere.
 
+            .. nilearn_versionchanged:: 0.15.0
+
+                Can be a :obj:`nibabel.gifti.GiftiImage`.
+
     right : :obj:`str` or :obj:`pathlib.Path` \
-                or :obj:`nilearn.surface.SurfaceMesh` or None, default=None
+                or :obj:`nilearn.surface.SurfaceMesh` \
+                or :obj:`nibabel.gifti.GiftiImage` or None, default=None
             SurfaceMesh for the right hemisphere.
+
+            .. nilearn_versionchanged:: 0.15.0
+
+                Can be a :obj:`nibabel.gifti.GiftiImage`.
 
     Attributes
     ----------
@@ -245,7 +255,16 @@ class PolyMesh:
 
     n_vertices: int
 
-    def __init__(self, left=None, right=None) -> None:
+    def __init__(
+        self,
+        left: str | Path | np.ndarray | GiftiImage | SurfaceMesh | None = None,
+        right: str
+        | Path
+        | np.ndarray
+        | GiftiImage
+        | SurfaceMesh
+        | None = None,
+    ) -> None:
         if left is None and right is None:
             raise ValueError(
                 "Cannot create an empty PolyMesh. "
@@ -253,14 +272,14 @@ class PolyMesh:
             )
 
         self.parts = {}
-        if left is not None:
-            if not isinstance(left, SurfaceMesh):
-                left = FileMesh(left).loaded()
-            self.parts["left"] = left
-        if right is not None:
-            if not isinstance(right, SurfaceMesh):
-                right = FileMesh(right).loaded()
-            self.parts["right"] = right
+        for hemi, part in zip(["left", "right"], [left, right], strict=True):
+            if part is None:
+                continue
+            if isinstance(part, gifti.GiftiImage):
+                part = load_surf_mesh(part)
+            elif not isinstance(part, SurfaceMesh):
+                part = FileMesh(part).loaded()
+            self.parts[hemi] = part
 
         self.n_vertices = sum(p.n_vertices for p in self.parts.values())
 
@@ -305,10 +324,18 @@ class PolyData:
     Parameters
     ----------
     left : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
-           or None, default = None
+           or :obj:`nibabel.gifti.GiftiImage` or None, default = None
+
+        .. nilearn_versionchanged:: 0.15.0
+
+            Can be a :obj:`nibabel.gifti.GiftiImage`.
 
     right : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
-            or None, default = None
+            or :obj:`nibabel.gifti.GiftiImage` or None, default = None
+
+        .. nilearn_versionchanged:: 0.15.0
+
+            Can be a :obj:`nibabel.gifti.GiftiImage`.
 
     dtype : DTypeLike object, default=None
         dtype to enforce on the data.
@@ -345,7 +372,12 @@ class PolyData:
     ValueError: Cannot create an empty PolyData. ...
     """
 
-    def __init__(self, left=None, right=None, dtype=None) -> None:
+    def __init__(
+        self,
+        left: str | Path | np.ndarray | GiftiImage | None = None,
+        right: str | Path | np.ndarray | GiftiImage | None = None,
+        dtype=None,
+    ) -> None:
         if left is None and right is None:
             raise ValueError(
                 "Cannot create an empty PolyData. "
@@ -538,15 +570,27 @@ class SurfaceImage:
            or :obj:`dict` of  \
            :obj:`nilearn.surface.SurfaceMesh`, \
            :obj:`str`, \
-           :obj:`pathlib.Path`
+           :obj:`pathlib.Path`, \
+           :obj:`nibabel.gifti.GiftiImage`
            Meshes for the both hemispheres.
+
+        .. nilearn_versionchanged:: 0.15.0
+
+            Values of the dictionary can be
+            :obj:`nibabel.gifti.GiftiImage`.
 
     data : :obj:`nilearn.surface.PolyData`, \
            or :obj:`dict` of  \
            :obj:`numpy.ndarray`, \
            :obj:`str`, \
-           :obj:`pathlib.Path`
+           :obj:`pathlib.Path`, \
+           :obj:`nibabel.gifti.GiftiImage`
            Data for the both hemispheres.
+
+        .. nilearn_versionchanged:: 0.15.0
+
+            Values of the dictionary can be
+            :obj:`nibabel.gifti.GiftiImage`.
 
     dtype : DTypeLike object, default=None
         dtype to enforce on the data.
@@ -1491,12 +1535,12 @@ def _load_surf_files_gifti_gzip(surf_file):
     """
     with gzip.open(surf_file) as f:
         as_bytes = f.read()
-    parser = gifti.GiftiImage.parser()
+    parser = GiftiImage.parser()
     parser.parse(as_bytes)
     return parser.img
 
 
-def _gifti_img_to_data(gifti_img):
+def _gifti_img_to_data(gifti_img: GiftiImage):
     """Load surface image e.g. sulcal depth or statistical map \
         in nibabel.gifti.GiftiImage to data.
 
@@ -1538,16 +1582,20 @@ def _stringify(word_list):
 
 
 # function to figure out datatype and load data
-def load_surf_data(surf_data) -> np.ndarray:
+def load_surf_data(
+    surf_data: str | Path | np.ndarray | GiftiImage,
+) -> np.ndarray:
     """Load data to be represented on a surface mesh.
 
     Parameters
     ----------
-    surf_data : :obj:`str`, :obj:`pathlib.Path`, or :obj:`numpy.ndarray`
+    surf_data : :obj:`str`, :obj:`pathlib.Path`, :obj:`numpy.ndarray` \
+                or :obj:`nibabel.gifti.GiftiImage`
         Either a file containing surface data (valid format are .gii,
         .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
         .thickness, .curv, .sulc, .annot, .label), lists of 1D data files are
-        returned as 2D arrays, or a Numpy array containing surface data.
+        returned as 2D arrays, a Numpy array containing surface data,
+        or a GiftiImage object.
 
     Returns
     -------
@@ -1560,10 +1608,11 @@ def load_surf_data(surf_data) -> np.ndarray:
     # if the input is a filename, load it
     surf_data = stringify_path(surf_data)
 
-    if not isinstance(surf_data, (str, np.ndarray)):
+    if not isinstance(surf_data, (str, np.ndarray, GiftiImage)):
         raise ValueError(
             "The input type is not recognized. "
-            "Valid inputs are a Numpy array or one of the "
+            "Valid inputs are a Numpy array, a GiftiImage object "
+            "or one of the "
             "following file formats: "
             f"{_stringify(DATA_EXTENSIONS)}, "
             "Freesurfer specific files such as "
@@ -1600,7 +1649,9 @@ def load_surf_data(surf_data) -> np.ndarray:
             elif surf_data.endswith("label"):
                 data_part = fs.io.read_label(surf_data)
             elif surf_data.endswith("gii"):
-                data_part = _gifti_img_to_data(load(surf_data))
+                data_part = _gifti_img_to_data(
+                    gifti.GiftiImage.from_filename(surf_data)
+                )
             elif surf_data.endswith("gii.gz"):
                 gii = _load_surf_files_gifti_gzip(surf_data)
                 data_part = _gifti_img_to_data(gii)
@@ -1619,6 +1670,8 @@ def load_surf_data(surf_data) -> np.ndarray:
                         "with the same shape in axis=0."
                     ) from e
 
+    elif isinstance(surf_data, GiftiImage):
+        data = _gifti_img_to_data(surf_data)
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
         data = surf_data
@@ -1844,20 +1897,30 @@ def _validate_mesh(mesh) -> None:
 
 
 # function to figure out datatype and load data
-def load_surf_mesh(surf_mesh) -> InMemoryMesh:
+def load_surf_mesh(
+    surf_mesh: str | Path | np.ndarray | InMemoryMesh | GiftiImage,
+) -> InMemoryMesh:
     """Load a surface :term:`mesh` geometry.
 
     Parameters
     ----------
     surf_mesh : :obj:`str`, :obj:`pathlib.Path`, or \
-        :obj:`numpy.ndarray` or :obj:`~nilearn.surface.InMemoryMesh`
+        :obj:`numpy.ndarray` or :obj:`~nilearn.surface.InMemoryMesh` \
+        or :obj:`nibabel.gifti.GiftiImage`
         Either a file containing surface :term:`mesh` geometry
         (valid formats are .gii .gii.gz or Freesurfer specific files
         such as .orig, .pial, .sphere, .white, .inflated)
         or two Numpy arrays organized in a list,
         tuple or a namedtuple with the fields "coordinates" and "faces",
         or an :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
-        and "faces" attributes.
+        and "faces" attributes,
+        or a :obj:`nibabel.gifti.GiftiImage` containing
+        a ``NIFTI_INTENT_POINTSET`` and a ``NIFTI_INTENT_TRIANGLE``
+        data array.
+
+        .. nilearn_versionchanged:: 0.15.0
+
+            Can be a :obj:`nibabel.gifti.GiftiImage`.
 
     Returns
     -------
@@ -1905,6 +1968,9 @@ def load_surf_mesh(surf_mesh) -> InMemoryMesh:
                 "or a namedtuple with the "
                 'fields "coordinates" and "faces".'
             )
+    elif isinstance(surf_mesh, gifti.GiftiImage):
+        coords, faces = _gifti_img_to_mesh(surf_mesh)
+        mesh = InMemoryMesh(coordinates=coords, faces=faces)
     elif isinstance(surf_mesh, (list, tuple)):
         try:
             coords, faces = surf_mesh
@@ -1930,7 +1996,8 @@ def load_surf_mesh(surf_mesh) -> InMemoryMesh:
             "Valid inputs are one of the following file "
             "formats: .gii, .gii.gz, "
             "Freesurfer specific files such as "
-            f"{_stringify(FREESURFER_MESH_EXTENSIONS)} "
+            f"{_stringify(FREESURFER_MESH_EXTENSIONS)}, "
+            "a GiftiImage object, "
             "or two Numpy arrays organized in a list, tuple or "
             'a namedtuple with the fields "coordinates" and "faces"'
         )
@@ -1984,7 +2051,7 @@ def _check_data_and_mesh_compat(mesh, data) -> None:
             )
 
 
-def mesh_to_gifti(coordinates, faces, gifti_file=None) -> gifti.GiftiImage:
+def mesh_to_gifti(coordinates, faces, gifti_file=None) -> GiftiImage:
     """Write surface mesh to gifti file on disk.
 
     Parameters
@@ -1998,7 +2065,7 @@ def mesh_to_gifti(coordinates, faces, gifti_file=None) -> gifti.GiftiImage:
     gifti_file : :obj:`str` or :obj:`pathlib.Path` or None, default=None
         name for the output gifti file.
     """
-    gifti_img = gifti.GiftiImage()
+    gifti_img = GiftiImage()
     coords_array = gifti.GiftiDataArray(
         coordinates, intent="NIFTI_INTENT_POINTSET", datatype="float32"
     )
@@ -2014,7 +2081,7 @@ def mesh_to_gifti(coordinates, faces, gifti_file=None) -> gifti.GiftiImage:
     return gifti_img
 
 
-def data_to_gifti(data, gifti_file=None) -> gifti.GiftiImage:
+def data_to_gifti(data, gifti_file=None) -> GiftiImage:
     """Save data from Polydata to a gifti file.
 
     Parameters
@@ -2047,7 +2114,7 @@ def data_to_gifti(data, gifti_file=None) -> gifti.GiftiImage:
         datatype = None
     darray = gifti.GiftiDataArray(data=data, datatype=datatype)
 
-    gii = gifti.GiftiImage(darrays=[darray])
+    gii = GiftiImage(darrays=[darray])
 
     if gifti_file is not None:
         gii.to_filename(Path(gifti_file))
