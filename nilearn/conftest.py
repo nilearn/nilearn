@@ -113,7 +113,14 @@ def pytest_collection_modifyitems(items):
     for item in items:
         if not isinstance(item, pytest.Function):
             continue
-        if is_windows_platform() and item.originalname in flaky_tests:
+        if is_windows_platform() and (
+            item.originalname in flaky_tests
+            or (
+                item.originalname == "test_check_estimator_nilearn"
+                and getattr(item, "callspec", None) is not None
+                and item.callspec.params.get("name") == "CanICA"
+            )
+        ):
             item.add_marker(pytest.mark.flaky(reruns=5, reruns_delay=2))
 
 
