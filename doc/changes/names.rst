@@ -417,8 +417,8 @@
 
 .. _Yichun Huang: https://github.com/YCHuang0610
 
-.. _Zvi Baratz: https://github.com/ZviBaratz
+.. _Yuvraj Lamba: https://github.com/uvcode01-max
 
-.. _uvcode01 max: https://github.com/uvcode01-max
+.. _Zvi Baratz: https://github.com/ZviBaratz
 
 .. _Óscar Nájera: https://github.com/Titan-C
