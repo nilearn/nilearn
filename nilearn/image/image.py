@@ -1734,7 +1734,7 @@ def _threshold_img_volume(
     threshold: float | str,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = True,
-    mask_img: Nifti1Image | None = None,
+    mask_img: NiimgLike | None = None,
     copy: bool = True,
     copy_header: bool = False,
 ) -> Nifti1Image:
