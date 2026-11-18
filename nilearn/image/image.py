@@ -12,7 +12,7 @@ import warnings
 from collections.abc import Iterable, Iterator
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, TypeGuard, get_args, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeGuard, overload
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -1692,9 +1692,7 @@ def threshold_img(
         )
 
     if isinstance(img, NiimgLike):
-        if mask_img is not None and not isinstance(
-            mask_img, get_args(NiimgLike)
-        ):
+        if mask_img is not None and not isinstance(mask_img, NiimgLike):
             raise TypeError(
                 "If 'img' is a Niimg-like object, "
                 "'mask_img' should also be "
