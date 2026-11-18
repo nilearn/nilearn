@@ -31,6 +31,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix functions like :func:`~nilearn.image.concat_imgs` or :func:`~nilearn.glm.second_level.non_parametric_inference` reshaping in place the data of the 1D :class:`~nilearn.surface.SurfaceImage` passed as input. As a consequence, ``transform`` of :class:`~nilearn.maskers.SurfaceLabelsMasker` and :class:`~nilearn.maskers.SurfaceMapsMasker` now returns a 1D array for a single 1D surface image, and ``inverse_transform`` returns a 1D surface image for a 1D array, like other surface maskers (:gh:`6721` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Fix :func:`~nilearn.image.clean_img` reshaping its output using the raw ``sample_mask`` shape instead of the actual cleaned-signal shape, which raised a ``ValueError`` whenever ``sample_mask`` was passed as a boolean array (:gh:`6709` by `Siddhardha Nanda`_).
 
 - :bdg-dark:`Code` Check tar extraction destinations by path components so sibling directories with a shared name prefix are rejected (:gh:`6654` by `Jeffrey Cooney <https://github.com/jdotc1>`_).

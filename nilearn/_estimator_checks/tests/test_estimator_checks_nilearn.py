@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
+from sklearn.base import clone
 from sklearn.covariance import EmpiricalCovariance
 
 from nilearn._estimator_checks.nilearn_check_generator import (
@@ -194,4 +195,7 @@ def test_check_estimator_count():
 )
 def test_check_estimator_nilearn(estimator, name, check):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
-    check(estimator)
+    # use a copy of the estimator:
+    # the estimators instances in the parametrization
+    # are shared across threads when running tests in parallel
+    check(clone(estimator))

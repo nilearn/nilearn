@@ -40,7 +40,6 @@ def test_group_sparse_covariance(rng):
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.filterwarnings(
     "ignore:.*Input signals do not all have unit variance.*:UserWarning"
 )
