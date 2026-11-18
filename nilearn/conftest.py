@@ -12,6 +12,7 @@ import pytest
 from nibabel import Nifti1Image
 from scipy.signal import get_window
 
+from nilearn._utils import html_document
 from nilearn._utils.helpers import (
     is_gil_enabled,
     is_matplotlib_installed,
@@ -157,6 +158,25 @@ def pytest_collection_modifyitems(items):
                 item.add_marker(
                     pytest.mark.thread_unsafe(reason="captures stdout")
                 )
+
+
+@pytest.fixture(autouse=True, scope="session")
+def no_html_views_warning() -> Generator[None, None, None]:
+    """Disable the warning about the number of open HTML views.
+
+    Open views are counted for the whole process,
+    so the warning can be thrown by any test generating HTML views
+    when tests run in parallel threads.
+    The warning itself is tested in test_open_view_warning.
+
+    Yields
+    ------
+    None
+    """
+    max_views = html_document.MAX_IMG_VIEWS_BEFORE_WARNING
+    html_document.set_max_img_views_before_warning(None)
+    yield
+    html_document.set_max_img_views_before_warning(max_views)
 
 
 @pytest.fixture(autouse=True)
