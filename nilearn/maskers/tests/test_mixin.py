@@ -4,9 +4,7 @@ from sklearn import clone
 
 from nilearn.conftest import (
     _img_3d_rand,
-    _img_4d_rand_eye,
     _make_surface_img,
-    _rng,
 )
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -206,27 +204,18 @@ def test_masker_reporting_false(masker, img_func):
 
 @pytest.mark.parametrize("confound_container", [list, tuple])
 def test_multi_masker_high_variance_confounds_with_list_confounds(
-    confound_container,
+    confound_container, img_4d_rand_eye, rng
 ):
     """Check high_variance_confounds=True with per-image confounds that
     are themselves a list/tuple of several confound sources.
 
-    nilearn.signal.clean (and hence maskers) accept a confound for a given
-    image to be a list or tuple of several confound sources that get
-    concatenated. When high_variance_confounds=True, the mixin used to
-    merge the computed high-variance confounds into that collection with
-    confounds[i] += hv_confounds. For a single-element 'list', that is
-    list.__iadd__ on a (1, n_time, n_hv)-shaped array built from the list,
-    which falls back to ndarray.__radd__ and raises a ValueError trying to
-    broadcast-add hv_confounds onto it. A 'tuple' has no += at all and
-    crashes outright with AttributeError, since tuples have no .append.
-
-    Regression test: both containers must work and simply add one more
-    confound source, not raise either error.
+    Regression test for https://github.com/nilearn/nilearn/issues/6728:
+    both containers must work and simply add one more confound source,
+    not raise either error.
     """
-    imgs = [_img_4d_rand_eye(), _img_4d_rand_eye()]
+    imgs = [img_4d_rand_eye, img_4d_rand_eye]
     n_time = imgs[0].shape[-1]
-    extra_confound = _rng().random((n_time, 2))
+    extra_confound = rng.random((n_time, 2))
 
     masker = MultiNiftiMasker(high_variance_confounds=True)
     masker.fit(imgs)

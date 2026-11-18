@@ -274,7 +274,7 @@ class _MultiMixin:
                 if confounds[i] is None:
                     confounds[i] = hv_confounds
                 elif isinstance(confounds[i], (list, tuple)):
-                    # ponytail: 'list'/'tuple' here means confounds[i] is
+                    # 'list'/'tuple' here means confounds[i] is
                     # already a collection of confound sources (as accepted
                     # by nilearn.signal.clean). Append hv_confounds as one
                     # more source instead of '+=', which would call
