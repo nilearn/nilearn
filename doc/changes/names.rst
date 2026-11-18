@@ -419,4 +419,6 @@
 
 .. _Zvi Baratz: https://github.com/ZviBaratz
 
+.. _uvcode01 max: https://github.com/uvcode01-max
+
 .. _Óscar Nájera: https://github.com/Titan-C
