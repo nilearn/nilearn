@@ -12,7 +12,7 @@ import warnings
 from collections.abc import Iterable, Iterator
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, TypeGuard, cast, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeGuard, get_args, overload
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -1691,27 +1691,32 @@ def threshold_img(
             f"Got {img.__class__.__name__}."
         )
 
-    if mask_img is not None:
-        if not isinstance(mask_img, (NiimgLike, SurfaceImage)):
-            raise TypeError(
-                "'mask_img' should be "
-                "a 3D Niimg-like object or a SurfaceImage. "
-                f"Got {img.__class__.__name__}."
-            )
-        check_compatibility_mask_and_images(mask_img, img)
-
     if isinstance(img, NiimgLike):
-        loaded_mask_img = (
-            check_niimg_3d(mask_img) if mask_img is not None else None
-        )
+        if mask_img is not None and not isinstance(
+            mask_img, get_args(NiimgLike)
+        ):
+            raise TypeError(
+                "If 'img' is a Niimg-like object, "
+                "'mask_img' should also be "
+                "a 3D Niimg-like object. "
+                f"Got {mask_img.__class__.__name__}."
+            )
         return _threshold_img_volume(
             img=img,
             threshold=threshold,
             cluster_threshold=cluster_threshold,
             two_sided=two_sided,
-            mask_img=loaded_mask_img,
+            mask_img=mask_img,
             copy=copy,
             copy_header=copy_header,
+        )
+
+    if mask_img is not None and not isinstance(mask_img, SurfaceImage):
+        raise TypeError(
+            "If 'img' is a SurfaceImage object, "
+            "'mask_img' should also be "
+            "a SurfaceImage object. "
+            f"Got {mask_img.__class__.__name__}."
         )
 
     return _threshold_img_surface(
@@ -1719,7 +1724,7 @@ def threshold_img(
         threshold=threshold,
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
-        mask_img=cast(SurfaceImage, mask_img),
+        mask_img=mask_img,
         copy=copy,
     )
 
@@ -1743,6 +1748,7 @@ def _threshold_img_volume(
     img_data_for_cutoff = img_data
 
     if mask_img is not None:
+        mask_img = check_niimg_3d(mask_img)
         if not check_same_fov(img, mask_img):
             mask_img = resample_img(
                 mask_img,
