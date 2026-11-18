@@ -419,6 +419,8 @@
 
 .. _Yuvraj Lamba: https://github.com/uvcode01-max
 
+.. _Zachary Nudelman: https://github.com/zachnudels
+
 .. _Zvi Baratz: https://github.com/ZviBaratz
 
 .. _Óscar Nájera: https://github.com/Titan-C
