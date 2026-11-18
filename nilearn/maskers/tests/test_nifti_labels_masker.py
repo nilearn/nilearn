@@ -996,7 +996,11 @@ def test_region_names(
         expected_lut = generate_expected_lut(["Background", *tmp])
     else:
         expected_lut = generate_expected_lut(tmp)
-    check_lut(masker, expected_lut)
+    if not resampling:
+        check_lut(masker, expected_lut)
+    else:
+        surviving = set(np.unique(get_data(masker.region_atlas_)))
+        assert set(masker.lut_["index"]) == surviving
 
     region_names = generate_labels(n_regions, background=background)
     check_region_names_after_fit(
@@ -1070,7 +1074,11 @@ def test_region_names_ids_match_after_fit(
         expected_lut = generate_expected_lut(["Background", *tmp])
     else:
         expected_lut = generate_expected_lut(tmp)
-    check_lut(masker, expected_lut)
+    if affine_data is None and not masking:
+        check_lut(masker, expected_lut)
+    else:
+        surviving = set(np.unique(get_data(masker.region_atlas_)))
+        assert set(masker.lut_["index"]) == surviving
 
     check_region_names_ids_match_after_fit(
         masker, region_names, region_ids, background

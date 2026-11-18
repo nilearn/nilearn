@@ -379,8 +379,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         labels_image = self._reporting_data["labels_image"]
 
         table = self.lut_.copy()
-        valid_indices = set(self.labels_)
-        table = table[table["index"].isin(valid_indices)]
 
         table = table[["index", "name"]]
 
@@ -536,6 +534,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         )
         ref_img = self._resample_at_fit(imgs_)
         self._apply_mask_to_labels(ref_img)
+        self._filter_lut_to_surviving_labels()
         self._set_report_data_at_fit(imgs)
 
         mask_logger("fit_done", verbose=self.verbose)
@@ -617,6 +616,27 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             )
         self.region_atlas_ = Nifti1Image(
             labels_data.astype(np.int32), self.labels_img_.affine
+        )
+
+    def _filter_lut_to_surviving_labels(self):
+        """Filter self.lut_ to only contain
+        surviving labels in region_atlas_.
+        """
+        labels_surviving = set(np.unique(safe_get_data(self.region_atlas_)))
+        surviving_non_bg = [
+            x
+            for x in self._original_region_ids
+            if x in labels_surviving and x != self.background_label
+        ]
+        if self.background_label in labels_surviving:
+            desired_order = [self.background_label, *surviving_non_bg]
+        else:
+            desired_order = surviving_non_bg
+
+        mask = self.lut_["index"].isin(desired_order)
+        filtered_lut = self.lut_[mask]
+        self.lut_ = (
+            filtered_lut.set_index("index").loc[desired_order].reset_index()
         )
 
     def _set_report_data_at_fit(self, imgs):
