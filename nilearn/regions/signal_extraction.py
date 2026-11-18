@@ -438,7 +438,6 @@ def signals_to_img_labels(
             stacklevel=find_stack_level(),
         )
 
-    target_shape = labels_img.shape[:3]
     target_shape: tuple[int, ...] = labels_img.shape[:3]
     # TODO use nditer
     # nditer is not available in numpy 1.3: using multiple loops.
