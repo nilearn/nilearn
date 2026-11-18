@@ -20,17 +20,24 @@ class BenchMarkFirstLevelModel(BaseBenchMarkFLM):
         [True, False],
     )
 
-    def _fit(self, n_timepoints_n_runs, minimize_memory):
-        model = FirstLevelModel(mask_img=self.mask)
+    def setup(self, length_n_runs, minimize_memory):
+        """Set up for all benchmarks."""
+        length, n_runs = length_n_runs
+        self._generate_data(length=length, n_runs=n_runs)
+
+    def _fit(self, length_n_runs, minimize_memory):
+        model = FirstLevelModel(
+            mask_img=self.mask, minimize_memory=minimize_memory
+        )
         model.fit(self.fmri_data, design_matrices=self.design_matrices)
 
-    def time_glm_fit(self, n_timepoints_n_runs, minimize_memory):
+    def time_glm_fit(self, length_n_runs, minimize_memory):
         """Time FirstLevelModel on large data."""
-        self._fit(n_timepoints_n_runs, minimize_memory)
+        self._fit(length_n_runs, minimize_memory)
 
-    def peakmem_glm_fit(self, n_timepoints_n_runs, minimize_memory):
+    def peakmem_glm_fit(self, length_n_runs, minimize_memory):
         """Measure peak memory for FirstLevelModel on large data."""
-        self._fit(n_timepoints_n_runs, minimize_memory)
+        self._fit(length_n_runs, minimize_memory)
 
 
 class BenchMarkFirstLevelModelReport(BaseBenchMarkFLM):
@@ -38,6 +45,10 @@ class BenchMarkFirstLevelModelReport(BaseBenchMarkFLM):
 
     param_names = "memory"
     params: ClassVar[list[str | None]] = [None, "nilearn_cache"]
+
+    def setup(self, memory):
+        """Set up for all benchmarks."""
+        self._generate_data()
 
     def _fit(self, memory):
         model = FirstLevelModel(
