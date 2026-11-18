@@ -83,7 +83,7 @@ jobs:
                 key: data_cache-DocumentationBuilder_month-${{ hashFiles('month_num') }}
 
         -   name: Install tox
-            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+            run: uv tool install tox --with=tox-uv
 
         -   name: Run test on html output
             run: tox run -e test_html
