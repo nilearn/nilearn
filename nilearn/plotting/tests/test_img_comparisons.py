@@ -291,10 +291,12 @@ def test_plot_img_comparison_cmap_and_gridsize(matplotlib_pyplot, rng):
     images = list(iter_img(images))
     _, axes = plt.subplots(2, 1)
 
+    masker = NiftiMasker(mask_img).fit()
+
     plot_img_comparison(
         ref_imgs=images,
         src_imgs=images,
-        masker=NiftiMasker(mask_img).fit(),
+        masker=masker,
         axes=list(axes),
         cmap="viridis",
         gridsize=10,
