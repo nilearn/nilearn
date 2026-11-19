@@ -92,9 +92,8 @@ def _resolve_zero_conflict(a, b, threshold, vmin, vmax):
     """Resolve which tick to remove when 0 is close to a threshold or bound."""
     if 0 not in (a, b):
         return None
-    is_threshold_pair = (
-        threshold is not None
-        and (a in (-threshold, threshold) or b in (-threshold, threshold))
+    is_threshold_pair = threshold is not None and (
+        a in (-threshold, threshold) or b in (-threshold, threshold)
     )
     if is_threshold_pair and threshold <= 1e-5:
         return a if a != 0 else b
