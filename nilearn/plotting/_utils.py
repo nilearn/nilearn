@@ -88,6 +88,30 @@ def get_cbar_bounds(vmin, vmax, num_val, tick_format=DEFAULT_TICK_FORMAT):
     return bounds
 
 
+def _resolve_zero_conflict(a, b, threshold, vmin, vmax):
+    """Resolve which tick to remove when 0 is close to a threshold or bound."""
+    if 0 not in (a, b):
+        return None
+    is_threshold_pair = (
+        threshold is not None
+        and (a in (-threshold, threshold) or b in (-threshold, threshold))
+    )
+    if is_threshold_pair and threshold <= 1e-5:
+        return a if a != 0 else b
+    if vmin != 0 and vmax != 0:
+        return 0
+    return None
+
+
+def _find_removable_tick(a, b, threshold, vmin, vmax, keep_list):
+    """Pick which tick of a close pair (a, b) should be removed."""
+    if a not in keep_list:
+        return a
+    if b not in keep_list:
+        return b
+    return _resolve_zero_conflict(a, b, threshold, vmin, vmax)
+
+
 def _remove_close_values(ticks, step_size, threshold, vmin, vmax):
     """Remove some tick values if they are very close to each other."""
     # create the list for the values to be kept in tick list
@@ -96,42 +120,51 @@ def _remove_close_values(ticks, step_size, threshold, vmin, vmax):
         keep_list.extend([-threshold, threshold])
 
     for a, b in pairwise(ticks):
-        # if two consecutive values have distance less the 1/3th of step_size
-        # check for the possibility to remove one
-        if b - a < step_size / 3:
-            value_to_remove = a if a not in keep_list else None
-            if value_to_remove is None:
-                value_to_remove = b if b not in keep_list else None
-
-            # if one of the ticks is 0 and the other is threshold
-            if (
-                value_to_remove is None
-                and threshold is not None
-                and (
-                    a in [-threshold, threshold]
-                    or b in [-threshold, threshold]
-                )
-                and (a == 0 or b == 0)
-            ):
-                # if threshold is very close to 0, remove it and keep 0
-                if threshold <= 1e-5:
-                    value_to_remove = a if a != 0 else b
-                    # otherwise remove 0 if it is not vmin or vmax
-                elif vmin != 0 and vmax != 0:
-                    value_to_remove = 0
-
-            # if one of the ticks is 0 and the other is vmin or vmax
-            # remove 0 (unless it is vmin or vmax itself)
-            if (
-                value_to_remove is None
-                and 0 in (a, b)
-                and vmin != 0
-                and vmax != 0
-            ):
-                value_to_remove = 0
-            if value_to_remove is not None:
-                ticks = np.delete(ticks, np.where(ticks == value_to_remove))
+        if b - a >= step_size / 3:
+            continue
+        value_to_remove = _find_removable_tick(
+            a, b, threshold, vmin, vmax, keep_list
+        )
+        if value_to_remove is not None:
+            ticks = np.delete(ticks, np.where(ticks == value_to_remove))
     return ticks
+
+
+def _adjust_integer_ticks(n_ticks, threshold, f_vmin, f_vmax, tick_format):
+    """Validate and adjust tick count when integer formatting is requested."""
+    if tick_format != "%i":
+        return n_ticks
+    if threshold is not None and int(threshold) != threshold:
+        warn(
+            "You provided a non integer threshold "
+            "but configured the colorbar to use integer formatting.",
+            stacklevel=find_stack_level(),
+        )
+    if f_vmax - f_vmin < n_ticks - 1:
+        return int(f_vmax - f_vmin + 1)
+    return n_ticks
+
+
+def _filter_ticks_with_threshold(
+    ticks, threshold, vmin, vmax, f_vmin, f_vmax, tick_format
+):
+    """Format and filter colorbar ticks around the threshold value."""
+    if threshold is None or threshold <= 1e-6:
+        return ticks
+    threshold = float(tick_format % threshold)
+    if 0 <= vmin <= vmax or vmin <= vmax <= 0:
+        if vmax <= 0:
+            threshold = -threshold
+        ticks = np.append(ticks, threshold)
+    else:
+        ticks = np.append(ticks, [-threshold, threshold])
+
+    valid_mask = (
+        (ticks > abs(threshold))
+        | (ticks < -abs(threshold))
+        | np.isin(ticks, [0, f_vmin, f_vmax, threshold, -threshold])
+    )
+    return ticks[np.where(valid_mask)]
 
 
 def get_cbar_ticks(
@@ -170,16 +203,9 @@ def get_cbar_ticks(
     ):
         return np.linspace(f_vmin, f_vmax, 1)
 
-    if tick_format == "%i":
-        if threshold is not None and int(threshold) != threshold:
-            warn(
-                "You provided a non integer threshold "
-                "but configured the colorbar to use integer formatting.",
-                stacklevel=find_stack_level(),
-            )
-        if f_vmax - f_vmin < n_ticks - 1:
-            n_ticks = int(f_vmax - f_vmin + 1)
-
+    n_ticks = _adjust_integer_ticks(
+        n_ticks, threshold, f_vmin, f_vmax, tick_format
+    )
     ticks = np.linspace(vmin, vmax, n_ticks)
     # format tick values as matplotlib will display them
     # this is to avoid double appearance of same tick value
@@ -190,31 +216,9 @@ def get_cbar_ticks(
     # get the size of maximum interval between the ticks
     step_size = max(b - a for a, b in pairwise(ticks))
 
-    if threshold is not None and threshold > 1e-6:
-        # set threshold to formatted threshold
-        threshold = float(tick_format % threshold)
-
-        # if the values are either positive or negative
-        if 0 <= vmin <= vmax or vmin <= vmax <= 0:
-            if vmax <= 0:
-                threshold = -threshold
-            ticks = np.append(ticks, threshold)
-        else:
-            ticks = np.append(ticks, [-threshold, threshold])
-
-        # remove unnecessary ticks that would be between 0 and +-threshold
-        ticks = ticks[
-            np.where(
-                # normally threshold should be positive
-                # however in the above condition, if data is either positive or
-                # negative
-                # we set threshold=-threshold
-                # in that case below we need to check with abs(threshold)
-                (ticks > abs(threshold))
-                | (ticks < -abs(threshold))
-                | (np.isin(ticks, [0, f_vmin, f_vmax, threshold, -threshold]))
-            )
-        ]
+    ticks = _filter_ticks_with_threshold(
+        ticks, threshold, vmin, vmax, f_vmin, f_vmax, tick_format
+    )
 
     # we do this here to include the case where threshold is None
     if vmin < 0 < vmax:
@@ -227,6 +231,50 @@ def get_cbar_ticks(
     )
 
     return ticks
+
+
+def _auto_detect_symmetric_cbar(vmin, vmax, data_min, data_max):
+    """Determine whether colorbar is symmetric when symmetric_cbar='auto'."""
+    if vmin is None or vmax is None:
+        min_value = data_min if vmin is None else max(vmin, data_min)
+        max_value = data_max if vmax is None else min(data_max, vmax)
+        return min_value < 0 < max_value
+    return np.isclose(vmin, -vmax)
+
+
+def _compute_symmetric_colorbar_limits(vmin, vmax, data_min, data_max):
+    """Compute symmetric colorbar limits and warn on mismatches."""
+    if vmin is None and vmax is None:
+        vmax = max(-data_min, data_max)
+        vmin = -vmax
+    elif vmin is None:
+        vmin = -vmax
+    elif vmax is None:
+        vmax = -vmin
+    elif vmin != -vmax:
+        warn(
+            f"Specified {vmin=} and {vmax=} values do not create a "
+            "symmetric colorbar. The values will be modified to be "
+            "symmetric.",
+            stacklevel=find_stack_level(),
+        )
+        vmax = max(abs(vmin), abs(vmax))
+        vmin = -vmax
+    return vmin, vmax, vmin, vmax
+
+
+def _compute_asymmetric_colorbar_limits(vmin, vmax, data_min, data_max):
+    """Compute asymmetric colorbar limits based on data ranges."""
+    if data_min >= 0:
+        cbar_vmin = 0 if vmin is None else vmin
+        cbar_vmax = vmax
+    elif data_max <= 0:
+        cbar_vmax = 0 if vmax is None else vmax
+        cbar_vmin = vmin
+    else:
+        cbar_vmin = vmin
+        cbar_vmax = vmax
+    return cbar_vmin, cbar_vmax
 
 
 def get_colorbar_and_data_ranges(
@@ -274,48 +322,19 @@ def get_colorbar_and_data_ranges(
     data_max = np.nanmax(data)
 
     if symmetric_cbar == "auto":
-        if vmin is None or vmax is None:
-            min_value = data_min if vmin is None else max(vmin, data_min)
-            max_value = data_max if vmax is None else min(data_max, vmax)
-            symmetric_cbar = min_value < 0 < max_value
-        else:
-            symmetric_cbar = np.isclose(vmin, -vmax)
+        symmetric_cbar = _auto_detect_symmetric_cbar(
+            vmin, vmax, data_min, data_max
+        )
 
     # check compatibility between vmin, vmax and symmetric_cbar
     if symmetric_cbar:
-        if vmin is None and vmax is None:
-            vmax = max(-data_min, data_max)
-            vmin = -vmax
-        elif vmin is None:
-            vmin = -vmax
-        elif vmax is None:
-            vmax = -vmin
-        elif vmin != -vmax:
-            warn(
-                f"Specified {vmin=} and {vmax=} values do not create a "
-                "symmetric colorbar. The values will be modified to be "
-                "symmetric.",
-                stacklevel=find_stack_level(),
-            )
-            vmax = max(abs(vmin), abs(vmax))
-            vmin = -vmax
-
-        cbar_vmin = vmin
-        cbar_vmax = vmax
-    # set colorbar limits
+        cbar_vmin, cbar_vmax, vmin, vmax = _compute_symmetric_colorbar_limits(
+            vmin, vmax, data_min, data_max
+        )
     else:
-        negative_range = data_max <= 0
-        positive_range = data_min >= 0
-        if positive_range:
-            cbar_vmin = 0 if vmin is None else vmin
-            cbar_vmax = vmax
-        elif negative_range:
-            cbar_vmax = 0 if vmax is None else vmax
-            cbar_vmin = vmin
-        else:
-            # limit colorbar to plotted values
-            cbar_vmin = vmin
-            cbar_vmax = vmax
+        cbar_vmin, cbar_vmax = _compute_asymmetric_colorbar_limits(
+            vmin, vmax, data_min, data_max
+        )
 
     # set vmin/vmax based on data if they are not already set
     if vmin is None:
