@@ -160,7 +160,6 @@ def test_f_contrast_add(set_up_glm, rng):
     assert_almost_equal(con1.stat() * 2, con2.stat())
 
 
-@pytest.mark.ai_generated
 def test_contrast_mul(set_up_glm, rng):
     labels, results, q = set_up_glm(rng, "ar1")
     for c1 in [np.eye(q)[0], np.eye(q)[:3]]:
