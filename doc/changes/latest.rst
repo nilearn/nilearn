@@ -71,7 +71,7 @@ Enhancements
 
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
 
-- :bdg-success:`API` Add an ``ensure_finite`` parameter to :func:`~image.smooth_img`, and warn when non-finite values are replaced with zeros rather than doing it silently. Replacement now happens in a single place for both the volume and the surface branch, so the two behave identically (:gh:`6530` by `Cedric Conday`_).
+- :bdg-success:`API` Add an ``ensure_finite`` parameter to :func:`~image.smooth_img` and warn when non-finite values are replaced with zeros (:gh:`6530` by `Cedric Conday`_).
 
 - :bdg-primary:`Doc` Add an example comparing the effect of ``standardize="zscore_sample"``, ``standardize="psc"`` and ``standardize=None`` on decoding performance (:gh:`6597` by `Reyyi Shreyas`_).
 
@@ -81,9 +81,9 @@ Enhancements
 
 - :bdg-success:`API` :class:`~nilearn.utils.InputTags` is now part of the public API in :mod:`nilearn.utils`, so that third-party estimators can declare whether they accept Nifti and / or surface images (:gh:`6563` by `Aniket Singh Yadav`_).
 
-- :bdg-success:`API` :func:`~masking.apply_mask` now honors ``ensure_finite`` for surface data. The surface branch previously cleaned non-finite values unconditionally, ignoring the argument. Passing ``smoothing_fwhm`` still forces ``ensure_finite=True``, now on surfaces as well as volumes (:gh:`6530` by `Cedric Conday`_).
+- :bdg-success:`API` :func:`~masking.apply_mask` now honors ``ensure_finite`` for surface data (:gh:`6530` by `Cedric Conday`_).
 
-- :bdg-success:`API` The warnings raised when non-finite values are detected are now ``RuntimeWarning`` rather than ``UserWarning``. This covers the ``Non-finite values detected. These values will be replaced with zeros.`` message and the one :class:`~maskers.SurfaceMasker` raises when it masks such vertices out. Code that catches them, with ``warnings.catch_warnings`` or ``pytest.warns``, has to be updated (:gh:`6530` by `Cedric Conday`_).
+- :bdg-success:`API` Warnings about non-finite values in images are now ``RuntimeWarning`` instead of ``UserWarning`` (:gh:`6530` by `Cedric Conday`_).
 
 - :bdg-dark:`Code` Name columns of signals extracted as dataframes by :meth:`~maskers.NiftiSpheresMasker.transform` (:gh:`6599` by `Rémi Gau`_).
 

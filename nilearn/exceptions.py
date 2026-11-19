@@ -1,12 +1,15 @@
 """Custom warnings and errors used across Nilearn."""
 
 __all__ = [
+    "NON_FINITE_VALUES_DETECTED",
     "AllVolumesRemovedError",
     "DimensionError",
     "MaskWarning",
     "MeshDimensionError",
     "NotImplementedWarning",
 ]
+
+NON_FINITE_VALUES_DETECTED = "Non-finite values detected in the input image."
 
 AuthorizedException = (
     BufferError,

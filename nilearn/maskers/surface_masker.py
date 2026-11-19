@@ -17,6 +17,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg import has_non_finite
 from nilearn._utils.param_validation import check_params
+from nilearn.exceptions import NON_FINITE_VALUES_DETECTED
 from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers._mixin import _MaskerReportDefaults
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
@@ -212,7 +213,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             mask_data[part] = ~non_finite_mask.any(axis=1)
             if has_not_finite:
                 warn(
-                    "Non-finite values detected in the input image. "
+                    f"{NON_FINITE_VALUES_DETECTED} "
                     "The computed mask will mask out these vertices.",
                     stacklevel=find_stack_level(),
                     category=RuntimeWarning,

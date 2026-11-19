@@ -47,7 +47,7 @@ from nilearn._utils.param_validation import (
     check_threshold,
 )
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn.exceptions import DimensionError
+from nilearn.exceptions import NON_FINITE_VALUES_DETECTED, DimensionError
 from nilearn.nilearn_typing import (
     ClusterThreshold,
     HighPass,
@@ -57,6 +57,7 @@ from nilearn.nilearn_typing import (
     SingleConfound,
     Standardize,
     Tr,
+    Verbose,
 )
 from nilearn.surface.surface import (
     FileMesh,
@@ -364,7 +365,7 @@ def smooth_array(
     fwhm=None,
     ensure_finite: bool = True,
     copy: bool = True,
-    verbose: bool | int = 1,
+    verbose: Verbose = 1,
 ) -> np.ndarray:
     """Smooth images by applying a Gaussian filter.
 
@@ -383,11 +384,9 @@ def smooth_array(
 
     %(fwhm)s
 
-    ensure_finite : :obj:`bool`, default=True
-        If True, replace every non-finite value (like NaNs) by zero before
-        filtering, and warn when any value was replaced, unless ``verbose``
-        is 0. If False, non-finite values are left untouched; note that
-        filtering then spreads them over neighboring voxels.
+    %(ensure_finite)s
+        No warning is emitted if ``verbose`` is 0.
+        Filtering then spreads those values over neighboring voxels.
 
         .. nilearn_versionchanged:: 0.15.0
 
@@ -488,11 +487,9 @@ def smooth_img(
 
     %(fwhm)s
 
-    ensure_finite : :obj:`bool`, default=True
-        If True, replace every non-finite value (like NaNs) by zero before
-        smoothing, and warn when any value was replaced. If False, non-finite
-        values are left untouched; note that smoothing then spreads them over
-        neighboring voxels or vertices.
+    %(ensure_finite)s
+        Smoothing then spreads those values over neighboring
+        voxels or vertices.
 
         .. nilearn_versionadded:: 0.15.0
 
@@ -573,6 +570,7 @@ def smooth_img(
     return ret[0] if single_img else ret
 
 
+@fill_doc
 def _smooth_surface_img(
     img: SurfaceImage,
     iterations: list[int],
@@ -591,9 +589,7 @@ def _smooth_surface_img(
         (it must be a positive value).
         One value per mesh in the image.
 
-    ensure_finite : :obj:`bool`, default=True
-        If True, replace every non-finite value by zero before smoothing,
-        and warn when any value was replaced.
+    %(ensure_finite)s
 
     Returns
     -------
@@ -615,7 +611,7 @@ def _smooth_surface_img(
         has_non_finite(part)[0] for part in img.data.parts.values()
     ):
         warnings.warn(
-            "Non-finite values detected. "
+            f"{NON_FINITE_VALUES_DETECTED} "
             "These values will be replaced with zeros.",
             RuntimeWarning,
             stacklevel=find_stack_level(),

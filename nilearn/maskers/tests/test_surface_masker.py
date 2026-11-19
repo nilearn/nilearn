@@ -70,7 +70,6 @@ def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
     assert_surface_image_equal(unmasked_img, expected_img)
 
 
-@pytest.mark.ai_generated
 def test_fit_masks_out_non_finite_vertices(surf_img_2d):
     """Exclude vertices holding non-finite values from the mask.
 
@@ -95,7 +94,6 @@ def test_fit_masks_out_non_finite_vertices(surf_img_2d):
     assert not mask["right"][2]
 
 
-@pytest.mark.ai_generated
 def test_fit_does_not_warn_when_all_finite(surf_img_2d):
     """No warning, and no vertex dropped, when the input is finite."""
     masker = SurfaceMasker()

@@ -166,7 +166,6 @@ def test_invalid_cut_coords_with_display_mode(
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_with_nans(plot_func, img_3d_mni, add_nans_to_img):
@@ -185,7 +184,6 @@ def test_plotting_functions_with_cmaps(plot_func, cmap, img_3d_mni):
     plt.close()
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_anat, plot_roi, plot_stat_map])
 def test_plotting_functions_with_nans_in_bg_img(

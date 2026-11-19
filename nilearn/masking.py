@@ -970,10 +970,7 @@ def apply_mask(
 
             Implies ensure_finite=True.
 
-    ensure_finite : :obj:`bool`, default=True
-        If ensure_finite is True, the non-finite values (NaNs and
-        infs) found in the images will be replaced by zeros,
-        and a warning is emitted when any value was replaced.
+    %(ensure_finite)s
 
         .. nilearn_versionchanged:: 0.15.0
 

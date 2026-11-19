@@ -12,6 +12,8 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import get_target_dtype
+from nilearn.exceptions import NON_FINITE_VALUES_DETECTED
+from nilearn.nilearn_typing import Verbose
 
 
 def _get_data(img: Nifti1Image) -> np.ndarray:
@@ -80,18 +82,27 @@ def has_non_finite(data: np.ndarray) -> tuple[bool, np.ndarray]:
     return has_not_finite, non_finite_mask
 
 
+@fill_doc
 def ensure_finite_data(
-    data: np.ndarray, verbose: bool | int = 1, copy: bool = False
+    data: np.ndarray, verbose: Verbose = 1, copy: bool = False
 ) -> np.ndarray:
-    """Check if data contains NaN or inf values, set non-finite values
-    to 0 and return data.
+    """Replace NaN and inf values in data by zeros.
 
-    ``verbose=0`` suppresses the warning, for callers that undo the
-    replacement afterwards or only use the cleaned array internally.
+    Parameters
+    ----------
+    data : :class:`numpy.ndarray`
+        Array to check.
+    %(verbose)s
+        Whether to warn when values are replaced.
 
-    The replacement happens in place unless ``copy`` is True, in which case
-    the input is left untouched and a cleaned copy is returned. Nothing is
-    copied when there is nothing to replace.
+    copy : :obj:`bool`, default=False
+        If True, the input is left untouched and a cleaned copy is returned.
+        Nothing is copied when there is nothing to replace.
+
+    Returns
+    -------
+    :class:`numpy.ndarray`
+        ``data`` with non-finite values set to 0.
     """
     has_not_finite, non_finite_mask = has_non_finite(data)
     if has_not_finite:
@@ -99,7 +110,7 @@ def ensure_finite_data(
             data = data.copy()
         if verbose:
             warn(
-                "Non-finite values detected. "
+                f"{NON_FINITE_VALUES_DETECTED} "
                 "These values will be replaced with zeros.",
                 RuntimeWarning,
                 stacklevel=find_stack_level(),
