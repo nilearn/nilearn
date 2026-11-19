@@ -2,6 +2,7 @@
 
 import re
 import warnings
+from contextlib import nullcontext
 
 import numpy as np
 import pytest
@@ -391,68 +392,73 @@ def test_apply_mask_surface(surf_img_1d, surf_mask_1d):
     assert img_zero.var() > smoothed_img.var()
 
 
-@pytest.mark.ai_generated
-@pytest.mark.parametrize("smoothing_fwhm", [None, 5])
-def test_apply_mask_surface_ensure_finite(
-    surf_img_1d, surf_mask_1d, smoothing_fwhm
+@pytest.mark.parametrize("inpout_type", ["surface", "volume"])
+@pytest.mark.parametrize("smoothing_fwhm", [None, 0, 5])
+@pytest.mark.parametrize("ensure_finite", [True, False])
+def test_apply_mask_ensure_finite(
+    surf_img_1d,
+    surf_mask_1d,
+    smoothing_fwhm,
+    ensure_finite,
+    inpout_type,
+    affine_eye,
 ):
-    """``ensure_finite=True`` must clean and warn on surfaces too.
+    """Test ensure_finite with and without smoothing.
+
+    ``ensure_finite=True`` must clean.
+
+    Smoothing overrides ``ensure_finite=False``.
 
     The surface branch used to ignore the argument entirely.
     See https://github.com/nilearn/nilearn/issues/6487.
     """
-    # vertex 2 is inside ``surf_mask_1d``, so it survives into the output
-    surf_img_1d.data.parts["left"][2] = np.nan
+    if inpout_type == "surface":
+        # vertex 2 is inside ``surf_mask_1d``, so it survives into the output
+        data_img = surf_img_1d
+        data_img.data.parts["left"][2] = np.nan
 
-    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
-        masked = apply_mask(
-            surf_img_1d,
-            surf_mask_1d,
-            smoothing_fwhm=smoothing_fwhm,
-            ensure_finite=True,
+        mask_img = surf_mask_1d
+    else:
+        data = np.zeros((40, 40, 40, 2))
+        data[20, 20, 20] = 1
+        data[10, 10, 10] = np.nan
+        data_img = Nifti1Image(data, affine_eye)
+
+        mask = np.ones((40, 40, 40))
+        mask_img = Nifti1Image(mask, affine_eye)
+
+    extra_context = nullcontext()
+    if smoothing_fwhm == 0:
+        extra_context = pytest.warns(
+            UserWarning,
+            match=(
+                r"The parameter 'fwhm'.*specified as 0.*Setting it to None"
+            ),
         )
 
-    assert np.all(np.isfinite(masked))
+    if ensure_finite or smoothing_fwhm is not None:
+        with (
+            pytest.warns(RuntimeWarning, match="Non-finite values detected"),
+            extra_context,
+        ):
+            masked = apply_mask(
+                data_img,
+                mask_img,
+                smoothing_fwhm=smoothing_fwhm,
+                ensure_finite=ensure_finite,
+            )
 
+        assert np.all(np.isfinite(masked))
+    else:
+        with extra_context:
+            masked = apply_mask(
+                data_img,
+                mask_img,
+                smoothing_fwhm=smoothing_fwhm,
+                ensure_finite=ensure_finite,
+            )
 
-@pytest.mark.ai_generated
-def test_apply_mask_surface_ensure_finite_false(surf_img_1d, surf_mask_1d):
-    """Without smoothing, ``ensure_finite=False`` keeps non-finite values."""
-    # vertex 2 is inside ``surf_mask_1d``, so it survives into the output
-    surf_img_1d.data.parts["left"][2] = np.nan
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("error", UserWarning)
-        masked = apply_mask(
-            surf_img_1d,
-            surf_mask_1d,
-            smoothing_fwhm=None,
-            ensure_finite=False,
-        )
-
-    assert not np.all(np.isfinite(masked))
-
-
-@pytest.mark.ai_generated
-def test_apply_mask_smoothing_forces_ensure_finite_on_surface(
-    surf_img_1d, surf_mask_1d
-):
-    """Smoothing overrides ``ensure_finite=False`` on surfaces as on volumes.
-
-    Non-finite values would otherwise be spread over neighboring vertices.
-    """
-    # vertex 2 is inside ``surf_mask_1d``, so it survives into the output
-    surf_img_1d.data.parts["left"][2] = np.nan
-
-    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
-        masked = apply_mask(
-            surf_img_1d,
-            surf_mask_1d,
-            smoothing_fwhm=5,
-            ensure_finite=False,
-        )
-
-    assert np.all(np.isfinite(masked))
+        assert not np.all(np.isfinite(masked))
 
 
 @pytest.mark.parametrize(
@@ -465,21 +471,6 @@ def test_apply_mask_surface_error(surf_img_2d, surf_mask_1d, smoothing_fwhm):
         apply_mask(
             surf_img_2d(length), surf_mask_1d, smoothing_fwhm=smoothing_fwhm
         )
-
-
-def test_apply_mask_nan(affine_eye):
-    """Check that NaNs in the data do not propagate."""
-    data = np.zeros((40, 40, 40, 2))
-    data[20, 20, 20] = 1
-    data[10, 10, 10] = np.nan
-    data_img = Nifti1Image(data, affine_eye)
-
-    mask = np.ones((40, 40, 40))
-    mask_img = Nifti1Image(mask, affine_eye)
-
-    series = apply_mask(data_img, mask_img, smoothing_fwhm=9)
-
-    assert np.all(np.isfinite(series))
 
 
 def test_apply_mask_3d_accepted(affine_eye):

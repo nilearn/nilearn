@@ -53,6 +53,7 @@ from nilearn.nilearn_typing import (
     HighPass,
     LowPass,
     NiimgLike,
+    Scalar,
     SingleConfound,
     Standardize,
     Tr,
@@ -414,7 +415,7 @@ def smooth_array(
     if isinstance(fwhm, (int, float)) and (fwhm == 0.0):
         warnings.warn(
             f"The parameter 'fwhm' for smoothing is specified as {fwhm}. "
-            "Setting it to None (no smoothing will be performed)",
+            "Setting it to None (no smoothing will be performed).",
             stacklevel=find_stack_level(),
         )
         fwhm = None
@@ -539,8 +540,17 @@ def smooth_img(
 
     ret = []
     if is_surface:
-        if fwhm is not None and hasattr(fwhm, "__iter__"):
-            raise TypeError("For surface data, 'fwhm' must be a scalar.")
+        if fwhm is not None:
+            if hasattr(fwhm, "__iter__"):
+                raise TypeError("For surface data, 'fwhm' must be a scalar.")
+            elif isinstance(fwhm, (int, float)) and (fwhm == 0.0):
+                warnings.warn(
+                    "The parameter 'fwhm' for smoothing "
+                    f"is specified as {fwhm}. "
+                    "Setting it to None (no smoothing will be performed).",
+                    stacklevel=find_stack_level(),
+                )
+                fwhm = None
         for img in imgs:
             iterations = _mris_fwhm_to_niters(fwhm, img)
             ret.append(_smooth_surface_img(img, iterations, ensure_finite))
@@ -647,7 +657,7 @@ def _smooth_surface_img(
     return new_img_like(img, new_data)
 
 
-def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
+def _mris_fwhm_to_niters(fwhm: Scalar, img: SurfaceImage) -> list[int]:
     """Convert a desired FWHM to number of smoothing iterations for surface.
 
     Adapted from freesurfer
@@ -655,7 +665,7 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
 
     Parameters
     ----------
-    fwhm : :obj:`float`
+    fwhm : :obj:`float` or :obj:`int` or None
         Full width at half maximum (in mm)
 
     img : surface image
@@ -666,6 +676,7 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
     """
     if fwhm is None:
         fwhm = 0
+
     # Convert FWHM to standard deviation of Gaussian kernel
     std_kernel = fwhm / math.sqrt(math.log(256.0))
 
