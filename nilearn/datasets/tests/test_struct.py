@@ -221,7 +221,6 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     assert mesh_attributes.issubset(set(dataset.keys()))
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("mesh", ["fsaverage3", "fsaverage4"])
 def test_sanitize_vertices_order_warning(mesh, tmp_path, monkeypatch):
     """The warning should identify the mesh whose vertices need reordering."""
