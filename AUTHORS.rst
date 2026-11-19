@@ -213,6 +213,7 @@ Some other past or present contributors are:
 * `Raphael Meudec`_: Inria, Saclay, France
 * `Reyyi Shreyas`_
 * `Rishika Kapil`_: Thapar Institute of Engineering and Technology
+* `Rishit Garg`_
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
 * `Robert Williamson`_
 * `Roberto Guidotti`_: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
