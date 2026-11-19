@@ -457,10 +457,16 @@ def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: 
     assert len(dataset.cmaps) == 2
 
 
-def test_fetch_localizer_button_task(tmp_path, localizer_mocker, capsys):  # noqa: ARG001
+def test_fetch_localizer_button_task(tmp_path, localizer_mocker, capsys):  # noqa : ARG001
+    # TODO (nilearn >= 0.17.0) remove the test with the function
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # Only one subject
-    dataset = func.fetch_localizer_button_task(data_dir=tmp_path, verbose=1)
+    with pytest.warns(
+        FutureWarning, match="will be removed in Nilearn 0.17.0"
+    ):
+        dataset = func.fetch_localizer_button_task(
+            data_dir=tmp_path, verbose=1
+        )
 
     assert isinstance(dataset, Bunch)
 
@@ -473,9 +479,12 @@ def test_fetch_localizer_button_task(tmp_path, localizer_mocker, capsys):  # noq
     assert isinstance(dataset.tmap, str)
     assert isinstance(dataset.anat, str)
 
-    check_fetcher_verbosity(
-        func.fetch_localizer_button_task, capsys, data_dir=tmp_path
-    )
+    with pytest.warns(
+        FutureWarning, match="will be removed in Nilearn 0.17.0"
+    ):
+        check_fetcher_verbosity(
+            func.fetch_localizer_button_task, capsys, data_dir=tmp_path
+        )
 
 
 @pytest.mark.parametrize("quality_checked", [False, True])
