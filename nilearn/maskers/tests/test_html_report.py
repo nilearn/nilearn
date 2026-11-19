@@ -298,7 +298,10 @@ def test_nifti_labels_masker_report_no_image_for_fit(
 ):
     """Check no contour in image when no image was provided to fit."""
     masker = NiftiLabelsMasker(img_labels, labels=labels)
-    masker.fit()
+    with pytest.warns(
+        FutureWarning, match="resampling_target='data' was requested"
+    ):
+        masker.fit()
 
     # No image was provided to fit, regions are plotted using
     # plot_roi such that no contour should be in the image
@@ -402,7 +405,10 @@ def test_nifti_labels_masker_report_cut_coords(
     masker = masker_class(**input_parameters, reports=True)
 
     # Get display without data
-    masker.fit()
+    with pytest.warns(
+        FutureWarning, match="resampling_target='data' was requested"
+    ):
+        masker.fit()
     display = masker._load_report_displays()
 
     # Get display with data
@@ -582,7 +588,10 @@ def test_nifti_label_masker_brainsprite(
     generate_and_check_masker_report(
         masker, extra_warnings_allowed=True, engine="brainsprite"
     )
-    masker.fit()
+    with pytest.warns(
+        FutureWarning, match="resampling_target='data' was requested"
+    ):
+        masker.fit()
     generate_and_check_masker_report(
         masker, extra_warnings_allowed=True, engine="brainsprite"
     )

@@ -769,7 +769,13 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             else:
                 masker = mask
         if not masker.__sklearn_is_fitted__():
-            masker.fit()
+            if (
+                isinstance(masker, NiftiLabelsMasker)
+                and masker.resampling_target == "data"
+            ):
+                masker.fit(y_pred)
+            else:
+                masker.fit()
 
         # Extract time series for the observed, predicted, and residuals
         predicted = masker.transform(y_pred)
