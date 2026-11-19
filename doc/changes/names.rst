@@ -417,6 +417,8 @@
 
 .. _Yichun Huang: https://github.com/YCHuang0610
 
+.. _Zachary Nudelman: https://github.com/zachnudels
+
 .. _Zvi Baratz: https://github.com/ZviBaratz
 
 .. _Óscar Nájera: https://github.com/Titan-C

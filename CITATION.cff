@@ -962,6 +962,11 @@ authors:
     family-names: Huang
     website: https://github.com/YCHuang0610
     affiliation: Peking University, Beijing, China
+  - given-names: Zachary
+    family-names: Nudelman
+    website: https://github.com/zachnudels
+    orcid: https://orcid.org/0000-0002-5888-7949
+    affiliation: Vrije Universiteit Amsterdam
   - given-names: Zvi
     family-names: Baratz
     website: https://github.com/ZviBaratz
