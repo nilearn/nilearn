@@ -399,9 +399,11 @@ def find_cut_slices(
     data = smooth_array(data, affine, fwhm="fast")
 
     if spacing == "auto":
-        spacing = max(int(0.5 / n_cuts * data.shape[axis]), 1)
+        spacing_int = max(int(0.5 / n_cuts * data.shape[axis]), 1)
+    else:
+        spacing_int = int(spacing)
 
-    cut_coords = _find_peak_cuts(data, axis, n_cuts, spacing)
+    cut_coords = _find_peak_cuts(data, axis, n_cuts, spacing_int)
     cut_coords = _fill_missing_cuts(
         cut_coords, n_cuts, orig_data, axis, this_shape
     )
