@@ -101,6 +101,8 @@ NON_EYE_AFFINE = np.array(
     ]
 )
 
+MODALITIES = ["volume", "surface"]
+
 
 def _new_data_for_smooth_array() -> np.ndarray:
     # Impulse in 3D
@@ -167,12 +169,12 @@ def _mean_ground_truth(imgs) -> np.ndarray:
     return np.mean(arrays, axis=0)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def smooth_array_data() -> np.ndarray:
     return _new_data_for_smooth_array()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def stat_img_test_data() -> Nifti1Image:
     shape = (20, 20, 30)
     affine = _affine_eye()
@@ -307,84 +309,62 @@ def test_fast_smooth_array():
 
 
 @pytest.mark.parametrize("affine", AFFINE_TO_TEST)
-def test_smooth_array_fwhm_is_odd_with_copy(smooth_array_data, affine):
+@pytest.mark.parametrize("copy", [True, False])
+def test_smooth_array_fwhm_is_odd(smooth_array_data, affine, copy):
     """Test that fwhm divided by any affine is odd.
 
     Otherwise assertion below will fail.
     ( 9 / 0.6 = 15 is fine)
     """
-    data = smooth_array_data
     fwhm = 9
 
-    filtered = smooth_array(data, affine, fwhm=fwhm, copy=True)
+    filtered = smooth_array(smooth_array_data, affine, fwhm=fwhm, copy=copy)
 
-    assert not np.may_share_memory(filtered, data)
+    if copy is True:
+        assert not np.may_share_memory(filtered, smooth_array_data)
+    else:
+        assert np.may_share_memory(filtered, smooth_array_data)
 
     _check_fwhm(filtered, affine, fwhm)
 
 
-@pytest.mark.parametrize("affine", AFFINE_TO_TEST)
-def test_smooth_array_fwhm_is_odd_no_copy(affine):
-    """Test that fwhm divided by any affine is odd.
-
-    Otherwise assertion below will fail.
-    ( 9 / 0.6 = 15 is fine)
-    """
-    data = _new_data_for_smooth_array()
-    fwhm = 9
-
-    smooth_array(data, affine, fwhm=fwhm, copy=False)
-
-    _check_fwhm(data, affine, fwhm)
-
-
-@pytest.mark.ai_generated
+@pytest.mark.parametrize("ensure_finite", [True, False])
 @pytest.mark.parametrize("fwhm", [None, 9])
-def test_smooth_array_warns_on_non_finite(fwhm):
-    """``smooth_array`` must report a replacement, and make good on it.
+def test_smooth_array_warns_non_finite(
+    smooth_array_data, fwhm, affine_eye, ensure_finite
+):
+    """Check behavior smooth_array with ensure_finite.
+
+    ``smooth_array`` must report a replacement with warning
+    if `ensure_finite=True`.
+
+    `ensure_finite=False` leaves the non-finite values unchanged.
+    And does so without warning.
 
     See https://github.com/nilearn/nilearn/issues/6487.
     """
-    data = _new_data_for_smooth_array()
-    data[10, 10, 10] = np.nan
-    affine = AFFINE_TO_TEST[2]
+    data = smooth_array_data
 
-    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
-        filtered = smooth_array(
-            data, affine, fwhm=fwhm, ensure_finite=True, copy=True
-        )
-
-    assert np.all(np.isfinite(filtered))
-
-
-@pytest.mark.ai_generated
-def test_smooth_array_does_not_warn_when_all_finite():
-    """No warning when there is nothing to replace."""
-    data = _new_data_for_smooth_array()
-    affine = AFFINE_TO_TEST[2]
-
+    # if data is finite: no warnings
     with warnings.catch_warnings():
         warnings.simplefilter("error", RuntimeWarning)
-        smooth_array(data, affine, fwhm=9, ensure_finite=True, copy=True)
+        smooth_array(data, affine_eye, fwhm=fwhm, ensure_finite=ensure_finite)
 
-
-@pytest.mark.ai_generated
-def test_smooth_array_ensure_finite_false_is_silent():
-    """``ensure_finite=False`` leaves the non-finite values unchanged.
-
-    And does so without warning.
-    """
-    data = _new_data_for_smooth_array()
+    # for non finite data, only warns and clean when ensure_finite is True
     data[10, 10, 10] = np.nan
-    affine = AFFINE_TO_TEST[2]
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("error", RuntimeWarning)
-        filtered = smooth_array(
-            data, affine, fwhm=None, ensure_finite=False, copy=True
-        )
-
-    assert not np.all(np.isfinite(filtered))
+    if ensure_finite:
+        with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
+            filtered = smooth_array(
+                data, affine_eye, fwhm=fwhm, ensure_finite=ensure_finite
+            )
+        assert np.all(np.isfinite(filtered))
+    else:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", RuntimeWarning)
+            filtered = smooth_array(
+                data, affine_eye, fwhm=fwhm, ensure_finite=ensure_finite
+            )
+        assert not np.all(np.isfinite(filtered))
 
 
 @pytest.mark.ai_generated
@@ -406,14 +386,17 @@ def test_compute_mean_smooth_does_not_warn_on_nan(affine_eye):
 
 
 def test_smooth_array_same_result_with_fwhm_none_or_zero(
-    smooth_array_data,
+    smooth_array_data, affine_eye
 ):
-    """Test output equal when fwhm=None and fwhm=0."""
-    affine = AFFINE_TO_TEST[2]
+    """Test output equal when fwhm=None and fwhm=0.
 
-    out_fwhm_none = smooth_array(smooth_array_data, affine, fwhm=None)
-    with pytest.warns(UserWarning, match="Setting it to None"):
-        out_fwhm_zero = smooth_array(smooth_array_data, affine, fwhm=0.0)
+    See also https://github.com/nilearn/nilearn/issues/1537.
+    """
+    out_fwhm_none = smooth_array(smooth_array_data, affine_eye, fwhm=None)
+    with pytest.warns(
+        UserWarning, match=r"specified as 0\.0\. Setting it to None"
+    ):
+        out_fwhm_zero = smooth_array(smooth_array_data, affine_eye, fwhm=0.0)
 
     assert_array_equal(out_fwhm_none, out_fwhm_zero)
 
@@ -426,15 +409,6 @@ def test_fast_smooth_array_give_same_result_as_smooth_array(
         smooth_array(smooth_array_data, affine, fwhm="fast"),
         _fast_smooth_array(smooth_array_data),
     )
-
-
-def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
-    """See https://github.com/nilearn/nilearn/issues/1537."""
-    affine = AFFINE_TO_TEST[2]
-    with pytest.warns(
-        UserWarning, match=r"specified as 0\.0\. Setting it to None"
-    ):
-        smooth_array(smooth_array_data, affine, fwhm=0.0)
 
 
 @pytest.mark.parametrize("dtype", ["uint8", "uint16", "int16", "int32"])
@@ -520,9 +494,6 @@ def test_smooth_img_warning(img_3d_mni):
         UserWarning, match=r"specified as 0\.0\. Setting it to None"
     ):
         smooth_img(img_3d_mni, fwhm=0.0)
-
-
-MODALITIES = ["volume", "surface"]
 
 
 def _arrays(img) -> list[np.ndarray]:
