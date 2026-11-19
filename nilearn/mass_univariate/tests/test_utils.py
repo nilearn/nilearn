@@ -1,6 +1,7 @@
 """Test for nilearn.mass_univariate._utils."""
 
 import math
+import re
 
 import numpy as np
 import pytest
@@ -224,6 +225,18 @@ def test_calculate_cluster_measures_on_empty_array():
     true_mass = 0
     assert test_size[0] == true_size
     assert test_mass[0] == true_mass
+
+
+@pytest.mark.ai_generated
+@pytest.mark.parametrize("shape", [(2, 3, 4), (1, 2, 3, 4)])
+def test_normalize_matrix_on_axis_invalid_shape(shape):
+    """Higher-dimensional arrays should produce the intended shape error."""
+    message = (
+        "This function only accepts 2D arrays. "
+        f"An array of shape {shape!r} was passed."
+    )
+    with pytest.raises(ValueError, match=re.escape(message)):
+        _utils.normalize_matrix_on_axis(np.ones(shape))
 
 
 def test_t_score_with_covars_and_normalized_design_nocovar(rng):
