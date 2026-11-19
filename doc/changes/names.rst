@@ -333,6 +333,8 @@
 
 .. _Rishika Kapil: https://github.com/RishikaKaps
 
+.. _Rishit Garg: https://github.com/Rishit412
+
 .. _Robert Luke: https://github.com/rob-luke
 
 .. _Robert Williamson: https://github.com/RobWilliamson15
