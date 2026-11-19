@@ -751,6 +751,9 @@ authors:
     affiliation: Canadian Center for Computational Genomics / Calcul, Québec, Canada
     email: po.quirion@mcgill.ca
     orcid: https://orcid.org/0000-0003-2270-0000
+  - given-names: Plato
+    family-names: Ism
+    website: https://github.com/aplatogg
   - given-names: Pradeep Reddy
     family-names: Raamana
     website: https://github.com/raamana
