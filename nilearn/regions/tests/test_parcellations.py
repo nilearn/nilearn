@@ -76,14 +76,15 @@ class TestParcellations(TestNilearnBaseEstimator):
         assert len(extra_attributes) == 1
 
     def test_error_method_none(self, image_1) -> None:
-        """Test error when Parcellations is initialized with ``method=None``."""
+        """Test error when Parcellations is initialized with ``method=None``.
+        """
         with pytest.raises(
             ValueError, match=r"Parcellation method is specified as None. "
         ):
             Parcellations(method=None).fit(image_1)
 
     @pytest.mark.parametrize("method", ["kmens", "avg", "completed"])
-    def test_error_invalid_method(self, method, image_1):
+    def test_error_invalid_method(self, recwarn, method, image_1):
         """Test error when invalid method is specified during instantiation."""
         with pytest.raises(
             ValueError,
@@ -91,18 +92,18 @@ class TestParcellations(TestNilearnBaseEstimator):
         ):
             Parcellations(method=method).fit(image_1)
 
+    def test_no_warnings(self, recwarn, img_4d_zeros_eye):
+        parcellator = Parcellations(method="kmeans", n_parcels=1)
+        parcellator.fit(img_4d_zeros_eye)
+        assert len(recwarn) == 0
+
     def test_warnings(self, recwarn, img_4d_zeros_eye):
         parcellator = Parcellations(method="kmeans", n_parcels=7)
         parcellator.fit(img_4d_zeros_eye)
         assert len(recwarn) == 1
 
         warning = recwarn.pop(UserWarning)
-        assert "image contains 64-bit ints" not in str(warning.message)
-
-    def test_no_warnings(self, recwarn, img_4d_zeros_eye):
-        parcellator = Parcellations(method="kmeans", n_parcels=1)
-        parcellator.fit(img_4d_zeros_eye)
-        assert len(recwarn) == 0
+        assert "number of generated labels does not" in str(warning.message)
 
 
 METHODS = [
