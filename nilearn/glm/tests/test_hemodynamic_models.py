@@ -439,7 +439,8 @@ def test_make_regressor_fir_delays_and_oversampling():
     assert_array_equal(reg, reg_)
 
 
-def test_make_regressor_4():
+@pytest.mark.ai_generated
+def test_make_regressor_spm_constant_input_stays_constant():
     """Test that constant input remains constant after initial bump.
 
     regression test for:
