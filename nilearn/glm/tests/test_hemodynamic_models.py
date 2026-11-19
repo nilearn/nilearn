@@ -103,7 +103,6 @@ def test_orthogonalize_trivial(rng):
     assert_array_equal(Y, X)
 
 
-@pytest.mark.ai_generated
 def test_sample_condition_zero_duration_events():
     """Test that the experimental condition is correctly sampled."""
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
@@ -126,7 +125,6 @@ def test_sample_condition_zero_duration_events():
     assert reg[61] == 1
 
 
-@pytest.mark.ai_generated
 def test_sample_condition_onset_at_zero():
     """Test the experimental condition sampling -- onset = 0."""
     condition = ([0, 20, 36.5], [2, 2, 2], [1, 1, 1])
@@ -142,7 +140,6 @@ def test_sample_condition_onset_at_zero():
     assert reg[31] == 1
 
 
-@pytest.mark.ai_generated
 def test_sample_condition_oversampling():
     """Test the experimental condition sampling -- oversampling=10."""
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
@@ -166,7 +163,6 @@ def test_sample_condition_oversampling():
     assert_almost_equal(reg, reg_)
 
 
-@pytest.mark.ai_generated
 def test_sample_condition_negative_amplitude():
     """Test the experimental condition sampling -- negative amplitude."""
     condition = ([1, 20, 36.5], [2, 2, 2], [1.0, -1.0, 5.0])
@@ -180,7 +176,6 @@ def test_sample_condition_negative_amplitude():
     assert reg[61] == 5.0
 
 
-@pytest.mark.ai_generated
 def test_sample_condition_negative_onset():
     """Test the experimental condition sampling -- negative onset."""
     condition = ([-10, 0, 36.5], [2, 2, 2], [1.0, -1.0, 5.0])
@@ -194,7 +189,6 @@ def test_sample_condition_negative_onset():
     assert reg[61] == 5.0
 
 
-@pytest.mark.ai_generated
 def test_sample_condition_overlapping_onsets_different_durations():
     """Test the experimental condition sampling -- overalapping onsets, \
     different durations.
@@ -210,7 +204,6 @@ def test_sample_condition_overlapping_onsets_different_durations():
     assert reg[61] == 0.0
 
 
-@pytest.mark.ai_generated
 def test_sample_condition_different_onsets_overlapping_offsets():
     """Test the experimental condition sampling -- different onsets, \
     overlapping offsets.
@@ -388,7 +381,6 @@ def test_hkernel_errors():
         _hrf_kernel("foo", t_r)
 
 
-@pytest.mark.ai_generated
 def test_make_regressor_spm_with_durations():
     """Test the generated regressor."""
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
@@ -401,7 +393,6 @@ def test_make_regressor_spm_with_durations():
     assert reg_names[0] == "cond"
 
 
-@pytest.mark.ai_generated
 def test_make_regressor_spm_zero_duration_events():
     """Test the generated regressor."""
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
@@ -414,7 +405,6 @@ def test_make_regressor_spm_zero_duration_events():
     assert reg_names[0] == "cond"
 
 
-@pytest.mark.ai_generated
 def test_make_regressor_fir_delays_and_oversampling():
     """Test the generated regressor."""
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
@@ -439,7 +429,6 @@ def test_make_regressor_fir_delays_and_oversampling():
     assert_array_equal(reg, reg_)
 
 
-@pytest.mark.ai_generated
 def test_make_regressor_spm_constant_input_stays_constant():
     """Test that constant input remains constant after initial bump.
 
