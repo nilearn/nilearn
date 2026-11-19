@@ -22,8 +22,11 @@ class TestReNA(TestNilearnBaseEstimator):
     def create_instance(self) -> ReNA:
         return ReNA()
 
+    @pytest.mark.todo("Fix undocumented attributes after fit for ReNA")
     @override
-    def test_doc_attributes_after_fit(self):
+    def test_doc_no_undocumented_attributes_after_fit(
+            self, undocumented_attributes
+    ) -> None:
         pass
 
 

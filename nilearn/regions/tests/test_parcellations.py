@@ -1,6 +1,7 @@
 """Test the parcellations tools module."""
 
 import warnings
+from typing import override
 
 import numpy as np
 import pandas as pd
@@ -40,15 +41,16 @@ def image_2() -> Nifti1Image:
 
 
 class TestParcellations(TestNilearnBaseEstimator):
+
     def create_instance(self) -> Parcellations:
         return Parcellations(method="kmeans")
 
     @pytest.fixture
-    def fitted_estimator(self, image_1):
-        return self.estimator.fit(image_1)
+    def fitted_estimator(self, image_1) -> Parcellations:
+        return Parcellations(method="kmeans").fit(image_1)
 
     @override
-    def test_sklearn_tags(self):
+    def test_sklearn_tags(self) -> None:
         tags = self.estimator.__sklearn_tags__().input_tags
 
         assert hasattr(tags, "niimg_like")
@@ -57,53 +59,15 @@ class TestParcellations(TestNilearnBaseEstimator):
         assert hasattr(tags, "surf_img")
         assert tags.surf_img is True
 
+    @pytest.mark.todo("Complete missing docstring in Parcellations")
     @override
-    def test_doc_no_undocumented_params(self, doc):
-        # check public attributes before fit
-        parameters = [
-            x for x in self.estimator.__dict__ if not x.startswith("_")
-        ]
-        documented_parameters: dict[str, str] = {
-            param.name: param.type for param in doc["Parameters"]
-        }
-
-        undocumented_parameters = list(
-            set(parameters) - set(documented_parameters)
-        )
+    def test_doc_no_undocumented_params(self, undocumented_parameters):
         assert len(undocumented_parameters) == 3
-        warnings.warn(
-            (
-                "Missing docstring for parameters "
-                f"[{', '.join(undocumented_parameters)}] "
-                f"in estimator {self.estimator.__class__.__name__}."
-            ),
-            stacklevel=2,
-        )
 
+    @pytest.mark.todo("Fix extra attributes after fit for Parcellations")
     @override
-    def test_doc_no_extra_attributes_after_fit(self, doc, fitted_estimator):
-        fitted_attributes = [
-            x
-            for x in fitted_estimator.__dict__
-            if x.endswith("_") and not x.startswith("_")
-        ]
-        documented_attributes: dict[str, str] = {
-            attr.name: attr.type for attr in doc["Attributes"]
-        }
-        extra_attributes = list(
-            set(documented_attributes) - set(fitted_attributes)
-        )
-
+    def test_doc_no_extra_attributes_after_fit(self, extra_attributes):
         assert len(extra_attributes) == 1
-
-        warnings.warn(
-            (
-                "Extra docstring for attributes "
-                f"[{', '.join(extra_attributes)}] "
-                f"in estimator {self.estimator.__class__.__name__}."
-            ),
-            stacklevel=2,
-        )
 
 
 METHODS = [

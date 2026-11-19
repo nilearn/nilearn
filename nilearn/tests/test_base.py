@@ -9,36 +9,109 @@ from nilearn._base import NilearnBaseEstimator
 
 
 class TestNilearnBaseEstimator(ABC):
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        self.estimator = self.create_instance()
+    """Test class to test NilearnBaseEstimator methods."""
 
-    @pytest.fixture
-    def doc(self):
-        return NumpyDocString(self.estimator.__doc__)
+    @pytest.fixture(autouse=True)
+    def setup(self) -> None:
+        self.estimator = self.create_instance()
 
     @abstractmethod
     def create_instance(self) -> NilearnBaseEstimator:
+        """Create estimator instance to test.
+        """
         raise NotImplementedError()
 
     @pytest.fixture
-    def fitted_estimator(self):
+    def fitted_estimator(self) -> NilearnBaseEstimator:
+        """Return a fitted estimator."""
         raise NotImplementedError()
 
-    def test_sklearn_tags(self):
-        tags = self.estimator.__sklearn_tags__().input_tags
-        assert hasattr(tags, "niimg_like")
-        assert tags.niimg_like is False
+    @pytest.fixture
+    def doc(self) -> NumpyDocString:
+        """Docstring of the estimator."""
+        return NumpyDocString(self.estimator.__doc__)
 
-    def test_verbose(self):
-        assert self.estimator.verbose == 0
+    @pytest.fixture
+    def documented_parameters(self, doc) -> dict[str, str]:
+        """Parameters documented in the ``Parameters`` section of the class
+        docstring.
+        """
+        return {
+            param.name: param.type for param in doc["Parameters"]
+        }
 
-        signature = dict(
-            **inspect.signature(self.estimator.__init__).parameters
+    @pytest.fixture
+    def documented_attributes(self, doc) -> dict[str, str]:
+        """Attributes documented in the ``Attributes`` section of the class
+        docstring.
+        """
+        return {
+            param.name: param.type for param in doc["Attributes"]
+        }
+
+    @pytest.fixture
+    def parameters(self) -> list:
+        """Public attributes of the estimator."""
+        return [
+            x for x in self.estimator.__dict__ if not x.startswith("_")
+        ]
+
+    @pytest.fixture
+    def undocumented_parameters(
+            self, parameters, documented_parameters
+    ) -> list:
+        """The list of parameter names that appear in estimator attributes but
+        not in ``Parameters`` section of the estimator docstring.
+        """
+        return list(
+            set(parameters) - set(documented_parameters)
         )
-        assert signature["verbose"].default == 0
 
-    def test_doc_sections_exist(self, doc):
+    @pytest.fixture
+    def extra_parameters(self, parameters, documented_parameters) -> list:
+        """The list of parameters that appear in ``Parameters`` section of the
+        docstring of the estimator but not in the attributes of the estimator
+        itself.
+        """
+        return list(
+            set(documented_parameters) - set(parameters) - {"kwargs"}
+        )
+
+    @pytest.fixture
+    def fitted_attributes(self, fitted_estimator) -> list:
+        """The list of attributes of the estimator after fit."""
+        return [
+            x
+            for x in fitted_estimator.__dict__
+            if x.endswith("_") and not x.startswith("_")
+        ]
+
+    @pytest.fixture
+    def undocumented_attributes(
+            self, fitted_attributes, documented_attributes
+    ) -> list:
+        """The list of attributes of the estimator after fit which do not
+        appear in ``Attributes`` section of the estimator docstring.
+        """
+        return list(
+            set(fitted_attributes) - set(documented_attributes)
+        )
+
+    @pytest.fixture
+    def extra_attributes(
+            self, fitted_attributes, documented_attributes
+    ) -> list:
+        """The list of attributes that appear in ``Attributes`` section of the
+        docstring but not in the attributes of the estimator after fit.
+        """
+        return list(
+            set(documented_attributes) - set(fitted_attributes)
+        )
+
+    def test_doc_sections_exist(self, doc) -> None:
+        """Test if docstring of the estimator contains both ``Parameters`` and
+        ``Attributes`` sections.
+        """
         for section in ["Parameters", "Attributes"]:
             assert re.search(
                 r"^" + section + "\n^-{10}", str(doc), re.MULTILINE
@@ -47,113 +120,67 @@ class TestNilearnBaseEstimator(ABC):
                 f"has no '{section} section."
             )
 
-    def test_doc_no_duplicate_params(self, doc):
-        documented_parameters: dict[str, str] = {
-            param.name: param.type for param in doc["Parameters"]
-        }
+    def test_doc_no_duplicate_params(self, documented_parameters) -> None:
+        """Test that there are no estimator parameters that are documented more
+        than once in ``Parameters`` section of the estimator docstring.
+        """
         assert len(documented_parameters) == len(set(documented_parameters))
 
-    def test_doc_no_duplicate_attrs(self, doc):
-        documented_attributes: dict[str, str] = {
-            attr.name: attr.type for attr in doc["Attributes"]
-        }
+    def test_doc_no_duplicate_attrs(self, documented_attributes) -> None:
+        """Test that there are no estimator attributes that are documented more
+        than once in ``Attributes`` section of the estimator docstring.
+        """
         assert len(documented_attributes) == len(set(documented_attributes))
 
-    def test_doc_no_undocumented_params(self, doc):
-        # check public attributes before fit
-        parameters = [
-            x for x in self.estimator.__dict__ if not x.startswith("_")
-        ]
-        documented_parameters: dict[str, str] = {
-            param.name: param.type for param in doc["Parameters"]
-        }
-
-        undocumented_parameters = list(
-            set(parameters) - set(documented_parameters)
-        )
+    def test_doc_no_undocumented_params(self, undocumented_parameters) -> None:
+        """Test that there are no estimator attributes that are not documented
+        in ``Parameters`` section of the estimator docstring.
+        """
         assert not undocumented_parameters
 
-    def test_doc_no_extra_params(self, doc):
-        parameters = [
-            x for x in self.estimator.__dict__ if not x.startswith("_")
-        ]
-        documented_parameters: dict[str, str] = {
-            param.name: param.type for param in doc["Parameters"]
-        }
+    def test_doc_no_extra_params(self, extra_parameters) -> None:
+        """Test that there are no parameters that appear in ``Parameters``
+        section of the docstring of the estimator but not in the attributes of
+        the estimator itself.
+        """
+        assert not extra_parameters
 
-        # ensure that there are no extra parameters documented in docstring
-        extra_parameters = list(
-            set(documented_parameters) - set(parameters) - {"kwargs"}
-        )
-        assert not extra_parameters, (
-            "Extra docstring for parameters "
-            f"[{', '.join(extra_parameters)}] "
-            f"in estimator {self.estimator.__class__.__name__}."
-        )
-
-    def test_doc_param_order(self, doc):
-        # Attributes should be in same order as in __init__()
+    def test_doc_param_order(self, documented_parameters) -> None:
+        """Test the order of parameters in ``Parameters`` section of the
+        estimator to follow the order of ``estimator.__init__ method
+        parameters.
+        """
         tmp = dict(**inspect.signature(self.estimator.__init__).parameters)
-
-        documented_parameters: dict[str, str] = {
-            param.name: param.type for param in doc["Parameters"]
-        }
 
         assert [str(x) for x in documented_parameters] == [
             str(x) for x in tmp
-        ], (
-            f"Parameters of {self.estimator.__class__.__name__} "
-            f"should be in order\n{list(tmp)}. "
-            f"Got\n{list(documented_parameters)}"
-        )
+        ]
 
-    def test_doc_attr_order(self, doc):
-        documented_attributes: dict[str, str] = {
-            attr.name: attr.type for attr in doc["Attributes"]
-        }
+    def test_doc_attr_order(self, documented_attributes) -> None:
+        """Test the order of the attributes documented in ``Attributes``
+        section of the docstring to be in alphabetical order.
 
-        # nice to have
-        # if possible attributes should be in alphabetical order
-        # not always possible as sometimes doc string are composed from
-        # nilearn._utils.docs
-        assert list(documented_attributes) != sorted(documented_attributes), (
-            f"Attributes of {self.estimator.__class__.__name__} "
-            f"should be in order {sorted(documented_attributes)}. "
-            f"Got {list(documented_attributes)}"
-        )
+        Nice to have, but not always possible as sometimes doc string are
+        composed from nilearn._utils.docs.
+        """
+        assert list(documented_attributes) != sorted(documented_attributes)
 
     def test_doc_no_undocumented_attributes_after_fit(
-        self, doc, fitted_estimator
-    ):
-        fitted_attributes = [
-            x
-            for x in fitted_estimator.__dict__
-            if x.endswith("_") and not x.startswith("_")
-        ]
-        documented_attributes: dict[str, str] = {
-            attr.name: attr.type for attr in doc["Attributes"]
-        }
-        undocumented_attributes = list(
-            set(fitted_attributes) - set(documented_attributes)
-        )
+            self, undocumented_attributes
+    ) -> None:
+        """
+        Test that all the attributes of the fitted estimator are documented in
+        ``Attributes`` section of the estimator docstring.
+        """
         assert not undocumented_attributes
 
-    def test_doc_no_extra_attributes_after_fit(self, doc, fitted_estimator):
-        fitted_attributes = [
-            x
-            for x in fitted_estimator.__dict__
-            if x.endswith("_") and not x.startswith("_")
-        ]
-        documented_attributes: dict[str, str] = {
-            attr.name: attr.type for attr in doc["Attributes"]
-        }
-        extra_attributes = list(
-            set(documented_attributes) - set(fitted_attributes)
-        )
-
+    def test_doc_no_extra_attributes_after_fit(self, extra_attributes) -> None:
+        """Test that all attributes in ``Attributes`` section of the docstring
+        appear in estimator attributes after the estimator is fitted.
+        """
         assert not extra_attributes
 
-    def test_check_doc_link(self):
+    def test_check_doc_link(self) -> None:
         estimator_name = self.estimator.__class__.__name__
 
         modules = self.estimator.__class__.__module__.split(".")
@@ -176,3 +203,21 @@ class TestNilearnBaseEstimator(ABC):
             f"Doc link '{doc_link}' does not match expected pattern "
             f"'{expected_pattern}'"
         )
+
+    def test_sklearn_tags(self) -> None:
+        """Test the estimator has expected tags and corresponding values."""
+        tags = self.estimator.__sklearn_tags__().input_tags
+        assert hasattr(tags, "niimg_like")
+        assert tags.niimg_like is False
+
+    def test_verbose(self) -> None:
+        """Test if the estimator's verbose attribute and the default value in
+        ``__init__`` is 0.
+        """
+        assert self.estimator.verbose == 0
+
+        signature = dict(
+            **inspect.signature(self.estimator.__init__).parameters
+        )
+        assert signature["verbose"].default == 0
+
