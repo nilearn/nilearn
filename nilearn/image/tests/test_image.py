@@ -284,6 +284,23 @@ def test_high_variance_confounds_surface(surf_mask_1d, surface_glm_data):
     assert confounds2.shape == (length, n_confounds)
 
 
+def test_compute_mean_smooth_does_not_warn_on_nan(affine_eye):
+    """``compute_mean`` restores the NaNs it cleans, so it must stay silent.
+
+    ``compute_epi_mask(opening=True)`` reaches this path, and a warning
+    there would point at data the caller never sees changed.
+    """
+    data = np.zeros((10, 10, 10, 2))
+    data[5, 5, 5] = np.nan
+    img = Nifti1Image(data, affine_eye)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        mean_data, _ = compute_mean(img, smooth=1)
+
+    assert np.isnan(mean_data[5, 5, 5])
+
+
 def test_fast_smooth_array():
     N = 4
     shape = (N, N, N)
@@ -365,24 +382,6 @@ def test_smooth_array_warns_non_finite(
                 data, affine_eye, fwhm=fwhm, ensure_finite=ensure_finite
             )
         assert not np.all(np.isfinite(filtered))
-
-
-@pytest.mark.ai_generated
-def test_compute_mean_smooth_does_not_warn_on_nan(affine_eye):
-    """``compute_mean`` restores the NaNs it cleans, so it must stay silent.
-
-    ``compute_epi_mask(opening=True)`` reaches this path, and a warning
-    there would point at data the caller never sees changed.
-    """
-    data = np.zeros((10, 10, 10, 2))
-    data[5, 5, 5] = np.nan
-    img = Nifti1Image(data, affine_eye)
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("error", RuntimeWarning)
-        mean_data, _ = compute_mean(img, smooth=1)
-
-    assert np.isnan(mean_data[5, 5, 5])
 
 
 def test_smooth_array_same_result_with_fwhm_none_or_zero(
