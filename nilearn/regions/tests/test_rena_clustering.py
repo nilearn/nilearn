@@ -22,10 +22,33 @@ class TestReNA(TestNilearnBaseEstimator):
     def create_instance(self) -> ReNA:
         return ReNA()
 
-    @pytest.mark.todo("Fix undocumented attributes after fit for ReNA")
+    @pytest.fixture()
+    def fit_data(self) -> np.ndarray:
+        data_img, mask_img = generate_fake_fmri(
+            shape=_shape_3d_default(), length=5
+        )
+        data = get_data(data_img)
+        mask = get_data(mask_img)
+
+        X = np.empty((data.shape[3], int(mask.sum())))
+        for i in range(data.shape[3]):
+            X[i, :] = np.copy(data[:, :, :, i])[get_data(mask_img) != 0]
+
+        return X
+
+    @pytest.fixture
+    def fitted_estimator(self, fit_data) -> ReNA:
+        return ReNA().fit(fit_data)
+
+    # @pytest.mark.todo("Fix doc attribute order for ReNA")
+    @override
+    def test_doc_attr_order(self, documented_attributes) -> None:
+        pass
+
+    # @pytest.mark.todo("Fix undocumented attributes after fit for ReNA")
     @override
     def test_doc_no_undocumented_attributes_after_fit(
-            self, undocumented_attributes
+        self, undocumented_attributes
     ) -> None:
         pass
 

@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 import pytest
 from numpydoc.docscrape import NumpyDocString
+import numpy as np
 
 from nilearn._base import NilearnBaseEstimator
 
@@ -17,12 +18,16 @@ class TestNilearnBaseEstimator(ABC):
 
     @abstractmethod
     def create_instance(self) -> NilearnBaseEstimator:
-        """Create estimator instance to test.
-        """
+        """Create estimator instance to test."""
         raise NotImplementedError()
 
     @pytest.fixture
-    def fitted_estimator(self) -> NilearnBaseEstimator:
+    def fit_data(self) -> np.ndarray:
+        """Return data to fit the estimator."""
+        raise NotImplementedError()
+
+    @pytest.fixture
+    def fitted_estimator(self, fit_data) -> NilearnBaseEstimator:
         """Return a fitted estimator."""
         raise NotImplementedError()
 
@@ -36,36 +41,28 @@ class TestNilearnBaseEstimator(ABC):
         """Parameters documented in the ``Parameters`` section of the class
         docstring.
         """
-        return {
-            param.name: param.type for param in doc["Parameters"]
-        }
+        return {param.name: param.type for param in doc["Parameters"]}
 
     @pytest.fixture
     def documented_attributes(self, doc) -> dict[str, str]:
         """Attributes documented in the ``Attributes`` section of the class
         docstring.
         """
-        return {
-            param.name: param.type for param in doc["Attributes"]
-        }
+        return {param.name: param.type for param in doc["Attributes"]}
 
     @pytest.fixture
     def parameters(self) -> list:
         """Public attributes of the estimator."""
-        return [
-            x for x in self.estimator.__dict__ if not x.startswith("_")
-        ]
+        return [x for x in self.estimator.__dict__ if not x.startswith("_")]
 
     @pytest.fixture
     def undocumented_parameters(
-            self, parameters, documented_parameters
+        self, parameters, documented_parameters
     ) -> list:
         """The list of parameter names that appear in estimator attributes but
         not in ``Parameters`` section of the estimator docstring.
         """
-        return list(
-            set(parameters) - set(documented_parameters)
-        )
+        return list(set(parameters) - set(documented_parameters))
 
     @pytest.fixture
     def extra_parameters(self, parameters, documented_parameters) -> list:
@@ -73,9 +70,7 @@ class TestNilearnBaseEstimator(ABC):
         docstring of the estimator but not in the attributes of the estimator
         itself.
         """
-        return list(
-            set(documented_parameters) - set(parameters) - {"kwargs"}
-        )
+        return list(set(documented_parameters) - set(parameters) - {"kwargs"})
 
     @pytest.fixture
     def fitted_attributes(self, fitted_estimator) -> list:
@@ -88,25 +83,21 @@ class TestNilearnBaseEstimator(ABC):
 
     @pytest.fixture
     def undocumented_attributes(
-            self, fitted_attributes, documented_attributes
+        self, fitted_attributes, documented_attributes
     ) -> list:
         """The list of attributes of the estimator after fit which do not
         appear in ``Attributes`` section of the estimator docstring.
         """
-        return list(
-            set(fitted_attributes) - set(documented_attributes)
-        )
+        return list(set(fitted_attributes) - set(documented_attributes))
 
     @pytest.fixture
     def extra_attributes(
-            self, fitted_attributes, documented_attributes
+        self, fitted_attributes, documented_attributes
     ) -> list:
         """The list of attributes that appear in ``Attributes`` section of the
         docstring but not in the attributes of the estimator after fit.
         """
-        return list(
-            set(documented_attributes) - set(fitted_attributes)
-        )
+        return list(set(documented_attributes) - set(fitted_attributes))
 
     def test_doc_sections_exist(self, doc) -> None:
         """Test if docstring of the estimator contains both ``Parameters`` and
@@ -152,9 +143,7 @@ class TestNilearnBaseEstimator(ABC):
         """
         tmp = dict(**inspect.signature(self.estimator.__init__).parameters)
 
-        assert [str(x) for x in documented_parameters] == [
-            str(x) for x in tmp
-        ]
+        assert [str(x) for x in documented_parameters] == [str(x) for x in tmp]
 
     def test_doc_attr_order(self, documented_attributes) -> None:
         """Test the order of the attributes documented in ``Attributes``
@@ -166,7 +155,7 @@ class TestNilearnBaseEstimator(ABC):
         assert list(documented_attributes) != sorted(documented_attributes)
 
     def test_doc_no_undocumented_attributes_after_fit(
-            self, undocumented_attributes
+        self, undocumented_attributes
     ) -> None:
         """
         Test that all the attributes of the fitted estimator are documented in
@@ -220,4 +209,3 @@ class TestNilearnBaseEstimator(ABC):
             **inspect.signature(self.estimator.__init__).parameters
         )
         assert signature["verbose"].default == 0
-

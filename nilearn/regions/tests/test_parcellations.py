@@ -41,7 +41,6 @@ def image_2() -> Nifti1Image:
 
 
 class TestParcellations(TestNilearnBaseEstimator):
-
     def create_instance(self) -> Parcellations:
         return Parcellations(method="kmeans")
 
@@ -59,15 +58,46 @@ class TestParcellations(TestNilearnBaseEstimator):
         assert hasattr(tags, "surf_img")
         assert tags.surf_img is True
 
-    @pytest.mark.todo("Complete missing docstring in Parcellations")
+    # @pytest.mark.todo("Complete missing docstring in Parcellations")
     @override
     def test_doc_no_undocumented_params(self, undocumented_parameters):
         assert len(undocumented_parameters) == 3
 
-    @pytest.mark.todo("Fix extra attributes after fit for Parcellations")
+    # @pytest.mark.todo("Fix extra attributes after fit for Parcellations")
     @override
     def test_doc_no_extra_attributes_after_fit(self, extra_attributes):
         assert len(extra_attributes) == 1
+
+    def test_error_method_none(self, image_1) -> None:
+        """Test error when Parcellations is initialized with ``method=None``.
+        """
+        with pytest.raises(
+            ValueError, match=r"Parcellation method is specified as None. "
+        ):
+            Parcellations(method=None).fit(image_1)
+
+    @pytest.mark.parametrize("method", ["kmens", "avg", "completed"])
+    def test_error_invalid_method(self, method, image_1):
+        """Test error when invalid method is specified during instantiation.
+        """
+        with pytest.raises(
+            ValueError,
+            match=("'method' must be one of"),
+        ):
+            Parcellations(method=method).fit(image_1)
+
+    def test_warnings(self, recwarn, img_4d_zeros_eye):
+        parcellator = Parcellations(method="kmeans", n_parcels=7)
+        parcellator.fit(img_4d_zeros_eye)
+        assert len(recwarn) == 1
+
+        warning = recwarn.pop(UserWarning)
+        assert "image contains 64-bit ints" not in str(warning.message)
+
+    def test_no_warnings(self, recwarn, img_4d_zeros_eye):
+        parcellator = Parcellations(method="kmeans", n_parcels=1)
+        parcellator.fit(img_4d_zeros_eye)
+        assert len(recwarn) == 0
 
 
 METHODS = [
@@ -78,25 +108,6 @@ METHODS = [
     "rena",
     "hierarchical_kmeans",
 ]
-
-
-@pytest.mark.slow
-def test_error_parcellation_method_none(image_1):
-    with pytest.raises(
-        ValueError, match=r"Parcellation method is specified as None. "
-    ):
-        Parcellations(method=None).fit(image_1)
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize("method", ["kmens", "avg", "completed"])
-def test_errors_raised_in_check_parameters_fit(method, image_1):
-    """Test whether an error is raised or not given a false method type."""
-    with pytest.raises(
-        ValueError,
-        match=("'method' must be one of"),
-    ):
-        Parcellations(method=method).fit(image_1)
 
 
 @pytest.mark.slow
@@ -134,30 +145,6 @@ def test_fit_on_single_nifti_image(method, n_parcel, image_1):
         # Test that object returns attribute connectivity_
         # only for AgglomerativeClustering methods
         assert parcellator.connectivity_ is not None
-
-
-@pytest.mark.slow
-def test_warnings(img_4d_zeros_eye):
-    parcellator = Parcellations(method="kmeans", n_parcels=7)
-
-    with pytest.warns(UserWarning):
-        parcellator.fit(img_4d_zeros_eye)
-
-
-def test_no_warnings(img_4d_zeros_eye):
-    parcellator = Parcellations(method="kmeans", n_parcels=1)
-    with warnings.catch_warnings(record=True) as record:
-        parcellator.fit(img_4d_zeros_eye)
-    assert all(r.category is not UserWarning for r in record)
-
-
-def test_no_int64_warnings(img_4d_zeros_eye):
-    parcellator = Parcellations(method="kmeans", n_parcels=1)
-    with warnings.catch_warnings(record=True) as record:
-        parcellator.fit(img_4d_zeros_eye)
-    for r in record:
-        if issubclass(r.category, UserWarning):
-            assert "image contains 64-bit ints" not in str(r.message)
 
 
 @pytest.mark.slow
