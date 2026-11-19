@@ -87,6 +87,8 @@ Enhancements
 
 - :bdg-secondary:`Maint` Refactor ``threshold_img`` to reduce complexity (:gh:`6629` by `uvcode01-max <https://github.com/uvcode01-max>`_).
 
+- :bdg-warning:`Test` Give explicit names to the tests in ``nilearn/glm/tests/test_hemodynamic_models.py`` (:gh:`6747` by `Rishit Garg`_).
+
 - :bdg-success:`API` The ``seeds`` parameter of :class:`~maskers.NiftiSpheresMasker` now also accepts a single triplet of coordinates, for example ``NiftiSpheresMasker(seeds=(0, -52, 18))`` (:gh:`6700` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Allow passing ``cmap`` and ``gridsize`` to :func:`~nilearn.plotting.plot_img_comparison`; both were hardcoded to ``inferno`` and ``100`` (:gh:`6752` by `Plato Ism`_).
