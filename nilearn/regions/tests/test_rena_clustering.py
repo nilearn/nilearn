@@ -1,3 +1,5 @@
+from typing import override
+
 import numpy as np
 import pytest
 from joblib import Memory
@@ -13,15 +15,14 @@ from nilearn.regions.rena_clustering import (
     make_edges_surface,
 )
 from nilearn.surface import SurfaceImage
-
 from nilearn.tests.test_base import TestNilearnBaseEstimator
 
 
 class TestReNA(TestNilearnBaseEstimator):
-
     def create_instance(self) -> ReNA:
         return ReNA()
 
+    @override
     def test_doc_attributes_after_fit(self):
         pass
 

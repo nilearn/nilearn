@@ -47,6 +47,7 @@ class TestParcellations(TestNilearnBaseEstimator):
     def fitted_estimator(self, image_1):
         return self.estimator.fit(image_1)
 
+    @override
     def test_sklearn_tags(self):
         tags = self.estimator.__sklearn_tags__().input_tags
 
@@ -56,6 +57,7 @@ class TestParcellations(TestNilearnBaseEstimator):
         assert hasattr(tags, "surf_img")
         assert tags.surf_img is True
 
+    @override
     def test_doc_no_undocumented_params(self, doc):
         # check public attributes before fit
         parameters = [
@@ -78,6 +80,7 @@ class TestParcellations(TestNilearnBaseEstimator):
             stacklevel=2,
         )
 
+    @override
     def test_doc_no_extra_attributes_after_fit(self, doc, fitted_estimator):
         fitted_attributes = [
             x
