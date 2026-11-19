@@ -542,50 +542,64 @@ def finite_img(img_3d_mni, surf_img_1d):
     return _finite_img
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("modality", MODALITIES)
 @pytest.mark.parametrize("fwhm", [None, 0.0, 4.0])
-def test_smooth_img_warns_on_non_finite(non_finite_img, modality, fwhm):
-    """Warn users when smoothing zeroes their data.
+@pytest.mark.parametrize("ensure_finite", [True, False])
+def test_smooth_img_warns_finite(
+    finite_img, non_finite_img, modality, fwhm, ensure_finite
+):
+    """Check behavior smooth_img with ensure_finite.
 
-    Both modalities must warn, exactly once, and the values must really be
-    finite afterwards; the two branches stay in step on all three.
+    If ``ensure_finite=True``
+    Warn users when smoothing zeroes their data.
+    Both modalities must warn, exactly once,
+    and the values must really be finite afterwards.
+
+    ``ensure_finite=False`` leaves non-finite values alone, silently.
+
     See https://github.com/nilearn/nilearn/issues/6487.
     """
-    with pytest.warns(
-        RuntimeWarning, match="Non-finite values detected"
-    ) as rec:
-        smoothed = smooth_img(non_finite_img(modality), fwhm=fwhm)
-
-    assert len(_non_finite_warnings(rec)) == 1
-    assert _all_finite(smoothed)
-
-
-@pytest.mark.ai_generated
-@pytest.mark.parametrize("modality", MODALITIES)
-@pytest.mark.parametrize("fwhm", [None, 0.0, 4.0])
-def test_smooth_img_does_not_warn_when_all_finite(finite_img, modality, fwhm):
-    """No warning when there is nothing to replace."""
-    with warnings.catch_warnings():
-        warnings.simplefilter("error", RuntimeWarning)
-        smooth_img(finite_img(modality), fwhm=fwhm)
-
-
-@pytest.mark.ai_generated
-@pytest.mark.parametrize("modality", MODALITIES)
-@pytest.mark.parametrize("fwhm", [None, 0.0, 4.0])
-def test_smooth_img_ensure_finite_false(non_finite_img, modality, fwhm):
-    """``ensure_finite=False`` leaves non-finite values alone, silently."""
-    with warnings.catch_warnings():
-        warnings.simplefilter("error", RuntimeWarning)
-        smoothed = smooth_img(
-            non_finite_img(modality), fwhm=fwhm, ensure_finite=False
+    extra_context = nullcontext()
+    if fwhm == 0.0:
+        extra_context = pytest.warns(
+            UserWarning,
+            match=(
+                r"The parameter 'fwhm'.*specified as 0.*Setting it to None"
+            ),
         )
 
-    assert not _all_finite(smoothed)
+    # No warning when data is finite
+    with warnings.catch_warnings(), extra_context:
+        warnings.simplefilter("error", RuntimeWarning)
+        smooth_img(
+            finite_img(modality), fwhm=fwhm, ensure_finite=ensure_finite
+        )
+
+    if ensure_finite:
+        with (
+            pytest.warns(
+                RuntimeWarning, match="Non-finite values detected"
+            ) as rec,
+            extra_context,
+        ):
+            smoothed = smooth_img(
+                non_finite_img(modality),
+                fwhm=fwhm,
+                ensure_finite=ensure_finite,
+            )
+
+        assert len(_non_finite_warnings(rec)) == 1
+        assert _all_finite(smoothed)
+    else:
+        with warnings.catch_warnings(), extra_context:
+            warnings.simplefilter("error", RuntimeWarning)
+            smoothed = smooth_img(
+                non_finite_img(modality), fwhm=fwhm, ensure_finite=False
+            )
+
+        assert not _all_finite(smoothed)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("modality", MODALITIES)
 def test_smooth_img_does_not_modify_input(non_finite_img, modality):
     """Cleaning non-finite values must not touch the input image."""
@@ -599,7 +613,6 @@ def test_smooth_img_does_not_modify_input(non_finite_img, modality):
         assert_array_equal(actual, before)
 
 
-@pytest.mark.ai_generated
 def test_smooth_img_list_warns_for_each_image(surf_img_1d):
     """The warning is not swallowed when several images are passed.
 
@@ -630,7 +643,11 @@ def test_smooth_img_surface(surf_img_1d):
     Test that min and max are less extreme after smoothing.
     """
     out_fwhm_none = smooth_img(surf_img_1d, fwhm=None)
-    out_fwhm_zero = smooth_img(surf_img_1d, fwhm=0)
+    with pytest.warns(
+        UserWarning,
+        match=(r"The parameter 'fwhm'.*specified as 0.*Setting it to None"),
+    ):
+        out_fwhm_zero = smooth_img(surf_img_1d, fwhm=0)
 
     assert_surface_image_equal(surf_img_1d, out_fwhm_zero)
     assert_surface_image_equal(out_fwhm_none, out_fwhm_zero)
