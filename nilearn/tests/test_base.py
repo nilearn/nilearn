@@ -2,9 +2,9 @@ import inspect
 import re
 from abc import ABC, abstractmethod
 
+import numpy as np
 import pytest
 from numpydoc.docscrape import NumpyDocString
-import numpy as np
 
 from nilearn._base import NilearnBaseEstimator
 

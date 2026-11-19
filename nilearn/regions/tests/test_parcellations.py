@@ -45,8 +45,15 @@ class TestParcellations(TestNilearnBaseEstimator):
         return Parcellations(method="kmeans")
 
     @pytest.fixture
-    def fitted_estimator(self, image_1) -> Parcellations:
-        return Parcellations(method="kmeans").fit(image_1)
+    def fit_data(self) -> Nifti1Image:
+        data = np.zeros((10, 11, 12, 5))
+        data[9, 10, 2] = 1
+        data[4, 9, 3] = 2
+        return Nifti1Image(data, affine=_affine_eye())
+
+    @pytest.fixture
+    def fitted_estimator(self, fit_data) -> Parcellations:
+        return Parcellations(method="kmeans").fit(fit_data)
 
     @override
     def test_sklearn_tags(self) -> None:
@@ -69,8 +76,7 @@ class TestParcellations(TestNilearnBaseEstimator):
         assert len(extra_attributes) == 1
 
     def test_error_method_none(self, image_1) -> None:
-        """Test error when Parcellations is initialized with ``method=None``.
-        """
+        """Test error when Parcellations is initialized with ``method=None``."""
         with pytest.raises(
             ValueError, match=r"Parcellation method is specified as None. "
         ):
@@ -78,8 +84,7 @@ class TestParcellations(TestNilearnBaseEstimator):
 
     @pytest.mark.parametrize("method", ["kmens", "avg", "completed"])
     def test_error_invalid_method(self, method, image_1):
-        """Test error when invalid method is specified during instantiation.
-        """
+        """Test error when invalid method is specified during instantiation."""
         with pytest.raises(
             ValueError,
             match=("'method' must be one of"),
