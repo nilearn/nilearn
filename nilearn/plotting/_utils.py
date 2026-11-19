@@ -144,13 +144,8 @@ def _adjust_integer_ticks(n_ticks, threshold, f_vmin, f_vmax, tick_format):
     return n_ticks
 
 
-def _filter_ticks_with_threshold(
-    ticks, threshold, vmin, vmax, f_vmin, f_vmax, tick_format
-):
-    """Format and filter colorbar ticks around the threshold value."""
-    if threshold is None or threshold <= 1e-6:
-        return ticks
-    threshold = float(tick_format % threshold)
+def _filter_ticks_with_threshold(ticks, threshold, vmin, vmax, f_vmin, f_vmax):
+    """Filter colorbar ticks around the threshold value."""
     if 0 <= vmin <= vmax or vmin <= vmax <= 0:
         if vmax <= 0:
             threshold = -threshold
@@ -163,7 +158,7 @@ def _filter_ticks_with_threshold(
         | (ticks < -abs(threshold))
         | np.isin(ticks, [0, f_vmin, f_vmax, threshold, -threshold])
     )
-    return ticks[np.where(valid_mask)]
+    return ticks[np.where(valid_mask)], threshold
 
 
 def get_cbar_ticks(
@@ -215,19 +210,19 @@ def get_cbar_ticks(
     # get the size of maximum interval between the ticks
     step_size = max(b - a for a, b in pairwise(ticks))
 
-    ticks = _filter_ticks_with_threshold(
-        ticks, threshold, vmin, vmax, f_vmin, f_vmax, tick_format
-    )
+    if threshold is not None and threshold > 1e-6:
+        threshold = float(tick_format % threshold)
+        ticks, threshold = _filter_ticks_with_threshold(
+            ticks, threshold, vmin, vmax, f_vmin, f_vmax
+        )
 
     # we do this here to include the case where threshold is None
     if vmin < 0 < vmax:
         ticks = np.append(ticks, 0)
 
-    ticks = np.sort(np.unique(ticks))
-    abs_threshold = abs(threshold) if threshold is not None else None
-    ticks = _remove_close_values(
-        ticks, step_size, abs_threshold, f_vmin, f_vmax
-    )
+    ticks = np.unique(ticks)
+    ticks = np.sort(ticks)
+    ticks = _remove_close_values(ticks, step_size, threshold, vmin, vmax)
 
     return ticks
 
