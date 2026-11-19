@@ -211,7 +211,6 @@ def test_compute_mask_error(fn):
         fn([])
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize(
     "fn",
     [
