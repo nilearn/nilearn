@@ -476,23 +476,17 @@ def test_smooth_img_scalar_array(affine_eye, fwhm):
 
 
 def test_smooth_img_fwhm_0_or_none(img_3d_mni):
-    """Test output equal when fwhm=None and fwhm=0."""
-    out_fwhm_none = smooth_img(img_3d_mni, fwhm=None)
-    with pytest.warns(UserWarning, match="Setting it to None"):
-        out_fwhm_zero = smooth_img(img_3d_mni, fwhm=0.0)
+    """Test output equal when fwhm=None and fwhm=0.
 
-    assert_array_equal(get_data(out_fwhm_none), get_data(out_fwhm_zero))
-
-
-def test_smooth_img_warning(img_3d_mni):
-    """Check corner case situations when fwhm=0, ee issue #1537.
-
-    Test whether function smooth_img raises a warning when fwhm=0.
+    See also issue #1537
     """
+    out_fwhm_none = smooth_img(img_3d_mni, fwhm=None)
     with pytest.warns(
         UserWarning, match=r"specified as 0\.0\. Setting it to None"
     ):
-        smooth_img(img_3d_mni, fwhm=0.0)
+        out_fwhm_zero = smooth_img(img_3d_mni, fwhm=0.0)
+
+    assert_array_equal(get_data(out_fwhm_none), get_data(out_fwhm_zero))
 
 
 def _arrays(img) -> list[np.ndarray]:
