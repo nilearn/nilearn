@@ -136,6 +136,8 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
         that takes the value ``region_ids_[i]``
         is used to compute the signal in ``region_signal[:, i]``.
 
+        .. nilearn_versionadded:: 0.15.0
+
     See Also
     --------
     nilearn.maskers.NiftiMasker

@@ -217,6 +217,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         that takes the value ``region_ids_[i]``
         is used to compute the signal in ``region_signal[:, i]``.
 
+        .. nilearn_versionadded:: 0.15.0
+
     See Also
     --------
     nilearn.maskers.NiftiMasker
@@ -553,8 +555,23 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             return self.labels_img_
 
         ref_img = None
-        if self.resampling_target == "data" and imgs_ is not None:
-            ref_img = imgs_
+        if self.resampling_target == "data":
+            if imgs_ is not None:
+                ref_img = imgs_
+            else:
+                warnings.warn(
+                    (
+                        "resampling_target='data' was requested "
+                        "but no image was passed at fit time. "
+                        "To avoid this warning, "
+                        "either change the resampling target "
+                        "or pass image to the fit method. "
+                        "This warning will become an exception "
+                        "in version 0.17.0."
+                    ),
+                    stacklevel=find_stack_level(),
+                    category=FutureWarning,
+                )
         elif self.resampling_target == "labels":
             ref_img = self.labels_img_
 
