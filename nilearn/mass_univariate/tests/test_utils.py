@@ -294,9 +294,15 @@ def test_return_score_threshs(arr3d, two_sided_test, dh):
     """
     arr3d[0, 0] = np.nan
 
-    score_threshs = _utils._return_score_threshs(
-        arr3d, dh=dh, two_sided_test=two_sided_test
-    )
+    if dh == 0.9:
+        with pytest.warns(UserWarning, match="Not enough steps for TFCE"):
+            score_threshs = _utils._return_score_threshs(
+                arr3d, dh=dh, two_sided_test=two_sided_test
+            )
+    else:
+        score_threshs = _utils._return_score_threshs(
+            arr3d, dh=dh, two_sided_test=two_sided_test
+        )
 
     max_score = (
         np.nanmax(np.abs(arr3d)) if two_sided_test else np.nanmax(arr3d)

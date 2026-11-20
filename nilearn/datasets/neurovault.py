@@ -35,7 +35,7 @@ from nilearn.datasets._utils import (
     logger,
 )
 from nilearn.image import resample_img
-from nilearn.nilearn_typing import DataDir, Verbose
+from nilearn.nilearn_typing import DataDir, TypedBunch, Verbose
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")
@@ -2476,7 +2476,7 @@ def fetch_neurovault(
     timeout: float = _DEFAULT_TIME_OUT,
     verbose: Verbose = 3,
     **kwarg_image_filters,
-) -> Bunch[str, Any]:
+) -> TypedBunch[str, Any]:
     """Download data from neurovault.org that match certain criteria.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -2720,7 +2720,7 @@ def fetch_neurovault_ids(
     vectorize_words: bool = True,
     timeout: float = _DEFAULT_TIME_OUT,
     verbose: Verbose = 3,
-) -> Bunch[str, Any]:
+) -> TypedBunch[str, Any]:
     """Download specific images and collections from neurovault.org.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -2832,9 +2832,16 @@ def fetch_neurovault_auditory_computation_task(
     data_dir: DataDir = None,
     verbose: Verbose = 1,
     timeout: float = _DEFAULT_TIME_OUT,
-) -> Bunch[str, Any]:
+) -> TypedBunch[str, Any]:
     """Fetch a :term:`contrast` map from :term:`Neurovault` showing \
     the effect of mental subtraction upon auditory instructions.
+
+    .. nilearn_deprecated:: 0.15.0
+
+        ``fetch_neurovault_auditory_computation_task`` will be removed
+        in version 0.17.0.
+        Use :func:`~nilearn.datasets.fetch_neurovault_ids`
+        with ``image_ids=[32980]`` instead.
 
     Parameters
     ----------
@@ -2846,7 +2853,7 @@ def fetch_neurovault_auditory_computation_task(
 
     Returns
     -------
-    data : Bunch
+    data : :class:`sklearn.utils.Bunch`
         A dict-like object which exposes its items as attributes. It contains:
             - 'images', the paths to downloaded files.
             - 'images_meta', the metadata for the images in a list of
@@ -2867,6 +2874,18 @@ def fetch_neurovault_auditory_computation_task(
     https://neurovault.org/images/32980/
     """
     check_params(locals())
+
+    # TODO (nilearn >= 0.17.0) remove the function
+    warnings.warn(
+        category=FutureWarning,
+        message=(
+            "'fetch_neurovault_auditory_computation_task' is deprecated "
+            "and will be removed in Nilearn 0.17.0.\n"
+            "Use 'fetch_neurovault_auditory_computation_task' with"
+            "'image_ids=[32980]'."
+        ),
+        stacklevel=find_stack_level(),
+    )
 
     data = fetch_neurovault_ids(
         image_ids=[32980], data_dir=data_dir, verbose=verbose, timeout=timeout

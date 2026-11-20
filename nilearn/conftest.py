@@ -11,7 +11,11 @@ import pytest
 from nibabel import Nifti1Image
 from scipy.signal import get_window
 
-from nilearn._utils.helpers import is_gil_enabled, is_matplotlib_installed
+from nilearn._utils.helpers import (
+    is_gil_enabled,
+    is_matplotlib_installed,
+    is_windows_platform,
+)
 from nilearn.masking import unmask
 from nilearn.surface import (
     InMemoryMesh,
@@ -70,10 +74,71 @@ if not is_gil_enabled():
     )
 
 
-def pytest_configure(config):  # noqa: ARG001
-    """Use Agg so that no figures pop up."""
+def pytest_configure(config):
+    """Use Agg so that no figures pop up.
+
+    Also ignore pyparsing deprecation warnings we have no control over:
+    they come from older versions of our dependencies (e.g. matplotlib)
+    using newer pyparsing.
+    The filter is only added if pyparsing defines that warning class,
+    as pytest errors on categories it cannot import.
+    """
     if matplotlib is not None:
         matplotlib.use("Agg", force=True)
+
+    # TODO: warnings are only thrown when testing oldest supported versions
+    # of our dependencies (matplotlib),
+    # so this ignore could be removed in the future
+    try:
+        from pyparsing import PyparsingDeprecationWarning  # noqa: F401
+    except ImportError:
+        pass
+    else:
+        config.addinivalue_line(
+            "filterwarnings",
+            "ignore::pyparsing.PyparsingDeprecationWarning",
+        )
+
+
+def pytest_collection_modifyitems(items):
+    """Set estimator tests flaky only on windows platform.
+
+    https://docs.pytest.org/en/stable/example/markers.html#automatically-adding-markers-based-on-test-names
+    """
+    flaky_tests = [
+        # _estimator_checks
+        "test_check_estimator_nilearn",
+        # datasets
+        "test_fetch_oasis_vbm",
+        # decomposition
+        "test_canica_square_img",
+        # glm
+        "test_run_glm_ar3",
+        "test_glm_ar_estimates",
+        "test_glm_random_state",
+        # maskers
+        "test_small_radius",
+        # regions
+        "test_fit_on_single_nifti_image",
+        "test_no_warnings",
+        "test_no_int64_warnings",
+        "test_all_methods_with_surface",
+        "test_with_surface_and_confounds",
+        "test_with_multi_surface",
+        "test_with_surface_mask",
+        "test_hierarchical_k_means",
+        "test_scaling",
+        "test_surface",
+        "test_n_clusters_warning",
+        # surface
+        "test_load_uniform_ball_cloud",
+    ]
+
+    for item in items:
+        if not isinstance(item, pytest.Function):
+            continue
+        if is_windows_platform() and item.originalname in flaky_tests:
+            item.add_marker(pytest.mark.flaky(reruns=5, reruns_delay=2))
 
 
 @pytest.fixture(autouse=True)

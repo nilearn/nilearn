@@ -96,8 +96,10 @@ def _connectivity_surface(mask_img):
     # make symmetric
     connectivity = connectivity + connectivity.T
     # set diagonal to 1 for connectivity matrix
-    connectivity[np.diag_indices_from(connectivity)] = 1
-    return connectivity
+    # (use lil format as changing the sparsity structure of csr is expensive)
+    connectivity = connectivity.tolil()
+    connectivity.setdiag(1)
+    return connectivity.tocsr()
 
 
 def _estimator_fit(data, estimator, method=None):

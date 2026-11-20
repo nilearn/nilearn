@@ -33,7 +33,7 @@ class _MNI152Template(SpatialImage):
         # Comply with spatial image requirements while allowing empty init
         pass
 
-    def load(self):
+    def _load(self):
         if self.data is None:
             anat_img = load_mni152_template(resolution=2)
             anat_img = reorder_img(anat_img)
@@ -48,34 +48,42 @@ class _MNI152Template(SpatialImage):
 
     @property
     def _data_cache(self):
-        self.load()
+        self._load()
         return self.data
+
+    @_data_cache.setter
+    def _data_cache(self, value):
+        self.data = value
 
     @property
     def _dataobj(self):
-        self.load()
+        self._load()
         return self.data
 
-    def get_data(self):
-        self.load()
+    @_dataobj.setter
+    def _dataobj(self, value):
+        self.data = value
+
+    def get_data(self, caching="fill"):  # noqa: ARG002
+        self._load()
         return self.data
 
     @property
     def affine(self):
-        self.load()
+        self._load()
         return self._affine
 
     def get_affine(self):
-        self.load()
+        self._load()
         return self._affine
 
     @property
     def shape(self):
-        self.load()
+        self._load()
         return self._shape
 
     def get_shape(self):
-        self.load()
+        self._load()
         return self._shape
 
     def __str__(self):
@@ -104,7 +112,7 @@ def _load_mni152_template(
         The loaded template, whether to use a black background, and the vmin
         and vmax values for the template.
     """
-    anat_img.load()
+    anat_img._load()
     # We special-case the 'canonical anat', as we don't need
     # to do a few transforms to it.
     vmin = 0

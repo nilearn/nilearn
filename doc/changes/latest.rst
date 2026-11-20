@@ -31,6 +31,10 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix :class:`~nilearn.maskers.MultiNiftiMasker` and other multi-image maskers raising a ``ValueError`` or ``AttributeError`` when ``high_variance_confounds=True`` was combined with a per-image ``confounds`` entry that was itself a list or tuple of several confound sources (:gh:`6726` by `Siddhardha Nanda`_).
+
+- :bdg-dark:`Code` Fix :func:`~nilearn.image.clean_img` reshaping its output using the raw ``sample_mask`` shape instead of the actual cleaned-signal shape, which raised a ``ValueError`` whenever ``sample_mask`` was passed as a boolean array (:gh:`6709` by `Siddhardha Nanda`_).
+
 - :bdg-dark:`Code` Check tar extraction destinations by path components so sibling directories with a shared name prefix are rejected (:gh:`6654` by `Jeffrey Cooney <https://github.com/jdotc1>`_).
 
 - :bdg-warning:`Test` Use deterministic parameter order in plotting tests so parallel workers collect the same cases (:gh:`6664` by `Jeffrey Cooney`_).
@@ -53,8 +57,11 @@ Fixes
 
 - :bdg-dark:`Code` Fix residual variance of :class:`~nilearn.glm.OLSModel` and :class:`~nilearn.glm.ARModel` being divided by the number of design columns instead of the design rank, which made t and F statistics too small for rank-deficient designs in :class:`~nilearn.glm.first_level.FirstLevelModel` and :class:`~nilearn.glm.second_level.SecondLevelModel` (:gh:`6611` by `Wolfgang Aura`_).
 
-
 - :bdg-dark:`Code` Fix dataset downloads failing with ``Only one live display may be active at once`` after a failed download when `rich <https://github.com/Textualize/rich>`_ is installed (:gh:`6624` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Fix :func:`~nilearn.glm.first_level.compute_regressor` producing ripples for dense inputs because floating-point errors in ``nilearn.glm.first_level._sample_condition`` shifted on-grid events to the next grid point (:gh:`6722` by `Zachary Nudelman`_).
+
+- :bdg-dark:`Code` Fix :func:`~nilearn.image.crop_img` computing a wrong cropping threshold for images with integer data, because negating the minimum of the data could overflow (:gh:`6735` by `Rémi Gau`_).
 
 
 Enhancements
@@ -78,7 +85,13 @@ Enhancements
 
 - :bdg-secondary:`Maint` Refactor ``math_img`` and ``new_img_like`` to reduce complexity (:gh:`6676` by `Akaash P`_)
 
+- :bdg-secondary:`Maint` Refactor ``threshold_img`` to reduce complexity (:gh:`6629` by `uvcode01-max <https://github.com/uvcode01-max>`_).
+
+- :bdg-warning:`Test` Give explicit names to the tests in ``nilearn/glm/tests/test_hemodynamic_models.py`` (:gh:`6747` by `Rishit Garg`_).
+
 - :bdg-success:`API` The ``seeds`` parameter of :class:`~maskers.NiftiSpheresMasker` now also accepts a single triplet of coordinates, for example ``NiftiSpheresMasker(seeds=(0, -52, 18))`` (:gh:`6700` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Allow passing ``cmap`` and ``gridsize`` to :func:`~nilearn.plotting.plot_img_comparison`; both were hardcoded to ``inferno`` and ``100`` (:gh:`6752` by `Plato Ism`_).
 
 Changes
 -------
@@ -103,6 +116,10 @@ Changes
 - :bdg-danger:`Deprecation` The parameter name ``subjects`` of the :func:`~nilearn.datasets.fetch_haxby` is deprecated will be completely removed in version 0.17.0. Use ``n_subjects`` instead (:gh:`6462` by `Mohammad Sadeghi Hardengi`_).
 
 - :bdg-danger:`Deprecation` The function :func:`~nilearn.datasets.fetch_localizer_calculation_task` is deprecated and will be removed in version 0.17.0. Use :func:`~nilearn.datasets.fetch_localizer_contrasts` with ``contrasts=["calculation (auditory and visual cue)"]`` instead (:gh:`6538` by `Aniket Singh Yadav`_).
+
+- :bdg-danger:`Deprecation` The function :func:`~nilearn.datasets.fetch_localizer_button_task` is deprecated and will be removed in version 0.17.0. Use :func:`~nilearn.datasets.fetch_localizer_contrasts` with ``contrasts=["left vs right button press"]`` instead (:gh:`6719` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The function :func:`~nilearn.datasets.fetch_neurovault_auditory_computation_task` is deprecated and will be removed in version 0.17.0. Use :func:`~nilearn.datasets.fetch_neurovault_ids` with ``image_ids=[32980]`` instead (:gh:`6719` by `Rémi Gau`_).
 
 - :bdg-success:`API` The default value of ``n_clusters`` parameter of :class:`~nilearn.regions.HierarchicalKMeans` is changed from ``None`` to ``2``. (:gh:`6585` by `Hande Gözükan`_).
 

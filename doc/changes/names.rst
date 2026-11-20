@@ -319,6 +319,8 @@
 
 .. _Pierre-Olivier Quirion: https://github.com/poquirion
 
+.. _Plato Ism: https://github.com/aplatogg
+
 .. _Pradeep Reddy Raamana: https://github.com/raamana
 
 .. _Prakhar Jain: https://github.com/PrakharJain1509
@@ -330,6 +332,8 @@
 .. _Reyyi Shreyas: https://github.com/reyyishreyas
 
 .. _Rishika Kapil: https://github.com/RishikaKaps
+
+.. _Rishit Garg: https://github.com/Rishit412
 
 .. _Robert Luke: https://github.com/rob-luke
 
@@ -360,6 +364,8 @@
 .. _Sami Jawhar: https://github.com/sjawhar
 
 .. _Sanjana Soni: https://github.com/isha822
+
+.. _Siddhardha Nanda: https://github.com/SID-6921
 
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
@@ -414,6 +420,8 @@
 .. _Yasmin Mzayek: https://github.com/ymzayek
 
 .. _Yichun Huang: https://github.com/YCHuang0610
+
+.. _Zachary Nudelman: https://github.com/zachnudels
 
 .. _Zvi Baratz: https://github.com/ZviBaratz
 

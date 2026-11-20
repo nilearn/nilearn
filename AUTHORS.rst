@@ -206,12 +206,14 @@ Some other past or present contributors are:
 * `Pierre Glaser`_: Gatsby Computational Neuroscience Unit, University College London, London, UK
 * `Pierre-Louis Barbarant`_: Inria, Saclay, France
 * `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
+* `Plato Ism`_
 * `Pradeep Reddy Raamana`_: University of Pittsburgh, Pittsburgh, PA, USA
 * `Prakhar Jain`_: RV College of Engineering, Bangalore, India
 * `Rahul Brito`_
 * `Raphael Meudec`_: Inria, Saclay, France
 * `Reyyi Shreyas`_
 * `Rishika Kapil`_: Thapar Institute of Engineering and Technology
+* `Rishit Garg`_
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
 * `Robert Williamson`_
 * `Roberto Guidotti`_: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
@@ -227,6 +229,7 @@ Some other past or present contributors are:
 * `Sam Buck Johnson`_
 * `Sami Jawhar`_
 * `Sanjana Soni`_: Government Engineering College, Bilaspur, India
+* `Siddhardha Nanda`_
 * `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
 * `Sin Kim`_: Korea Advanced Institute of Science and Technology: Daejeon, KR
 * `Sourav Singh`_
@@ -254,6 +257,7 @@ Some other past or present contributors are:
 * `Yaroslav Halchenko`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Yasmin Mzayek`_: Inria, Saclay, France
 * `Yichun Huang`_: Peking University, Beijing, China
+* `Zachary Nudelman`_: Vrije Universiteit Amsterdam
 * `Zvi Baratz`_: Tel-Aviv University, Israel
 * `Óscar Nájera`_: Checkmk
 
