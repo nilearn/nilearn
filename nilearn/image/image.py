@@ -2625,7 +2625,16 @@ def concat_imgs(
         isinstance(x, SurfaceImage) for x in niimgs
     ):
         if len(niimgs) == 1:
-            return niimgs[0]
+            if dtype is None:
+                return niimgs[0]
+
+            return new_img_like(
+                niimgs[0],
+                data={
+                    part: data.astype(dtype)
+                    for part, data in niimgs[0].data.parts.items()
+                },
+            )
 
         niimgs = list(niimgs)
         for i, img in enumerate(niimgs):

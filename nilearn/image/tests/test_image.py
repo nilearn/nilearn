@@ -2284,6 +2284,17 @@ def test_concat_imgs_surface(surf_img_2d):
         assert value.dtype == np.float16
 
 
+def test_concat_imgs_single_surface_respects_dtype(surf_img_2d):
+    input_img = surf_img_2d(3)
+    img = concat_imgs([input_img], dtype=np.float16)
+
+    assert all(value.dtype == np.float16 for value in img.data.parts.values())
+
+    img = concat_imgs([input_img])
+
+    assert all(value.dtype == np.float32 for value in img.data.parts.values())
+
+
 def nifti_generator(buffer):
     for _ in range(10):
         buffer.append(_img_3d_rand())
