@@ -17,6 +17,7 @@ from scipy import signal as sp_signal
 from scipy.interpolate import CubicSpline
 from sklearn.utils import as_float_array, gen_even_slices
 
+from nilearn._utils.dataframes import to_pandas
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
@@ -29,6 +30,7 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.exceptions import AllVolumesRemovedError
 from nilearn.nilearn_typing import (
+    DataFrameLike,
     HighPass,
     LowPass,
     NonNullScalar,
@@ -565,7 +567,10 @@ def clean(
     detrend: bool = True,
     standardize="zscore_sample",
     sample_mask=None,
-    confounds: SingleConfound | Sequence[SingleConfound] | None = None,
+    confounds: SingleConfound
+    | DataFrameLike
+    | Sequence[SingleConfound | DataFrameLike]
+    | None = None,
     standardize_confounds: StandardizeConfounds = True,
     filter: Literal["butterworth", "cosine", False] = "butterworth",
     low_pass: LowPass = None,
@@ -628,7 +633,7 @@ def clean(
         cleaned independently. Must be a 1D array of n_samples elements.
 
     confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
-                :class:`pandas.DataFrame`, None, \
+                :class:`pandas.DataFrame`, polars.DataFrame, None, \
                 or :obj:`list` or :obj:`tuple` of confounds timeseries, \
                 default=None
         Shape must be (instant number, confound number), or just
@@ -639,6 +644,10 @@ def clean(
         containing signals as columns, with an optional one-line header.
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.
+
+        .. nilearn_versionchanged:: 0.15.0
+
+            Added support for polars dataframes.
 
     sample_mask : None, Any type compatible with numpy-array indexing, \
                   or :obj:`list` of \
@@ -1099,6 +1108,10 @@ def sanitize_confounds(n_time, confounds) -> np.ndarray | None:
     if confounds is None:
         return confounds
 
+    # dataframes of other libraries (for example polars) are converted
+    # so the rest of the processing only deals with pandas
+    confounds = to_pandas(confounds)
+
     check_is_of_allowed_type(
         confounds, (list, tuple, str, np.ndarray, pd.DataFrame), "confounds"
     )
@@ -1166,9 +1179,10 @@ def _sanitize_runs(n_time, runs):
 
 
 def _sanitize_confound_dtype(
-    n_signal: int, confound: SingleConfound
+    n_signal: int, confound: SingleConfound | DataFrameLike
 ) -> np.ndarray:
     """Check confound is the correct datatype."""
+    confound = to_pandas(confound)
     if isinstance(confound, pd.DataFrame):
         confound = confound.to_numpy()
     if isinstance(confound, (str, Path)):

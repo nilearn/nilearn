@@ -311,11 +311,11 @@ connected : :obj:`bool`, optional
 """
 
 # confounds
-docdict["confounds"] = """
+confounds = """
 confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
-            :class:`pandas.DataFrame`, None,  \
+            {dataframes}, None,  \
             or :obj:`list` or :obj:`tuple` of :class:`numpy.ndarray`, \
-            :obj:`str`, :class:`pathlib.Path`, :class:`pandas.DataFrame`, \
+            :obj:`str`, :class:`pathlib.Path`, {dataframes}, \
             default=None
     This parameter is passed to :func:`nilearn.signal.clean`.
     Please see the related documentation for details.
@@ -335,6 +335,12 @@ confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
     The number of rows must match the number of volumes in the
     respective image.
 """
+docdict["confounds"] = confounds.format(dataframes=":class:`pandas.DataFrame`")
+# for functions that also accept polars dataframes
+# see https://github.com/nilearn/nilearn/issues/6335
+docdict["confounds_clean_img"] = confounds.format(
+    dataframes=":class:`pandas.DataFrame`, polars.DataFrame"
+)
 
 docdict["confounds_multi"] = """
 confounds : confounds, or :obj:`list` or :obj:`tuple` of confounds, \

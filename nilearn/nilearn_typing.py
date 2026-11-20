@@ -75,6 +75,16 @@ ClusterThreshold: TypeAlias = Integer
 Connected: TypeAlias = bool
 CopyHeader: TypeAlias = bool
 DType: TypeAlias = DTypeLike | None
+# Dataframes and series accepted as input by the public API,
+# converted to pandas with nilearn._utils.dataframes.to_pandas.
+# Only used where non-pandas inputs are supported:
+# see https://github.com/nilearn/nilearn/issues/6335
+if TYPE_CHECKING:
+    DataFrameLike: TypeAlias = pd.DataFrame | pl.DataFrame
+    SeriesLike: TypeAlias = pd.Series | pl.Series
+else:
+    DataFrameLike: TypeAlias = pd.DataFrame
+    SeriesLike: TypeAlias = pd.Series
 DataDir: TypeAlias = str | pathlib.Path | None
 Detrend: TypeAlias = bool
 DisplayMode: TypeAlias = Literal[
@@ -118,6 +128,18 @@ else:
     HrfModel: TypeAlias = str | Callable | list | None
 
 HighPass: TypeAlias = Scalar
+# Index along the last dimension of an image (see image.index_img).
+# Tuples are not included: numpy treats them as multidimensional indices.
+ImgIndex: TypeAlias = (
+    int
+    | slice
+    | range
+    | list[int]
+    | list[bool]
+    | np.ndarray
+    | SeriesLike
+    | DataFrameLike
+)
 LowerCutoff: TypeAlias = Float
 LowPass: TypeAlias = Scalar
 MaskStrategy: TypeAlias = Literal[
