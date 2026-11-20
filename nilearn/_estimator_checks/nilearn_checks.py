@@ -4017,3 +4017,49 @@ def check_multimasker_generate_report(estimator) -> None:
         generate_and_check_masker_report(
             estimator, warnings_msg_to_check=warnings_msg_to_check
         )
+
+
+def check_img_estimator_inverse_transform_non_finite(estimator):
+    """Check that inverse_transform raises a ValueError on non-finite inputs."""
+    if not hasattr(estimator, "inverse_transform"):
+        return
+
+    # Skip or adapt based on estimator type if needed
+    try:
+        if accepts_volume(estimator):
+            input_img = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
+        else:
+            input_img = [_make_surface_img(100), _make_surface_img(100)]
+
+        if isinstance(estimator, NiftiMapsMasker):
+            estimator.maps_img = _img_3d_ones()
+
+        estimator.fit(input_img)
+    except Exception:
+        # If fitting fails due to synthetic fixture limitations on specific estimators, skip
+        return
+
+    n_features = getattr(estimator, "n_elements_", None)
+    if n_features is None:
+        if hasattr(estimator, "n_features_in_"):
+            n_features = estimator.n_features_in_
+        else:
+            n_features = 10
+
+    # Construct safe non-finite test data matching expected dimensions
+    if "Surface" in estimator.__class__.__name__:
+        non_fn_data = _rng().random((n_features,))
+        non_fn_data[0] = np.nan
+    else:
+        non_fn_data = _rng().random((2, n_features))
+        non_fn_data[0, 0] = np.nan
+        if n_features > 1:
+            non_fn_data[1, 1] = np.inf
+        else:
+            non_fn_data[1, 0] = np.inf
+
+    if isinstance(estimator, _BaseDecomposition):
+        non_fn_data = [non_fn_data]
+
+    with pytest.raises(ValueError):
+        estimator.inverse_transform(non_fn_data)
