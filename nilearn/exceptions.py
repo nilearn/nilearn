@@ -1,7 +1,6 @@
 """Custom warnings and errors used across Nilearn."""
 
 __all__ = [
-    "NON_FINITE_VALUES_DETECTED",
     "AllVolumesRemovedError",
     "DimensionError",
     "MaskWarning",
