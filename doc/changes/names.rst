@@ -115,6 +115,8 @@
 
 .. _Eric Larson: https://larsoner.com/
 
+.. _Eva B: https://github.com/evadiva3
+
 .. _Evan Edmond: https://evan.science/
 
 .. _Fabian Pedregosa: https://github.com/fabianp
