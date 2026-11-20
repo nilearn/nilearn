@@ -109,7 +109,7 @@ function getCamera (plotDivId, viewSelectId) {
   return cameras[view]
 }
 
-function getLayout (plotDivId, viewSelectId, blackBg) {
+function getLayout (plotDivId, viewSelectId, blackBg, aspectRatio) {
   const camera = getCamera(plotDivId, viewSelectId)
   const axisConfig = getAxisConfig()
 
@@ -133,12 +133,17 @@ function getLayout (plotDivId, viewSelectId, blackBg) {
     }
   }
 
+  if (aspectRatio) {
+    layout.scene.aspectmode = 'manual'
+    layout.scene.aspectratio = aspectRatio
+  }
+
   return layout
 }
 
-function updateLayout (plotDivId, viewSelectId, blackBg) { // eslint-disable-line no-unused-vars
+function updateLayout (plotDivId, viewSelectId, blackBg, aspectRatio) { // eslint-disable-line no-unused-vars
   const layout = getLayout(
-    plotDivId, viewSelectId, blackBg)
+    plotDivId, viewSelectId, blackBg, aspectRatio)
   Plotly.relayout(plotDivId, layout)
 }
 

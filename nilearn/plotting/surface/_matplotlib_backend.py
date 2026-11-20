@@ -377,9 +377,6 @@ def _plot_surf(
         color="white",
     )
 
-    # reduce viewing distance to remove space around mesh
-    axes.set_box_aspect(None, zoom=1.3)
-
     bg_face_colors = _compute_facecolors(bg_map, faces, coords.shape[0], alpha)
     if surf_map is not None:
         surf_map_faces = _compute_surf_map_faces(
@@ -435,6 +432,11 @@ def _plot_surf(
 
     if title is not None:
         axes.set_title(title)
+
+    # Use box aspect ratio to simulate equal aspect ratio in data space
+    # and reduce viewing distance to remove space around mesh
+    limits = np.array([getattr(axes, f"get_{axis}lim")() for axis in "xyz"])
+    axes.set_box_aspect(np.ptp(limits, axis=1), zoom=1.3)
 
     save_figure_if_needed(figure, output_file)
     return figure

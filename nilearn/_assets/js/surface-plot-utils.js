@@ -12,7 +12,8 @@ function makePlot (surface, hemisphere, divId) {
   const layout = getLayout(
     'surface-plot',
     'select-view',
-    surfaceMapInfo.black_bg
+    surfaceMapInfo.black_bg,
+    surfaceMapInfo.aspect_ratio
   )
   layout.title = {
     text: surfaceMapInfo.title,
@@ -58,6 +59,7 @@ function surfaceRelayout () { // eslint-disable-line no-unused-vars
   return updateLayout(
     'surface-plot',
     'select-view',
-    surfaceMapInfo.black_bg
+    surfaceMapInfo.black_bg,
+    surfaceMapInfo.aspect_ratio
   )
 }
