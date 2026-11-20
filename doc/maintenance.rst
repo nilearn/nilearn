@@ -210,8 +210,8 @@ that the dev have access to:
 
   - ``fetch_surf_fsaverage``:
 
-    - ``fsaverage3``: https://osf.io/329dq
-    - ``fsaverage4``: https://osf.io/28uma
+    - ``fsaverage3``: https://doi.org/10.5281/zenodo.23242165
+    - ``fsaverage4``: https://doi.org/10.5281/zenodo.23696246
     - ``fsaverage6``: https://osf.io/jzxyr
     - ``fsaverage7``: https://osf.io/svf8k
 

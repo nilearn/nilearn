@@ -22,11 +22,11 @@ Notes
 Fsaverage standard surface as distributed with Freesurfer (:footcite:t:`Fischl1999`).
 
 ============ ============================== ====================
-Density      Number vertices per hemisphere Direct download link
+Density      Number vertices per hemisphere DOI
 ============ ============================== ====================
 fsaverage    163842                         https://osf.io/svf8k
-fsaverage3   642                            https://osf.io/28uma
-fsaverage4   2562                           https://osf.io/329dq
+fsaverage3   642                            https://doi.org/10.5281/zenodo.23242165
+fsaverage4   2562                           https://doi.org/10.5281/zenodo.23696246
 fsaverage5   10242
 fsaverage6   40962                          https://osf.io/jzxyr
 ============ ============================== ====================
