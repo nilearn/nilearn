@@ -206,12 +206,14 @@ Some other past or present contributors are:
 * `Pierre Glaser`_: Gatsby Computational Neuroscience Unit, University College London, London, UK
 * `Pierre-Louis Barbarant`_: Inria, Saclay, France
 * `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
+* `Plato Ism`_
 * `Pradeep Reddy Raamana`_: University of Pittsburgh, Pittsburgh, PA, USA
 * `Prakhar Jain`_: RV College of Engineering, Bangalore, India
 * `Rahul Brito`_
 * `Raphael Meudec`_: Inria, Saclay, France
 * `Reyyi Shreyas`_
 * `Rishika Kapil`_: Thapar Institute of Engineering and Technology
+* `Rishit Garg`_
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
 * `Robert Williamson`_
 * `Roberto Guidotti`_: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy

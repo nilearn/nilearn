@@ -1280,7 +1280,11 @@ def test_input_in_threshold_img_errors(
     # incompatible inputs raise errors
     with pytest.raises(
         TypeError,
-        match=r"Mask and input images must be of compatible types.",
+        match=(
+            "If 'img' is a Niimg-like object, "
+            "'mask_img' should also be a 3D Niimg-like object"
+            r".*SurfaceImage"
+        ),
     ):
         threshold_img(vol_img, threshold=1, mask_img=surf_mask_1d)
 
@@ -1292,7 +1296,11 @@ def test_input_in_threshold_img_errors(
 
     with pytest.raises(
         TypeError,
-        match=r"Mask and input images must be of compatible types.",
+        match=(
+            "If 'img' is a SurfaceImage object, "
+            "'mask_img' should also be a SurfaceImage object"
+            r".*Nifti1Image"
+        ),
     ):
         threshold_img(surf_img_1d, threshold=1, mask_img=vol_mask)
 
