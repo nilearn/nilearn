@@ -34,6 +34,7 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
+from nilearn.maskers.tests.conftest import _nifti_maps_masker_context
 from nilearn.masking import apply_mask
 from nilearn.reporting import HTMLReport
 from nilearn.reporting.tests._testing import generate_and_check_report
@@ -197,7 +198,8 @@ def test_displayed_maps_valid_inputs(
 ):
     """Test valid inputs for displayed_maps/spheres."""
     masker = masker_class(**input_parameters)
-    masker.fit()
+    with _nifti_maps_masker_context(masker):
+        masker.fit()
 
     if isinstance(masker, NiftiSpheresMasker):
         html = masker.generate_report(displayed_spheres=displayed_maps)
@@ -225,7 +227,8 @@ def test_displayed_maps_valid_inputs(
 def test_displayed_maps_error(masker_class, input_parameters, displayed_maps):
     """Test invalid inputs for displayed_maps/spheres."""
     masker = masker_class(**input_parameters)
-    masker.fit()
+    with _nifti_maps_masker_context(masker):
+        masker.fit()
     with pytest.raises(
         TypeError,
         match=(
@@ -249,7 +252,8 @@ def test_displayed_maps_warning_too_many(
 ):
     """Test invalid inputs for displayed_maps/spheres."""
     masker = masker_class(**input_parameters)
-    masker.fit()
+    with _nifti_maps_masker_context(masker):
+        masker.fit()
     with pytest.warns(
         UserWarning,
         match="Report cannot display the following",
@@ -267,7 +271,8 @@ def test_displayed_maps_warning_too_many(
 def test_displayed_maps_warning_int_too_large(masker_class, input_parameters):
     """Test invalid inputs for displayed_maps/spheres."""
     masker = masker_class(**input_parameters)
-    masker.fit()
+    with _nifti_maps_masker_context(masker):
+        masker.fit()
     with pytest.warns(UserWarning, match="was set to 6"):
         if isinstance(masker, NiftiSpheresMasker):
             masker.generate_report(displayed_spheres=7)
