@@ -6,11 +6,34 @@ import numpy as np
 import pytest
 from joblib import Memory
 from numpydoc.docscrape import NumpyDocString
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._base import NilearnBaseEstimator
 
 
-class TestNilearnBaseEstimator(ABC):
+def sklearn_estimator_checks(cls):
+
+    def test_run_sklearn_checks(self, estimator, check):
+        check(estimator)
+
+    decorated_test = parametrize_with_checks(
+        estimators=cls.estimator_list,
+        expected_failed_checks=lambda est: cls.expected_failed_check_list,
+    )(test_run_sklearn_checks)
+
+    cls.test_sklearn_compatible_estimator = decorated_test
+
+    return cls
+
+
+class TestBaseEstimator(ABC):
+    """Test class to run scikit-learn checks on the estimator."""
+
+    estimator_list: list[NilearnBaseEstimator] = []
+    expected_failed_check_list: dict[str, str] = {}
+
+
+class TestNilearnBaseEstimator(TestBaseEstimator):
     """Test class to test NilearnBaseEstimator methods."""
 
     @pytest.fixture(autouse=True)
