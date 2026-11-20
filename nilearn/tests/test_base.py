@@ -12,6 +12,36 @@ from nilearn._base import NilearnBaseEstimator
 
 
 def sklearn_estimator_checks(cls):
+    """Decorator that takes an estimator test class that inherits from
+    TestBaseEstimator and generates and adds tests to run scikit learn checks
+    to the test class.
+
+    Gets the list of estimators to check from ``estimator_list`` class
+    attribute.
+
+    Gets the list of expected failed checks from ``expected_failed_checks``
+    class method.
+
+    Each test class that requires to run scikit-learn estimator check should
+    define ``estimator_list`` and ``expected_failed_checks`` if there are any
+    known checks that would fail.
+
+    Example
+    -------
+
+    @sklearn_estimator_checks
+    class TestEstimatorX(TestBaseEstimator):
+
+        estimator_list = [EstimatorX()]
+
+        @classmethod
+        def expected_failed_checks(cls) -> dict[str, str]:
+            return {
+                "check_dict_unchanged": (
+                    "replaced by check_img_estimator_dict_unchanged"
+            )
+        }
+    """
 
     def test_run_sklearn_checks(self, estimator, check):
         check(estimator)
@@ -29,10 +59,16 @@ def sklearn_estimator_checks(cls):
 class TestBaseEstimator(ABC):
     """Test class to run scikit-learn checks on the estimator."""
 
+    # the list of estimators to run scikit-learn estimator checks
+    # each concrete class should set the list of estimators
     estimator_list: list[NilearnBaseEstimator] = []
 
     @classmethod
     def expected_failed_checks(cls) -> dict[str, str]:
+        """Define the expected failed checks from sklearn estimator checks
+        (https://scikit-learn.org/stable/modules/generated/sklearn.utils.estimator_checks.check_estimator.html)
+        for the estimators that are being tested by this test class.
+        """
         return {}
 
 
@@ -239,31 +275,42 @@ class TestNilearnBaseEstimator(TestBaseEstimator):
 
 
 class TestCacheMixin:
+    """Test class to test CacheMixin functions."""
+
     @pytest.fixture
     def tmp_cache_dir(self, tmp_path) -> str:
+        """A temporary test cache directory path."""
         return tmp_path / "cache_dir"
 
     @pytest.fixture
     def cache_dir_str(self) -> str:
+        """A cache directory path in home directory of current user."""
         return "~/nilearn_data/test_cache"
 
     @pytest.fixture
     def memory(self, tmp_cache_dir):
+        """A memory instance with cache directory ``tmp_cache_dir``."""
         return Memory(location=tmp_cache_dir)
 
     @pytest.fixture
     def estimator(self):
+        """Estimator initialized with default values."""
         raise NotImplementedError()
 
     @pytest.fixture
     def estimator_with_memory(self, memory):
+        """Estimator initialized with memory instance."""
         raise NotImplementedError()
 
     def test_memory_at_init(self, estimator) -> None:
+        """Test estimator memory and memory_level values upon instantiation."""
         assert estimator.memory is None
         assert estimator.memory_level == 0
 
     def test_fit_cache_memory_none(self, estimator) -> None:
+        """Test memory and memory_ attribute values after ``_fit_cache`` is
+        called for an estimator initialized with default values.
+        """
         estimator._fit_cache()
         assert estimator.memory is None
         assert estimator.memory_level == 0
@@ -274,6 +321,9 @@ class TestCacheMixin:
     def test_fit_cache_memory_not_none(
         self, estimator_with_memory, tmp_cache_dir
     ) -> None:
+        """Test memory and memory_ attribute values after ``_fit_cache`` is
+        called for an estimator initialized with non None memory.
+        """
         estimator_with_memory._fit_cache()
         assert isinstance(estimator_with_memory.memory, Memory)
         assert estimator_with_memory.memory.location == tmp_cache_dir
@@ -286,6 +336,9 @@ class TestCacheMixin:
     def test_cache_memory_not_none_level_0(
         self, estimator_with_memory, tmp_cache_dir
     ) -> None:
+        """Test for warning when an estimator initialized with non None memory
+        but memory_level is left as 0.
+        """
         assert estimator_with_memory.memory_level == 0
         with pytest.warns(
             UserWarning,
@@ -298,6 +351,9 @@ class TestCacheMixin:
     def test_cache_memory_not_none_level_1(
         self, recwarn, estimator_with_memory, tmp_cache_dir
     ) -> None:
+        """Test for no warning when an estimator initialized with non None
+        memory and memory_level is set to 1.
+        """
         estimator_with_memory.memory_level = 1
         cached_func = estimator_with_memory._cache(None)
         estimator_with_memory.memory_level = 1
