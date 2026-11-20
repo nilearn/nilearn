@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import pytest
+from joblib import Memory
 from numpydoc.docscrape import NumpyDocString
 
 from nilearn._base import NilearnBaseEstimator
@@ -209,3 +210,67 @@ class TestNilearnBaseEstimator(ABC):
             **inspect.signature(self.estimator.__init__).parameters
         )
         assert signature["verbose"].default == 0
+
+
+class TestCacheMixin():
+
+    @pytest.fixture
+    def tmp_cache_dir(self, tmp_path) -> str:
+        return tmp_path / "cache_dir"
+
+    @pytest.fixture
+    def cache_dir_str(self) -> str:
+        return "~/nilearn_data/test_cache"
+
+    @pytest.fixture
+    def estimator(self):
+        raise NotImplementedError()
+
+    @pytest.fixture
+    def estimator_with_memory(self, tmp_cache_dir):
+        raise NotImplementedError()
+
+    def test_memory_at_init(self, estimator) -> None:
+        assert estimator.memory is None
+        assert estimator.memory_level == 0
+
+    def test_fit_cache_memory_none(self, estimator) -> None:
+        estimator._fit_cache()
+        assert estimator.memory is None
+        assert estimator.memory_level == 0
+
+        assert isinstance(estimator.memory_, Memory)
+        assert estimator.memory_.location is None
+
+    def test_fit_cache_memory_not_none(
+            self, estimator_with_memory, tmp_cache_dir
+    ) -> None:
+        estimator_with_memory._fit_cache()
+        assert isinstance(estimator_with_memory.memory, Memory)
+        assert estimator_with_memory.memory.location == tmp_cache_dir
+        assert estimator_with_memory.memory_level == 0
+
+        assert isinstance(estimator_with_memory.memory_, Memory)
+        assert estimator_with_memory.memory_.location == tmp_cache_dir
+        assert estimator_with_memory.memory == estimator_with_memory.memory_
+
+    def test_cache_memory_not_none_level_0(
+            self, estimator_with_memory, tmp_cache_dir
+    ) -> None:
+        assert estimator_with_memory.memory_level == 0
+        with pytest.warns(
+                UserWarning,
+                match="memory_level is currently set to 0 but a Memory object"
+        ):
+            cached_func = estimator_with_memory._cache(None)
+        estimator_with_memory.memory_level = 1
+        assert cached_func is not None
+
+    def test_cache_memory_not_none_level_1(
+            self, recwarn, estimator_with_memory, tmp_cache_dir
+    ) -> None:
+        estimator_with_memory.memory_level = 1
+        cached_func = estimator_with_memory._cache(None)
+        estimator_with_memory.memory_level = 1
+        assert cached_func is not None
+        assert len(recwarn) == 0
