@@ -158,7 +158,7 @@ def _filter_ticks_with_threshold(ticks, threshold, vmin, vmax, f_vmin, f_vmax):
         | (ticks < -abs(threshold))
         | np.isin(ticks, [0, f_vmin, f_vmax, threshold, -threshold])
     )
-    return ticks[np.where(valid_mask)], threshold
+    return ticks[np.where(valid_mask)]
 
 
 def get_cbar_ticks(
@@ -212,7 +212,7 @@ def get_cbar_ticks(
 
     if threshold is not None and threshold > 1e-6:
         threshold = float(tick_format % threshold)
-        ticks, threshold = _filter_ticks_with_threshold(
+        ticks = _filter_ticks_with_threshold(
             ticks, threshold, vmin, vmax, f_vmin, f_vmax
         )
 
@@ -220,9 +220,11 @@ def get_cbar_ticks(
     if vmin < 0 < vmax:
         ticks = np.append(ticks, 0)
 
-    ticks = np.unique(ticks)
-    ticks = np.sort(ticks)
-    ticks = _remove_close_values(ticks, step_size, threshold, vmin, vmax)
+    ticks = np.sort(np.unique(ticks))
+    abs_threshold = abs(threshold) if threshold is not None else None
+    ticks = _remove_close_values(
+        ticks, step_size, abs_threshold, f_vmin, f_vmax
+    )
 
     return ticks
 
