@@ -213,12 +213,12 @@ Extracting predicted time series and residuals
 ==============================================
 
 One way to assess the quality of the fit is to compare the observed and predicted time series of voxels.
-Nilearn makes the predicted time series easily accessible via a parameter called ``predicted`` that is part
-of the :class:`nilearn.glm.first_level.FirstLevelModel`. This parameter is populated when
-FistLevelModel is initialized with the ``minimize_memory`` flag set to ``False``. ::
+Nilearn makes the predicted time series easily accessible via the ``predicted_`` attribute
+of the :class:`nilearn.glm.first_level.FirstLevelModel`. This attribute is available when
+the FirstLevelModel is initialized with the ``minimize_memory`` flag set to ``False``. ::
 
   observed_timeseries = masker.fit_transform(fmri_img)
-  predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
+  predicted_timeseries = masker.fit_transform(fmri_glm.predicted_[0])
 
 Here, masker is an object of :class:`nilearn.maskers.NiftiSpheresMasker`. In the figure below,
 predicted (red) and observed (not red) timecourses of 6 voxels are shown.
@@ -226,8 +226,20 @@ predicted (red) and observed (not red) timecourses of 6 voxels are shown.
 .. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_predictions_residuals_002.png
    :target: ../auto_examples/04_glm_first_level/plot_predictions_residuals.html
 
-In addition to the predicted timecourses, this flag also yields the residuals of the GLM. The residuals are
-useful to calculate the F and R-squared statistic. For more information refer to
+In addition to the predicted timecourses, this flag also stores the data used to fit the model,
+so that the residuals (``residuals_``) and R-squared (``r_square_``) of the GLM
+can be accessed directly::
+
+  residuals = fmri_glm.residuals_
+
+If ``minimize_memory`` is ``True`` (the default),
+the data is not stored to save memory:
+the residuals can still be computed with the ``residuals`` method
+by passing the data again::
+
+  residuals = fmri_glm.residuals(fmri_img)
+
+For more information refer to
 :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_predictions_residuals.py`
 
 

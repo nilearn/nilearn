@@ -165,6 +165,35 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         tags.estimator_type = "glm"
         return tags
 
+    def _clear_voxelwise_attributes_cache(self) -> None:
+        """Remove voxelwise attributes cached by auto_attr.
+
+        Must be called whenever ``results_`` changes
+        to avoid returning stale values.
+        """
+        for attr in [
+            "residuals_",
+            "predicted_",
+            "r_square_",
+            "predicted",
+            "r_square",
+        ]:
+            self.__dict__.pop(attr, None)
+
+    def _check_voxelwise_attribute_available(self, attribute: str) -> None:
+        """Raise an error if voxelwise attributes were not stored."""
+        if self.minimize_memory:
+            raise AttributeError(
+                f"'{attribute}' is only available "
+                "if the model was initialized with 'minimize_memory=False'.\n"
+                "To access voxelwise attributes like "
+                "R-squared, residuals, and predictions, "
+                f"the `{self.__class__.__name__}`-object needs to store "
+                "there attributes. "
+                "To do so, set `minimize_memory` to `False` "
+                f"when initializing the `{self.__class__.__name__}`-object."
+            )
+
     # @auto_attr store the value as an object attribute after initial call
     # better performance than @property
     @auto_attr
@@ -172,32 +201,47 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         """Transform element-wise residuals to the same shape \
         as the input image.
 
+        Only available if ``minimize_memory=False``.
+        Otherwise use :meth:`residuals` and pass the data.
+
+        Returns
+        -------
+        list[Nifti1Image] or list[SurfaceImage]
+        """
+        self._check_voxelwise_attribute_available("residuals_")
+        return self._get_element_wise_model_attribute(
+            "residuals", result_as_time_series=True
+        )
+
+    def residuals(self, Y=None):
+        """Compute element-wise residuals with the same shape \
+        as the input image.
+
+        .. nilearn_versionchanged:: 0.15.0
+            ``residuals`` is now a method
+            that can compute residuals from the data passed as ``Y``.
+
+        Parameters
+        ----------
+        Y : Niimg-like object, :class:`~nilearn.surface.SurfaceImage`, \
+            :obj:`list` of those, or None, default=None
+            The data the model was fitted on
+            (for :class:`~nilearn.glm.first_level.FirstLevelModel`,
+            one image per run;
+            for :class:`~nilearn.glm.second_level.SecondLevelModel`,
+            the effect maps the last contrast was computed on).
+            Required if the model was initialized
+            with ``minimize_memory=True``.
+            If None, the data stored during fit is used
+            (only available if ``minimize_memory=False``).
+
         Returns
         -------
         list[Nifti1Image] or list[SurfaceImage]
         """
         return self._get_element_wise_model_attribute(
-            "residuals", result_as_time_series=True
+            "residuals", result_as_time_series=True, Y=Y
         )
-
-    @auto_attr
-    def residuals(self):
-        """Transform element-wise residuals to the same shape \
-        as the input image.
-
-        .. nilearn_deprecated:: 0.14.0
-        """
-        # TODO (nilearn>=0.16.0) remove the method
-        warnings.warn(
-            stacklevel=find_stack_level(),
-            category=FutureWarning,
-            message=(
-                "residuals' is deprecated.\n "
-                "It will be removed in Nilearn 0.16.0.\n"
-                "Use 'residuals_' instead."
-            ),
-        )
-        return self.residuals_
 
     # @auto_attr store the value as an object attribute after initial call
     # better performance than @property
@@ -206,10 +250,13 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         """Transform element-wise predicted values to the same shape \
         as the input image.
 
+        Only available if ``minimize_memory=False``.
+
         Returns
         -------
         list[Nifti1Image] or list[SurfaceImage]
         """
+        self._check_voxelwise_attribute_available("predicted_")
         return self._get_element_wise_model_attribute(
             "predicted", result_as_time_series=True
         )
@@ -226,9 +273,9 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             stacklevel=find_stack_level(),
             category=FutureWarning,
             message=(
-                "residuals' is deprecated.\n "
+                "'predicted' is deprecated.\n "
                 "It will be removed in Nilearn 0.16.0.\n"
-                "Use 'residuals_' instead."
+                "Use 'predicted_' instead."
             ),
         )
         return self.predicted_
@@ -240,10 +287,13 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
         """Transform element-wise r-squared values to the same shape \
         as the input image.
 
+        Only available if ``minimize_memory=False``.
+
         Returns
         -------
         list[Nifti1Image] or list[SurfaceImage]
         """
+        self._check_voxelwise_attribute_available("r_square_")
         return self._get_element_wise_model_attribute(
             "r_square", result_as_time_series=False
         )
@@ -260,9 +310,9 @@ class BaseGLM(GLMReportMixin, CacheMixin, NilearnBaseEstimator):
             stacklevel=find_stack_level(),
             category=FutureWarning,
             message=(
-                "residuals' is deprecated.\n "
+                "'r_square' is deprecated.\n "
                 "It will be removed in Nilearn 0.16.0.\n"
-                "Use 'residuals_' instead."
+                "Use 'r_square_' instead."
             ),
         )
         return self.r_square_
