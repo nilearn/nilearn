@@ -1,6 +1,8 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
+import re
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -642,3 +644,13 @@ def test_slicer_sanitize_cut_coords_error(slicer, cut_coords):
     """
     with pytest.raises(ValueError, match="cut_coords passed does not match"):
         slicer._sanitize_cut_coords(cut_coords)
+
+
+@pytest.mark.ai_generated
+def test_mosaic_slicer_duplicate_cut_warning():
+    """The warning should show the coordinates containing duplicate cuts."""
+    cut_coords = {"x": [1, 1, 2], "y": [0], "z": [0]}
+    message = "Dropping duplicates cuts from direction 'x' values [1, 1, 2]"
+    with pytest.warns(UserWarning, match=re.escape(message)):
+        result = MosaicSlicer._sanitize_cut_coords(cut_coords)
+    assert result == {"x": [1, 2], "y": [0], "z": [0]}
