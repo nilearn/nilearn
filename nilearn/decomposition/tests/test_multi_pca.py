@@ -14,6 +14,11 @@ from nilearn.decomposition.tests.conftest import (
     check_decomposition_estimator,
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.decomposition.tests.test_base import TestBaseDecomposition
+
+
+class TestMultiPCA(TestBaseDecomposition):
+    pass
 
 
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
