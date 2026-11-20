@@ -212,8 +212,7 @@ class TestNilearnBaseEstimator(ABC):
         assert signature["verbose"].default == 0
 
 
-class TestCacheMixin():
-
+class TestCacheMixin:
     @pytest.fixture
     def tmp_cache_dir(self, tmp_path) -> str:
         return tmp_path / "cache_dir"
@@ -243,7 +242,7 @@ class TestCacheMixin():
         assert estimator.memory_.location is None
 
     def test_fit_cache_memory_not_none(
-            self, estimator_with_memory, tmp_cache_dir
+        self, estimator_with_memory, tmp_cache_dir
     ) -> None:
         estimator_with_memory._fit_cache()
         assert isinstance(estimator_with_memory.memory, Memory)
@@ -255,19 +254,19 @@ class TestCacheMixin():
         assert estimator_with_memory.memory == estimator_with_memory.memory_
 
     def test_cache_memory_not_none_level_0(
-            self, estimator_with_memory, tmp_cache_dir
+        self, estimator_with_memory, tmp_cache_dir
     ) -> None:
         assert estimator_with_memory.memory_level == 0
         with pytest.warns(
-                UserWarning,
-                match="memory_level is currently set to 0 but a Memory object"
+            UserWarning,
+            match="memory_level is currently set to 0 but a Memory object",
         ):
             cached_func = estimator_with_memory._cache(None)
         estimator_with_memory.memory_level = 1
         assert cached_func is not None
 
     def test_cache_memory_not_none_level_1(
-            self, recwarn, estimator_with_memory, tmp_cache_dir
+        self, recwarn, estimator_with_memory, tmp_cache_dir
     ) -> None:
         estimator_with_memory.memory_level = 1
         cached_func = estimator_with_memory._cache(None)
