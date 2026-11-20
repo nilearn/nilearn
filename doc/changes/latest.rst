@@ -67,6 +67,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` :class:`~nilearn.connectome.ConnectivityMeasure` now accepts paths to csv or tsv files (as :obj:`str` or :class:`pathlib.Path`) and lists of confounds for the ``confounds`` parameter of :meth:`~nilearn.connectome.ConnectivityMeasure.fit_transform` and :meth:`~nilearn.connectome.ConnectivityMeasure.transform` (:gh:`6731` by `Rémi Gau`_).
+
 - :bdg-primary:`Doc` Add privacy-friendly page view analytics with `GoatCounter <https://www.goatcounter.com/>`_ to the documentation website (:gh:`6393` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
@@ -95,7 +97,6 @@ Enhancements
 
 Changes
 -------
-
 
 - :bdg-danger:`Deprecation` The ``return_label_maps`` parameter of :func:`~reporting.get_clusters_table` is deprecated and will be removed in version 0.17.0, when cluster label maps will always be returned together with the table (:gh:`6376` by `Mohammad Sadeghi Hardengi`_).
 
