@@ -191,7 +191,10 @@ def test_mask_img_masks_all_labels_error(
         masker.fit(img_4d_rand_eye)
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
-    masker.fit()
+    with pytest.warns(
+        FutureWarning, match="resampling_target='data' was requested"
+    ):
+        masker.fit()
     with pytest.raises(
         ValueError,
         match="No label left after applying mask to the labels image",
@@ -206,7 +209,10 @@ def test_no_label_after_resampling_error(
     input_img = Nifti1Image(rng.random(shape_3d_large), affine_mni)
 
     estimator = NiftiLabelsMasker(labels_img=img_labels)
-    estimator.fit()
+    with pytest.warns(
+        FutureWarning, match="resampling_target='data' was requested"
+    ):
+        estimator.fit()
     with pytest.raises(ValueError, match="No label left after resampling"):
         estimator.transform(input_img)
 
@@ -763,7 +769,12 @@ def test_regions_id_names_with_too_few_labels(affine_eye):
     atlas[4, 3, 5:7] = 10
     atlas = Nifti1Image(atlas, affine_eye)
 
-    with pytest.warns(UserWarning, match="Too many indices for the names."):
+    with (
+        pytest.warns(UserWarning, match="Too many indices for the names."),
+        pytest.warns(
+            FutureWarning, match="resampling_target='data' was requested"
+        ),
+    ):
         # label for 3rd region was not passed so we should get a warning
         masker = NiftiLabelsMasker(
             atlas, labels=["Background", "A", "B"]
@@ -845,7 +856,10 @@ def test_regions_id_names_lut_too_few(affine_eye, shape_3d_default):
         data=[[1.0, "A"], [10.0, "B"]],
     )
 
-    masker = NiftiLabelsMasker(atlas, lut=lut).fit()
+    with pytest.warns(
+        FutureWarning, match="resampling_target='data' was requested"
+    ):
+        masker = NiftiLabelsMasker(atlas, lut=lut).fit()
 
     expected_region_ids_ = {"background": 0.0, 0: 1.0, 1: 6.0, 2: 10.0}
     assert masker.region_ids_ == expected_region_ids_
@@ -889,7 +903,10 @@ def test_regions_id_names_lut_too_many_entries(affine_eye):
         data=[[1.0, "A"], [6.0, "C"], [10.0, "B"], [2.0, "missing region"]],
     )
 
-    masker = NiftiLabelsMasker(atlas, lut=lut).fit()
+    with pytest.warns(
+        FutureWarning, match="resampling_target='data' was requested"
+    ):
+        masker = NiftiLabelsMasker(atlas, lut=lut).fit()
 
     expected_region_ids_ = {"background": 0.0, 0: 1.0, 1: 6.0, 2: 10.0}
     assert masker.region_ids_ == expected_region_ids_
@@ -919,9 +936,14 @@ def test_warning_n_labels_not_equal_n_regions(
         n_regions=n_regions,
     )
     region_names = generate_labels(n_regions + 2, background=background)
-    with pytest.warns(
-        UserWarning,
-        match="Too many names for the indices. Dropping excess names values.",
+    with (
+        pytest.warns(
+            UserWarning,
+            match="Too many names for the indices.",
+        ),
+        pytest.warns(
+            FutureWarning, match="resampling_target='data' was requested"
+        ),
     ):
         masker = NiftiLabelsMasker(
             labels_img,
@@ -996,7 +1018,11 @@ def test_region_names(
         expected_lut = generate_expected_lut(["Background", *tmp])
     else:
         expected_lut = generate_expected_lut(tmp)
-    check_lut(masker, expected_lut)
+    if not resampling:
+        check_lut(masker, expected_lut)
+    else:
+        surviving = set(np.unique(get_data(masker.region_atlas_)))
+        assert set(masker.lut_["index"]) == surviving
 
     region_names = generate_labels(n_regions, background=background)
     check_region_names_after_fit(
@@ -1070,7 +1096,11 @@ def test_region_names_ids_match_after_fit(
         expected_lut = generate_expected_lut(["Background", *tmp])
     else:
         expected_lut = generate_expected_lut(tmp)
-    check_lut(masker, expected_lut)
+    if affine_data is None and not masking:
+        check_lut(masker, expected_lut)
+    else:
+        surviving = set(np.unique(get_data(masker.region_atlas_)))
+        assert set(masker.lut_["index"]) == surviving
 
     check_region_names_ids_match_after_fit(
         masker, region_names, region_ids, background
@@ -1208,17 +1238,18 @@ def test_no_background(n_regions, img_labels, shape_3d_default, affine_eye):
 
     masker = NiftiLabelsMasker(img_labels, lut=lut, background_label=999)
 
-    masker.fit()
+    with pytest.warns(
+        FutureWarning, match="resampling_target='data' was requested"
+    ):
+        masker.fit()
 
     assert "Background" not in masker.lut_["name"].to_list()
 
     signal = masker.fit_transform(fmri_img)
 
     assert "Background" not in masker.lut_["name"].to_list()
-    assert "Background" not in masker._lut_["name"].to_list()
 
     assert 999 not in masker.lut_["index"].to_list()
-    assert 999 not in masker._lut_["index"].to_list()
 
     n_expected_regions = n_regions + 1
     assert masker.n_elements_ == n_expected_regions
@@ -1262,7 +1293,10 @@ def test_lut_shift(lut):
     labels_data[2:, :, :] = 2  # bottom half = region 2
     labels_img = Nifti1Image(labels_data, affine=np.eye(4))
 
-    masker = NiftiLabelsMasker(labels_img=labels_img, lut=lut).fit()
+    with pytest.warns(
+        FutureWarning, match="resampling_target='data' was requested"
+    ):
+        masker = NiftiLabelsMasker(labels_img=labels_img, lut=lut).fit()
 
     assert masker.region_names_ == {0: "Frontal", 1: "Temporal"}
     assert masker.lut_["name"].to_list() == ["Frontal", "Temporal"]
@@ -1275,7 +1309,10 @@ def test_transform_as_dataframe_with_labels(
     labels = rng.choice(
         list(string.ascii_lowercase), size=(n_regions,), replace=False
     ).tolist()
-    masker = NiftiLabelsMasker(labels_img=img_labels, labels=labels).fit()
+    with pytest.warns(
+        FutureWarning, match="resampling_target='data' was requested"
+    ):
+        masker = NiftiLabelsMasker(labels_img=img_labels, labels=labels).fit()
     masker.set_output(transform="pandas")
 
     s = masker.transform(img_3d_rand_eye)

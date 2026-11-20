@@ -63,6 +63,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix :func:`~nilearn.image.crop_img` computing a wrong cropping threshold for images with integer data, because negating the minimum of the data could overflow (:gh:`6735` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Prevent :class:`~nilearn.maskers.NiftiLabelsMasker` from mutating fitted attributes during :meth:`~nilearn.maskers.NiftiLabelsMasker.transform` (:gh:`6658` by `Yuvraj Lamba`_).
+
 
 Enhancements
 ------------
