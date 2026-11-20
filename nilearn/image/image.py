@@ -2954,7 +2954,6 @@ def check_imgs_equal(img1, img2) -> bool:
         raise e
 
 
-@fill_doc
 def _load_volume_niimg(niimg, i, ndim_minus_one, atleast_4d, dtype):
     """Load and validate a single volume niimg with error tracking."""
     try:
@@ -3022,6 +3021,7 @@ def _resample_volume_to_fov(
     )
 
 
+@fill_doc
 def iter_check_niimg(
     niimgs,
     ensure_ndim=None,
