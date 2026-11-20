@@ -37,6 +37,7 @@ from nilearn.glm.contrasts import (
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
+    sanitize_confounds_second_level,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
 from nilearn.image.image import (
@@ -304,28 +305,6 @@ def _check_input_as_surface_images(
                 "List of SurfaceImage objects as 'second_level_input'"
                 " require a design matrix to be provided."
             )
-
-
-def _check_confounds(confounds) -> None:
-    """Check confounds type."""
-    if confounds is not None:
-        if not isinstance(confounds, pd.DataFrame):
-            raise TypeError("confounds must be a pandas DataFrame")
-        if "subject_label" not in confounds.columns:
-            raise ValueError(
-                "confounds DataFrame must contain column 'subject_label'"
-            )
-        if len(confounds.columns) < 2:
-            raise ValueError(
-                "confounds should contain at least 2 columns"
-                ' one called "subject_label" and the other'
-                " with a given confound"
-            )
-        # Make sure subject_label contain strings
-        if not all(
-            isinstance(_, str) for _ in confounds["subject_label"].tolist()
-        ):
-            raise ValueError("subject_label column must contain only strings")
 
 
 def _check_first_level_contrast(
@@ -633,7 +612,7 @@ class SecondLevelModel(BaseGLM):
         | list[NiimgLike]
         | SurfaceImage
         | list[SurfaceImage],
-        confounds: pd.DataFrame | None = None,
+        confounds: str | Path | pd.DataFrame | None = None,
         design_matrix: TableLike | None = None,
     ) -> Self:
         """Fit the second-level :term:`GLM`.
@@ -647,23 +626,27 @@ class SecondLevelModel(BaseGLM):
         %(second_level_input)s
 
         %(second_level_confounds)s
+            If ``design_matrix`` is provided then this argument is ignored.
 
         %(second_level_design_matrix)s
         """
         check_params(self.__dict__)
         self.second_level_input_ = None
-        self.confounds_ = None
         self.labels_: np.ndarray | None = None
         self.results_: dict | None = None
 
         self._fit_cache()
 
-        # check second_level_input
-        _check_second_level_input(
-            second_level_input, design_matrix, confounds=confounds
+        self.confounds_ = (
+            None
+            if design_matrix is not None
+            else sanitize_confounds_second_level(confounds)
         )
 
-        _check_confounds(confounds)
+        # check second_level_input
+        _check_second_level_input(
+            second_level_input, design_matrix, confounds=self.confounds_
+        )
 
         self._reset_report()
 
@@ -673,8 +656,6 @@ class SecondLevelModel(BaseGLM):
             check_niimg(second_level_input, ensure_ndim=4)
             second_level_input = four_to_three(second_level_input)
         self.second_level_input_ = second_level_input
-
-        self.confounds_ = confounds
 
         sample_map, subjects_label = _process_second_level_input(
             second_level_input
@@ -690,7 +671,7 @@ class SecondLevelModel(BaseGLM):
         # Create and set design matrix, if not given
         if design_matrix is None:
             design_matrix = make_second_level_design_matrix(
-                subjects_label, confounds
+                subjects_label, self.confounds_
             )
         elif isinstance(design_matrix, (str, Path, pd.DataFrame)):
             design_matrix = check_and_load_tables(
@@ -984,7 +965,7 @@ def non_parametric_inference(
     | list[NiimgLike]
     | SurfaceImage
     | list[SurfaceImage],
-    confounds: pd.DataFrame | None = ...,
+    confounds: str | Path | pd.DataFrame | None = ...,
     design_matrix: TableLike | None = ...,
     second_level_contrast=...,
     first_level_contrast=...,
@@ -1010,7 +991,7 @@ def non_parametric_inference(
     | list[NiimgLike]
     | SurfaceImage
     | list[SurfaceImage],
-    confounds: pd.DataFrame | None = ...,
+    confounds: str | Path | pd.DataFrame | None = ...,
     design_matrix: TableLike | None = ...,
     second_level_contrast=...,
     first_level_contrast=...,
@@ -1036,7 +1017,7 @@ def non_parametric_inference(  # numpydoc ignore=RT05
     | list[NiimgLike]
     | SurfaceImage
     | list[SurfaceImage],
-    confounds: pd.DataFrame | None = None,
+    confounds: str | Path | pd.DataFrame | None = None,
     design_matrix: TableLike | None = None,
     second_level_contrast=None,
     first_level_contrast=None,
@@ -1063,6 +1044,7 @@ def non_parametric_inference(  # numpydoc ignore=RT05
     %(second_level_input)s
 
     %(second_level_confounds)s
+        If ``design_matrix`` is provided then this argument is ignored.
 
     %(second_level_design_matrix)s
 
@@ -1200,7 +1182,6 @@ def non_parametric_inference(  # numpydoc ignore=RT05
     """
     check_params(locals())
     _check_second_level_input(second_level_input, design_matrix)
-    _check_confounds(confounds)
 
     if isinstance(second_level_input, pd.DataFrame):
         second_level_input = _sort_input_dataframe(second_level_input)
@@ -1209,6 +1190,7 @@ def non_parametric_inference(  # numpydoc ignore=RT05
     )
 
     if design_matrix is None:
+        confounds = sanitize_confounds_second_level(confounds)
         design_matrix = make_second_level_design_matrix(
             subjects_label, confounds
         )
