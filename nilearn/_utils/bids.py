@@ -8,6 +8,99 @@ from nilearn.image.image import get_indices_from_image
 from nilearn.nilearn_typing import Verbose
 
 
+def _infer_names_from_index(
+    index, fname: str, background_label: int | float | None
+) -> list[str]:
+    """Derive names from index or image when name is None."""
+    if fname == "unknown":
+        index = get_indices_from_image(index)
+    name = []
+    assert index is not None
+    for x in index:
+        if background_label is not None and x == background_label:
+            name.append("Background")
+        else:
+            name.append(str(x))
+    return name
+
+
+def _validate_and_get_indices(
+    index, name, fname: str, background_label: int | float | None
+) -> list:
+    """Derive and validate indices based on index input and atlas function."""
+    if index is None:
+        index = list(range(len(name)))
+    else:
+        index = get_indices_from_image(index).tolist()
+
+        if len(index) == 1:
+            if background_label is None:
+                warnings.warn(
+                    (
+                        "The image either contains no label "
+                        "or a single label covering the whole image."
+                    ),
+                    category=UserWarning,
+                    stacklevel=find_stack_level(),
+                )
+            elif index[0] == background_label:
+                raise ValueError("The image contains no label.")
+
+    if fname == "fetch_atlas_basc_multiscale_2015":
+        return [
+            0.0 if x in ["background", "Background"] else float(x)
+            for x in name
+        ]
+    if fname in ["fetch_atlas_schaefer_2018", "fetch_atlas_pauli_2017"]:
+        return list(range(1, len(name) + 1))
+
+    return index
+
+
+def _align_names_and_indices(name: list, index: list, strict: bool) -> list:
+    """Align lengths of name and index or raise an error if strict."""
+    if len(name) == len(index):
+        return name
+
+    if strict:
+        raise ValueError(
+            f"'name' ({len(name)}) and 'index' ({len(index)}) "
+            "have different lengths. "
+            "Cannot generate a look up table."
+        )
+
+    if len(name) < len(index):
+        warnings.warn(
+            "Too many indices for the names. Padding 'names' with 'unknown'.",
+            stacklevel=find_stack_level(),
+        )
+        return name + ["unknown"] * (len(index) - len(name))
+
+    warnings.warn(
+        "Too many names for the indices. Dropping excess names values.",
+        stacklevel=find_stack_level(),
+    )
+    return name[: len(index)]
+
+
+def _build_lut_dataframe(index: list, name: list, fname: str) -> pd.DataFrame:
+    """Convert to DataFrame and apply atlas-specific cleanup and byte order."""
+    lut = pd.DataFrame({"index": index, "name": name})
+
+    if fname == "fetch_atlas_pauli_2017":
+        lut = pd.concat(
+            [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
+            ignore_index=True,
+        )
+
+    # enforce little endian of index column
+    index_dtype = lut["index"].dtype
+    if isinstance(index_dtype, np.dtype) and index_dtype.byteorder == ">":
+        lut["index"] = lut["index"].astype(index_dtype.newbyteorder("="))
+
+    return lut
+
+
 def generate_atlas_look_up_table(
     function: str | None = None,
     name=None,
@@ -65,42 +158,10 @@ def generate_atlas_look_up_table(
 
     # deal with names
     if name is None:
-        if fname == "unknown":
-            index = get_indices_from_image(index)
-        name = []
-        assert index is not None
-        for x in index:
-            if background_label is not None and x == background_label:
-                name.append("Background")
-            else:
-                name.append(str(x))
+        name = _infer_names_from_index(index, fname, background_label)
 
     # deal with indices
-    if index is None:
-        index = list(range(len(name)))
-    else:
-        index = get_indices_from_image(index).tolist()
-
-        if len(index) == 1:
-            if background_label is None:
-                warnings.warn(
-                    (
-                        "The image either contains no label "
-                        "or a single label covering the whole image."
-                    ),
-                    category=UserWarning,
-                    stacklevel=find_stack_level(),
-                )
-            elif index[0] == background_label:
-                raise ValueError("The image contains no label.")
-
-    if fname == "fetch_atlas_basc_multiscale_2015":
-        index = []
-        for x in name:
-            tmp = 0.0 if x in ["background", "Background"] else float(x)
-            index.append(tmp)
-    elif fname in ["fetch_atlas_schaefer_2018", "fetch_atlas_pauli_2017"]:
-        index = list(range(1, len(name) + 1))
+    index = _validate_and_get_indices(index, name, fname, background_label)
 
     if (
         background_label is not None
@@ -109,45 +170,17 @@ def generate_atlas_look_up_table(
     ):
         name.insert(index.index(int(background_label)), "Background")
 
-    if len(name) != len(index):
-        if strict:
-            raise ValueError(
-                f"'name' ({len(name)}) and 'index' ({len(index)}) "
-                "have different lengths. "
-                "Cannot generate a look up table."
-            )
+    name = _align_names_and_indices(name, index, strict)
 
-        if len(name) < len(index):
-            warnings.warn(
-                "Too many indices for the names. "
-                "Padding 'names' with 'unknown'.",
-                stacklevel=find_stack_level(),
-            )
-            name += ["unknown"] * (len(index) - len(name))
+    return _build_lut_dataframe(index, name, fname)
 
-        if len(name) > len(index):
-            warnings.warn(
-                "Too many names for the indices. "
-                "Dropping excess names values.",
-                stacklevel=find_stack_level(),
-            )
-            name = name[: len(index)]
 
-    # convert to dataframe and do some cleaning where required
-    lut = pd.DataFrame({"index": index, "name": name})
-
-    if fname == "fetch_atlas_pauli_2017":
-        lut = pd.concat(
-            [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
-            ignore_index=True,
-        )
-
-    # enforce little endian of index column
-    index_dtype = lut["index"].dtype
-    if isinstance(index_dtype, np.dtype) and index_dtype.byteorder == ">":
-        lut["index"] = lut["index"].astype(index_dtype.newbyteorder("="))
-
-    return lut
+def _handle_region_mismatch(msg: str, strict: bool, verbose: Verbose) -> None:
+    """Raise ValueError if strict, or emit warning if verbose."""
+    if strict:
+        raise ValueError(msg)
+    if verbose:
+        warnings.warn(msg, stacklevel=find_stack_level())
 
 
 def check_look_up_table(
@@ -204,28 +237,24 @@ def check_look_up_table(
             missing_rows = lut[
                 lut["index"].isin(list(missing_from_image))
             ].to_string(index=False)
-            msg = (
+            _handle_region_mismatch(
                 "\nThe following regions are present "
                 "in the atlas look-up table,\n"
                 "but missing from the atlas image:\n\n"
-                f"{missing_rows}\n"
+                f"{missing_rows}\n",
+                strict=strict,
+                verbose=verbose,
             )
-            if strict:
-                raise ValueError(msg)
-            if verbose:
-                warnings.warn(msg, stacklevel=find_stack_level())
 
         if missing_from_lut := set(roi_id) - set(lut["index"].to_list()):
-            msg = (
+            _handle_region_mismatch(
                 "\nThe following regions are present "
                 "in the atlas image, \n"
                 "but missing from the atlas look-up table: \n\n"
-                f"{missing_from_lut}"
+                f"{missing_from_lut}",
+                strict=strict,
+                verbose=verbose,
             )
-            if strict:
-                raise ValueError(msg)
-            if verbose:
-                warnings.warn(msg, stacklevel=find_stack_level())
 
 
 def sanitize_look_up_table(lut: pd.DataFrame, atlas) -> pd.DataFrame:
