@@ -15,10 +15,22 @@ from nilearn.regions.rena_clustering import (
     make_edges_surface,
 )
 from nilearn.surface import SurfaceImage
-from nilearn.tests.test_base import TestNilearnBaseEstimator
+from nilearn.tests.test_base import (
+    TestNilearnBaseEstimator,
+    sklearn_estimator_checks,
+)
 
 
+@sklearn_estimator_checks
 class TestReNA(TestNilearnBaseEstimator):
+    estimator_list = [ReNA()]
+
+    @classmethod
+    def expected_failed_checks(cls) -> dict[str, str]:
+        return {
+            "check_clustering": "TODO",
+        }
+
     def create_instance(self) -> ReNA:
         return ReNA()
 

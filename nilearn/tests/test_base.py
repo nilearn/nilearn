@@ -18,7 +18,7 @@ def sklearn_estimator_checks(cls):
 
     decorated_test = parametrize_with_checks(
         estimators=cls.estimator_list,
-        expected_failed_checks=lambda est: cls.expected_failed_check_list,
+        expected_failed_checks=lambda est: cls.expected_failed_checks(),
     )(test_run_sklearn_checks)
 
     cls.test_sklearn_compatible_estimator = decorated_test
@@ -30,7 +30,10 @@ class TestBaseEstimator(ABC):
     """Test class to run scikit-learn checks on the estimator."""
 
     estimator_list: list[NilearnBaseEstimator] = []
-    expected_failed_check_list: dict[str, str] = {}
+
+    @classmethod
+    def expected_failed_checks(cls) -> dict[str, str]:
+        return {}
 
 
 class TestNilearnBaseEstimator(TestBaseEstimator):

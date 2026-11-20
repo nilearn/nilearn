@@ -44,69 +44,6 @@ def image_2() -> Nifti1Image:
 @sklearn_estimator_checks
 class TestParcellations(TestMultiPCA):
     estimator_list = [Parcellations()]
-    expected_failed_check_list = {
-        # the following are skipped
-        # because there is nilearn specific replacement
-        "check_dict_unchanged": (
-            "replaced by check_img_estimator_dict_unchanged"
-        ),
-        "check_dont_overwrite_parameters": (
-            "replaced by check_img_estimator_dont_overwrite_parameters"
-        ),
-        "check_estimators_dtypes": "replaced by check_img_estimator_dtypes",
-        "check_estimators_empty_data_messages": (
-            "replaced by check_*_empty_data_messages "
-        ),
-        "check_estimators_fit_returns_self": (
-            "replaced by check_fit_returns_self"
-        ),
-        "check_estimators_overwrite_params": (
-            "replaced by check_img_estimator_overwrite_params"
-        ),
-        "check_estimators_pickle": "replaced by check_img_estimator_pickle",
-        "check_fit_check_is_fitted": (
-            "replaced by check_img_estimator_fit_check_is_fitted"
-        ),
-        "check_fit_idempotent": (
-            "replaced by check_img_estimator_fit_idempotent"
-        ),
-        "check_fit_score_takes_y": (
-            "replaced by check_img_estimator_fit_score_takes_y"
-        ),
-        "check_methods_sample_order_invariance": (
-            "replaced by check_nilearn_methods_sample_order_invariance"
-        ),
-        "check_n_features_in": "replaced by check_img_estimator_n_elements",
-        "check_n_features_in_after_fitting": (
-            "replaced by check_img_estimator_n_elements"
-        ),
-        "check_pipeline_consistency": (
-            "replaced by check_img_estimator_pipeline_consistency"
-        ),
-        # Those are skipped for now they fail
-        # for unknown reasons
-        # most often because sklearn inputs expect a numpy array
-        # that errors with maskers,
-        # or because a suitable nilearn replacement
-        # has not yet been created.
-        "check_estimators_nan_inf": "TODO",
-        "check_methods_subset_invariance": "TODO",
-        "check_positive_only_tag_during_fit": "TODO",
-        "check_readonly_memmap_input": "TODO",
-        "check_transformer_data_not_an_array": "TODO",
-        "check_transformer_general": "TODO",
-        "check_transformer_preserve_dtypes": "TODO",
-        "check_complex_data": "not applicable for image input",
-        "check_dtype_object": "not applicable for image input",
-        "check_estimator_sparse_array": "not applicable for image input",
-        "check_estimator_sparse_data": "not applicable for image input",
-        "check_estimator_sparse_matrix": "not applicable for image input",
-        "check_f_contiguous_array_estimator": "not applicable for image input",
-        "check_fit1d": "not applicable for image input",
-        "check_fit2d_1feature": "not applicable for image input",
-        "check_fit2d_1sample": "not applicable for image input",
-        "check_fit2d_predict1d": "not applicable for image input",
-    }
 
     def create_instance(self) -> Parcellations:
         return Parcellations(method="kmeans")
