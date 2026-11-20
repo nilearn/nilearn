@@ -9,6 +9,7 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn.conftest import _affine_eye
+from nilearn.decomposition.tests.test_multi_pca import TestMultiPCA
 from nilearn.maskers import (
     MultiNiftiMasker,
     MultiSurfaceMasker,
@@ -21,7 +22,6 @@ from nilearn.regions.parcellations import (
 )
 from nilearn.surface import SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
-from nilearn.tests.test_base import TestNilearnBaseEstimator
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ def image_2() -> Nifti1Image:
     return Nifti1Image(data, affine=_affine_eye())
 
 
-class TestParcellations(TestNilearnBaseEstimator):
+class TestParcellations(TestMultiPCA):
     def create_instance(self) -> Parcellations:
         return Parcellations(method="kmeans")
 
@@ -50,6 +50,14 @@ class TestParcellations(TestNilearnBaseEstimator):
         data[9, 10, 2] = 1
         data[4, 9, 3] = 2
         return Nifti1Image(data, affine=_affine_eye())
+
+    @pytest.fixture
+    def estimator(self):
+        return Parcellations(method="kmeans")
+
+    @pytest.fixture
+    def estimator_with_memory(self, memory):
+        return Parcellations(method="kmeans", memory=memory)
 
     @pytest.fixture
     def fitted_estimator(self, fit_data) -> Parcellations:
@@ -76,8 +84,7 @@ class TestParcellations(TestNilearnBaseEstimator):
         assert len(extra_attributes) == 1
 
     def test_error_method_none(self, image_1) -> None:
-        """Test error when Parcellations is initialized with ``method=None``.
-        """
+        """Test error when Parcellations is initialized with ``method=None``."""
         with pytest.raises(
             ValueError, match=r"Parcellation method is specified as None. "
         ):

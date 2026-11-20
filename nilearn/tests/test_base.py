@@ -222,11 +222,15 @@ class TestCacheMixin:
         return "~/nilearn_data/test_cache"
 
     @pytest.fixture
+    def memory(self, tmp_cache_dir):
+        return Memory(location=tmp_cache_dir)
+
+    @pytest.fixture
     def estimator(self):
         raise NotImplementedError()
 
     @pytest.fixture
-    def estimator_with_memory(self, tmp_cache_dir):
+    def estimator_with_memory(self, memory):
         raise NotImplementedError()
 
     def test_memory_at_init(self, estimator) -> None:
