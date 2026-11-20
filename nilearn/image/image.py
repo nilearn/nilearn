@@ -35,6 +35,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.niimg import (
     _get_data,
     ensure_finite_data,
+    has_non_finite,
     load_niimg,
     repr_niimgs,
     safe_get_data,
@@ -46,15 +47,17 @@ from nilearn._utils.param_validation import (
     check_threshold,
 )
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn.exceptions import DimensionError
+from nilearn.exceptions import NON_FINITE_VALUES_DETECTED, DimensionError
 from nilearn.nilearn_typing import (
     ClusterThreshold,
     HighPass,
     LowPass,
     NiimgLike,
+    Scalar,
     SingleConfound,
     Standardize,
     Tr,
+    Verbose,
 )
 from nilearn.surface.surface import (
     FileMesh,
@@ -357,7 +360,12 @@ def _fast_smooth_array(arr):
 
 @fill_doc
 def smooth_array(
-    arr, affine, fwhm=None, ensure_finite: bool = True, copy: bool = True
+    arr,
+    affine,
+    fwhm=None,
+    ensure_finite: bool = True,
+    copy: bool = True,
+    verbose: Verbose = 1,
 ) -> np.ndarray:
     """Smooth images by applying a Gaussian filter.
 
@@ -376,13 +384,21 @@ def smooth_array(
 
     %(fwhm)s
 
-    ensure_finite : :obj:`bool`, default=True
-        If True, replace every non-finite values (like NaNs) by zero before
-        filtering.
+    %(ensure_finite)s
+        No warning is emitted if ``verbose`` is 0.
+        Filtering then spreads those values over neighboring voxels.
+
+        .. nilearn_versionchanged:: 0.15.0
+
+            A warning is now emitted by default when values are replaced.
 
     copy : :obj:`bool`, default=True
         If True, input array is not modified. True by default: the filtering
         is not performed in-place.
+    %(verbose)s
+        Whether to warn when ``ensure_finite`` replaces values.
+
+        .. nilearn_versionadded:: 0.15.0
 
     Returns
     -------
@@ -398,7 +414,7 @@ def smooth_array(
     if isinstance(fwhm, (int, float)) and (fwhm == 0.0):
         warnings.warn(
             f"The parameter 'fwhm' for smoothing is specified as {fwhm}. "
-            "Setting it to None (no smoothing will be performed)",
+            "Setting it to None (no smoothing will be performed).",
             stacklevel=find_stack_level(),
         )
         fwhm = None
@@ -411,7 +427,7 @@ def smooth_array(
         arr = arr.copy()
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
-        ensure_finite_data(arr, raise_warning=False)
+        ensure_finite_data(arr, verbose=verbose)
     if isinstance(fwhm, str) and (fwhm == "fast"):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
@@ -428,29 +444,38 @@ def smooth_array(
 
 
 @overload
-def smooth_img(imgs: SurfaceImage, fwhm) -> SurfaceImage: ...
+def smooth_img(
+    imgs: SurfaceImage, fwhm, ensure_finite: bool = ...
+) -> SurfaceImage: ...
 
 
 @overload
-def smooth_img(imgs: NiimgLike, fwhm) -> Nifti1Image: ...
+def smooth_img(
+    imgs: NiimgLike, fwhm, ensure_finite: bool = ...
+) -> Nifti1Image: ...
 
 
 @overload
-def smooth_img(imgs: Iterable[SurfaceImage], fwhm) -> list[SurfaceImage]: ...
+def smooth_img(
+    imgs: Iterable[SurfaceImage], fwhm, ensure_finite: bool = ...
+) -> list[SurfaceImage]: ...
 
 
 @overload
-def smooth_img(imgs: Iterable[NiimgLike], fwhm) -> list[Nifti1Image]: ...
+def smooth_img(
+    imgs: Iterable[NiimgLike], fwhm, ensure_finite: bool = ...
+) -> list[Nifti1Image]: ...
 
 
 @fill_doc
 def smooth_img(
-    imgs, fwhm
+    imgs, fwhm, ensure_finite: bool = True
 ) -> Nifti1Image | SurfaceImage | list[Nifti1Image] | list[SurfaceImage]:
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of `arr`.
-    In all cases, non-finite values in input image are replaced by zeros.
+    By default, non-finite values in the input image are replaced by zeros
+    and a warning is emitted; pass ``ensure_finite=False`` to keep them.
 
     Parameters
     ----------
@@ -461,6 +486,12 @@ def smooth_img(
         for a detailed description of the valid input types).
 
     %(fwhm)s
+
+    %(ensure_finite)s
+        Smoothing then spreads those values over neighboring
+        voxels or vertices.
+
+        .. nilearn_versionadded:: 0.15.0
 
     Returns
     -------
@@ -506,21 +537,32 @@ def smooth_img(
 
     ret = []
     if is_surface:
-        if fwhm is not None and hasattr(fwhm, "__iter__"):
-            raise TypeError("For surface data, 'fwhm' must be a scalar.")
+        if fwhm is not None:
+            if hasattr(fwhm, "__iter__"):
+                raise TypeError("For surface data, 'fwhm' must be a scalar.")
+            elif isinstance(fwhm, (int, float)) and (fwhm == 0.0):
+                warnings.warn(
+                    "The parameter 'fwhm' for smoothing "
+                    f"is specified as {fwhm}. "
+                    "Setting it to None (no smoothing will be performed).",
+                    stacklevel=find_stack_level(),
+                )
+                fwhm = None
         for img in imgs:
             iterations = _mris_fwhm_to_niters(fwhm, img)
-            ret.append(_smooth_surface_img(img, iterations))
+            ret.append(_smooth_surface_img(img, iterations, ensure_finite))
 
     else:
         for img in imgs:
             img = check_niimg(img)
             affine = img.affine
+            # ``copy=True`` keeps the cleaning and the filtering off the
+            # input image's array.
             filtered = smooth_array(
                 _get_data(img),
                 affine,
                 fwhm=fwhm,
-                ensure_finite=True,
+                ensure_finite=ensure_finite,
                 copy=True,
             )
             ret.append(new_img_like(img, filtered, affine))
@@ -528,9 +570,11 @@ def smooth_img(
     return ret[0] if single_img else ret
 
 
+@fill_doc
 def _smooth_surface_img(
     img: SurfaceImage,
     iterations: list[int],
+    ensure_finite: bool = True,
 ):
     """Smooth values along the surface.
 
@@ -545,6 +589,8 @@ def _smooth_surface_img(
         (it must be a positive value).
         One value per mesh in the image.
 
+    %(ensure_finite)s
+
     Returns
     -------
     smoothed_imgs : SurfaceImage
@@ -557,17 +603,29 @@ def _smooth_surface_img(
 
     # Calculate the adjacency matrix either weighting
     # by inverse distance or not weighting (ones)
+    # Warn once for the image rather than once per hemisphere, and clean
+    # before the ``n_iter == 0`` shortcut so that the guarantee holds
+    # whatever ``fwhm`` is. Left as is, a single non-finite vertex is
+    # spread over its neighbors by the smoothing iterations.
+    if ensure_finite and any(
+        has_non_finite(part)[0] for part in img.data.parts.values()
+    ):
+        warnings.warn(
+            f"{NON_FINITE_VALUES_DETECTED} "
+            "These values will be replaced with zeros.",
+            RuntimeWarning,
+            stacklevel=find_stack_level(),
+        )
+
     new_data = {}
     for hemi, n_iter in zip(img.mesh.parts, iterations, strict=False):
         mesh = img.mesh.parts[hemi]
-        # Match the volume path, which passes ``ensure_finite=True`` to
-        # ``smooth_array``: non-finite values are replaced with zeros. Copy
-        # first because ``ensure_finite_data`` works in place, and do it
-        # before the ``n_iter == 0`` shortcut so that the guarantee holds
-        # whatever ``fwhm`` is. Left as is, a single non-finite vertex is
-        # spread over its neighbors by the smoothing iterations.
-        data = np.array(img.data.parts[hemi], copy=True)
-        ensure_finite_data(data, raise_warning=False)
+        # ``copy=True`` keeps the input image's data untouched.
+        data = (
+            ensure_finite_data(img.data.parts[hemi], verbose=0, copy=True)
+            if ensure_finite
+            else np.array(img.data.parts[hemi], copy=True)
+        )
 
         if n_iter == 0:
             new_data[hemi] = data
@@ -595,7 +653,7 @@ def _smooth_surface_img(
     return new_img_like(img, new_data)
 
 
-def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
+def _mris_fwhm_to_niters(fwhm: Scalar, img: SurfaceImage) -> list[int]:
     """Convert a desired FWHM to number of smoothing iterations for surface.
 
     Adapted from freesurfer
@@ -603,7 +661,7 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
 
     Parameters
     ----------
-    fwhm : :obj:`float`
+    fwhm : :obj:`float` or :obj:`int` or None
         Full width at half maximum (in mm)
 
     img : surface image
@@ -614,6 +672,7 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
     """
     if fwhm is None:
         fwhm = 0
+
     # Convert FWHM to standard deviation of Gaussian kernel
     std_kernel = fwhm / math.sqrt(math.log(256.0))
 
@@ -852,12 +911,15 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
 
     if smooth:
         nan_mask = np.isnan(mean_data)
+        # The NaNs are restored right after smoothing, so do not report a
+        # replacement that this function undoes.
         mean_data = smooth_array(
             mean_data,
             affine=np.eye(4),
             fwhm=smooth,
             ensure_finite=True,
             copy=False,
+            verbose=0,
         )
         mean_data[nan_mask] = np.nan
 

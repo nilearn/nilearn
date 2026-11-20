@@ -485,7 +485,7 @@ def test_get_clusters_table_nans(shape, affine_eye):
     data[4:6, 7:9, 8:10] = -5.0
     data[data == 0] = np.nan
     stat_img = Nifti1Image(data, affine_eye)
-    with pytest.warns(UserWarning, match="Non-finite values detected"):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
         clusters_table, _ = get_clusters_table(
             stat_img,
             1e-2,

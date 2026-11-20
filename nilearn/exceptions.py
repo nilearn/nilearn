@@ -8,6 +8,8 @@ __all__ = [
     "NotImplementedWarning",
 ]
 
+NON_FINITE_VALUES_DETECTED = "Non-finite values detected in the input image."
+
 AuthorizedException = (
     BufferError,
     ArithmeticError,

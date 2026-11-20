@@ -71,6 +71,8 @@ Enhancements
 
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
 
+- :bdg-success:`API` Add an ``ensure_finite`` parameter to :func:`~image.smooth_img` and warn when non-finite values are replaced with zeros (:gh:`6530` by `Cedric Conday`_).
+
 - :bdg-primary:`Doc` Add an example comparing the effect of ``standardize="zscore_sample"``, ``standardize="psc"`` and ``standardize=None`` on decoding performance (:gh:`6597` by `Reyyi Shreyas`_).
 
 - :bdg-primary:`Doc` Docstring examples can now be run in the browser via `jupyterlite <https://jupyterlite.readthedocs.io/en/stable/>`_ (:gh:`6581` by `Elizabeth DuPre`_).
@@ -78,6 +80,10 @@ Enhancements
 - :bdg-primary:`Doc` Consolidation of the datasets documentation: for most datasets fetcher the type and description of the values they return should be accessible via ``description.content`` (:gh:`6624` by `Rémi Gau`_).
 
 - :bdg-success:`API` :class:`~nilearn.utils.InputTags` is now part of the public API in :mod:`nilearn.utils`, so that third-party estimators can declare whether they accept Nifti and / or surface images (:gh:`6563` by `Aniket Singh Yadav`_).
+
+- :bdg-success:`API` :func:`~masking.apply_mask` now honors ``ensure_finite`` for surface data (:gh:`6530` by `Cedric Conday`_).
+
+- :bdg-success:`API` Warnings about non-finite values in images are now ``RuntimeWarning`` instead of ``UserWarning`` (:gh:`6530` by `Cedric Conday`_).
 
 - :bdg-dark:`Code` Name columns of signals extracted as dataframes by :meth:`~maskers.NiftiSpheresMasker.transform` (:gh:`6599` by `Rémi Gau`_).
 
