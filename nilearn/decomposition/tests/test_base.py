@@ -11,6 +11,12 @@ from nilearn.decomposition.tests.conftest import (
     RANDOM_STATE,
 )
 
+from nilearn.tests.test_base import TestCacheMixin, TestNilearnBaseEstimator
+
+
+class TestBaseDecomposition(TestCacheMixin, TestNilearnBaseEstimator):
+    pass
+
 
 # We need to use n_features > 500 to trigger the randomized_svd
 @pytest.mark.parametrize("n_features", [30, 100, 550])
