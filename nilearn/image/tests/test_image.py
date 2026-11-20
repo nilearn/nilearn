@@ -2553,7 +2553,6 @@ def test_check_niimg_user_expand(img_in_home_folder, filename):
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "filename",
