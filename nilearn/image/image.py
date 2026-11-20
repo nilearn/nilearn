@@ -2517,6 +2517,113 @@ def load_img(
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 
 
+def _concat_surface_imgs(niimgs, dtype=None) -> SurfaceImage:
+    """Concatenate a sequence of SurfaceImage objects."""
+    if len(niimgs) == 1:
+        return niimgs[0]
+
+    niimgs = list(niimgs)
+    first_mesh = niimgs[0].mesh
+    for i, img in enumerate(niimgs):
+        check_polymesh_equal(img.mesh, first_mesh)
+        niimgs[i] = at_least_2d(img)
+
+    if dtype is None:
+        dtype = get_surface_data(niimgs[0]).dtype
+
+    output_data = {}
+    for part in niimgs[0].data.parts:
+        tmp = [img.data.parts[part] for img in niimgs]
+        output_data[part] = np.concatenate(tmp, axis=1).astype(dtype)
+
+    return new_img_like(niimgs[0], data=output_data)
+
+
+def _check_and_get_volume_lengths(literator, first_niimg, ndim):
+    """Check dimensionality and collect lengths along 4th dimension."""
+    lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
+    for niimg in literator:
+        try:
+            checked_niimg = check_niimg(niimg, ensure_ndim=ndim)
+        except DimensionError as exc:
+            exc.increment_stack_counter()
+            raise
+        lengths.append(checked_niimg.shape[-1] if ndim == 4 else 1)
+    return lengths
+
+
+def _concat_volume_imgs(
+    niimgs,
+    dtype=np.float32,
+    ensure_ndim=None,
+    memory=None,
+    memory_level=0,
+    auto_resample=False,
+    verbose=0,
+) -> Nifti1Image:
+    """Concatenate volumetric 3D or 4D niimgs into a single 4D image."""
+    if memory is None:
+        memory = Memory(location=None)
+
+    target_fov = "first" if auto_resample else None
+
+    # Dimensionality is decreased by 1 because the list adds one dimension.
+    ndim = None if ensure_ndim is None else ensure_ndim - 1
+
+    # If niimgs is a string, use glob to expand it to the matching filenames.
+    niimgs = resolve_globbing(niimgs)
+
+    iterator, literator = itertools.tee(iter(niimgs))
+    try:
+        first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
+    except StopIteration as e:
+        raise TypeError("Cannot concatenate empty objects") from e
+    except DimensionError as exc:
+        exc.increment_stack_counter()
+        raise
+
+    if ndim is None:
+        ndim = len(first_niimg.shape)
+
+    if ndim not in [3, 4]:
+        raise TypeError(
+            "Concatenated images must be 3D or 4D. You gave a "
+            f"list of {ndim}D images"
+        )
+
+    lengths = _check_and_get_volume_lengths(literator, first_niimg, ndim)
+
+    target_shape = first_niimg.shape[:3]
+    if dtype is None:
+        dtype = _get_data(first_niimg).dtype
+    data: np.ndarray = np.ndarray(
+        (*target_shape, sum(lengths)), order="F", dtype=dtype
+    )
+    cur_4d_index = 0
+    for index, (size, niimg) in enumerate(
+        zip(
+            lengths,
+            iter_check_niimg(
+                iterator,
+                atleast_4d=True,
+                target_fov=target_fov,
+                memory=memory,
+                memory_level=memory_level,
+            ),
+            strict=False,
+        )
+    ):
+        nii_str = (
+            f"image {niimg}" if isinstance(niimg, str) else f"image #{index}"
+        )
+        logger.log(f"Concatenating {index + 1}: {nii_str}", verbose)
+
+        data[..., cur_4d_index : cur_4d_index + size] = _get_data(niimg)
+        cur_4d_index += size
+
+    return new_img_like(first_niimg, data, first_niimg.affine)
+
+
 @overload
 def concat_imgs(
     niimgs: SurfaceImage | Iterable[SurfaceImage],
@@ -2624,104 +2731,17 @@ def concat_imgs(
     if isinstance(niimgs, (tuple, list)) and all(
         isinstance(x, SurfaceImage) for x in niimgs
     ):
-        if len(niimgs) == 1:
-            return niimgs[0]
+        return _concat_surface_imgs(niimgs, dtype=dtype)
 
-        niimgs = list(niimgs)
-        for i, img in enumerate(niimgs):
-            check_polymesh_equal(img.mesh, niimgs[0].mesh)
-            niimgs[i] = at_least_2d(img)
-
-        if dtype is None:
-            dtype = get_surface_data(niimgs[0]).dtype
-
-        output_data = {}
-        for part in niimgs[0].data.parts:
-            tmp = [img.data.parts[part] for img in niimgs]
-            output_data[part] = np.concatenate(tmp, axis=1).astype(dtype)
-
-        return new_img_like(niimgs[0], data=output_data)
-
-    if memory is None:
-        memory = Memory(location=None)
-
-    target_fov = "first" if auto_resample else None
-
-    # We remove one to the dimensionality because of the list is one dimension.
-    ndim = None
-    if ensure_ndim is not None:
-        ndim = ensure_ndim - 1
-
-    # If niimgs is a string, use glob to expand it to the matching filenames.
-    niimgs = resolve_globbing(niimgs)
-
-    # First niimg is extracted to get information and for new_img_like
-    first_niimg = None
-
-    iterator, literator = itertools.tee(iter(niimgs))
-    try:
-        first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
-    except StopIteration as e:
-        raise TypeError("Cannot concatenate empty objects") from e
-    except DimensionError as exc:
-        # Keep track of the additional dimension in the error
-        exc.increment_stack_counter()
-        raise
-
-    # If no particular dimensionality is asked, we force consistency wrt the
-    # first image
-    if ndim is None:
-        ndim = len(first_niimg.shape)
-
-    if ndim not in [3, 4]:
-        raise TypeError(
-            "Concatenated images must be 3D or 4D. You gave a "
-            f"list of {ndim}D images"
-        )
-
-    lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
-    for niimg in literator:
-        # We check the dimensionality of the niimg
-        try:
-            niimg = check_niimg(
-                niimg,
-                ensure_ndim=ndim,  # type: ignore[arg-type]
-            )
-        except DimensionError as exc:
-            # Keep track of the additional dimension in the error
-            exc.increment_stack_counter()
-            raise
-        lengths.append(niimg.shape[-1] if ndim == 4 else 1)
-
-    target_shape = first_niimg.shape[:3]
-    if dtype is None:
-        dtype = _get_data(first_niimg).dtype
-    data: np.ndarray = np.ndarray(
-        (*target_shape, sum(lengths)), order="F", dtype=dtype
+    return _concat_volume_imgs(
+        niimgs=niimgs,
+        dtype=dtype,
+        ensure_ndim=ensure_ndim,
+        memory=memory,
+        memory_level=memory_level,
+        auto_resample=auto_resample,
+        verbose=verbose,
     )
-    cur_4d_index = 0
-    for index, (size, niimg) in enumerate(
-        zip(
-            lengths,
-            iter_check_niimg(
-                iterator,
-                atleast_4d=True,
-                target_fov=target_fov,
-                memory=memory,
-                memory_level=memory_level,
-            ),
-            strict=False,
-        )
-    ):
-        nii_str = (
-            f"image {niimg}" if isinstance(niimg, str) else f"image #{index}"
-        )
-        logger.log(f"Concatenating {index + 1}: {nii_str}", verbose)
-
-        data[..., cur_4d_index : cur_4d_index + size] = _get_data(niimg)
-        cur_4d_index += size
-
-    return new_img_like(first_niimg, data, first_niimg.affine)
 
 
 @overload
