@@ -2,7 +2,10 @@ import pytest
 from nibabel import Nifti1Image
 from sklearn import clone
 
-from nilearn.conftest import _img_3d_rand, _make_surface_img
+from nilearn.conftest import (
+    _img_3d_rand,
+    _make_surface_img,
+)
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
     MultiNiftiMapsMasker,
@@ -197,3 +200,30 @@ def test_masker_reporting_false(masker, img_func):
         masker,
         warnings_msg_to_check=["Report generation was disabled when fit"],
     )
+
+
+@pytest.mark.parametrize("confound_container", [list, tuple])
+def test_multi_masker_high_variance_confounds_with_list_confounds(
+    confound_container, img_4d_rand_eye, rng
+):
+    """Check high_variance_confounds=True with per-image confounds that
+    are themselves a list/tuple of several confound sources.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/6728:
+    both containers must work and simply add one more confound source,
+    not raise either error.
+    """
+    imgs = [img_4d_rand_eye, img_4d_rand_eye]
+    n_time = imgs[0].shape[-1]
+    extra_confound = rng.random((n_time, 2))
+
+    masker = MultiNiftiMasker(high_variance_confounds=True)
+    masker.fit(imgs)
+
+    confounds = [confound_container([extra_confound]), None]
+
+    signals = masker.transform(imgs, confounds=confounds)
+
+    assert len(signals) == len(imgs)
+    for s in signals:
+        assert s.shape[0] == n_time

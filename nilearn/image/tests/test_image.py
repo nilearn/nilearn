@@ -1280,7 +1280,11 @@ def test_input_in_threshold_img_errors(
     # incompatible inputs raise errors
     with pytest.raises(
         TypeError,
-        match=r"Mask and input images must be of compatible types.",
+        match=(
+            "If 'img' is a Niimg-like object, "
+            "'mask_img' should also be a 3D Niimg-like object"
+            r".*SurfaceImage"
+        ),
     ):
         threshold_img(vol_img, threshold=1, mask_img=surf_mask_1d)
 
@@ -1292,7 +1296,11 @@ def test_input_in_threshold_img_errors(
 
     with pytest.raises(
         TypeError,
-        match=r"Mask and input images must be of compatible types.",
+        match=(
+            "If 'img' is a SurfaceImage object, "
+            "'mask_img' should also be a SurfaceImage object"
+            r".*Nifti1Image"
+        ),
     ):
         threshold_img(surf_img_1d, threshold=1, mask_img=vol_mask)
 
@@ -2515,30 +2523,30 @@ def test_check_niimg_wildcards(affine_eye, shape, wildcards, tmp_path):
 
 
 @pytest.fixture
-def img_in_home_folder(
-    img_3d_mni,
-) -> Generator[Nifti1Image, None, None]:
-    """Create a test file in the home folder.
+def img_in_home_folder(img_3d_mni, tmp_path, monkeypatch) -> Nifti1Image:
+    """Create a test file in a temporary home folder.
 
-    Teardown: use yield instead of return to make sure the file
-    is deleted after the test,
-    even if the test fails.
-    https://docs.pytest.org/en/stable/how-to/fixtures.html#teardown-cleanup-aka-fixture-finalization
+    The home directory is monkeypatched to a per-test temporary folder
+    so that tests running in parallel do not share (and race on)
+    a file in the actual home folder of the user.
 
-    Yields
-    ------
+    Returns
+    -------
     nibabel.Nifti1Image
     """
-    created_file = Path("~/test.nii")
-    img_3d_mni.to_filename(created_file.expanduser())
-    assert created_file.expanduser().exists()
+    # HOME is used on posix, USERPROFILE on Windows
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
 
-    yield img_3d_mni
+    created_file = Path("~/test.nii").expanduser()
+    assert created_file.parent == tmp_path
 
-    created_file.expanduser().unlink()
+    img_3d_mni.to_filename(created_file)
+    assert created_file.exists()
+
+    return img_3d_mni
 
 
-@pytest.mark.single_process
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "filename", ["~/test.nii", r"~/test.nii", Path("~/test.nii")]
@@ -2554,7 +2562,6 @@ def test_check_niimg_user_expand(img_in_home_folder, filename):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.single_process
 @pytest.mark.parametrize(
     "filename",
     [
