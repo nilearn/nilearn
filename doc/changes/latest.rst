@@ -31,8 +31,6 @@ HIGHLIGHTS
 Fixes
 -----
 
-- :bdg-dark:`Code` Fix functions like :func:`~nilearn.image.concat_imgs` or :func:`~nilearn.glm.second_level.non_parametric_inference` reshaping in place the data of the 1D :class:`~nilearn.surface.SurfaceImage` passed as input. As a consequence, ``transform`` of :class:`~nilearn.maskers.SurfaceLabelsMasker` and :class:`~nilearn.maskers.SurfaceMapsMasker` now returns a 1D array for a single 1D surface image, and ``inverse_transform`` returns a 1D surface image for a 1D array, like other surface maskers (:gh:`6721` by `Rémi Gau`_).
-
 - :bdg-dark:`Code` Fix division of a :class:`~nilearn.glm.Contrast` by a scalar on Python 3 (:gh:`6756` by `Eva B <https://github.com/evadiva3>`_).
 
 - :bdg-dark:`Code` Fix :class:`~nilearn.maskers.MultiNiftiMasker` and other multi-image maskers raising a ``ValueError`` or ``AttributeError`` when ``high_variance_confounds=True`` was combined with a per-image ``confounds`` entry that was itself a list or tuple of several confound sources (:gh:`6726` by `Siddhardha Nanda`_).

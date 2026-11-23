@@ -1947,20 +1947,17 @@ def at_least_2d(input: PolyData) -> PolyData: ...
 
 
 def at_least_2d(input: SurfaceImage | PolyData) -> SurfaceImage | PolyData:
-    """Force surface image or polydata to be 2d.
-
-    The input is not modified: a new object is returned if needed.
-    """
+    """Force surface image or polydata to be 2d."""
     if len(input.shape) == 2:
         return input
 
     if isinstance(input, SurfaceImage):
-        return SurfaceImage(mesh=input.mesh, data=at_least_2d(input.data))
+        input.data = at_least_2d(input.data)
+        return input
 
     if len(input.shape) == 1:
-        return PolyData(
-            **{k: v.reshape((v.shape[0], 1)) for k, v in input.parts.items()}
-        )
+        for k, v in input.parts.items():
+            input.parts[k] = v.reshape((v.shape[0], 1))
 
     return input
 

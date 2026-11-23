@@ -1277,8 +1277,9 @@ def iter_img(imgs) -> Iterator[Nifti1Image | SurfaceImage]:
     ['Nifti1Image with shape= (3, 3, 3)', 'Nifti1Image with shape= (3, 3, 3)']
     """
     if isinstance(imgs, SurfaceImage):
-        imgs = at_least_2d(imgs)
-        output = (index_img(imgs, i) for i in range(imgs.shape[1]))
+        output = (
+            index_img(imgs, i) for i in range(at_least_2d(imgs).shape[1])
+        )
         return output
     return check_niimg_4d(imgs, return_iterator=True)
 
