@@ -103,7 +103,7 @@ def test_orthogonalize_trivial(rng):
     assert_array_equal(Y, X)
 
 
-def test_sample_condition_1():
+def test_sample_condition_zero_duration_events():
     """Test that the experimental condition is correctly sampled."""
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frame_times = np.linspace(0, 49, 50)
@@ -125,7 +125,7 @@ def test_sample_condition_1():
     assert reg[61] == 1
 
 
-def test_sample_condition_2():
+def test_sample_condition_onset_at_zero():
     """Test the experimental condition sampling -- onset = 0."""
     condition = ([0, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frame_times = np.linspace(0, 49, 50)
@@ -140,7 +140,7 @@ def test_sample_condition_2():
     assert reg[31] == 1
 
 
-def test_sample_condition_3():
+def test_sample_condition_oversampling():
     """Test the experimental condition sampling -- oversampling=10."""
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frame_times = np.linspace(0, 49, 50)
@@ -163,7 +163,7 @@ def test_sample_condition_3():
     assert_almost_equal(reg, reg_)
 
 
-def test_sample_condition_4():
+def test_sample_condition_negative_amplitude():
     """Test the experimental condition sampling -- negative amplitude."""
     condition = ([1, 20, 36.5], [2, 2, 2], [1.0, -1.0, 5.0])
     frame_times = np.linspace(0, 49, 50)
@@ -176,7 +176,7 @@ def test_sample_condition_4():
     assert reg[61] == 5.0
 
 
-def test_sample_condition_5():
+def test_sample_condition_negative_onset():
     """Test the experimental condition sampling -- negative onset."""
     condition = ([-10, 0, 36.5], [2, 2, 2], [1.0, -1.0, 5.0])
     frame_times = np.linspace(0, 49, 50)
@@ -189,7 +189,7 @@ def test_sample_condition_5():
     assert reg[61] == 5.0
 
 
-def test_sample_condition_6():
+def test_sample_condition_overlapping_onsets_different_durations():
     """Test the experimental condition sampling -- overalapping onsets, \
     different durations.
     """
@@ -204,7 +204,7 @@ def test_sample_condition_6():
     assert reg[61] == 0.0
 
 
-def test_sample_condition_7():
+def test_sample_condition_different_onsets_overlapping_offsets():
     """Test the experimental condition sampling -- different onsets, \
     overlapping offsets.
     """
@@ -381,7 +381,7 @@ def test_hkernel_errors():
         _hrf_kernel("foo", t_r)
 
 
-def test_make_regressor_1():
+def test_make_regressor_spm_with_durations():
     """Test the generated regressor."""
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frame_times = np.linspace(0, 69, 70)
@@ -393,7 +393,7 @@ def test_make_regressor_1():
     assert reg_names[0] == "cond"
 
 
-def test_make_regressor_2():
+def test_make_regressor_spm_zero_duration_events():
     """Test the generated regressor."""
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frame_times = np.linspace(0, 69, 70)
@@ -405,7 +405,7 @@ def test_make_regressor_2():
     assert reg_names[0] == "cond"
 
 
-def test_make_regressor_3():
+def test_make_regressor_fir_delays_and_oversampling():
     """Test the generated regressor."""
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frame_times = np.linspace(0, 138, 70)
@@ -429,7 +429,7 @@ def test_make_regressor_3():
     assert_array_equal(reg, reg_)
 
 
-def test_make_regressor_4():
+def test_make_regressor_spm_constant_input_stays_constant():
     """Test that constant input remains constant after initial bump.
 
     regression test for:

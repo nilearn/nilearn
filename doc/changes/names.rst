@@ -115,6 +115,8 @@
 
 .. _Eric Larson: https://larsoner.com/
 
+.. _Eva B: https://github.com/evadiva3
+
 .. _Evan Edmond: https://evan.science/
 
 .. _Fabian Pedregosa: https://github.com/fabianp
@@ -319,6 +321,8 @@
 
 .. _Pierre-Olivier Quirion: https://github.com/poquirion
 
+.. _Plato Ism: https://github.com/aplatogg
+
 .. _Pradeep Reddy Raamana: https://github.com/raamana
 
 .. _Prakhar Jain: https://github.com/PrakharJain1509
@@ -330,6 +334,8 @@
 .. _Reyyi Shreyas: https://github.com/reyyishreyas
 
 .. _Rishika Kapil: https://github.com/RishikaKaps
+
+.. _Rishit Garg: https://github.com/Rishit412
 
 .. _Robert Luke: https://github.com/rob-luke
 
