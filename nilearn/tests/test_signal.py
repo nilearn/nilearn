@@ -1727,7 +1727,6 @@ def test_clean_butterworth_ignores_censored_volumes(scrub_index, extrapolate):
     assert_almost_equal(cleaned, cleaned_spiked)
 
 
-@pytest.mark.ai_generated
 def test_interpolate_volumes_fills_only_censored_volumes():
     """Kept volumes are untouched and every censored volume is filled."""
     signals = np.arange(20, dtype=float)[:, None] * np.ones((1, 2))
