@@ -31,7 +31,7 @@ HIGHLIGHTS
 Fixes
 -----
 
-- :bdg-dark:`Code` Fix error messages for empty inputs to multi-image mask functions and arrays with more than two dimensions in mass-univariate normalization, and interpolate mesh names and duplicate cut coordinates in warnings (:gh:`6760` by `Eva B <https://github.com/evadiva3>`_).
+- :bdg-dark:`Code` Fix error messages for empty inputs to multi-image mask functions and arrays with more than two dimensions in mass-univariate normalization (:gh:`6760` by `Eva B <https://github.com/evadiva3>`_).
 
 - :bdg-dark:`Code` Fix division of a :class:`~nilearn.glm.Contrast` by a scalar on Python 3 (:gh:`6756` by `Eva B <https://github.com/evadiva3>`_).
 

@@ -939,7 +939,7 @@ def _sanitize_vertices_order(bunch: Bunch, mesh: str, data_dir) -> None:
     if not _is_vertex_order_equal(fs_coordinates, fs5_coordinates, 5):
         warnings.warn(
             (
-                f"\nUnsorted vertex coordinates detected for {mesh}.\n"
+                "\nUnsorted vertex coordinates detected for {mesh}.\n"
                 "The vertices and data will be reordered and saved."
             ),
             category=UserWarning,

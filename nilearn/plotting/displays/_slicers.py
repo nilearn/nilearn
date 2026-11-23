@@ -2405,7 +2405,7 @@ class MosaicSlicer(BaseSlicer):
                 if len(value) != len(unique):
                     warnings.warn(
                         f"Dropping duplicates cuts from direction '{key}' "
-                        f"values {value}",
+                        "values {value}",
                         stacklevel=find_stack_level(),
                     )
                     cut_coords[key] = list(unique)

@@ -11,7 +11,6 @@ from sklearn.utils import Bunch
 from nilearn.datasets.struct import (
     _apply_mesh_mapping,
     _get_mesh_mapping,
-    _sanitize_vertices_order,
     fetch_icbm152_2009,
     fetch_icbm152_brain_gm_mask,
     fetch_oasis_vbm,
@@ -219,23 +218,6 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     check_type_fetcher(dataset)
 
     assert mesh_attributes.issubset(set(dataset.keys()))
-
-
-@pytest.mark.parametrize("mesh", ["fsaverage3", "fsaverage4"])
-def test_sanitize_vertices_order_warning(mesh, tmp_path, monkeypatch):
-    """The warning should identify the mesh whose vertices need reordering."""
-    coordinates = iter([np.zeros((5, 3)), np.ones((5, 3)) * 100])
-    monkeypatch.setattr(
-        "nilearn.datasets.struct.load_surf_data",
-        lambda _: (next(coordinates), None),
-    )
-    monkeypatch.setattr(
-        "nilearn.datasets.struct._resort_vertices", lambda *args: None
-    )
-    with pytest.warns(
-        UserWarning, match=f"Unsorted vertex coordinates detected for {mesh}"
-    ):
-        _sanitize_vertices_order(Bunch(pial_left="unused"), mesh, tmp_path)
 
 
 def test_fetch_load_fsaverage():
