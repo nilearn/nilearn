@@ -1690,7 +1690,6 @@ def test_handle_scrubbed_volumes_without_extrapolation():
     )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("extrapolate", [True, False])
 @pytest.mark.parametrize(
     "scrub_index",
