@@ -1696,7 +1696,7 @@ def test_handle_scrubbed_volumes_without_extrapolation():
     [[0, 1, 38, 39], [0, 1, 2, 20], [20, 21], [37, 38, 39]],
     ids=["both-ends", "head-and-interior", "interior", "tail"],
 )
-def test_clean_butterworth_ignores_censored_volumes(scrub_index, extrapolate):
+def test_clean_butterworth_ignores_censored_volumes(scrub_index, extrapolate, rng):
     """Censored volumes must not leak into the cleaned signal.
 
     With a butterworth filter the censored volumes are replaced by an
