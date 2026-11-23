@@ -26,12 +26,14 @@ and we will compare these strategies against a naive usage of
    - the :ref:`ADHD dataset <adhd_dataset>`
    - the :ref:`BASC multiscale atlas <basc_multiscale_2015_atlas>`
 """
+
 # %%
 # Create a large fMRI image
 # -------------------------
-# Here we will create a "large" :term:`fMRI` image by fetching 6 subjects'
+# Here we will create a "large" :term:`fMRI` image by fetching several
 # :term:`fMRI` images via the :func:`~nilearn.datasets.fetch_adhd` function,
-# concatenating them into a single time series with over 800 time points.
+# then concatenating them into a single time series with over
+# 1000 time points.
 #
 
 from pathlib import Path
@@ -39,7 +41,7 @@ from pathlib import Path
 from nilearn.datasets import fetch_adhd
 from nilearn.image import concat_imgs
 
-N_SUBJECTS = 15
+N_SUBJECTS = 10
 
 
 def create_large_fmri(n_subjects):
