@@ -1707,7 +1707,6 @@ def test_clean_butterworth_ignores_censored_volumes(scrub_index, extrapolate, rn
     Regression test for:
     https://github.com/nilearn/nilearn/issues/6768    
     """
-    rng = np.random.default_rng(0)
     signals = rng.standard_normal((40, 3))
     sample_mask = np.delete(np.arange(40), scrub_index)
     spiked = signals.copy()
