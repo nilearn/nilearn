@@ -1704,6 +1704,9 @@ def test_clean_butterworth_ignores_censored_volumes(scrub_index, extrapolate):
     interpolation of the kept ones before filtering, so the output must not
     depend on their original values, and it must hold one row per kept
     volume that lies within the interpolated range.
+    
+    Regression test for:
+    https://github.com/nilearn/nilearn/issues/6768    
     """
     rng = np.random.default_rng(0)
     signals = rng.standard_normal((40, 3))
