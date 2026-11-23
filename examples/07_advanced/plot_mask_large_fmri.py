@@ -248,7 +248,7 @@ def numpy_masker_shared_parallel(fmri_path, mask_paths):
         fmri_array.shape, dtype=fmri_array.dtype, buffer=shm.buf
     )
     np.copyto(shared_array, fmri_array)
-    del fmri_array
+    # del fmri_array
     masks = [load_img(mask).get_fdata().astype(bool) for mask in mask_paths]
     Parallel(n_jobs=N_REGIONS)(
         delayed(numpy_masker_single)(shared_array, mask) for mask in masks
