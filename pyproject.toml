@@ -106,7 +106,8 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14"
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15"
 ]
 dependencies = [
     "joblib>=1.5.0",
@@ -372,6 +373,8 @@ filterwarnings = [
     # ignoring warnings from pytest-reporter-html1 when rendering docstrings
     # with docutils>=0.22 in the HTML test report
     'ignore:Argument "writer_name" will be removed:PendingDeprecationWarning'
+    # PyparsingDeprecationWarning is ignored in nilearn/conftest.py
+    # only when pyparsing is installed and defines it
 ]
 junit_family = "xunit2"
 log_cli_level = "INFO"
@@ -379,7 +382,7 @@ log_level = "INFO"
 markers = [
     # For tests that exceed the timeout allowed for each test.
     # Slow tests are run separately from the others in a different pytest invocation
-    # with no timeout limit so that slow tests are only run if all "fasts" tests pass.
+    # with a longer timeout limit so that slow tests are only run if all "fasts" tests pass.
     # Also helps find tests that could point
     # to potential performance issues (in the code or in the test).
     "slow",

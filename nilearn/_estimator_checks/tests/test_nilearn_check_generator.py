@@ -19,6 +19,10 @@ from nilearn._estimator_checks.nilearn_check_generator import (
     VOLUME_INPUT_MASKER_CHECKS,
     nilearn_check_generator,
 )
+from nilearn._estimator_checks.nilearn_checks import (
+    check_img_estimator_dtypes_funcs,
+)
+from nilearn._estimator_checks.utils import accepts_image
 from nilearn.connectome import (
     ConnectivityMeasure,
     GroupSparseCovariance,
@@ -227,10 +231,26 @@ REGIONS = [HierarchicalKMeans, RegionExtractor, ReNA, Parcellations]
 def test_nilearn_check_generator_common_checks(estimator, expected_checks):
     """Test nilearn._estimator_checks.nilearn_checks.nilearn_check_generator
     for correctness of returned checks for each estimator.
-    """
-    checks_count = 0
-    for check in nilearn_check_generator(estimator()):
-        checks_count += 1
-        assert check in expected_checks
 
-    assert checks_count == len(expected_checks)
+    Checks for dtypes are created by factory functions
+    (one per combination of dtypes),
+    so they are compared by name and not by identity.
+    """
+    estimator = estimator()
+
+    expected_dtype_checks = []
+    if accepts_image(estimator):
+        expected_dtype_checks = [
+            check.__qualname__
+            for check in check_img_estimator_dtypes_funcs(estimator)
+        ]
+
+    checks = list(nilearn_check_generator(estimator))
+
+    other_checks = [check for check in checks if check in expected_checks]
+    dtype_checks = [
+        check.__qualname__ for check in checks if check not in expected_checks
+    ]
+
+    assert len(other_checks) == len(expected_checks)
+    assert dtype_checks == expected_dtype_checks
