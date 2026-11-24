@@ -67,6 +67,8 @@
 
 .. _Binh Nguyen: https://tbng.github.io/
 
+.. _Brent McPherson: https://github.com/bcmcpher
+
 .. _Caglar Cakan: https://github.com/caglorithm
 
 .. _Cedric Conday: https://github.com/CedricConday
@@ -114,6 +116,8 @@
 .. _Elvis Dohmatob: https://dohmatob.github.io/
 
 .. _Eric Larson: https://larsoner.com/
+
+.. _Eva B: https://github.com/evadiva3
 
 .. _Evan Edmond: https://evan.science/
 
