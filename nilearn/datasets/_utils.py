@@ -1049,3 +1049,8 @@ def tree(path, pattern=None, dictionary=False):
     if len(files) > 0:
         dirs["."] = files
     return dirs
+
+
+def zenodo_url(record: int, file: str) -> str:
+    """Build a url for a file on zenodo."""
+    return f"https://zenodo.org/api/records/{record}/files/{file}/content"

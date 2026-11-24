@@ -200,9 +200,8 @@ that the dev have access to:
 
 - `nilearn_data <https://osf.io/hxctv>`_
 
-  Project hosting the data for:
-
-  - ``fetch_atlas_allen_2011``: https://osf.io/hrcku
+  Old project hosting the data for ``fetch_atlas_allen_2011``
+  now moved to Zenodo: https://doi.org/10.5281/zenodo.24503288
 
 - `Nilearn_datasets <https://osf.io/mk53n>`_
 

@@ -25,6 +25,7 @@ from nilearn.datasets._utils import (
     fetch_files,
     get_dataset_descr,
     get_dataset_dir,
+    zenodo_url,
 )
 from nilearn.image import check_niimg, get_data, new_img_like, resampling
 from nilearn.nilearn_typing import (
@@ -1091,14 +1092,12 @@ def _fetch_surf_fsaverage(
     dataset_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
     opts = {"uncompress": True}
 
-    zenodo = "https://zenodo.org/api/records"
-
     datasets = {
-        "fsaverage3": f"{zenodo}/23242166/files/fsaverage3.tar.gz/content",
-        "fsaverage4": f"{zenodo}/23696293/files/fsaverage4.tar.gz/content",
-        "fsaverage6": f"{zenodo}/24502512/files/fsaverage6.tar.gz/content",
+        "fsaverage3": zenodo_url(23242166, "fsaverage3.tar.gz"),
+        "fsaverage4": zenodo_url(23696293, "fsaverage4.tar.gz"),
+        "fsaverage6": zenodo_url(24502512, "fsaverage6.tar.gz"),
         # fsaverage and fsaverage7 are the same
-        "fsaverage": f"{zenodo}/24502703/files/fsaverage7.tar.gz/content",
+        "fsaverage": zenodo_url(24502703, "fsaverage7.tar.gz"),
     }
 
     url = datasets[dataset_name]

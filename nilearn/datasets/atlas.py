@@ -30,6 +30,7 @@ from nilearn.datasets._utils import (
     fetch_files,
     fetch_single_file,
     get_dataset_dir,
+    zenodo_url,
 )
 from nilearn.image import check_niimg, new_img_like, reorder_img
 from nilearn.nilearn_typing import DataDir, Resume, TypedBunch, Url, Verbose
@@ -1676,7 +1677,7 @@ def fetch_atlas_allen_2011(  # numpydoc ignore=RT05
     atlas_type = "probabilistic"
 
     if url is None:
-        url = "https://osf.io/hrcku/download"
+        url = zenodo_url(24503289, "allen_rsn_2011.zip")
 
     keys = ("maps", "rsn28", "comps")
 

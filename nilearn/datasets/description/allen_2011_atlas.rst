@@ -26,7 +26,7 @@ https://trendscenter.org/data/
 Slices and label of the RSN ICs:
 https://www.frontiersin.org/files/Articles/2093/fnsys-05-00002-HTML/image_m/fnsys-05-00002-g004.jpg
 
-Direct download link from OSF: https://osf.io/hrcku
+Direct download link from Zenodo: https://doi.org/10.5281/zenodo.24503288
 
 Content
 -------
