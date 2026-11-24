@@ -2295,7 +2295,7 @@ def test_concat_imgs_single_surface_respects_dtype(surf_img_2d):
     img = concat_imgs([input_img])
 
     assert all(value.dtype == np.float32 for value in img.data.parts.values())
-    
+
 
 def test_concat_imgs_surface_1d_input_unchanged(surf_img_1d):
     """Check concat_imgs does not modify the 1D surface images it is given."""
