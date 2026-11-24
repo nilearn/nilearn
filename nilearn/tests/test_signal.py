@@ -1696,16 +1696,18 @@ def test_handle_scrubbed_volumes_without_extrapolation():
     [[0, 1, 38, 39], [0, 1, 2, 20], [20, 21], [37, 38, 39]],
     ids=["both-ends", "head-and-interior", "interior", "tail"],
 )
-def test_clean_butterworth_ignores_censored_volumes(scrub_index, extrapolate, rng):
+def test_clean_butterworth_ignores_censored_volumes(
+    scrub_index, extrapolate, rng
+):
     """Censored volumes must not leak into the cleaned signal.
 
     With a butterworth filter the censored volumes are replaced by an
     interpolation of the kept ones before filtering, so the output must not
     depend on their original values, and it must hold one row per kept
     volume that lies within the interpolated range.
-    
+
     Regression test for:
-    https://github.com/nilearn/nilearn/issues/6768    
+    https://github.com/nilearn/nilearn/issues/6768
     """
     signals = rng.standard_normal((40, 3))
     sample_mask = np.delete(np.arange(40), scrub_index)
@@ -1730,7 +1732,7 @@ def test_clean_butterworth_ignores_censored_volumes(scrub_index, extrapolate, rn
 
 def test_interpolate_volumes_fills_only_censored_volumes():
     """Kept volumes are untouched and every censored volume is filled.
-    
+
     Regression test for:
     https://github.com/nilearn/nilearn/issues/6768
     """
