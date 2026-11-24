@@ -80,6 +80,7 @@ Some other past or present contributors are:
 * `Ben Cipollini`_: Facebook, Hayward, California, USA
 * `Bertrand Thirion`_: Inria, Saclay, France
 * `Binh Nguyen`_
+* `Brent McPherson`_: The Neuro, McGill, Canada
 * `Caglar Cakan`_: Technische Universität Berlin, Berlin, Germany
 * `Cedric Conday`_
 * `Chloe Hampson`_: Florida International University, Miami, United States
