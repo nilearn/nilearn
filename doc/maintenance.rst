@@ -206,7 +206,7 @@ that the dev have access to:
 - `Nilearn_datasets <https://osf.io/mk53n>`_
 
   Old project hosting the data for ``fetch_surf_fsaverage``.
-  The data has now been moved to Zenodo.
+  now moved to Zenodo.
 
   - ``fsaverage3``: https://doi.org/10.5281/zenodo.23242165
   - ``fsaverage4``: https://doi.org/10.5281/zenodo.23696246
@@ -215,17 +215,16 @@ that the dev have access to:
 
 - `nistats <https://osf.io/v7hsw>`_
 
-  Project hosting the data for:
-
-  - ``fetch_localizer_first_level``: https://osf.io/2bqxn
+  Old project hosting the data for ``fetch_localizer_first_level``.
+  now moved to Zenodo: https://doi.org/10.5281/zenodo.24504516
 
 - `NiLearn's Quick Files <https://osf.io/hr36b>`_
 
-  Project hosting some of the data for:
+  Old project hosting data now moved to zenodo:
 
-  - ``fetch_ds000030_urls``: https://osf.io/86xj7
+  - ``fetch_ds000030_urls``: https://doi.org/10.5281/zenodo.24504834
 
-  - ``fetch_icbm152_2009``: https://osf.io/7pj92
+  - ``fetch_icbm152_2009``: https://doi.org/10.5281/zenodo.24508386
 
 - `temporary space to store dataset for nilearn example gallery <https://osf.io/5dr8p>`_
 

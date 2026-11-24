@@ -41,6 +41,7 @@ from nilearn.datasets._utils import (
     read_md5_sum_file,
     tree,
     uncompress_file,
+    zenodo_url,
 )
 from nilearn.datasets.struct import load_fsaverage
 from nilearn.image import check_niimg, get_data
@@ -2530,7 +2531,9 @@ def fetch_ds000030_urls(
     check_params(locals())
 
     DATA_PREFIX = "ds000030/ds000030_R1.0.4/uncompressed"
-    FILE_URL = "https://osf.io/86xj7/download"
+    FILE_URL = zenodo_url(
+        24504835, "nilearn_fetcher_openneuro_dataset_urls.json"
+    )
 
     dataset_dir = get_dataset_dir(
         DATA_PREFIX,
@@ -2852,7 +2855,7 @@ def fetch_localizer_first_level(  # numpydoc ignore=RT05
     """
     check_params(locals())
 
-    url = "https://osf.io/2bqxn/download"
+    url = zenodo_url(24504517, "24504517")
     epi_img = "sub-12069_task-localizer_space-MNI305.nii.gz"
     events = "sub-12069_task-localizer_events.tsv"
     opts = {"uncompress": True}

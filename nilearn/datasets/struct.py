@@ -125,10 +125,7 @@ def fetch_icbm152_2009(  # numpydoc ignore=RT05
     check_params(locals())
 
     if url is None:
-        # The URL can be retrieved from the nilearn account on OSF (Open
-        # Science Framework), https://osf.io/4r3jt/quickfiles/
-        # Clicking on the "share" button gives the root of the URL.
-        url = "https://osf.io/7pj92/download"
+        url = zenodo_url(24508387, "mni_icbm152_nlin_sym_09a_nifti.zip")
     opts = {"uncompress": True}
 
     keys = (
