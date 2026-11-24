@@ -1093,12 +1093,15 @@ def _fetch_surf_fsaverage(
 
     zenodo = "https://zenodo.org/api/records"
 
-    url = {
+    datasets = {
         "fsaverage3": f"{zenodo}/23242166/files/fsaverage3.tar.gz/content",
         "fsaverage4": f"{zenodo}/23696293/files/fsaverage4.tar.gz/content",
-        "fsaverage6": "https://osf.io/jzxyr/download",
-        "fsaverage": "https://osf.io/svf8k/download",  # fsaverage7
-    }[dataset_name]
+        "fsaverage6": f"{zenodo}/24502512/files/fsaverage6.tar.gz/content",
+        # fsaverage and fsaverage7 are the same
+        "fsaverage": f"{zenodo}/24502703/files/fsaverage7.tar.gz/content",
+    }
+
+    url = datasets[dataset_name]
 
     # List of attributes exposed by the dataset
     dataset_attributes = [

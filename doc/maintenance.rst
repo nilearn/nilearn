@@ -206,14 +206,13 @@ that the dev have access to:
 
 - `Nilearn_datasets <https://osf.io/mk53n>`_
 
-  Project hosting the data for
+  Old project hosting the data for ``fetch_surf_fsaverage``.
+  The data has now been moved to Zenodo.
 
-  - ``fetch_surf_fsaverage``:
-
-    - ``fsaverage3``: https://doi.org/10.5281/zenodo.23242165
-    - ``fsaverage4``: https://doi.org/10.5281/zenodo.23696246
-    - ``fsaverage6``: https://osf.io/jzxyr
-    - ``fsaverage7``: https://osf.io/svf8k
+  - ``fsaverage3``: https://doi.org/10.5281/zenodo.23242165
+  - ``fsaverage4``: https://doi.org/10.5281/zenodo.23696246
+  - ``fsaverage6``: https://doi.org/10.5281/zenodo.24502512
+  - ``fsaverage7``: https://doi.org/10.5281/zenodo.24502703
 
 - `nistats <https://osf.io/v7hsw>`_
 
