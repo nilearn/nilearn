@@ -227,7 +227,6 @@ def test_calculate_cluster_measures_on_empty_array():
     assert test_mass[0] == true_mass
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("shape", [(2, 3, 4), (1, 2, 3, 4)])
 def test_normalize_matrix_on_axis_invalid_shape(shape):
     """Higher-dimensional arrays should produce the intended shape error."""
