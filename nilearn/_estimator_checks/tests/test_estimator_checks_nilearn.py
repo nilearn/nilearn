@@ -4,12 +4,12 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
-from sklearn.base import clone
 from sklearn.covariance import EmpiricalCovariance
 
 from nilearn._estimator_checks.nilearn_check_generator import (
     nilearn_check_estimator,
 )
+from nilearn._estimator_checks.utils import clone
 from nilearn._utils.data_gen import generate_maps
 from nilearn.conftest import (
     _affine_eye,
@@ -194,8 +194,12 @@ def test_check_estimator_count():
     nilearn_check_estimator(estimators=_estimators_to_test()),
 )
 def test_check_estimator_nilearn(estimator, name, check):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    # use a copy of the estimator:
-    # the estimators instances in the parametrization
-    # are shared across threads when running tests in parallel
+    """Check compliance with nilearn estimators rules.
+
+    Use a clone of the estimator (with random_state set):
+    cloning here is required to ensure that,
+    when the same test is run across several threads
+    (parallel with pytest-run-parallel),
+    the different thread do not share the same estimator in memory.
+    """
     check(clone(estimator))

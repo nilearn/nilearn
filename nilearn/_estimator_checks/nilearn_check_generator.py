@@ -78,7 +78,7 @@ from nilearn._estimator_checks.nilearn_checks import (
     check_verbosity_embedded_masker,
     check_warning_embedded_masker,
 )
-from nilearn._estimator_checks.utils import accepts_image, clone
+from nilearn._estimator_checks.utils import accepts_image
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.utils.tags import (
@@ -276,11 +276,14 @@ def nilearn_check_generator(estimator: NilearnBaseEstimator):
 def nilearn_check_estimator(estimators: list[NilearnBaseEstimator]):
     """Return a tuple in the form: (estimator, estimator_name, check_function)
     for each estimator in the ``estimators`` list.
+
+    The same estimator instance is returned for all its checks:
+    clone it before running a check.
     """
     checks_to_run = []
     for est in estimators:
         checks_to_run.extend(
-            (clone(est), est.__class__.__name__, check)
+            (est, est.__class__.__name__, check)
             for check in nilearn_check_generator(estimator=est)
         )
 
