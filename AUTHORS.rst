@@ -80,6 +80,7 @@ Some other past or present contributors are:
 * `Ben Cipollini`_: Facebook, Hayward, California, USA
 * `Bertrand Thirion`_: Inria, Saclay, France
 * `Binh Nguyen`_
+* `Brent McPherson`_: The Neuro, McGill, Canada
 * `Caglar Cakan`_: Technische Universität Berlin, Berlin, Germany
 * `Cedric Conday`_
 * `Chloe Hampson`_: Florida International University, Miami, United States
@@ -104,6 +105,7 @@ Some other past or present contributors are:
 * `Elizabeth DuPre`_: Stanford University, Stanford, California, USA
 * `Elvis Dohmatob`_: Facebook AI Research (FAIR)
 * `Eric Larson`_: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
+* `Eva B`_
 * `Evan Edmond`_: University of Oxford, Oxford, UK
 * `Fabian Pedregosa`_: @google, Geneva, Switzerland
 * `Fabricio Cravo`_: NeuroPRISM, Northeastern University
@@ -213,6 +215,7 @@ Some other past or present contributors are:
 * `Raphael Meudec`_: Inria, Saclay, France
 * `Reyyi Shreyas`_
 * `Rishika Kapil`_: Thapar Institute of Engineering and Technology
+* `Rishit Garg`_
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
 * `Robert Williamson`_
 * `Roberto Guidotti`_: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy

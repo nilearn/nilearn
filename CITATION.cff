@@ -178,6 +178,10 @@ authors:
   - given-names: Binh
     family-names: Nguyen
     website: https://tbng.github.io/
+  - given-names: Brent
+    family-names: McPherson
+    website: https://github.com/bcmcpher
+    affiliation: The Neuro, McGill, Canada
   - given-names: Caglar
     family-names: Cakan
     website: https://github.com/caglorithm
@@ -284,6 +288,9 @@ authors:
     family-names: Larson
     website: https://larsoner.com/
     affiliation: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
+  - given-names: Eva
+    family-names: B
+    website: https://github.com/evadiva3
   - given-names: Evan
     family-names: Edmond
     website: https://evan.science/
@@ -778,6 +785,9 @@ authors:
     family-names: Kapil
     website: https://github.com/RishikaKaps
     affiliation: Thapar Institute of Engineering and Technology
+  - given-names: Rishit
+    family-names: Garg
+    website: https://github.com/Rishit412
   - given-names: Robert
     family-names: Luke
     website: https://github.com/rob-luke
