@@ -13,6 +13,7 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import datasets, image
 from nilearn._utils import data_gen
+from nilearn.conftest import _surf_img_1d
 from nilearn.image import resampling
 from nilearn.surface.surface import (
     FileMesh,
@@ -1225,8 +1226,9 @@ def test_load_save_data_1d(rng, tmp_path, surf_mesh):
         bool,
     ],
 )
-def test_save_dtype(surf_img_1d, tmp_path, dtype):
+def test_save_dtype(tmp_path, dtype):
     """Check saving several data type."""
+    surf_img_1d = _surf_img_1d()
     surf_img_1d.data.parts["right"] = surf_img_1d.data.parts["right"].astype(
         dtype
     )
@@ -1309,8 +1311,9 @@ def test_get_data(surf_img_1d):
 
 
 @pytest.mark.parametrize("ensure_finite", [True, False])
-def test_get_data_ensure_finite(surf_img_1d, ensure_finite):
+def test_get_data_ensure_finite(ensure_finite):
     """Check get data can deal with non finite values."""
+    surf_img_1d = _surf_img_1d()
     surf_img_1d.data.parts["left"][1] = np.nan
     surf_img_1d.data.parts["left"][2] = np.inf
 

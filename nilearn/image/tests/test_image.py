@@ -5,6 +5,7 @@ import re
 import warnings
 from collections.abc import Generator, Iterable
 from contextlib import nullcontext
+from copy import deepcopy
 from pathlib import Path
 
 import joblib
@@ -42,6 +43,7 @@ from nilearn.conftest import (
     _img_3d_rand,
     _rng,
     _shape_4d_default,
+    _surf_img_1d,
 )
 from nilearn.exceptions import DimensionError
 from nilearn.image.image import (
@@ -469,7 +471,7 @@ def test_smooth_img_warning(img_3d_mni):
 
 
 @pytest.mark.parametrize("fwhm", [None, 0.0, 4.0])
-def test_smooth_img_surface_nan_do_not_propagate(surf_img_1d, fwhm):
+def test_smooth_img_surface_nan_do_not_propagate(fwhm):
     """Non-finite vertices must be zeroed, as they are for volumes.
 
     Regression test for https://github.com/nilearn/nilearn/issues/6487.
@@ -478,6 +480,7 @@ def test_smooth_img_surface_nan_do_not_propagate(surf_img_1d, fwhm):
     the smoothing iterations spread each non-finite vertex over its
     neighbors instead.
     """
+    surf_img_1d = _surf_img_1d()
     surf_img_1d.data.parts["left"][0] = np.nan
     surf_img_1d.data.parts["left"][1] = np.inf
     surf_img_1d.data.parts["right"][0] = -np.inf
@@ -488,8 +491,10 @@ def test_smooth_img_surface_nan_do_not_propagate(surf_img_1d, fwhm):
         assert np.all(np.isfinite(part))
 
 
+@pytest.mark.ai_generated
 def test_smooth_img_surface_does_not_modify_input(surf_img_1d):
     """Cleaning non-finite values must not touch the input image."""
+    surf_img_1d = deepcopy(surf_img_1d)
     surf_img_1d.data.parts["left"][0] = np.nan
     expected = {
         part: values.copy() for part, values in surf_img_1d.data.parts.items()

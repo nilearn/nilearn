@@ -7,6 +7,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
+from nilearn.conftest import _surf_img_1d
 from nilearn.datasets import load_fsaverage_data
 from nilearn.image import get_data, math_img
 from nilearn.reporting.get_clusters_table import (
@@ -205,12 +206,13 @@ def test_get_clusters_table_surface_return_label_maps_deprecation(surf_img_1d):
     ],
 )
 def test_get_clusters_table_surface(
-    surf_img_1d, stat_threshold, cluster_threshold, expected_n_cluster
+    stat_threshold, cluster_threshold, expected_n_cluster
 ):
     """Test n_clusters detected.
 
     Also check negative thresholds for one sided.
     """
+    surf_img_1d = _surf_img_1d()
     surf_img_1d.data.parts["left"] = np.asarray([5.1, 5.2, 5.3, -5])
     surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5.4, -5.2])
     stat_img = surf_img_1d
@@ -246,7 +248,6 @@ def test_get_clusters_table_surface(
     ],
 )
 def test_get_clusters_table_surface_two_sided(
-    surf_img_1d,
     stat_threshold,
     cluster_threshold,
     expected_n_cluster_left,
@@ -254,6 +255,7 @@ def test_get_clusters_table_surface_two_sided(
     contain_neg_and_pos,
 ):
     """Test n_clusters detected with two sided."""
+    surf_img_1d = _surf_img_1d()
     surf_img_1d.data.parts["left"] = np.asarray([5.1, 5.2, 5.3, -5])
     surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5.4, -5.2])
     stat_img = surf_img_1d

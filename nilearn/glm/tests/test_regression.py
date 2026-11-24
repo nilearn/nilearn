@@ -47,6 +47,7 @@ def test_residuals(X, Y):
 
     Short of some numerical rounding errors.
     """
+    X = X.copy()
     X[:, 0] = 1
     model = OLSModel(design=X)
     results = model.fit(Y)
@@ -76,6 +77,7 @@ def test_predicted_r_square(X, Y):
 
 def test_ols_degenerate(X, Y):
     """Test that OLSModel's degrees of freedom account for collinearity."""
+    X = X.copy()
     X[:, 0] = X[:, 1] + X[:, 2]
     model = OLSModel(design=X)
     results = model.fit(Y)
@@ -85,6 +87,7 @@ def test_ols_degenerate(X, Y):
 
 def test_ar_degenerate(X, Y):
     """Test that ARModel's degrees of freedom account for collinearity."""
+    X = X.copy()
     X[:, 0] = X[:, 1] + X[:, 2]
     model = ARModel(design=X, rho=0.9)
     results = model.fit(Y)

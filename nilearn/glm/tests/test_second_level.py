@@ -452,7 +452,7 @@ def test_affine_output_mask(n_subjects):
     assert_array_equal(z_image.affine, mask.affine)
 
 
-def test_affine_shape_output_when_provided(affine_eye, n_subjects):
+def test_affine_shape_output_when_provided(n_subjects):
     """Check fov output corresponds to the one passed to model."""
     func_img, mask = fake_fmri_data()
 
@@ -460,7 +460,7 @@ def test_affine_shape_output_when_provided(affine_eye, n_subjects):
     X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
 
     target_shape = (10, 10, 10)
-    target_affine = affine_eye
+    target_affine = np.eye(4)
     target_affine[0, 3] = 1
 
     model = SecondLevelModel(
