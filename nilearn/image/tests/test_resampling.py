@@ -592,7 +592,7 @@ def test_raises_upon_3x3_affine_and_no_shape(affine_eye, force_resample):
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_3x3_affine_bbox(affine_eye, force_resample):
+def test_3x3_affine_bbox(force_resample):
     """Test that the bounding-box is properly computed when \
     transforming with a negative affine component.
 
@@ -604,12 +604,12 @@ def test_3x3_affine_bbox(affine_eye, force_resample):
     # that would count as binary
     # and throw warnings.
     image = np.full((20, 30), 2.0)
-    source_affine = affine_eye.copy()
     # Give the affine an offset
-    source_affine[:2, 3] = np.array([96, 64])
+    affine = np.eye(4)
+    affine[:2, 3] = np.array([96, 64])
 
     # We need to turn this data into a nibabel image
-    img = Nifti1Image(image[:, :, np.newaxis], affine=source_affine)
+    img = Nifti1Image(image[:, :, np.newaxis], affine=affine)
 
     target_affine_3x3 = np.eye(3) * 2
     # One negative axes
@@ -813,11 +813,11 @@ def test_resampling_nan_big(affine_eye, force_resample):
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_resample_to_img(data, affine_eye, force_resample):
-    source_affine = affine_eye.copy()
+def test_resample_to_img(data, force_resample):
+    source_affine = np.eye(4)
     source_img = Nifti1Image(data, source_affine)
 
-    target_affine = 2 * affine_eye
+    target_affine = 2 * source_affine
     target_img = Nifti1Image(data, target_affine)
 
     result_img = resample_to_img(
@@ -845,18 +845,16 @@ def test_crop(affine_eye):
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_resample_identify_affine_int_translation(
-    affine_eye, rng, force_resample
-):
+def test_resample_identify_affine_int_translation(rng, force_resample):
     source_shape = (6, 4, 6)
-    source_affine = affine_eye.copy()
-    source_affine[:, 3] = np.append(rng.integers(0, 4, 3), 1)
+    affine = np.eye(4)
+    affine[:, 3] = np.append(rng.integers(0, 4, 3), 1)
     source_data = rng.random(source_shape)
-    source_img = Nifti1Image(source_data, source_affine)
+    source_img = Nifti1Image(source_data, affine)
 
     target_shape = (11, 10, 9)
     target_data = np.zeros(target_shape)
-    target_affine = source_affine
+    target_affine = affine
     target_affine[:3, 3] -= 3  # add an offset of 3 in x, y, z
     target_data[3:9, 3:7, 3:9] = (
         source_data  # put the data at the offset location
@@ -1102,8 +1100,8 @@ def test_reorder_img_copied_header(img_4d_mni_tr2):
     )
 
 
-def test_coord_transform_trivial(affine_eye, rng):
-    sform = affine_eye.copy()
+def test_coord_transform_trivial(rng):
+    sform = np.eye(4)
     x = rng.random((10,))
     y = rng.random((10,))
     z = rng.random((10,))

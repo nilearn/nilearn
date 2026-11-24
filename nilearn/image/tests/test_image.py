@@ -1865,17 +1865,17 @@ def test_binarize_img_surface(surf_img_1d):
     assert_array_equal(np.unique(get_surface_data(img2)), np.array([0, 1]))
 
 
-def test_binarize_negative_img(img_4d_rand_eye, rng):
-    # Test option to use original or absolute values
-    # copy the data: the fixture image is shared across threads
-    # when running tests in parallel
-    img_data = np.array(img_4d_rand_eye.dataobj)
+def test_binarize_negative_img(rng, affine_eye):
+    """Test option to use original or absolute values."""
+    shape = (7, 8, 9, 5)
+    data = rng.random(shape)
+
     # Create a mask for half of the values and make them negative
-    neg_mask = rng.choice(
-        [True, False], size=img_4d_rand_eye.shape, p=[0.5, 0.5]
-    )
-    img_data[neg_mask] *= -1
-    img = new_img_like(img_4d_rand_eye, img_data)
+    neg_mask = rng.choice([True, False], size=shape, p=[0.5, 0.5])
+    data[neg_mask] *= -1
+
+    img = Nifti1Image(data, affine_eye)
+
     # Binarize using original and absolute values
     img_original = binarize_img(img, threshold=0, two_sided=False)
     img_absolute = binarize_img(img, threshold=0, two_sided=True)
