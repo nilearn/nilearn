@@ -491,7 +491,6 @@ def test_smooth_img_surface_nan_do_not_propagate(fwhm):
         assert np.all(np.isfinite(part))
 
 
-@pytest.mark.ai_generated
 def test_smooth_img_surface_does_not_modify_input(surf_img_1d):
     """Cleaning non-finite values must not touch the input image."""
     surf_img_1d = deepcopy(surf_img_1d)
