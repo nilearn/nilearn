@@ -9,7 +9,7 @@ could also be used to achieve this.
 
 .. admonition:: dataset
 
-    We use the :ref:`ICBM 152 template <icbm_152_template>`
+    We use the :ref:`ICBM 152 template <icbm152_2009>`
     to resample a sample motor activation statistical map
     (`image 10426 <https://neurovault.org/images/10426/>`_ from Neurovault)
 """

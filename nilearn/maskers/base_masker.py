@@ -346,7 +346,6 @@ class _BaseMasker(
     memory: MemoryLike
     memory_level: MemoryLevel
     smoothing_fwhm: SmoothingFwhm
-    reports: bool
     standardize: Standardize
     standardize_confounds: StandardizeConfounds
     t_r: Tr
@@ -832,11 +831,11 @@ class _BaseSurfaceMasker(_BaseMasker):
         mask_logger("load_mask", img=mask_img_, verbose=self.verbose)
 
         mask_img_ = at_least_2d(mask_img_)
-        mask = {}
+        mask: dict[str, np.ndarray] = {}
         for part, v in mask_img_.data.parts.items():
             mask[part] = v
             ensure_finite_data(mask[part])
-            mask[part] = mask[part].astype(bool).all(axis=1)
+            mask[part] = np.asarray(mask[part].astype(bool).all(axis=1))
 
         mask_img_ = new_img_like(self.mask_img, mask)
 

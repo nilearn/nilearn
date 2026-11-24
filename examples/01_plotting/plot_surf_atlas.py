@@ -5,7 +5,7 @@ Loading and plotting of a cortical surface atlas
 .. admonition:: dataset
 
     This example plots the :ref:`Destrieux atlas <destrieux_2009_atlas>`
-    on the :ref:`fsaverage5 template <fs_average_template>`
+    on the :ref:`fsaverage5 template <fsaverage>`
     as distributed with Freesurfer
 
 The :func:`~nilearn.plotting.plot_surf_roi` function is used

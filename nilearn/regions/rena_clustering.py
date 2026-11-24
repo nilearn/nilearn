@@ -367,9 +367,10 @@ def _nn_connectivity(connectivity, threshold=1e-7):
 
     # maximum on the axis = 0
     max_connectivity = connectivity_.max(axis=0).toarray().ravel()
-    inv_max = dia_array(
-        (1.0 / max_connectivity, 0), shape=(n_features, n_features)
-    )
+    with np.errstate(divide="ignore"):
+        inv_max = dia_array(
+            (1.0 / max_connectivity, 0), shape=(n_features, n_features)
+        )
 
     connectivity_ = inv_max @ connectivity_
 

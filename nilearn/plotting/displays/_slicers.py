@@ -43,6 +43,11 @@ from nilearn.plotting.displays.edge_detect import edge_map
 from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
 
 
+def _masked_to_none(value):
+    """Convert value to float or to None if it is the masked constant."""
+    return None if value is np.ma.masked else float(value)
+
+
 @fill_doc
 class BaseSlicer:
     """BaseSlicer implementation which main purpose is to auto adjust \
@@ -655,13 +660,26 @@ class BaseSlicer:
             data_2d_list.append(data_2d)
             transparency_list.append(transparency_2d)
 
+        # Ignore fully masked slices when computing vmin / vmax:
+        # their min / max is the masked constant,
+        # which would be converted to NaN.
+        # If all slices are fully masked, vmin / vmax are masked.
+        not_fully_masked = [
+            d
+            for d in data_2d_list
+            if d is not None and not np.ma.getmaskarray(d).all()
+        ]
         if kwargs.get("vmin") is None:
-            kwargs["vmin"] = np.ma.min(
-                [d.min() for d in data_2d_list if d is not None]
+            kwargs["vmin"] = (
+                min(d.min() for d in not_fully_masked)
+                if not_fully_masked
+                else np.ma.masked
             )
         if kwargs.get("vmax") is None:
-            kwargs["vmax"] = np.ma.max(
-                [d.max() for d in data_2d_list if d is not None]
+            kwargs["vmax"] = (
+                max(d.max() for d in not_fully_masked)
+                if not_fully_masked
+                else np.ma.masked
             )
 
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
@@ -677,8 +695,8 @@ class BaseSlicer:
                 data_2d = self._threshold(
                     data_2d,
                     threshold,
-                    vmin=float(kwargs.get("vmin")),
-                    vmax=float(kwargs.get("vmax")),
+                    vmin=_masked_to_none(kwargs.get("vmin")),
+                    vmax=_masked_to_none(kwargs.get("vmax")),
                 )
 
                 im = display_ax.draw_2d(

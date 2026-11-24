@@ -16,7 +16,7 @@ and add contours of regions of interest using
     This example uses:
 
     - the :ref:`Destrieux atlas <destrieux_2009_atlas>`
-    - the :ref:`fsaverage template <fs_average_template>`
+    - the :ref:`fsaverage template <fsaverage>`
     - a sample motor activation statistical map (`image 10426
       <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
       <neurovault_dataset>`)

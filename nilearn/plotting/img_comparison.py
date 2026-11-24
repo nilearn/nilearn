@@ -17,7 +17,10 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
 from nilearn.image import check_niimg_3d
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.nilearn_typing import ColorBar, NiimgLike, OutputFile, Title
@@ -38,6 +41,8 @@ def plot_img_comparison(
     output_dir: str | Path | None = None,
     axes: Axes | None = None,
     colorbar: ColorBar = True,
+    cmap=DEFAULT_SEQUENTIAL_CMAP,
+    gridsize=100,
 ) -> list[float]:
     """Create plots to compare two lists of images and measure correlation.
 
@@ -93,6 +98,13 @@ def plot_img_comparison(
 
     %(colorbar)s
         default=True
+
+    %(cmap)s
+        default="inferno"
+
+    gridsize : :obj:`int`, default=100
+        Number of hexagons along the x axis of the correlation plot,
+        and number of bins of the two histograms.
 
     Returns
     -------
@@ -168,8 +180,6 @@ def plot_img_comparison(
         # when plot_hist is False creates two empty axes
         # and doesn't plot anything
         if plot_hist:
-            gridsize = 100
-
             lims = [
                 np.min(ref_data),
                 np.max(ref_data),
@@ -182,7 +192,7 @@ def plot_img_comparison(
                 ref_data,
                 src_data,
                 bins="log",
-                cmap=DEFAULT_SEQUENTIAL_CMAP,
+                cmap=cmap,
                 gridsize=gridsize,
                 extent=lims,
             )
@@ -491,6 +501,11 @@ def _sanitize_masker(masker, image_type, ref_img):
         else:
             masker = SurfaceMasker(standardize=None)
 
+    check_is_of_allowed_type(
+        masker,
+        (*get_args(NiimgLike), NiftiMasker, SurfaceImage, SurfaceMasker),
+        "masker",
+    )
     check_compatibility_mask_and_images(masker, ref_img)
 
     if isinstance(masker, NiimgLike):

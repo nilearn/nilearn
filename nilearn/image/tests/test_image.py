@@ -4,6 +4,7 @@ import platform
 import re
 import warnings
 from collections.abc import Generator, Iterable
+from contextlib import nullcontext
 from pathlib import Path
 
 import joblib
@@ -74,7 +75,7 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import SurfaceImage, at_least_2d
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import (
     assert_polymesh_equal,
@@ -353,10 +354,12 @@ def test_smooth_array_nan_do_not_propagate():
 def test_smooth_array_same_result_with_fwhm_none_or_zero(
     smooth_array_data,
 ):
+    """Test output equal when fwhm=None and fwhm=0."""
     affine = AFFINE_TO_TEST[2]
 
     out_fwhm_none = smooth_array(smooth_array_data, affine, fwhm=None)
-    out_fwhm_zero = smooth_array(smooth_array_data, affine, fwhm=0.0)
+    with pytest.warns(UserWarning, match="Setting it to None"):
+        out_fwhm_zero = smooth_array(smooth_array_data, affine, fwhm=0.0)
 
     assert_array_equal(out_fwhm_none, out_fwhm_zero)
 
@@ -448,7 +451,8 @@ def test_smooth_img_scalar_array(affine_eye, fwhm):
 def test_smooth_img_fwhm_0_or_none(img_3d_mni):
     """Test output equal when fwhm=None and fwhm=0."""
     out_fwhm_none = smooth_img(img_3d_mni, fwhm=None)
-    out_fwhm_zero = smooth_img(img_3d_mni, fwhm=0.0)
+    with pytest.warns(UserWarning, match="Setting it to None"):
+        out_fwhm_zero = smooth_img(img_3d_mni, fwhm=0.0)
 
     assert_array_equal(get_data(out_fwhm_none), get_data(out_fwhm_zero))
 
@@ -714,6 +718,31 @@ def test_crop_img_threshold_tolerance_2():
     assert (get_data(cropped_img)[2:-1, 1:-1, 1:-1] == 1).all()
     assert (get_data(cropped_img)[1, 1:-1, 1:-1] == 0.5).all()
     assert cropped_img.shape == (1 + 2 + 2, 4 + 2, 3 + 2)
+
+
+@pytest.mark.parametrize("dtype", [np.uint8, np.int8])
+def test_crop_img_integer_data_no_overflow(affine_eye, dtype):
+    """Check that cropping integer images does not overflow.
+
+    Negating the minimum of (unsigned) integer data used to overflow
+    and lead to a wrong infinity norm.
+    """
+    data = np.full((10, 10, 10), 3, dtype=dtype)
+    data[3:6, 3:6, 3:6] = 5
+    if dtype == np.int8:
+        data[0, 0, 0] = -128
+        data[3:6, 3:6, 3:6] = 100
+    img = Nifti1Image(data, affine=affine_eye)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        cropped_img = crop_img(img, rtol=0.7, pad=False)
+
+    if dtype == np.uint8:
+        assert cropped_img.shape == (3, 3, 3)
+    else:
+        # the -128 voxel at the origin must be kept
+        assert cropped_img.shape == (6, 6, 6)
 
 
 @pytest.mark.parametrize("pad", [True, False])
@@ -1056,7 +1085,9 @@ def test_iter_img_surface_2d(surf_img_1d, surf_img_2d):
 
     output = list(iter_img(surf_img_1d))
 
-    assert_surface_image_equal(output[0], surf_img_1d)
+    assert_surface_image_equal(output[0], at_least_2d(surf_img_1d))
+    # input must not be modified
+    assert len(surf_img_1d.shape) == 1
 
 
 def test_new_img_like_mgz():
@@ -1251,7 +1282,11 @@ def test_input_in_threshold_img_errors(
     # incompatible inputs raise errors
     with pytest.raises(
         TypeError,
-        match=r"Mask and input images must be of compatible types.",
+        match=(
+            "If 'img' is a Niimg-like object, "
+            "'mask_img' should also be a 3D Niimg-like object"
+            r".*SurfaceImage"
+        ),
     ):
         threshold_img(vol_img, threshold=1, mask_img=surf_mask_1d)
 
@@ -1263,7 +1298,11 @@ def test_input_in_threshold_img_errors(
 
     with pytest.raises(
         TypeError,
-        match=r"Mask and input images must be of compatible types.",
+        match=(
+            "If 'img' is a SurfaceImage object, "
+            "'mask_img' should also be a SurfaceImage object"
+            r".*Nifti1Image"
+        ),
     ):
         threshold_img(surf_img_1d, threshold=1, mask_img=vol_mask)
 
@@ -1368,7 +1407,12 @@ def test_threshold_surf_img_1d(surf_img_1d, threshold, expected_n_non_zero):
     For left hemisphere: 1 < values < 10
     For right hemisphere: 10 < values < 50
     """
-    thr_img = threshold_img(surf_img_1d, threshold=threshold)
+    with (
+        pytest.warns(UserWarning, match="must not exceed")
+        if threshold == 50
+        else nullcontext()
+    ):
+        thr_img = threshold_img(surf_img_1d, threshold=threshold)
     for hemi in thr_img.data.parts:
         data = thr_img.data.parts[hemi]
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
@@ -1394,9 +1438,14 @@ def test_threshold_surf_img_1d_with_mask(
     For left hemisphere: 1 <= values < 10
     For right hemisphere: 10 <= values < 50
     """
-    thr_img = threshold_img(
-        surf_img_1d, threshold=threshold, mask_img=surf_mask_1d
-    )
+    with (
+        pytest.warns(UserWarning, match="must not exceed")
+        if threshold == 50
+        else nullcontext()
+    ):
+        thr_img = threshold_img(
+            surf_img_1d, threshold=threshold, mask_img=surf_mask_1d
+        )
     for hemi in thr_img.data.parts:
         data = thr_img.data.parts[hemi]
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
@@ -1430,9 +1479,14 @@ def test_threshold_surf_img_1d_negative_values(
     """
     surf_img_1d.data.parts["left"] *= -10
 
-    thr_img = threshold_img(
-        surf_img_1d, threshold=threshold, two_sided=two_sided
-    )
+    with (
+        pytest.warns(UserWarning, match="must not exceed")
+        if threshold == 50
+        else nullcontext()
+    ):
+        thr_img = threshold_img(
+            surf_img_1d, threshold=threshold, two_sided=two_sided
+        )
     for hemi in thr_img.data.parts:
         data = thr_img.data.parts[hemi]
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
@@ -1473,12 +1527,17 @@ def test_threshold_img_with_mask(
     temp_mask[13:19, 0:4, 6:] = 0
     mask_img = Nifti1Image(temp_mask, affine_eye)
 
-    thr_img = threshold_img(
-        img=stat_img_test_data,
-        mask_img=mask_img,
-        threshold=threshold,
-        two_sided=two_sided,
-    )
+    with (
+        pytest.warns(UserWarning, match="must not exceed")
+        if threshold == 4.1
+        else nullcontext()
+    ):
+        thr_img = threshold_img(
+            img=stat_img_test_data,
+            mask_img=mask_img,
+            threshold=threshold,
+            two_sided=two_sided,
+        )
 
     img_data = thr_img.get_fdata()
     assert len(img_data[np.nonzero(img_data)]) == expected
@@ -1557,7 +1616,8 @@ def test_threshold_img_copy_volume(img_4d_ones_eye):
     """Test the behavior of threshold_img's copy parameter."""
     threshold = 1.1
     # Check that copy does not mutate. It returns modified copy.
-    thr_img = threshold_img(img_4d_ones_eye, threshold)
+    with pytest.warns(UserWarning, match="must not exceed"):
+        thr_img = threshold_img(img_4d_ones_eye, threshold)
 
     # Original img_ones should have all ones.
     assert_array_equal(get_data(img_4d_ones_eye), np.ones(_shape_4d_default()))
@@ -1567,7 +1627,8 @@ def test_threshold_img_copy_volume(img_4d_ones_eye):
     # Check that not copying does mutate.
     img_to_mutate = img_4d_ones_eye
 
-    thr_img = threshold_img(img_to_mutate, threshold, copy=False)
+    with pytest.warns(UserWarning, match="must not exceed"):
+        thr_img = threshold_img(img_to_mutate, threshold, copy=False)
 
     # Check that original mutates
     assert_array_equal(get_data(img_to_mutate), np.zeros(_shape_4d_default()))
@@ -1584,7 +1645,8 @@ def test_isnan_threshold_img_data(affine_eye, shape_3d_default):
 
     maps_img = Nifti1Image(data, affine_eye)
 
-    threshold_img(maps_img, threshold=0.8)
+    with pytest.warns(UserWarning, match="Non-finite values detected"):
+        threshold_img(maps_img, threshold=0.8)
 
 
 @pytest.mark.thread_unsafe
@@ -1864,6 +1926,7 @@ def test_clean_img_error(
 
 
 def test_clean_img(affine_eye, shape_3d_default, rng):
+    """Check clean_img matches signal.clean and handles edge cases."""
     data = rng.standard_normal(size=(10, 10, 10, 100)) + 0.5
     data_flat = data.T.reshape(100, -1)
     data_img = Nifti1Image(data, affine_eye)
@@ -1877,6 +1940,13 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
 
     assert_almost_equal(get_data(data_img_).T.reshape(100, -1), data_flat_)
 
+    # test_clean_img_passing_nifti2image
+    data_img_nifti2 = Nifti2Image(data, affine_eye)
+
+    clean_img(
+        data_img_nifti2, detrend=True, standardize=None, low_pass=0.1, t_r=1.0
+    )
+
     # if NANs
     data[:, 9, 9] = np.nan
     # if infinity
@@ -1886,13 +1956,6 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     clean_im = clean_img(nan_img, ensure_finite=True)
 
     assert np.any(np.isfinite(get_data(clean_im)))
-
-    # test_clean_img_passing_nifti2image
-    data_img_nifti2 = Nifti2Image(data, affine_eye)
-
-    clean_img(
-        data_img_nifti2, detrend=True, standardize=None, low_pass=0.1, t_r=1.0
-    )
 
     # if mask_img
     img, mask_img = generate_fake_fmri(shape=shape_3d_default, length=10)
@@ -1913,6 +1976,8 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
     - with mask should only clean the included vertices
     - 1D image should raise error.
     - check sample mask can be passed as a kwarg and used correctly
+    - check an index array and an equivalent boolean array produce the
+      same result
     """
     length = 50
     imgs = surf_img_2d(length)
@@ -1957,6 +2022,8 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
         clean_img(surf_img_1d, detrend=True)
 
     sample_mask = np.arange(length - 1)
+    sample_mask_boolean = np.ones(length, dtype=bool)
+    sample_mask_boolean[-1] = False
 
     # check sample mask can be passed as a kwarg and used correctly
     cleaned_img = clean_img(
@@ -1968,6 +2035,17 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
         clean__sample_mask=sample_mask,
     )
     assert cleaned_img.shape[-1] == length - 1
+
+    # an equivalent boolean sample_mask must give the same result
+    cleaned_img_boolean = clean_img(
+        imgs,
+        detrend=True,
+        standardize=None,
+        low_pass=0.1,
+        t_r=1.0,
+        clean__sample_mask=sample_mask_boolean,
+    )
+    assert_surface_image_equal(cleaned_img_boolean, cleaned_img)
 
 
 @pytest.mark.thread_unsafe
@@ -2057,7 +2135,6 @@ def test_new_img_like_mgh_image(affine_eye, shape_3d_default):
 
 
 @pytest.mark.parametrize("image", [MGHImage, AnalyzeImage])
-@pytest.mark.ai_generated
 def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
     """Check defaulting boolean input data to np.uint8 dtype is valid \
        forencoding with nibabel image classes MGHImage and AnalyzeImage.
@@ -2070,38 +2147,51 @@ def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
     assert get_data(out_img).dtype == "uint8"
 
 
-def test_clean_img_sample_mask(img_4d_rand_eye, shape_4d_default):
-    """Check sample mask can be passed as a kwarg and used correctly."""
+@pytest.mark.parametrize("use_mask_img", [False, True])
+def test_clean_img_sample_mask(
+    use_mask_img, img_4d_rand_eye, shape_4d_default, shape_3d_default
+):
+    """Check sample_mask can be passed as a kwarg and used correctly,
+    alone or combined with mask_img.
+
+    Also check that an index array and an equivalent boolean array produce
+    the same result: signal.clean documents both forms (an index array of
+    kept volumes, or a boolean array over all volumes) as valid for
+    sample_mask, and clean_img must reshape its output the same way
+    regardless of which form was passed.
+    """
     length = shape_4d_default[3]
     confounds = _basic_confounds(length)
     # exclude last time point
     sample_mask = np.arange(length - 1)
+    sample_mask_boolean = np.ones(length, dtype=bool)
+    sample_mask_boolean[-1] = False
 
-    img = clean_img(
-        img_4d_rand_eye, confounds=confounds, clean__sample_mask=sample_mask
-    )
-    assert img.shape == (*shape_4d_default[:3], length - 1)
+    if use_mask_img:
+        img_4d, mask_img = generate_fake_fmri(
+            shape=shape_3d_default, length=length
+        )
+        expected_shape = (*shape_3d_default, length - 1)
+    else:
+        img_4d = img_4d_rand_eye
+        mask_img = None
+        expected_shape = (*shape_4d_default[:3], length - 1)
 
-
-def test_clean_img_sample_mask_mask_img(shape_3d_default):
-    """Check sample_mask and mask_img can be correctly used together."""
-    length = 10
-    confounds = _basic_confounds(length)
-    img_4d, mask_img = generate_fake_fmri(
-        shape=shape_3d_default, length=length
-    )
-
-    # exclude last time point
-    sample_mask = np.arange(length - 1)
-
-    # test with sample mask
     img = clean_img(
         img_4d,
         confounds=confounds,
         mask_img=mask_img,
         clean__sample_mask=sample_mask,
     )
-    assert img.shape == (*shape_3d_default, length - 1)
+    assert img.shape == expected_shape
+
+    img_boolean = clean_img(
+        img_4d,
+        confounds=confounds,
+        mask_img=mask_img,
+        clean__sample_mask=sample_mask_boolean,
+    )
+    assert_array_equal(get_data(img_boolean), get_data(img))
 
 
 def test_concat_niimgs_errors(affine_eye, shape_3d_default):
@@ -2142,23 +2232,26 @@ def test_concat_niimgs_errors(affine_eye, shape_3d_default):
 
 
 def test_concat_niimgs(affine_eye, tmp_path):
+    """Concatenate images with different shapes, affines and inputs."""
     # create images different in affine and 3D/4D shape
     shape = (10, 11, 12)
-    img1 = Nifti1Image(np.ones(shape), affine_eye)
+    # use non-binary data to avoid warnings when resampling
+    img1 = Nifti1Image(np.full(shape, 2.0), affine_eye)
     img2 = Nifti1Image(np.zeros(shape), affine_eye)
 
     shape2 = (12, 11, 10)
-    img1b = Nifti1Image(np.ones(shape2), affine_eye)
+    img1b = Nifti1Image(np.full(shape2, 2.0), affine_eye)
 
     shape3 = (11, 22, 33)
-    img1c = Nifti1Image(np.ones(shape3), affine_eye)
+    img1c = Nifti1Image(np.full(shape3, 2.0), affine_eye)
 
     # check basic concatenation with equal shape/affine
     # verbose for coverage
     concatenated = concat_imgs((img1, img2, img1), verbose=1)
 
     # smoke-test auto_resample
-    concatenated = concat_imgs((img1, img1b, img1c), auto_resample=True)
+    with pytest.warns(UserWarning, match="Affine is different"):
+        concatenated = concat_imgs((img1, img1b, img1c), auto_resample=True)
     assert concatenated.shape == (*img1.shape, 3)
 
     # test list of 4D niimgs as input
@@ -2191,6 +2284,20 @@ def test_concat_imgs_surface(surf_img_2d):
     for value in img.data.parts.values():
         assert value.ndim == 2
         assert value.dtype == np.float16
+
+
+def test_concat_imgs_surface_1d_input_unchanged(surf_img_1d):
+    """Check concat_imgs does not modify the 1D surface images it is given."""
+    n_vertices = surf_img_1d.shape[0]
+    imgs = [surf_img_1d, new_img_like(surf_img_1d, surf_img_1d.data)]
+
+    img = concat_imgs(imgs)
+
+    assert img.shape == (n_vertices, 2)
+    for input_img in imgs:
+        assert input_img.shape == (n_vertices,)
+        for value in input_img.data.parts.values():
+            assert value.ndim == 1
 
 
 def nifti_generator(buffer):
@@ -2432,32 +2539,31 @@ def test_check_niimg_wildcards(affine_eye, shape, wildcards, tmp_path):
 
 
 @pytest.fixture
-def img_in_home_folder(
-    img_3d_mni,
-) -> Generator[Nifti1Image, None, None]:
-    """Create a test file in the home folder.
+def img_in_home_folder(img_3d_mni, tmp_path, monkeypatch) -> Nifti1Image:
+    """Create a test file in a temporary home folder.
 
-    Teardown: use yield instead of return to make sure the file
-    is deleted after the test,
-    even if the test fails.
-    https://docs.pytest.org/en/stable/how-to/fixtures.html#teardown-cleanup-aka-fixture-finalization
+    The home directory is monkeypatched to a per-test temporary folder
+    so that tests running in parallel do not share (and race on)
+    a file in the actual home folder of the user.
 
-    Yields
-    ------
+    Returns
+    -------
     nibabel.Nifti1Image
     """
-    created_file = Path("~/test.nii")
-    img_3d_mni.to_filename(created_file.expanduser())
-    assert created_file.expanduser().exists()
+    # HOME is used on posix, USERPROFILE on Windows
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
 
-    yield img_3d_mni
+    created_file = Path("~/test.nii").expanduser()
+    assert created_file.parent == tmp_path
 
-    created_file.expanduser().unlink()
+    img_3d_mni.to_filename(created_file)
+    assert created_file.exists()
+
+    return img_3d_mni
 
 
-@pytest.mark.single_process
 @pytest.mark.thread_unsafe
-@pytest.mark.single_process
 @pytest.mark.parametrize(
     "filename", ["~/test.nii", r"~/test.nii", Path("~/test.nii")]
 )
@@ -2472,7 +2578,6 @@ def test_check_niimg_user_expand(img_in_home_folder, filename):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.single_process
 @pytest.mark.parametrize(
     "filename",
     [
@@ -2718,8 +2823,10 @@ class PhonyNiimage(spatialimages.SpatialImage):
     def __init__(self):
         self.data = np.ones((9, 9, 9, 9))
         self.my_affine = np.ones((4, 4))
+        self._data_cache = self.data
+        self._dataobj = self.data
 
-    def get_data(self):
+    def get_data(self, caching="fill"):  # noqa: ARG002
         """Return data."""
         return self.data
 
@@ -2732,15 +2839,8 @@ class PhonyNiimage(spatialimages.SpatialImage):
         """Return shape."""
         return self.data.shape
 
-    @property
-    def _data_cache(self):
-        return self.data
 
-    @property
-    def _dataobj(self):
-        return self.data
-
-
+@pytest.mark.ai_generated
 def test_check_niimg_4d_phony_image():
     """Test a Niimg-like object that does not hold a shape attribute."""
     phony_img = PhonyNiimage()

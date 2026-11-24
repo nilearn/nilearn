@@ -30,7 +30,7 @@ to know the ones that are shipped with Nilearn.
 
     - the :ref:`Allen 2011 atlas <allen_2011_atlas>`
     - the :ref:`Smith 2009 atlas <smith_2009_atlas>`
-    - the :ref:`ICBM 152 template <icbm_152_template>`
+    - the :ref:`ICBM 152 template <icbm152_2009>`
 """
 
 # %%

@@ -17,6 +17,7 @@ from nilearn.signal import (
     _create_cosine_drift_terms,
     _detrend,
     _handle_scrubbed_volumes,
+    _interpolate_volumes,
     _mean_of_squares,
     butterworth,
     clean,
@@ -636,7 +637,7 @@ def test_clean_frequencies():
     assert cleaned_signal.max() > 0.1
 
     cleaned_signal = clean(
-        sx, standardize=standardize, high_pass=0.2, low_pass=None, t_r=t_r
+        sx, standardize=standardize, high_pass=0.19, low_pass=None, t_r=t_r
     )
     assert cleaned_signal.max() < 0.01
 
@@ -660,7 +661,7 @@ def test_clean_leaves_input_untouched():
     standardize = None
 
     _ = clean(
-        sx, standardize=standardize, detrend=False, low_pass=0.2, t_r=t_r
+        sx, standardize=standardize, detrend=False, low_pass=0.18, t_r=t_r
     )
 
     assert array_equal(sx_orig, sx)
@@ -914,7 +915,6 @@ def _confound_as(kind: str, block: np.ndarray, filename: Path):
     return block
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("container", [list, tuple])
 @pytest.mark.parametrize(
     "kinds",
@@ -955,7 +955,6 @@ def test_clean_confounds_collection(signals, tmp_path, container, kinds):
     assert_almost_equal(result, expected)
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("as_str", [True, False])
 @pytest.mark.parametrize("in_list", [True, False])
 def test_clean_confounds_single_column_file(
@@ -1462,8 +1461,12 @@ def test_clean_zscore(rng):
     assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
 
 
-def test_clean_sample_mask():
-    """Test sample_mask related feature."""
+@pytest.mark.parametrize("filter_type", ["butterworth", "cosine", False])
+def test_clean_sample_mask(filter_type):
+    """Test sample_mask related feature.
+
+    Setting high_pass to some specific values to avoid warnings.
+    """
     signals, _, confounds = generate_signals(
         n_features=11, n_confounds=5, length=40
     )
@@ -1475,13 +1478,23 @@ def test_clean_sample_mask():
     sample_mask_binary = np.full(signals.shape[0], True)
     sample_mask_binary[scrub_index] = False
 
-    scrub_clean = clean(signals, confounds=confounds, sample_mask=sample_mask)
+    scrub_clean = clean(
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask,
+        filter=filter_type,
+        high_pass=0.05 if filter_type else None,
+    )
 
     assert scrub_clean.shape[0] == sample_mask.shape[0]
 
     # test the binary mask
     scrub_clean_bin = clean(
-        signals, confounds=confounds, sample_mask=sample_mask_binary
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask_binary,
+        filter=filter_type,
+        high_pass=0.05 if filter_type else None,
     )
     assert_equal(scrub_clean_bin, scrub_clean)
 
@@ -1675,6 +1688,66 @@ def test_handle_scrubbed_volumes_without_extrapolation():
     assert_equal(
         confounds.shape[0], censored_confounds.shape[0] + total_samples
     )
+
+
+@pytest.mark.parametrize("extrapolate", [True, False])
+@pytest.mark.parametrize(
+    "scrub_index",
+    [[0, 1, 38, 39], [0, 1, 2, 20], [20, 21], [37, 38, 39]],
+    ids=["both-ends", "head-and-interior", "interior", "tail"],
+)
+def test_clean_butterworth_ignores_censored_volumes(
+    scrub_index, extrapolate, rng
+):
+    """Censored volumes must not leak into the cleaned signal.
+
+    With a butterworth filter the censored volumes are replaced by an
+    interpolation of the kept ones before filtering, so the output must not
+    depend on their original values, and it must hold one row per kept
+    volume that lies within the interpolated range.
+
+    Regression test for:
+    https://github.com/nilearn/nilearn/issues/6768
+    """
+    signals = rng.standard_normal((40, 3))
+    sample_mask = np.delete(np.arange(40), scrub_index)
+    spiked = signals.copy()
+    spiked[scrub_index] += 50.0
+
+    kwargs = {
+        "sample_mask": sample_mask,
+        "filter": "butterworth",
+        "low_pass": 0.1,
+        "t_r": 2.0,
+        "detrend": False,
+        "standardize": None,
+        "extrapolate": extrapolate,
+    }
+    cleaned = clean(signals.copy(), **kwargs)
+    cleaned_spiked = clean(spiked.copy(), **kwargs)
+
+    assert cleaned.shape == (len(sample_mask), signals.shape[1])
+    assert_almost_equal(cleaned, cleaned_spiked)
+
+
+def test_interpolate_volumes_fills_only_censored_volumes():
+    """Kept volumes are untouched and every censored volume is filled.
+
+    Regression test for:
+    https://github.com/nilearn/nilearn/issues/6768
+    """
+    signals = np.arange(20, dtype=float)[:, None] * np.ones((1, 2))
+    signals_with_spikes = signals.copy()
+    scrub_index = [0, 1, 9, 18, 19]
+    signals_with_spikes[scrub_index] = 100.0
+    sample_mask = np.delete(np.arange(20), scrub_index)
+
+    interpolated = _interpolate_volumes(
+        signals_with_spikes.copy(), sample_mask, 1.0, True
+    )
+
+    # a linear signal is reproduced exactly by the cubic spline
+    assert_almost_equal(interpolated, signals)
 
 
 def test_handle_scrubbed_volumes_exception():

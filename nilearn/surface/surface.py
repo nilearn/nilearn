@@ -1233,7 +1233,12 @@ def _interpolation_sampling(
         all_samples.append(samples)
     all_samples = np.asarray(all_samples)
     all_samples = all_samples.reshape((len(images), n_vertices, n_points))
-    texture = np.nanmean(all_samples, axis=2)
+    with warnings.catch_warnings():
+        # vertices with only NaN samples are expected to get NaN
+        warnings.filterwarnings(
+            "ignore", message="Mean of empty slice", category=RuntimeWarning
+        )
+        texture = np.nanmean(all_samples, axis=2)
     return texture
 
 
@@ -1942,17 +1947,20 @@ def at_least_2d(input: PolyData) -> PolyData: ...
 
 
 def at_least_2d(input: SurfaceImage | PolyData) -> SurfaceImage | PolyData:
-    """Force surface image or polydata to be 2d."""
+    """Force surface image or polydata to be 2d.
+
+    The input is not modified: a new object is returned if needed.
+    """
     if len(input.shape) == 2:
         return input
 
     if isinstance(input, SurfaceImage):
-        input.data = at_least_2d(input.data)
-        return input
+        return SurfaceImage(mesh=input.mesh, data=at_least_2d(input.data))
 
     if len(input.shape) == 1:
-        for k, v in input.parts.items():
-            input.parts[k] = v.reshape((v.shape[0], 1))
+        return PolyData(
+            **{k: v.reshape((v.shape[0], 1)) for k, v in input.parts.items()}
+        )
 
     return input
 

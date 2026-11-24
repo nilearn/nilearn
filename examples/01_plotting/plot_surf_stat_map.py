@@ -30,7 +30,7 @@ to plot the resulting statistical map on the pial surface.
     This example uses:
 
     - the :ref:`Destrieux atlas <destrieux_2009_atlas>`
-    - the :ref:`fsaverage template <fs_average_template>`
+    - the :ref:`fsaverage template <fsaverage>`
     - the :ref:`NKI enhanced surface dataset <nki_dataset>`
 """
 

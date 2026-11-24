@@ -2,7 +2,7 @@
 
 import warnings
 from string import Template
-from typing import Any, Literal
+from typing import Any, Literal, overload
 
 import numpy as np
 
@@ -64,6 +64,46 @@ def get_params(
             params[param_name] = getattr(instance, param_name)
 
     return params
+
+
+@overload
+def check_embedded_masker(
+    estimator,
+    masker_type: Literal["nii"],
+    ignore: list[str] | None = ...,
+) -> NiftiMasker: ...
+
+
+@overload
+def check_embedded_masker(
+    estimator,
+    masker_type: Literal["surface"],
+    ignore: list[str] | None = ...,
+) -> SurfaceMasker: ...
+
+
+@overload
+def check_embedded_masker(
+    estimator,
+    masker_type: Literal["multi_nii"],
+    ignore: list[str] | None = ...,
+) -> MultiNiftiMasker: ...
+
+
+@overload
+def check_embedded_masker(
+    estimator,
+    masker_type: Literal["multi_surface"],
+    ignore: list[str] | None = ...,
+) -> MultiSurfaceMasker: ...
+
+
+@overload
+def check_embedded_masker(
+    estimator,
+    masker_type: Literal["nii", "surface", "multi_nii", "multi_surface"],
+    ignore: list[str] | None = ...,
+) -> NiftiMasker | SurfaceMasker | MultiNiftiMasker | MultiSurfaceMasker: ...
 
 
 def check_embedded_masker(

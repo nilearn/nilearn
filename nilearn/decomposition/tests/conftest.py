@@ -36,6 +36,12 @@ def suppress_specific_decomposition_warning() -> Generator[None, None, None]:
             "ignore",
             category=ConvergenceWarning,
         )
+        # the masker fixture mask and the images have different shapes
+        warnings.filterwarnings(
+            "ignore",
+            message="imgs are being resampled to the mask_img resolution",
+            category=UserWarning,
+        )
         yield
 
 
@@ -137,6 +143,9 @@ def _decomposition_img(
 ) -> SurfaceImage | Nifti1Image:
     """Return a single image for decomposition."""
     if data_type == "surface":
+        if mesh is None:  # pragma: no cover
+            raise TypeError(f"'mesh' cannot be None for {data_type=}.")
+
         data = {
             "left": rng.standard_normal(
                 size=(
@@ -156,6 +165,9 @@ def _decomposition_img(
             data["right"][2:4, :] += 10
 
         return SurfaceImage(mesh=mesh, data=data)
+
+    if shape is None:  # pragma: no cover
+        raise TypeError(f"'shape' cannot be None for {data_type=}.")
 
     shape = (*shape, N_SAMPLES)
     this_img = rng.normal(size=shape)

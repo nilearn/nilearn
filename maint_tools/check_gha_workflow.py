@@ -42,6 +42,7 @@ USAGE
 """
 
 import sys
+import time
 import warnings
 from pathlib import Path
 from typing import Any
@@ -86,8 +87,10 @@ EXPECTED_PYTHON_VERSIONS = [
     "3.12",
     "3.13",
     "3.14",
+    "3.15",
     "3.13t",
     "3.14t",
+    "3.15t",
 ]
 
 DO_TEST = True
@@ -232,7 +235,7 @@ def _plot_test_job_durations(df: pd.DataFrame, output_file: Path) -> None:
     )
     fig.update_layout(autosize=True, width=1000, height=700)
 
-    fig.write_image(output_file.with_suffix(".png"), engine="kaleido")
+    fig.write_image(output_file.with_suffix(".png"))
     fig.write_html(output_file.with_suffix(".html"))
 
 
@@ -254,7 +257,7 @@ def _plot_doc_job_durations(df: pd.DataFrame, output_file: Path) -> None:
     )
     fig.update_layout(autosize=True, width=1000, height=700)
 
-    fig.write_image(output_file.with_suffix(".png"), engine="kaleido")
+    fig.write_image(output_file.with_suffix(".png"))
     fig.write_html(output_file.with_suffix(".html"))
 
 
@@ -368,20 +371,40 @@ def _get_runs(
     return [run for run in runs if run["conclusion"] in conclusion]
 
 
-def _handle_request(url: str, auth: tuple[str, str] | None):
-    """Wrap request."""
-    if isinstance(auth, tuple):
-        response = requests.get(url, auth=auth)
-    elif isinstance(auth, dict):
-        response = requests.get(url, headers=auth)
+def _handle_request(
+    url: str, auth: tuple[str, str] | None, max_retries: int = 5
+):
+    """Wrap request.
 
-    if response.status_code != 200:
-        raise RuntimeError(
-            f"\n Got code: {response.status_code}.\n"
-            f" With response: {response.json()}"
+    Retry with exponential backoff on server errors (5xx),
+    as the GitHub API sometimes returns transient errors.
+    """
+    for attempt in range(max_retries):
+        if isinstance(auth, tuple):
+            response = requests.get(url, auth=auth)
+        elif isinstance(auth, dict):
+            response = requests.get(url, headers=auth)
+
+        if response.status_code == 200:
+            return response.json()
+
+        if response.status_code < 500 or attempt == max_retries - 1:
+            break
+
+        wait = 2**attempt
+        print(
+            f"Got code {response.status_code} for {url}. "
+            f"Retrying in {wait} seconds."
         )
+        time.sleep(wait)
 
-    return response.json()
+    try:
+        content = response.json()
+    except requests.exceptions.JSONDecodeError:
+        content = response.text
+    raise RuntimeError(
+        f"\n Got code: {response.status_code}.\n With response: {content}"
+    )
 
 
 def _update_jobs_data(

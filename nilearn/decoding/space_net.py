@@ -290,6 +290,9 @@ class _EarlyStoppingCallback:
             # constant map, there is nothing
             return (-np.inf, -np.inf)
         y_pred = np.dot(self.X_test, w)
+        if np.ptp(y_pred) == 0 or np.ptp(self.y_test) == 0:
+            # correlations are not defined for constant inputs
+            return (np.nan, np.nan)
         spearman_score = stats.spearmanr(y_pred, self.y_test)[0]
         pearson_score = np.corrcoef(y_pred, self.y_test)[1, 0]
         if self.is_classif:
@@ -838,11 +841,13 @@ class BaseSpaceNet(CacheMixin, LinearRegression, NilearnBaseEstimator):
             else list(self.l1_ratios)
         )
 
-        alphas = self.alphas
-        if alphas is not None and not isinstance(
-            alphas, collections.abc.Iterable
-        ):
-            alphas = [alphas]
+        alphas: list[float] | None = None
+        if self.alphas is not None:
+            alphas = (
+                [self.alphas]
+                if not isinstance(self.alphas, collections.abc.Iterable)
+                else list(self.alphas)
+            )
 
         loss = self._return_loss_value()
 

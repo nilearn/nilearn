@@ -55,7 +55,7 @@ except ImportError:
 # and the os.path.expanduser usage in CacheMixin.
 # Default value it True, set it to False to completely deactivate this
 # behavior.
-EXPAND_PATH_WILDCARDS = True
+EXPAND_PATH_WILDCARDS: bool = True
 
 DEFAULT_DIVERGING_CMAP = "RdBu_r"
 DEFAULT_SEQUENTIAL_CMAP = "inferno"

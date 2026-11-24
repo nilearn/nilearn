@@ -663,7 +663,6 @@ def test_naive_ftp_adapter():
         )
 
 
-@pytest.mark.ai_generated
 @pytest.mark.parametrize("headers", [{}, {"Content-Length": "13"}])
 def test_chunk_read_rich(tmp_path, headers):
     """Check download with a rich progress bar with known or unknown size."""
@@ -678,7 +677,6 @@ def test_chunk_read_rich(tmp_path, headers):
     assert (tmp_path / "foo.txt").read_bytes() == b"dummy content"
 
 
-@pytest.mark.ai_generated
 def test_chunk_read_progress_stopped_if_start_fails(tmp_path, monkeypatch):
     """Check the progress bar is stopped even if it fails to start.
 

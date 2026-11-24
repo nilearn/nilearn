@@ -201,7 +201,7 @@ def row_sum_of_squares(signals, n_batches=20):
     return var
 
 
-def _detrend(signals, inplace=False, type="linear", n_batches=10):
+def _detrend(signals, inplace: bool = False, type="linear", n_batches=10):
     """Detrend columns of input array.
 
     Signals are supposed to be columns of `signals`.
@@ -835,7 +835,11 @@ def clean(
                 **butterworth_kwargs,
             )
 
-        # apply sample_mask to remove censored volumes after signal filtering
+        # Butterworth: censored volumes were interpolated
+        # in _handle_scrubbed_volumes so filtering could run on a regularly
+        # sampled signal; remove them now that filtering is done.
+        # For other filter types, censoring already happened
+        # in _handle_scrubbed_volumes.
         if sample_mask is not None:
             signals, confounds = _censor_signals(
                 signals, confounds, sample_mask
@@ -941,7 +945,11 @@ def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
         remained_vol, remained_x, extrapolate=extrapolate
     )
     volumes_interpolated = cubic_spline_fitter(frame_times)
-    volumes[~sample_mask, :] = volumes_interpolated[~sample_mask, :]
+    # sample_mask holds the indices of the kept volumes, so ``~sample_mask``
+    # would be a bitwise NOT (-i - 1), not the censored volumes.
+    censored = np.ones(volumes.shape[0], dtype=bool)
+    censored[sample_mask] = False
+    volumes[censored, :] = volumes_interpolated[censored, :]
     return volumes
 
 
@@ -972,7 +980,7 @@ def create_cosine_drift(high_pass, frame_times):
         warnings.warn(
             "High-pass filter will span all accessible frequencies "
             "and saturate the design matrix. "
-            "You may want to reduce the high_pass value."
+            "You may want to reduce the high_pass value. "
             f"The provided value is {high_pass} Hz",
             stacklevel=find_stack_level(),
         )
@@ -1214,7 +1222,7 @@ def _check_filter_parameters(
             isinstance(item, (float, int)) for item in [low_pass, high_pass]
         ):
             warnings.warn(
-                "No filter type selected but cutoff frequency provided."
+                "No filter type selected but cutoff frequency provided. "
                 "Will not perform filtering.",
                 stacklevel=find_stack_level(),
             )

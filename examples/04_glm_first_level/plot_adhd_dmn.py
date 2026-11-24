@@ -47,7 +47,7 @@ pcc_coords = (0, -53, 26)
 # -------------------------------------
 # Extract the time course of the seed region.
 seed_masker = NiftiSpheresMasker(
-    [pcc_coords],
+    pcc_coords,
     radius=10,
     detrend=True,
     standardize="zscore_sample",
