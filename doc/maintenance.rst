@@ -228,11 +228,9 @@ that the dev have access to:
 
 - `temporary space to store dataset for nilearn example gallery <https://osf.io/5dr8p>`_
 
-  Project hosting the data for
-
-  - ``fetch_language_localizer_demo_dataset``
-    ``https://osf.io/3dj2a`` (from https://osf.io/5dr8p/overview) acts as fall-back URL in case
-    ``https://osf.io/nh987`` (from https://osf.io/k4jp8/overview) fails
+  Old project hosting the data for ``fetch_language_localizer_demo_dataset``
+  acts as fall-back URL in case https://osf.io/k4jp8 fails.
+  The data was moved to Zenodo: https://doi.org/10.5281/zenodo.24525273
 
 - `nilearn_data_backup_archive <https://osf.io/59wxs>`_
 

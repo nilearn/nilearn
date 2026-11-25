@@ -2432,9 +2432,9 @@ def fetch_language_localizer_demo_dataset(  # numpydoc ignore=RT05
     """
     check_params(locals())
 
-    url = "https://osf.io/nh987/download"
+    url = zenodo_url(24525274, "language_localizer.zip")
     # back up URL in case the one above fails
-    backup_url = "https://osf.io/3dj2a/download"
+    backup_url = "https://osf.io/nh987/download"
 
     main_folder = "fMRI-language-localizer-demo-dataset"
 
@@ -2442,7 +2442,9 @@ def fetch_language_localizer_demo_dataset(  # numpydoc ignore=RT05
         main_folder, data_dir=data_dir, verbose=verbose
     )
 
-    try:
+    def fetch_and_uncompress(
+        main_folder: str, url: str, dataset_dir: Path, verbose: Verbose
+    ) -> None:
         # The files_spec needed for fetch_files
         files_spec = [
             (f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})
@@ -2454,28 +2456,20 @@ def fetch_language_localizer_demo_dataset(  # numpydoc ignore=RT05
                 dataset_dir, files_spec, resume=True, verbose=verbose
             )
             uncompress_file(downloaded_files[0])
+
+    try:
+        fetch_and_uncompress(main_folder, url, dataset_dir, verbose)
     except Exception:
-        # The files_spec needed for fetch_files
-        files_spec = [
-            (f"{main_folder}.zip", backup_url, {"move": f"{main_folder}.zip"})
-        ]
-        # Only download if directory is empty
-        # Directory will have been created by the call to get_dataset_dir above
-        if not list(dataset_dir.iterdir()):
-            downloaded_files = fetch_files(
-                dataset_dir, files_spec, resume=True, verbose=verbose
-            )
-            uncompress_file(downloaded_files[0])
+        fetch_and_uncompress(main_folder, backup_url, dataset_dir, verbose)
 
     file_list = [
         str(path) for path in dataset_dir.rglob("*") if path.is_file()
     ]
 
-    description = Description.from_registry("language_localizer_demo")
     return Bunch(
         data_dir=str(dataset_dir),
         func=sorted(file_list),
-        description=description,
+        description=Description.from_registry("language_localizer_demo"),
     )
 
 
