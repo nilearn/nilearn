@@ -167,6 +167,9 @@ def test_contrast_mul(set_up_glm, rng):
         con2 = con1 * 2
         assert_almost_equal(con1.effect * 2, con2.effect)
         assert_almost_equal(con1.z_score(), con2.z_score())
+        con3 = con2 / 2
+        assert_almost_equal(con1.effect, con3.effect)
+        assert_almost_equal(con1.variance, con3.variance)
 
 
 def test_contrast_z_score_baseline_after_other_baseline():

@@ -144,7 +144,7 @@ jobs:
                 allow-prereleases: true
 
         -   name: Install tox
-            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+            run: uv tool install tox --with=tox-uv
 
         -   name: Show tox config
             run: tox c
@@ -240,7 +240,7 @@ jobs:
                 allow-prereleases: true
 
         -   name: Install tox
-            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+            run: uv tool install tox --with=tox-uv
 
         -   name: Show tox config
             run: tox c
@@ -315,7 +315,7 @@ jobs:
                 allow-prereleases: true
 
         -   name: Install tox
-            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+            run: uv tool install tox --with=tox-uv
 
         -   name: Show tox config
             run: tox c

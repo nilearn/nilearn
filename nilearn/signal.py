@@ -945,7 +945,11 @@ def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
         remained_vol, remained_x, extrapolate=extrapolate
     )
     volumes_interpolated = cubic_spline_fitter(frame_times)
-    volumes[~sample_mask, :] = volumes_interpolated[~sample_mask, :]
+    # sample_mask holds the indices of the kept volumes, so ``~sample_mask``
+    # would be a bitwise NOT (-i - 1), not the censored volumes.
+    censored = np.ones(volumes.shape[0], dtype=bool)
+    censored[sample_mask] = False
+    volumes[censored, :] = volumes_interpolated[censored, :]
     return volumes
 
 
