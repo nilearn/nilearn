@@ -274,7 +274,8 @@ class Contrast:
 
     __mul__ = __rmul__
 
-    def __div__(self, scalar):
+    def __truediv__(self, scalar):
+        """Divide a contrast by a scalar."""
         return self.__rmul__(1 / float(scalar))
 
 
