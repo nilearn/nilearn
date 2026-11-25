@@ -167,7 +167,6 @@ def _chunk_report_(
         )
 
 
-@fill_doc
 def _use_rich_progress() -> bool:
     """Check whether a rich progress bar should be used for downloads.
 
