@@ -76,9 +76,9 @@ print(f"Yeo atlas nifti image  is located at: {yeo['maps']}")
 # connectivity matrices for all subjects in a list.
 connectome_measure = ConnectivityMeasure(kind="correlation", verbose=verbose)
 
-# create masker using MultiNiftiLabelsMasker to extract functional data within
-# atlas parcels from multiple subjects using parallelization to speed up the
-# computation
+# create masker using MultiNiftiLabelsMasker to extract functional data
+# within atlas parcels from multiple subjects
+# using parallelization to speed up the computation.
 masker = MultiNiftiLabelsMasker(
     labels_img=yeo["maps"],  # Both hemispheres,
     standardize="zscore_sample",
@@ -153,8 +153,8 @@ right_hemi[int(x) :] = 0
 label_image_right = new_img_like(label_image, right_hemi, labels_affine)
 
 # %%
-# Then, create a masker object, compute a connectivity matrix and
-# plot the results for each hemisphere:
+# Then, create a masker object, compute a connectivity matrix
+# and plot the results for each hemisphere:
 
 for hemi, img in zip(
     ["right", "left"], [label_image_right, label_image_left], strict=False
@@ -191,8 +191,8 @@ show()
 # In this section, we use the lag-1 correlation as the connectivity
 # measure, which leads to an asymmetric connectivity matrix.
 # The :func:`~nilearn.plotting.plot_connectome` function
-# accepts both symmetric and asymmetric
-# matrices, but plots the latter as a directed graph.
+# accepts both symmetric and asymmetric matrices,
+# but plots the latter as a directed graph.
 #
 
 
@@ -239,9 +239,9 @@ difumo = fetch_atlas_difumo(dimension=dim, resolution_mm=2)
 # Iterate over fetched atlases to extract coordinates - probabilistic
 from nilearn.maskers import MultiNiftiMapsMasker
 
-# Create masker using MultiNiftiMapsMasker to extract functional data within
-# atlas parcels from multiple subjects using parallelization to speed up the
-# computation.
+# Create masker using MultiNiftiMapsMasker to extract functional data
+# within atlas parcels from multiple subjects
+# using parallelization to speed up the computation.
 masker = MultiNiftiMapsMasker(
     maps_img=difumo.maps,
     standardize="zscore_sample",
