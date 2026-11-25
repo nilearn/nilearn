@@ -18,6 +18,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import requests
+from requests.adapters import HTTPAdapter, Retry
 
 from nilearn._utils import logger
 from nilearn._utils.docs import (
@@ -35,6 +36,15 @@ from nilearn.datasets.utils import get_data_dirs
 from nilearn.nilearn_typing import NSubject, Verbose
 
 _REQUESTS_TIMEOUT = (15.1, 61)
+
+# Retry policy for HTTP(S) downloads.
+# Some servers hosting datasets (e.g. OSF)
+# occasionally time out or return server errors:
+# retry a few times with an exponential backoff
+# (2, 4, 8 seconds between attempts) before giving up.
+_DOWNLOAD_RETRIES = 3
+_DOWNLOAD_BACKOFF_FACTOR = 2
+_RETRY_STATUS_CODES = (429, 500, 502, 503, 504)
 PACKAGE_DIRECTORY = Path(__file__).absolute().parent
 
 
@@ -648,6 +658,33 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
 
 
 @fill_doc
+def _new_session() -> requests.Session:
+    """Create a requests session to download datasets.
+
+    HTTP(S) requests are retried on connection errors, read timeouts
+    and transient server errors (see ``_RETRY_STATUS_CODES``),
+    with an exponential backoff between attempts.
+    ``Retry-After`` headers (e.g. sent with a 429 response) are respected.
+
+    If all retries fail on a server error,
+    the last response is returned
+    so that it can be handled with ``raise_for_status``.
+    """
+    session = requests.Session()
+    retries = Retry(
+        total=_DOWNLOAD_RETRIES,
+        backoff_factor=_DOWNLOAD_BACKOFF_FACTOR,
+        status_forcelist=_RETRY_STATUS_CODES,
+        respect_retry_after_header=True,
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(max_retries=retries)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    session.mount("ftp:", _NaiveFTPAdapter())
+    return session
+
+
 def fetch_single_file(
     url,
     data_dir: Path,
@@ -697,8 +734,7 @@ def fetch_single_file(
     removed.
     """
     if session is None:
-        with requests.Session() as sess:
-            sess.mount("ftp:", _NaiveFTPAdapter())
+        with _new_session() as sess:
             return fetch_single_file(
                 url,
                 data_dir,
@@ -930,8 +966,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     check_params(locals())
 
     if session is None:
-        with requests.Session() as sess:
-            sess.mount("ftp:", _NaiveFTPAdapter())
+        with _new_session() as sess:
             return fetch_files(
                 data_dir,
                 files,

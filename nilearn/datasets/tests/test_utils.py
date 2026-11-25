@@ -5,7 +5,10 @@ import os
 import re
 import shutil
 import tarfile
+import threading
+import time
 import urllib
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import MagicMock
 from zipfile import ZipFile
@@ -767,3 +770,108 @@ def test_use_rich_progress_without_rich(monkeypatch):
     monkeypatch.setattr(_utils.sys.stdout, "isatty", lambda: True)
 
     assert not _utils._use_rich_progress()
+
+
+def test_new_session_retry_config():
+    """Check HTTP(S) requests of download sessions are retried."""
+    with _utils._new_session() as session:
+        for url in ["http://example.com", "https://example.com"]:
+            retries = session.get_adapter(url).max_retries
+            assert retries.total == _utils._DOWNLOAD_RETRIES
+            assert retries.backoff_factor == _utils._DOWNLOAD_BACKOFF_FACTOR
+            assert set(retries.status_forcelist) == set(
+                _utils._RETRY_STATUS_CODES
+            )
+            assert retries.respect_retry_after_header
+        assert isinstance(
+            session.get_adapter("ftp://example.com"), _utils._NaiveFTPAdapter
+        )
+
+
+def _serve(statuses, n_slow=0, delay=0):
+    """Start a local HTTP server returning the given status codes in order.
+
+    The last status code is returned for any extra request.
+
+    The first ``n_slow`` requests wait ``delay`` seconds before responding.
+    """
+    calls = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            status = statuses[min(len(calls), len(statuses) - 1)]
+            calls.append(status)
+            if len(calls) <= n_slow:
+                time.sleep(delay)
+            body = b"dummy content"
+            self.send_response(status)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *args):
+            pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    return server, calls
+
+
+@pytest.mark.parametrize(
+    "statuses, expected_status, expected_calls",
+    [
+        # transient errors are retried until success
+        ([500, 503, 200], 200, 3),
+        ([429, 200], 200, 2),
+        # client errors are not retried
+        ([404, 200], 404, 1),
+        # give up after all retries:
+        # the last response is returned
+        # and can be handled with raise_for_status
+        ([500], 500, _utils._DOWNLOAD_RETRIES + 1),
+    ],
+)
+def test_new_session_retries(
+    monkeypatch, statuses, expected_status, expected_calls
+):
+    """Check transient server errors are retried by download sessions.
+
+    Session.send is mocked for all tests,
+    so the transport adapter of the session is used directly.
+    """
+    # no need to wait between retries during tests
+    monkeypatch.setattr(_utils, "_DOWNLOAD_BACKOFF_FACTOR", 0)
+
+    server, calls = _serve(statuses)
+    try:
+        url = f"http://127.0.0.1:{server.server_port}/file"
+        with _utils._new_session() as session:
+            prepped = session.prepare_request(requests.Request("GET", url))
+            resp = session.get_adapter(url).send(prepped, timeout=5)
+            assert resp.status_code == expected_status
+            resp.close()
+    finally:
+        server.shutdown()
+        server.server_close()
+
+    assert len(calls) == expected_calls
+
+
+def test_new_session_retries_read_timeout(monkeypatch):
+    """Check requests are retried when the server is too slow to respond."""
+    monkeypatch.setattr(_utils, "_DOWNLOAD_BACKOFF_FACTOR", 0)
+
+    server, calls = _serve([200], n_slow=1, delay=0.5)
+    try:
+        url = f"http://127.0.0.1:{server.server_port}/file"
+        with _utils._new_session() as session:
+            prepped = session.prepare_request(requests.Request("GET", url))
+            resp = session.get_adapter(url).send(prepped, timeout=(5, 0.2))
+            assert resp.status_code == 200
+            resp.close()
+    finally:
+        server.shutdown()
+        server.server_close()
+
+    assert len(calls) == 2
