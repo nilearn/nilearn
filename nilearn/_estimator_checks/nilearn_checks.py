@@ -2005,6 +2005,22 @@ def check_decoder_screening_n_features(estimator) -> None:
 # ------------------ MASKER CHECKS ------------------
 
 
+def _fit_masker_without_imgs(estimator) -> None:
+    """Fit a masker with imgs=None, asserting expected FutureWarning."""
+    # TODO (nilearn>=0.17) drop FutureWarning check when fit raises ValueError
+    if (
+        isinstance(estimator, NiftiLabelsMasker)
+        and estimator.resampling_target == "data"
+    ):
+        with pytest.warns(
+            FutureWarning,
+            match="resampling_target='data' was requested",
+        ):
+            estimator.fit()
+    else:
+        estimator.fit()
+
+
 def check_masker_clean_kwargs(estimator) -> None:
     """Check attributes for cleaning.
 
@@ -2166,7 +2182,7 @@ def check_masker_compatibility_mask_image(estimator_orig) -> None:
 
     estimator = clone(estimator_orig)
     estimator.mask_img = mask_img
-    estimator.fit()
+    _fit_masker_without_imgs(estimator)
     with pytest.raises(TypeError):
         estimator.transform(image_to_transform)
 
@@ -2186,7 +2202,7 @@ def check_masker_no_mask_no_img(estimator) -> None:
         ):
             estimator.fit()
     else:
-        estimator.fit()
+        _fit_masker_without_imgs(estimator)
         assert estimator.mask_img_ is None
 
 
@@ -2262,7 +2278,7 @@ def check_masker_mask_img(estimator_orig) -> None:
     estimator.mask_img = binary_mask_img
     assert not hasattr(estimator, "mask_img_")
 
-    estimator.fit()
+    _fit_masker_without_imgs(estimator)
 
     _check_mask_img_(estimator)
 
@@ -2271,7 +2287,7 @@ def check_masker_mask_img(estimator_orig) -> None:
     estimator.mask_img = non_binary_mask_img
     assert not hasattr(estimator, "mask_img_")
 
-    estimator.fit()
+    _fit_masker_without_imgs(estimator)
 
     _check_mask_img_(estimator)
 
@@ -2284,7 +2300,7 @@ def check_masker_mask_img(estimator_orig) -> None:
     estimator.verbose = 1
     buffer = io.StringIO()
     with contextlib.redirect_stdout(buffer):
-        estimator.fit()
+        _fit_masker_without_imgs(estimator)
     output = buffer.getvalue()
     assert "Loading mask" in output
 
@@ -2581,11 +2597,11 @@ def check_masker_refit(estimator) -> None:
         mask_img_2 = SurfaceImage(mask_img_1.mesh, data)
 
     estimator.mask_img = mask_img_1
-    estimator.fit()
+    _fit_masker_without_imgs(estimator)
     fitted_mask_1 = estimator.mask_img_
 
     estimator.mask_img = mask_img_2
-    estimator.fit()
+    _fit_masker_without_imgs(estimator)
     fitted_mask_2 = estimator.mask_img_
 
     if accepts_volume(estimator):
@@ -2624,7 +2640,7 @@ def check_masker_empty_data_messages(estimator) -> None:
         estimator.fit(imgs)
 
     estimator.mask_img = mask_img
-    estimator.fit()
+    _fit_masker_without_imgs(estimator)
     with pytest.raises(ValueError, match="The image is empty"):
         estimator.transform(imgs)
 
@@ -2680,7 +2696,7 @@ def check_masker_fit_with_non_finite_in_mask(estimator) -> None:
 
     estimator.mask_img = mask_img
     with pytest.warns(UserWarning, match="Non-finite values detected."):
-        estimator.fit()
+        _fit_masker_without_imgs(estimator)
 
     signal = estimator.transform(imgs)
     assert np.all(np.isfinite(signal))
@@ -3914,7 +3930,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(
 
     assert not hasattr(estimator, "mask_img_")
 
-    estimator.fit()
+    _fit_masker_without_imgs(estimator)
 
     assert estimator._report_warnings == []
 
