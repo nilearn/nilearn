@@ -1092,9 +1092,9 @@ def _fetch_surf_fsaverage(
     datasets = {
         "fsaverage3": zenodo_url(23242166, "fsaverage3.tar.gz"),
         "fsaverage4": zenodo_url(23696293, "fsaverage4.tar.gz"),
-        "fsaverage6": zenodo_url(24502512, "fsaverage6.tar.gz"),
+        "fsaverage6": zenodo_url(24533968, "fsaverage6.tar.gz"),
         # fsaverage and fsaverage7 are the same
-        "fsaverage": zenodo_url(24502703, "fsaverage7.tar.gz"),
+        "fsaverage": zenodo_url(24534012, "fsaverage7.tar.gz"),
     }
 
     url = datasets[dataset_name]

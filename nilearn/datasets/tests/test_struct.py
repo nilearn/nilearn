@@ -176,9 +176,9 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path):
         ("fsaverage3", zenodo_url(23242166, "fsaverage3.tar.gz")),
         ("fsaverage4", zenodo_url(23696293, "fsaverage4.tar.gz")),
         ("fsaverage5", None),
-        ("fsaverage6", zenodo_url(24502512, "fsaverage6.tar.gz")),
-        ("fsaverage7", zenodo_url(24502703, "fsaverage7.tar.gz")),
-        ("fsaverage", zenodo_url(24502703, "fsaverage7.tar.gz")),
+        ("fsaverage6", zenodo_url(24533968, "fsaverage6.tar.gz")),
+        ("fsaverage7", zenodo_url(24534012, "fsaverage7.tar.gz")),
+        ("fsaverage", zenodo_url(24534012, "fsaverage7.tar.gz")),
     ],
 )
 def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker, fs_url):

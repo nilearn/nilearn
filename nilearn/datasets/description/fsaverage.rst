@@ -27,8 +27,8 @@ Density                Number vertices per hemisphere DOI
 fsaverage3             642                            https://doi.org/10.5281/zenodo.23242165
 fsaverage4             2562                           https://doi.org/10.5281/zenodo.23696246
 fsaverage5             10242
-fsaverage6             40962                          https://doi.org/10.5281/zenodo.24502512
-fsaverage / fsaverage7 163842                         https://doi.org/10.5281/zenodo.24502703
+fsaverage6             40962                          https://doi.org/10.5281/zenodo.24502511
+fsaverage / fsaverage7 163842                         https://doi.org/10.5281/zenodo.24502702
 ====================== ============================== =======================================
 
 For fsaverage3 and fsaverage4,

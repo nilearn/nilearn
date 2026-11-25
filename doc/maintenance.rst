@@ -210,8 +210,8 @@ that the dev have access to:
 
   - ``fsaverage3``: https://doi.org/10.5281/zenodo.23242165
   - ``fsaverage4``: https://doi.org/10.5281/zenodo.23696246
-  - ``fsaverage6``: https://doi.org/10.5281/zenodo.24502512
-  - ``fsaverage7``: https://doi.org/10.5281/zenodo.24502703
+  - ``fsaverage6``: https://doi.org/10.5281/zenodo.24502511
+  - ``fsaverage7``: https://doi.org/10.5281/zenodo.24502702
 
 - `nistats <https://osf.io/v7hsw>`_
 
@@ -235,6 +235,14 @@ that the dev have access to:
 - `nilearn_data_backup_archive <https://osf.io/59wxs>`_
 
   This is an old project used for back up Nilearn's data.
+
+Some datasets not hosted on OSF were also moved to Zenodo,
+because their original server was unreliable:
+
+- ``fetch_atlas_yeo_2011``: https://doi.org/10.5281/zenodo.24531233
+
+  Originally downloaded from the FreeSurfer FTP server:
+  ``ftp://surfer.nmr.mgh.harvard.edu/pub/data/Yeo_JNeurophysiol11_MNI152.zip``
 
 .. TODO
    `Allen and MIALAB ICA atlas 2011 <https://osf.io/vp4dk>`_
