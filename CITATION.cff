@@ -178,6 +178,10 @@ authors:
   - given-names: Binh
     family-names: Nguyen
     website: https://tbng.github.io/
+  - given-names: Brent
+    family-names: McPherson
+    website: https://github.com/bcmcpher
+    affiliation: The Neuro, McGill, Canada
   - given-names: Caglar
     family-names: Cakan
     website: https://github.com/caglorithm
