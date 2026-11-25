@@ -169,7 +169,7 @@ jobs:
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
         -   name: Install tox
-            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+            run: uv tool install tox --with=tox-uv
         -   name: Show tox config
             run: tox c
         -   name: Check doc strings
@@ -387,7 +387,7 @@ jobs:
                 name: build_type
 
         -   name: Install tox
-            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+            run: uv tool install tox --with=tox-uv
 
         -   name: Show tox config
             run: tox c
