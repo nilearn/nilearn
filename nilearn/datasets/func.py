@@ -2855,7 +2855,7 @@ def fetch_localizer_first_level(  # numpydoc ignore=RT05
     """
     check_params(locals())
 
-    url = zenodo_url(24504517, "24504517")
+    url = zenodo_url(24504517, "localizer_first_level.zip")
     epi_img = "sub-12069_task-localizer_space-MNI305.nii.gz"
     events = "sub-12069_task-localizer_events.tsv"
     opts = {"uncompress": True}
