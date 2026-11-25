@@ -664,9 +664,10 @@ def test_naive_ftp_adapter():
 
 
 @pytest.mark.parametrize("headers", [{}, {"Content-Length": "13"}])
-def test_chunk_read_rich(tmp_path, headers):
+def test_chunk_read_rich(tmp_path, headers, monkeypatch):
     """Check download with a rich progress bar with known or unknown size."""
     pytest.importorskip("rich")
+    monkeypatch.setattr(_utils, "_use_rich_progress", lambda: True)
 
     resp = Response(b"dummy content", "http://foo")
     resp.headers = headers
@@ -687,6 +688,7 @@ def test_chunk_read_progress_stopped_if_start_fails(tmp_path, monkeypatch):
     and all subsequent downloads fail with a rich.errors.LiveError.
     """
     progress = pytest.importorskip("rich.progress")
+    monkeypatch.setattr(_utils, "_use_rich_progress", lambda: True)
     original_start = progress.Progress.start
     original_stop = progress.Progress.stop
     stop_calls = []
@@ -711,3 +713,57 @@ def test_chunk_read_progress_stopped_if_start_fails(tmp_path, monkeypatch):
         _utils._chunk_read_(resp, f, report_hook=True)
 
     assert len(stop_calls) == 1
+
+
+def test_chunk_read_no_rich_when_not_a_terminal(tmp_path, monkeypatch):
+    """Check that no rich progress bar is used when not in a terminal.
+
+    Otherwise terminal control sequences (like hide / show cursor)
+    end up as stray characters in non-interactive logs (e.g. in CI)
+    and every refresh of the bar becomes a new line.
+    """
+    progress = pytest.importorskip("rich.progress")
+
+    def fail_start(_):
+        raise AssertionError("rich progress bar should not be used")
+
+    monkeypatch.setattr(progress.Progress, "start", fail_start)
+    monkeypatch.setattr(_utils.sys.stdout, "isatty", lambda: False)
+    monkeypatch.setattr(_utils, "is_notebook", lambda: False)
+
+    assert not _utils._use_rich_progress()
+
+    resp = Response(b"dummy content", "http://foo")
+    resp.headers = {"Content-Length": "13"}
+    with (tmp_path / "foo.txt").open("wb") as f:
+        _utils._chunk_read_(resp, f, report_hook=True)
+
+    assert (tmp_path / "foo.txt").read_bytes() == b"dummy content"
+
+
+def test_use_rich_progress_in_terminal(monkeypatch):
+    """Check that rich progress bar is used in an interactive terminal."""
+    pytest.importorskip("rich")
+    monkeypatch.setattr(_utils.sys.stdout, "isatty", lambda: True)
+
+    assert _utils._use_rich_progress()
+
+
+def test_use_rich_progress_in_notebook(monkeypatch):
+    """Check that rich progress bar is used in notebooks.
+
+    In Jupyter or marimo notebooks stdout is not a terminal.
+    """
+    pytest.importorskip("rich")
+    monkeypatch.setattr(_utils.sys.stdout, "isatty", lambda: False)
+    monkeypatch.setattr(_utils, "is_notebook", lambda: True)
+
+    assert _utils._use_rich_progress()
+
+
+def test_use_rich_progress_without_rich(monkeypatch):
+    """Check that no rich progress bar is used if rich is not installed."""
+    monkeypatch.setattr(_utils, "_has_rich", lambda: False)
+    monkeypatch.setattr(_utils.sys.stdout, "isatty", lambda: True)
+
+    assert not _utils._use_rich_progress()

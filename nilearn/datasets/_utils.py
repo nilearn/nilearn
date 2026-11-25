@@ -24,6 +24,7 @@ from nilearn._utils.docs import (
     fill_doc,
     render_description_directives,
 )
+from nilearn._utils.helpers import is_notebook
 from nilearn._utils.logger import _has_rich, find_stack_level, readable_time
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
@@ -167,6 +168,36 @@ def _chunk_report_(
 
 
 @fill_doc
+def _use_rich_progress() -> bool:
+    """Check whether a rich progress bar should be used for downloads.
+
+    The progress bar redraws itself in place
+    using terminal control sequences.
+    When the output is not an interactive terminal
+    (for example in continuous integration or when redirected to a file),
+    those sequences end up as stray characters in the logs
+    and each redraw becomes a new line.
+
+    So a rich progress bar is only used if rich is installed
+    and the output is an interactive terminal
+    or a notebook (Jupyter or marimo).
+    """
+    if not _has_rich():
+        return False
+
+    if is_notebook():
+        return True
+
+    isatty = getattr(sys.stdout, "isatty", None)
+    if isatty is None:
+        return False
+    try:
+        return bool(isatty())
+    except ValueError:
+        # stdout is closed
+        return False
+
+
 def _chunk_read_(
     response,
     local_file,
@@ -178,7 +209,8 @@ def _chunk_read_(
 ) -> None:
     """Download a file chunk by chunk and show advancement.
 
-    If ``rich`` is installed, a :class:`rich.progress.Progress` bar is
+    If ``rich`` is installed and the output is an interactive terminal
+    or a notebook (Jupyter or marimo), a :class:`rich.progress.Progress` bar is
     used to display advancement. Otherwise, a fallback text-based report
     is printed instead (see :func:`_chunk_report_`).
 
@@ -227,7 +259,7 @@ def _chunk_read_(
         total_size = None
 
     task_id = None
-    use_rich = report_hook and _has_rich()
+    use_rich = report_hook and _use_rich_progress()
     if use_rich:
         from rich.progress import (
             BarColumn,
