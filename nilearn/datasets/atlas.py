@@ -1164,13 +1164,10 @@ def fetch_atlas_yeo_2011(  # numpydoc ignore=RT05
     check_parameter_in_allowed(thickness, ("thin", "thick"), "thickness")
 
     if url is None:
-        url = (
-            "ftp://surfer.nmr.mgh.harvard.edu/pub/data/"
-            "Yeo_JNeurophysiol11_MNI152.zip"
-        )
+        url = zenodo_url(24531234, "yeo_2011.zip")
     opts = {"uncompress": True}
 
-    dataset_name = "yeo_2011"
+    dataset_name = "yeo_2011_atlas"
     keys = (
         "thin_7",
         "thick_7",
@@ -1191,7 +1188,8 @@ def fetch_atlas_yeo_2011(  # numpydoc ignore=RT05
     )
 
     filenames = [
-        (Path("Yeo_JNeurophysiol11_MNI152", f), url, opts) for f in basenames
+        (Path("yeo_2011", "Yeo_JNeurophysiol11_MNI152", f), url, opts)
+        for f in basenames
     ]
 
     data_dir = get_dataset_dir(
@@ -1201,7 +1199,7 @@ def fetch_atlas_yeo_2011(  # numpydoc ignore=RT05
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = Description.from_registry("yeo_2011_atlas")
+    fdescr = Description.from_registry(dataset_name)
 
     params = dict(
         [

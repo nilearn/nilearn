@@ -421,8 +421,8 @@ def _generate_yeo_data(tmp_path):
 
     So far it only generates 7 networks data.
     """
-    dataset_name = "yeo_2011"
-    yeo_archive_root = "Yeo_JNeurophysiol11_MNI152"
+    dataset_name = "yeo_2011_atlas"
+    yeo_archive_root = Path("yeo_2011", "Yeo_JNeurophysiol11_MNI152")
 
     mock_dir = tmp_path / dataset_name / yeo_archive_root
     mock_dir.mkdir(exist_ok=True, parents=True)
@@ -442,7 +442,7 @@ def _generate_yeo_data(tmp_path):
     ):
         mock_file = mock_dir / basename
         mock_map.to_filename(mock_file)
-        to_archive[Path(yeo_archive_root) / basename] = mock_file
+        to_archive[yeo_archive_root / basename] = mock_file
 
     mock_lut = pd.DataFrame(
         {
@@ -459,11 +459,12 @@ def _generate_yeo_data(tmp_path):
     ):
         mock_file = mock_dir / basename
         mock_lut.to_csv(mock_file, sep=" ", header=False)
-        to_archive[Path(yeo_archive_root) / basename] = mock_file
+        to_archive[yeo_archive_root / basename] = mock_file
 
     return dict_to_archive(to_archive, archive_format="zip")
 
 
+@pytest.mark.ai_generated
 def test_fetch_atlas_yeo_2011(tmp_path, request_mocker, capsys):
     """Check fetcher for the Yeo atlas.
 
@@ -471,7 +472,7 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker, capsys):
     """
     yeo_data = _generate_yeo_data(tmp_path)
 
-    request_mocker.url_mapping["*Yeo_JNeurophysiol11_MNI152*"] = yeo_data
+    request_mocker.url_mapping["*yeo_2011.zip*"] = yeo_data
 
     dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
     dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0, n_networks=17)
