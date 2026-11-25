@@ -8,7 +8,9 @@ import pytest
 from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
+from nilearn.datasets._utils import zenodo_url
 from nilearn.datasets.struct import (
+    FSAVERAGE5_PATH,
     _apply_mesh_mapping,
     _get_mesh_mapping,
     fetch_icbm152_2009,
@@ -28,7 +30,6 @@ from nilearn.datasets.tests._testing import (
     check_fetcher_verbosity,
     check_type_fetcher,
     dict_to_archive,
-    list_to_archive,
 )
 from nilearn.surface import PolyMesh, SurfaceImage
 
@@ -170,19 +171,22 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "mesh",
+    "mesh, fs_url",
     [
-        "fsaverage5",
-        "fsaverage6",
-        "fsaverage7",
-        "fsaverage",
+        ("fsaverage3", zenodo_url(23242166, "fsaverage3.tar.gz")),
+        ("fsaverage4", zenodo_url(23696293, "fsaverage4.tar.gz")),
+        ("fsaverage5", None),
+        ("fsaverage6", zenodo_url(24502512, "fsaverage6.tar.gz")),
+        ("fsaverage7", zenodo_url(24502703, "fsaverage7.tar.gz")),
+        ("fsaverage", zenodo_url(24502703, "fsaverage7.tar.gz")),
     ],
 )
-def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
-    """Test nilearn.datasets.fetch_surf_fsaverage for fsaverage5 to fsaverage7.
+def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker, fs_url):
+    """Test nilearn.datasets.fetch_surf_fsaverage for all meshes.
 
-    TODO: "fsaverage3" and "fsaverage4" should be added after the data with
-    correct order is updated in OSF.
+    The mocked archives contain actual gifti files (from fsaverage5),
+    as fsaverage3 and fsaverage4 meshes are loaded to check
+    the order of their vertices.
     """
     # Define attribute list that nilearn meshs should contain
     # (each attribute should eventually map to a _.gii.gz file
@@ -203,14 +207,13 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
         for side in ["left", "right"]
     }
 
-    # Mock fsaverage6 and 7 download (with actual url)
-    fs_urls = [
-        "https://osf.io/jzxyr/download",
-        "https://osf.io/svf8k/download",
-    ]
-    for fs_url in fs_urls:
-        request_mocker.url_mapping[fs_url] = list_to_archive(
-            [f"{name}.gii.gz" for name in mesh_attributes]
+    # Mock with actual url
+    if fs_url is not None:
+        request_mocker.url_mapping[fs_url] = dict_to_archive(
+            {
+                f"{name}.gii.gz": FSAVERAGE5_PATH / f"{name}.gii.gz"
+                for name in mesh_attributes
+            }
         )
 
     dataset = fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))
