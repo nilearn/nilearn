@@ -657,7 +657,6 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
         pass
 
 
-@fill_doc
 def _new_session() -> requests.Session:
     """Create a requests session to download datasets.
 
@@ -685,6 +684,7 @@ def _new_session() -> requests.Session:
     return session
 
 
+@fill_doc
 def fetch_single_file(
     url,
     data_dir: Path,
