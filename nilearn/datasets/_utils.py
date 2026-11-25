@@ -197,6 +197,7 @@ def _use_rich_progress() -> bool:
         return False
 
 
+@fill_doc
 def _chunk_read_(
     response,
     local_file,
