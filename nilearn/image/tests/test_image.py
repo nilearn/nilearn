@@ -75,7 +75,7 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import SurfaceImage, at_least_2d
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import (
     assert_polymesh_equal,
@@ -720,6 +720,31 @@ def test_crop_img_threshold_tolerance_2():
     assert cropped_img.shape == (1 + 2 + 2, 4 + 2, 3 + 2)
 
 
+@pytest.mark.parametrize("dtype", [np.uint8, np.int8])
+def test_crop_img_integer_data_no_overflow(affine_eye, dtype):
+    """Check that cropping integer images does not overflow.
+
+    Negating the minimum of (unsigned) integer data used to overflow
+    and lead to a wrong infinity norm.
+    """
+    data = np.full((10, 10, 10), 3, dtype=dtype)
+    data[3:6, 3:6, 3:6] = 5
+    if dtype == np.int8:
+        data[0, 0, 0] = -128
+        data[3:6, 3:6, 3:6] = 100
+    img = Nifti1Image(data, affine=affine_eye)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        cropped_img = crop_img(img, rtol=0.7, pad=False)
+
+    if dtype == np.uint8:
+        assert cropped_img.shape == (3, 3, 3)
+    else:
+        # the -128 voxel at the origin must be kept
+        assert cropped_img.shape == (6, 6, 6)
+
+
 @pytest.mark.parametrize("pad", [True, False])
 def test_crop_image_empty_image(affine_eye, pad):
     """Test nilearn.image.image.crop_img with empty image specified.
@@ -1060,7 +1085,9 @@ def test_iter_img_surface_2d(surf_img_1d, surf_img_2d):
 
     output = list(iter_img(surf_img_1d))
 
-    assert_surface_image_equal(output[0], surf_img_1d)
+    assert_surface_image_equal(output[0], at_least_2d(surf_img_1d))
+    # input must not be modified
+    assert len(surf_img_1d.shape) == 1
 
 
 def test_new_img_like_mgz():
@@ -1255,7 +1282,11 @@ def test_input_in_threshold_img_errors(
     # incompatible inputs raise errors
     with pytest.raises(
         TypeError,
-        match=r"Mask and input images must be of compatible types.",
+        match=(
+            "If 'img' is a Niimg-like object, "
+            "'mask_img' should also be a 3D Niimg-like object"
+            r".*SurfaceImage"
+        ),
     ):
         threshold_img(vol_img, threshold=1, mask_img=surf_mask_1d)
 
@@ -1267,7 +1298,11 @@ def test_input_in_threshold_img_errors(
 
     with pytest.raises(
         TypeError,
-        match=r"Mask and input images must be of compatible types.",
+        match=(
+            "If 'img' is a SurfaceImage object, "
+            "'mask_img' should also be a SurfaceImage object"
+            r".*Nifti1Image"
+        ),
     ):
         threshold_img(surf_img_1d, threshold=1, mask_img=vol_mask)
 
@@ -2251,6 +2286,20 @@ def test_concat_imgs_surface(surf_img_2d):
         assert value.dtype == np.float16
 
 
+def test_concat_imgs_surface_1d_input_unchanged(surf_img_1d):
+    """Check concat_imgs does not modify the 1D surface images it is given."""
+    n_vertices = surf_img_1d.shape[0]
+    imgs = [surf_img_1d, new_img_like(surf_img_1d, surf_img_1d.data)]
+
+    img = concat_imgs(imgs)
+
+    assert img.shape == (n_vertices, 2)
+    for input_img in imgs:
+        assert input_img.shape == (n_vertices,)
+        for value in input_img.data.parts.values():
+            assert value.ndim == 1
+
+
 def nifti_generator(buffer):
     for _ in range(10):
         buffer.append(_img_3d_rand())
@@ -2490,30 +2539,30 @@ def test_check_niimg_wildcards(affine_eye, shape, wildcards, tmp_path):
 
 
 @pytest.fixture
-def img_in_home_folder(
-    img_3d_mni,
-) -> Generator[Nifti1Image, None, None]:
-    """Create a test file in the home folder.
+def img_in_home_folder(img_3d_mni, tmp_path, monkeypatch) -> Nifti1Image:
+    """Create a test file in a temporary home folder.
 
-    Teardown: use yield instead of return to make sure the file
-    is deleted after the test,
-    even if the test fails.
-    https://docs.pytest.org/en/stable/how-to/fixtures.html#teardown-cleanup-aka-fixture-finalization
+    The home directory is monkeypatched to a per-test temporary folder
+    so that tests running in parallel do not share (and race on)
+    a file in the actual home folder of the user.
 
-    Yields
-    ------
+    Returns
+    -------
     nibabel.Nifti1Image
     """
-    created_file = Path("~/test.nii")
-    img_3d_mni.to_filename(created_file.expanduser())
-    assert created_file.expanduser().exists()
+    # HOME is used on posix, USERPROFILE on Windows
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
 
-    yield img_3d_mni
+    created_file = Path("~/test.nii").expanduser()
+    assert created_file.parent == tmp_path
 
-    created_file.expanduser().unlink()
+    img_3d_mni.to_filename(created_file)
+    assert created_file.exists()
+
+    return img_3d_mni
 
 
-@pytest.mark.single_process
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "filename", ["~/test.nii", r"~/test.nii", Path("~/test.nii")]
@@ -2529,7 +2578,6 @@ def test_check_niimg_user_expand(img_in_home_folder, filename):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.single_process
 @pytest.mark.parametrize(
     "filename",
     [

@@ -17,6 +17,7 @@ from nilearn.signal import (
     _create_cosine_drift_terms,
     _detrend,
     _handle_scrubbed_volumes,
+    _interpolate_volumes,
     _mean_of_squares,
     butterworth,
     clean,
@@ -1687,6 +1688,66 @@ def test_handle_scrubbed_volumes_without_extrapolation():
     assert_equal(
         confounds.shape[0], censored_confounds.shape[0] + total_samples
     )
+
+
+@pytest.mark.parametrize("extrapolate", [True, False])
+@pytest.mark.parametrize(
+    "scrub_index",
+    [[0, 1, 38, 39], [0, 1, 2, 20], [20, 21], [37, 38, 39]],
+    ids=["both-ends", "head-and-interior", "interior", "tail"],
+)
+def test_clean_butterworth_ignores_censored_volumes(
+    scrub_index, extrapolate, rng
+):
+    """Censored volumes must not leak into the cleaned signal.
+
+    With a butterworth filter the censored volumes are replaced by an
+    interpolation of the kept ones before filtering, so the output must not
+    depend on their original values, and it must hold one row per kept
+    volume that lies within the interpolated range.
+
+    Regression test for:
+    https://github.com/nilearn/nilearn/issues/6768
+    """
+    signals = rng.standard_normal((40, 3))
+    sample_mask = np.delete(np.arange(40), scrub_index)
+    spiked = signals.copy()
+    spiked[scrub_index] += 50.0
+
+    kwargs = {
+        "sample_mask": sample_mask,
+        "filter": "butterworth",
+        "low_pass": 0.1,
+        "t_r": 2.0,
+        "detrend": False,
+        "standardize": None,
+        "extrapolate": extrapolate,
+    }
+    cleaned = clean(signals.copy(), **kwargs)
+    cleaned_spiked = clean(spiked.copy(), **kwargs)
+
+    assert cleaned.shape == (len(sample_mask), signals.shape[1])
+    assert_almost_equal(cleaned, cleaned_spiked)
+
+
+def test_interpolate_volumes_fills_only_censored_volumes():
+    """Kept volumes are untouched and every censored volume is filled.
+
+    Regression test for:
+    https://github.com/nilearn/nilearn/issues/6768
+    """
+    signals = np.arange(20, dtype=float)[:, None] * np.ones((1, 2))
+    signals_with_spikes = signals.copy()
+    scrub_index = [0, 1, 9, 18, 19]
+    signals_with_spikes[scrub_index] = 100.0
+    sample_mask = np.delete(np.arange(20), scrub_index)
+
+    interpolated = _interpolate_volumes(
+        signals_with_spikes.copy(), sample_mask, 1.0, True
+    )
+
+    # a linear signal is reproduced exactly by the cubic spline
+    assert_almost_equal(interpolated, signals)
 
 
 def test_handle_scrubbed_volumes_exception():

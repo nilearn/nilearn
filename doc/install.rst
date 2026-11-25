@@ -42,7 +42,7 @@ Either way, create and activate a new Python environment.
 
                 .. prompt:: bash
 
-                    uv venv 'venv' --python 3.14
+                    uv venv 'venv' --python 3.15
                     source venv/bin/activate
 
             .. tab-item:: conda
@@ -52,7 +52,7 @@ Either way, create and activate a new Python environment.
 
                 .. prompt:: bash
 
-                    conda create --name nilearn python=3.14 pip
+                    conda create --name nilearn python=3.15 pip
                     conda activate nilearn
 
     .. tab-item:: Windows
@@ -75,7 +75,7 @@ Either way, create and activate a new Python environment.
 
                 .. prompt:: powershell
 
-                    uv venv 'venv' --python 3.14
+                    uv venv 'venv' --python 3.15
                     venv\Scripts\activate
 
             .. tab-item:: conda
@@ -85,7 +85,7 @@ Either way, create and activate a new Python environment.
 
                 .. prompt:: powershell
 
-                    conda create --name nilearn python=3.14 pip
+                    conda create --name nilearn python=3.15 pip
                     conda activate nilearn
 
 Installing Nilearn

@@ -2836,6 +2836,13 @@ def fetch_neurovault_auditory_computation_task(
     """Fetch a :term:`contrast` map from :term:`Neurovault` showing \
     the effect of mental subtraction upon auditory instructions.
 
+    .. nilearn_deprecated:: 0.15.0
+
+        ``fetch_neurovault_auditory_computation_task`` will be removed
+        in version 0.17.0.
+        Use :func:`~nilearn.datasets.fetch_neurovault_ids`
+        with ``image_ids=[32980]`` instead.
+
     Parameters
     ----------
     %(data_dir)s
@@ -2867,6 +2874,18 @@ def fetch_neurovault_auditory_computation_task(
     https://neurovault.org/images/32980/
     """
     check_params(locals())
+
+    # TODO (nilearn >= 0.17.0) remove the function
+    warnings.warn(
+        category=FutureWarning,
+        message=(
+            "'fetch_neurovault_auditory_computation_task' is deprecated "
+            "and will be removed in Nilearn 0.17.0.\n"
+            "Use 'fetch_neurovault_auditory_computation_task' with"
+            "'image_ids=[32980]'."
+        ),
+        stacklevel=find_stack_level(),
+    )
 
     data = fetch_neurovault_ids(
         image_ids=[32980], data_dir=data_dir, verbose=verbose, timeout=timeout

@@ -34,7 +34,9 @@ import io
 import pickle
 import re
 import warnings
+from collections.abc import Callable
 from copy import deepcopy
+from operator import is_, is_not
 from pathlib import Path
 from tempfile import TemporaryDirectory, mkdtemp
 from typing import TYPE_CHECKING, Any
@@ -73,6 +75,7 @@ from nilearn._estimator_checks.utils import (
     generate_data_to_fit,
     generate_inverse_transform_signal,
     get_expected_dtype,
+    requires_y,
     run_method,
     set_mask_if_nifti_spheres,
     skip_if,
@@ -1129,9 +1132,7 @@ def _generate_fit_data_with_dtype(estimator, input_dtype):
 
 
 def _dtype_case_generator(estimator_orig, with_memory=False):
-    """Generate combinations of test cases for dtype, input_dtype and memory
-    with a cloned estimator.
-    """
+    """Generate combinations of test cases for dtype, input_dtype, memory."""
     dtype_list: list[Any] = [None]
     if hasattr(estimator_orig, "dtype"):
         dtype_list.extend(
@@ -1159,31 +1160,42 @@ def _dtype_case_generator(estimator_orig, with_memory=False):
     for input_dtype in input_np_dtypes:
         for dtype in dtype_list:
             for memory in memory_list:
-                estimator = clone(estimator_orig)
-
-                if hasattr(estimator_orig, "dtype"):
-                    estimator.dtype = dtype
-
-                if memory is not None:
-                    estimator.memory_level = 1
-                    estimator.memory = memory
-                yield estimator, input_dtype, dtype, memory
+                yield input_dtype, dtype, memory
 
 
-@skip_if(
-    (
-        lambda e: isinstance(e, SearchLight),
-        "'SearchLight.transform()' behaves differently.",
-    ),
-)
-@skip_if_not(
-    (lambda e: accepts_image(e), "Estimator does not accept image."),
-    (
-        lambda e: hasattr(e, "transform"),
-        "'transform' attribute is not implemented.",
-    ),
-)
-def check_img_estimator_dtypes_transform(estimator_orig) -> None:
+def check_img_estimator_dtypes_funcs(estimator_orig):
+    check_list = []
+
+    for input_dtype, dtype, memory in _dtype_case_generator(
+        estimator_orig, with_memory=True
+    ):
+        check_list.append(
+            check_img_estimator_dtypes(input_dtype, dtype, memory)
+        )
+        if (
+            hasattr(estimator_orig, "transform")
+            # SearchLight.transform() behaves differently
+            and not isinstance(estimator_orig, SearchLight)
+        ):
+            check_list.append(
+                check_img_estimator_dtypes_transform(
+                    input_dtype, dtype, memory
+                )
+            )
+
+        if hasattr(estimator_orig, "inverse_transform") and memory is None:
+            check_list.append(
+                check_img_estimator_dtypes_inverse_transform(
+                    input_dtype, dtype
+                )
+            )
+
+    return check_list
+
+
+def check_img_estimator_dtypes_transform(
+    input_dtype, dtype, memory
+) -> Callable:
     """Check estimator can fit and run for transform \
        with inputs of varying dtypes.
 
@@ -1195,9 +1207,17 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
 
     input_dtype np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    for estimator, input_dtype, dtype, memory in _dtype_case_generator(
-        estimator_orig, with_memory=True
-    ):
+
+    def _check_img_estimator_dtypes_transform(estimator_orig):
+        estimator = clone(estimator_orig)
+
+        if hasattr(estimator_orig, "dtype"):
+            estimator.dtype = dtype
+
+        if memory is not None:
+            estimator.memory_level = 1
+            estimator.memory = memory
+
         X, y = _generate_fit_data_with_dtype(estimator, input_dtype)
         fit_estimator(estimator, X, y)
         results = estimator.transform(X)
@@ -1209,7 +1229,7 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
         # (e.g. float64 after standardization or other linear algebra),
         # and should not be forced to match the input's dtype.
         if dtype is None:
-            continue
+            return
 
         target_dtype = get_expected_dtype(input_dtype, dtype)
 
@@ -1234,11 +1254,10 @@ def check_img_estimator_dtypes_transform(estimator_orig) -> None:
                 assert result_1.dtype == result_2.dtype
                 assert_array_equal(result_1, result_2)
 
+    return _check_img_estimator_dtypes_transform
 
-@skip_if_not(
-    (lambda e: accepts_image(e), "Estimator does not accept image."),
-)
-def check_img_estimator_dtypes(estimator_orig) -> None:
+
+def check_img_estimator_dtypes(input_dtype, dtype, memory) -> Callable:
     """Check estimator can fit and run several methods \
        with inputs of varying dtypes.
 
@@ -1250,15 +1269,23 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
 
     input_dtype np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    for estimator, input_dtype, _, _ in _dtype_case_generator(
-        estimator_orig, with_memory=True
-    ):
+
+    def _check_img_estimator_dtypes(estimator_orig):
+        estimator = clone(estimator_orig)
+
+        if hasattr(estimator_orig, "dtype"):
+            estimator.dtype = dtype
+
+        if memory is not None:
+            estimator.memory_level = 1
+            estimator.memory = memory
+
         X, y = _generate_fit_data_with_dtype(estimator, input_dtype)
         set_mask_if_nifti_spheres(estimator, X)
 
         with warnings.catch_warnings(record=True) as warning_list:
             warnings.simplefilter("always")
-            estimator = fit_estimator(estimator, X, y)
+            fit_estimator(estimator, X, y)
         # no data conversion should happen during fitting
         assert not any(
             "data has been converted to int32" in str(x.message)
@@ -1272,15 +1299,12 @@ def check_img_estimator_dtypes(estimator_orig) -> None:
             # in check_img_estimator_dtypes_transform
             run_method(estimator, method, X, y)
 
+    return _check_img_estimator_dtypes
 
-@skip_if_not(
-    lambda e: accepts_image(e),
-    (
-        lambda e: hasattr(e, "inverse_transform"),
-        "'inverse_transform' attribute is not implemented.",
-    ),
-)
-def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
+
+def check_img_estimator_dtypes_inverse_transform(
+    input_dtype, dtype
+) -> Callable:
     """Check estimator can inverse_transform with inputs of varying dtypes.
 
     inverse transform should generate images and conserve dtype.
@@ -1289,9 +1313,13 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
     we must handle deal with the fact that nibabel won't create
     images with np.int64
     """
-    for estimator, input_dtype, dtype, _ in _dtype_case_generator(
-        estimator_orig
-    ):
+
+    def _check_img_estimator_dtypes_inverse_transform(estimator_orig):
+        estimator = clone(estimator_orig)
+
+        if hasattr(estimator_orig, "dtype"):
+            estimator.dtype = dtype
+
         set_mask_if_nifti_spheres(estimator)
         fit_estimator(estimator)
 
@@ -1306,62 +1334,72 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig) -> None:
         ):
             output_img = output_img[0]
 
-        target_dtype = get_expected_dtype(input_dtype, dtype)
-
         warning_present = (
             "data has been converted to int32" in str(x.message)
             for x in warning_list
         )
-        if isinstance(output_img, Nifti1Image) and dtype == np.int64:
-            assert any(warning_present)
-        elif isinstance(
-            estimator,
-            (NiftiMapsMasker, NiftiSpheresMasker, _BaseDecomposition),
-        ):
-            # These estimators route inverse_transform through
-            # signals_to_img_maps which uses np.dot and produces float64
-            # output, so nibabel never sees int64 data directly.
-            # A warning only fires when dtype=None causes int64 to be
-            # stored in the NIfTI header.
-            if input_dtype == np.int64 and dtype is None:
-                assert any(warning_present)
-        elif isinstance(output_img, Nifti1Image) and input_dtype == np.int64:
+        if (
             # Other maskers call unmask() directly with the int64 signal,
             # so nibabel warns on every int64 input regardless of dtype.
+            (
+                isinstance(output_img, Nifti1Image)
+                and (np.int64 in (dtype, input_dtype))
+            )
+            or (
+                dtype is None
+                and input_dtype == np.int64
+                # These estimators route inverse_transform through
+                # signals_to_img_maps which uses np.dot and produces float64
+                # output, so nibabel never sees int64 data directly.
+                # A warning only fires when dtype=None causes int64 to be
+                # stored in the NIfTI header.
+                and isinstance(
+                    estimator,
+                    (NiftiMapsMasker, NiftiSpheresMasker, _BaseDecomposition),
+                )
+            )
+        ):
             assert any(warning_present)
         else:
             assert not any(warning_present)
 
         output_dtype = None
-        try:
-            if isinstance(output_img, Nifti1Image):
-                output_dtype = (
-                    f"img type={img_data_dtype(output_img)}, "
-                    f"dataobj type={output_img.get_data_dtype()}"
+        if isinstance(output_img, Nifti1Image):
+            output_dtype = (
+                f"img type={img_data_dtype(output_img)}, "
+                f"dataobj type={output_img.get_data_dtype()}"
+            )
+        else:
+            output_dtype = output_img.data._dtype
+
+        target_dtype = get_expected_dtype(input_dtype, dtype)
+        msg = (
+            "'inverse_transform' should have returned "
+            f"an image of type '{target_dtype}'. "
+            f"Got '{output_dtype}' instead."
+        )
+
+        assert (
+            isinstance(output_img, Nifti1Image)
+            and output_img.get_data_dtype() == target_dtype
+            and (
+                # ensure both image and dataobj have consistent type
+                (
+                    target_dtype != np.int64
+                    and img_data_dtype(output_img) == target_dtype
                 )
-                if target_dtype != np.int64:
-                    # ensure both image and dataobj have consistent type
-                    assert (
-                        img_data_dtype(output_img)
-                        == output_img.get_data_dtype()
-                        == target_dtype
-                    )
-                else:
-                    # except when int64
-                    # in this case nibabel coerce the image
-                    # but not the object
-                    # to int32
-                    assert img_data_dtype(output_img) == "int32"
-                    assert output_img.get_data_dtype() == target_dtype
-            else:
-                output_dtype = output_img.data._dtype
-                assert output_dtype == target_dtype
-        except AssertionError as e:
-            raise TypeError(
-                "'inverse_transform' should have returned "
-                f"an image of type '{target_dtype}'. "
-                f"Got '{output_dtype}' instead."
-            ) from e
+                # except when int64
+                # in this case nibabel coerce the image
+                # but not the object
+                # to int32
+                or (
+                    target_dtype == np.int64
+                    and img_data_dtype(output_img) == "int32"
+                )
+            )
+        ) or output_dtype == target_dtype, msg
+
+    return _check_img_estimator_dtypes_inverse_transform
 
 
 @skip_if_not(
@@ -1511,6 +1549,7 @@ def check_img_estimator_clean_dtype(estimator_orig) -> None:
         _check_clean_dtype_output(result)
 
 
+@skip_if_not(lambda e: accepts_image(e) and requires_y(e))
 def check_img_estimator_requires_y_none(estimator) -> None:
     """Check estimator with requires_y=True fails gracefully for y=None.
 
@@ -1526,6 +1565,7 @@ def check_img_estimator_requires_y_none(estimator) -> None:
             raise ve
 
 
+@skip_if_not(lambda e: accepts_image(e) and requires_y(e))
 def check_inputs_length(estimator) -> None:
     """Raise error when X and y have inconsistent numbers of samples."""
     iris = load_iris()
@@ -1551,38 +1591,28 @@ def check_img_estimator_fit_score_takes_y(estimator) -> None:
 
     For decoders, y is not optional
     """
+    operation = is_not
+    mesg = "{class_name} is missing 'y=None' for the method '{attr}'."
+
+    if is_classifier(estimator) or is_regressor(estimator):
+        operation = is_
+        mesg = "{class_name} is missing parameter 'y' for the method '{attr}'."
+
     for attr in ["fit", "fit_transform", "score"]:
         if not hasattr(estimator, attr):
             continue
 
-        if is_classifier(estimator) or is_regressor(estimator):
-            tmp = {
-                k: v.default
-                for k, v in inspect.signature(
-                    getattr(estimator, attr)
-                ).parameters.items()
-                if v.default is inspect.Parameter.empty
-            }
-            if "y" not in tmp:
-                raise ValueError(
-                    f"{estimator.__class__.__name__} "
-                    f"is missing parameter 'y' for the method '{attr}'."
-                )
+        tmp = {
+            k: v.default
+            for k, v in inspect.signature(
+                getattr(estimator, attr)
+            ).parameters.items()
+            if operation(v.default, inspect.Parameter.empty)
+        }
 
-        else:
-            tmp = {
-                k: v.default
-                for k, v in inspect.signature(
-                    getattr(estimator, attr)
-                ).parameters.items()
-                if v.default is not inspect.Parameter.empty
-            }
-            if "y" not in tmp:
-                raise ValueError(
-                    f"{estimator.__class__.__name__} "
-                    f"is missing 'y=None' for the method '{attr}'."
-                )
-            assert tmp["y"] is None
+        if "y" not in tmp:
+            raise ValueError(mesg.format(estimator.__class__.__name__, attr))
+        assert ~operation(tmp["y"], None)
 
 
 def check_img_estimator_n_elements(estimator) -> None:
@@ -3217,10 +3247,7 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig) -> None:
 
     Check that 1D mask or 2D mask work.
 
-    TODO there are some unexpected outcomes with
-    SurfaceMapsMasker, SurfaceLabelsMasker (see details below)
-    once those are fixed this test should be mergeable with its "no mask"
-    equivalent
+    TODO this test should be mergeable with its "no mask" equivalent
 
     Theoretically expected input / output shape relations:
 
@@ -3268,8 +3295,6 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig) -> None:
 
             signals = estimator.transform(imgs)
 
-            n_dim_mask = mask_img.data.parts["left"].ndim
-
             if isinstance(estimator, _MultiMixin) and isinstance(imgs, list):
                 assert isinstance(signals, list)
                 assert all(isinstance(x, np.ndarray) for x in signals)
@@ -3284,36 +3309,14 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig) -> None:
             elif n_sample == 0:
                 assert signals.size == estimator.n_elements_
 
-                # TODO We have some unexpected behavior from
-                # SurfaceMapsMasker, SurfaceLabelsMasker
-                # This should be fixed (in a follow up PR).
-                if (
-                    isinstance(
-                        estimator, (SurfaceMapsMasker, SurfaceLabelsMasker)
-                    )
-                    and n_dim_mask == 2
-                ):
-                    assert signals.shape == (1, estimator.n_elements_)
-
-                elif estimator.n_elements_ == 1:
+                if estimator.n_elements_ == 1:
                     assert signals.shape == ()
                 else:
                     assert signals.shape == (estimator.n_elements_,)
 
                 img = estimator.inverse_transform(signals)
 
-                if (
-                    isinstance(
-                        estimator, (SurfaceMapsMasker, SurfaceLabelsMasker)
-                    )
-                    and n_dim_mask == 2
-                ):
-                    assert img.shape == (
-                        _make_surface_img().mesh.n_vertices,
-                        1,
-                    )
-                else:
-                    assert img.shape == (_make_surface_img().mesh.n_vertices,)
+                assert img.shape == (_make_surface_img().mesh.n_vertices,)
 
             else:
                 assert signals.shape == (n_sample, estimator.n_elements_)
@@ -3678,7 +3681,16 @@ def check_multimasker_transformer_high_variance_confounds(
         tmp_path = Path(tmp_dir)
         dataframe.to_csv(tmp_path / "confounds.csv")
 
-        for c in [array, dataframe, tmp_path / "confounds.csv"]:
+        # A per-image confound entry may itself be a list or tuple of
+        # several confound sources that get concatenated, matching
+        # nilearn.signal.clean's accepted format.
+        for c in [
+            array,
+            dataframe,
+            tmp_path / "confounds.csv",
+            [array],
+            (array,),
+        ]:
             confounds = [c, c]
 
             estimator = clone(estimator)
