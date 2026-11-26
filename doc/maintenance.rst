@@ -193,10 +193,14 @@ tox run -e update_js
 Datasets
 ========
 
-Several datasets are on `OSF <https://osf.io>`_ and some of those are 'maintained' by the Nilearn developers.
+Open Science Framework
+----------------------
+
+Several datasets are on `OSF <https://osf.io>`_
+and some of those are 'maintained' by the Nilearn developers.
 
 Here is a quick description of the different OSF projects
-that the dev have access to:
+that the developers have access to:
 
 - `nilearn_data <https://osf.io/hxctv>`_
 
@@ -236,17 +240,24 @@ that the dev have access to:
 
   This is an old project used for back up Nilearn's data.
 
-Some datasets not hosted on OSF were also moved to Zenodo,
+.. TODO
+   `Allen and MIALAB ICA atlas 2011 <https://osf.io/vp4dk>`_
+   Unrelated project under the Nilearn OSF user account
+
+Zenodo
+------
+
+Several datasets are accessed from Zenodo.
+They are published under `nilearn_devs community <https://zenodo.org/communities/nilearn_devs/>`_.
+If you are a Nilearn developer, request to be added this community.
+
+Some datasets were moved to Zenodo,
 because their original server was unreliable:
 
 - ``fetch_atlas_yeo_2011``: https://doi.org/10.5281/zenodo.24531233
 
   Originally downloaded from the FreeSurfer FTP server:
   ``ftp://surfer.nmr.mgh.harvard.edu/pub/data/Yeo_JNeurophysiol11_MNI152.zip``
-
-.. TODO
-   `Allen and MIALAB ICA atlas 2011 <https://osf.io/vp4dk>`_
-   Unrelated project under the Nilearn OSF user account
 
 .. admonition:: Important
 
