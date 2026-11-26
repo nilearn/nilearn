@@ -193,9 +193,9 @@ in the last quarter of the year.
 Python packages
 ---------------
 
-We usually increase the minimum supported scikit-learn version
+We usually increase the minimum supported version of our dependencies
 when the maintenance burden becomes too big for us,
-or when we need to make use of some more recent scikit-learn feature.
+or when we need to make use of some more recent features of our dependencies.
 
 
 Updating vendored dependencies
