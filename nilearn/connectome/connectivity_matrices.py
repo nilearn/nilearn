@@ -421,6 +421,21 @@ def prec_to_partial(precision: np.ndarray) -> np.ndarray:
     return partial_correlation
 
 
+def _as_subject_list(X):
+    """Cast the input to a list of per-subject time series.
+
+    This makes it easier to check with sklearn estimator compliance.
+    """
+    if not hasattr(X, "__iter__"):
+        raise TypeError(
+            "Input must be an iterable of numpy arrays. "
+            f"Got {X.__class__.__name__}"
+        )
+    if isinstance(X, np.ndarray) and X.ndim == 2:
+        X = [X]
+    return X
+
+
 @fill_doc
 class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
     """A class that computes different kinds of \
@@ -545,6 +560,97 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
                 )
                 raise ValueError(error_message)
 
+    def _prepare_fit(self, X):
+        """Set up the covariance estimator and validate ``kind``."""
+        if self.cov_estimator is None:
+            self.cov_estimator_ = LedoitWolf(store_precision=False)
+        else:
+            if not (hasattr(self.cov_estimator, "fit")):
+                raise ValueError(
+                    f"'cov_estimator' must be an estimator "
+                    "with '.fit()' and '.covariance_' "
+                    "(e.g., from `sklearn.covariance` or a "
+                    f"custom estimator constructed similarly). Got: "
+                    f"`{type(self.cov_estimator).__name__}`."
+                )
+            self.cov_estimator_ = clone(self.cov_estimator)
+
+        allowed_kinds = (
+            "correlation",
+            "partial correlation",
+            "tangent",
+            "covariance",
+            "precision",
+        )
+        check_parameter_in_allowed(self.kind, allowed_kinds, "kind")
+
+        self.n_features_in_ = next(iter(s.shape[1] for s in X))
+
+    def _compute_connectivities(self, X):
+        """Fit the covariance estimator and derive connectivity matrices."""
+        connectivities = []
+        covariances = []
+        if self.kind == "correlation":
+            covariances = [
+                self.cov_estimator_.fit(
+                    signal.standardize_signal(x, detrend=False)
+                ).covariance_
+                for x in X
+            ]
+            connectivities = [cov_to_corr(cov) for cov in covariances]
+        else:
+            covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
+
+            if self.kind in ("covariance", "tangent"):
+                connectivities = covariances
+            elif self.kind == "precision":
+                connectivities = [linalg.inv(cov) for cov in covariances]
+            elif self.kind == "partial correlation":
+                connectivities = [
+                    prec_to_partial(linalg.inv(cov)) for cov in covariances
+                ]
+
+        return connectivities, covariances
+
+    def _store_fit_attributes(self, connectivities, covariances):
+        """Store the mean connectivity and whitening matrix."""
+        if self.kind == "tangent":
+            self.mean_ = _geometric_mean(covariances, max_iter=30, tol=1e-7)
+            self.whitening_ = _map_eigenvalues(
+                lambda x: 1.0 / np.sqrt(x), self.mean_
+            )
+        else:
+            self.mean_ = np.mean(connectivities, axis=0)
+            # Fight numerical instabilities: make symmetric
+            self.mean_ = self.mean_ + self.mean_.T
+            self.mean_ *= 0.5
+            self.whitening_ = None
+
+    def _transform_connectivities(self, connectivities, confounds):
+        """Map connectivities to tangent space and vectorize if requested."""
+        if self.kind == "tangent":
+            if TYPE_CHECKING:
+                assert self.whitening_ is not None
+            connectivities = [
+                _map_eigenvalues(
+                    np.log, self.whitening_.dot(cov).dot(self.whitening_)
+                )
+                for cov in connectivities
+            ]
+
+        connectivities = np.array(connectivities)
+
+        if self.vectorize:
+            connectivities = sym_matrix_to_vec(
+                connectivities, discard_diagonal=self.discard_diagonal
+            )
+            if confounds is not None:
+                connectivities = signal.clean(
+                    connectivities, confounds=confounds
+                )
+
+        return connectivities
+
     @fill_doc
     def fit(self, X, y: None = None) -> Self:
         """Fit the covariance estimator to the given time series for each \
@@ -576,42 +682,12 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
         confounds: pd.DataFrame | np.ndarray | None = None,
     ):
         """Avoid duplication of computation."""
-        if not hasattr(X, "__iter__"):
-            raise TypeError(
-                "Input must be an iterable of numpy arrays. "
-                f"Got {X.__class__.__name__}"
-            )
-        # casting to a list
-        # to make it easier to check with sklearn estimator compliance
-        if isinstance(X, np.ndarray) and X.ndim == 2:
-            X = [X]
+        X = _as_subject_list(X)
 
         self._check_input(X, confounds=confounds, reset=bool(do_fit))
 
         if do_fit:
-            if self.cov_estimator is None:
-                self.cov_estimator_ = LedoitWolf(store_precision=False)
-            else:
-                if not (hasattr(self.cov_estimator, "fit")):
-                    raise ValueError(
-                        f"'cov_estimator' must be an estimator "
-                        "with '.fit()' and '.covariance_' "
-                        "(e.g., from `sklearn.covariance` or a "
-                        f"custom estimator constructed similarly). Got: "
-                        f"`{type(self.cov_estimator).__name__}`."
-                    )
-                self.cov_estimator_ = clone(self.cov_estimator)
-
-            allowed_kinds = (
-                "correlation",
-                "partial correlation",
-                "tangent",
-                "covariance",
-                "precision",
-            )
-            check_parameter_in_allowed(self.kind, allowed_kinds, "kind")
-
-            self.n_features_in_ = next(iter(s.shape[1] for s in X))
+            self._prepare_fit(X)
 
         if do_transform and self.kind == "tangent" and len(X) <= 1:
             # Check that people are applying transform to a group of subjects
@@ -624,68 +700,18 @@ class ConnectivityMeasure(TransformerMixin, NilearnBaseEstimator):
             )
 
         # Compute all the matrices, stored in "connectivities"
-        connectivities = []
-        covariances = []
-        if self.kind == "correlation":
-            covariances_std = [
-                self.cov_estimator_.fit(
-                    signal.standardize_signal(x, detrend=False)
-                ).covariance_
-                for x in X
-            ]
-            connectivities = [cov_to_corr(cov) for cov in covariances_std]
-        else:
-            covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
-
-            if self.kind in ("covariance", "tangent"):
-                connectivities = covariances
-            elif self.kind == "precision":
-                connectivities = [linalg.inv(cov) for cov in covariances]
-            elif self.kind == "partial correlation":
-                connectivities = [
-                    prec_to_partial(linalg.inv(cov)) for cov in covariances
-                ]
+        connectivities, covariances = self._compute_connectivities(X)
 
         # Store the mean
         if do_fit:
-            if self.kind == "tangent":
-                self.mean_ = _geometric_mean(
-                    covariances, max_iter=30, tol=1e-7
-                )
-                self.whitening_ = _map_eigenvalues(
-                    lambda x: 1.0 / np.sqrt(x), self.mean_
-                )
-            else:
-                self.mean_ = np.mean(connectivities, axis=0)
-                # Fight numerical instabilities: make symmetric
-                self.mean_ = self.mean_ + self.mean_.T
-                self.mean_ *= 0.5
-                self.whitening_ = None
-
+            self._store_fit_attributes(connectivities, covariances)
             log("Finished fit", verbose=self.verbose)
 
         # Compute the vector we return on transform
         if do_transform:
-            if self.kind == "tangent":
-                if TYPE_CHECKING:
-                    assert self.whitening_ is not None
-                connectivities = [
-                    _map_eigenvalues(
-                        np.log, self.whitening_.dot(cov).dot(self.whitening_)
-                    )
-                    for cov in connectivities
-                ]
-
-            connectivities = np.array(connectivities)
-
-            if self.vectorize:
-                connectivities = sym_matrix_to_vec(
-                    connectivities, discard_diagonal=self.discard_diagonal
-                )
-                if confounds is not None:
-                    connectivities = signal.clean(
-                        connectivities, confounds=confounds
-                    )
+            connectivities = self._transform_connectivities(
+                connectivities, confounds
+            )
 
         return connectivities
 
