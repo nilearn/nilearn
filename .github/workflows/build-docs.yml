@@ -56,15 +56,19 @@
 # Dataset caching
 # """""""""""""""
 #
-# We also implemented a dataset caching strategy within this workflow such that datasets are only downloaded once every month.
+# We also implemented a dataset caching strategy within this workflow such that datasets are only downloaded once every quarter (3 months).
 # Once these datasets are cached,
 # they will be used by all jobs running without requiring any download.
 # This saves a lot of time and avoids potential network errors that can happen
 # when downloading datasets from remote servers.
 #
-# There is a single cache for the month, shared by all runs of this workflow
-# (scheduled, push and pull request alike). Only the first run of the month
-# populates it; every other run only reads from it and never overwrites it.
+# There is a single cache per quarter (January-March, April-June,
+# July-September, October-December), shared by all runs of this workflow
+# (scheduled, push and pull request alike). Only the first full build of the
+# quarter populates it; every other run only reads from it and never
+# overwrites it. The scheduled run on the first day of each quarter
+# (see ``schedule`` below) is a full build and will usually be that first run.
+# Note that GitHub deletes caches that have not been used for 7 days.
 # This keeps a single long-lived ~4GB+ cache entry instead of every run
 # saving its own copy, which used to blow through the repository's 10GB
 # Actions cache quota and evict the shared cache well before it was reused.
@@ -265,17 +269,22 @@ jobs:
                     echo "restore=true" >> $GITHUB_OUTPUT
                 fi
 
-        -   name: Key for cache based on month number
-            run: date +%m > month_num;
+        -   name: Key for cache based on year and quarter
+            id: cache-period
+                  # e.g. 2026-q4
+            run: |
+                month=$(date +%m)
+                quarter=$(( (10#${month} - 1) / 3 + 1 ))
+                echo "period=$(date +%Y)-q${quarter}" | tee -a $GITHUB_OUTPUT
 
-        -   name: Restore monthly data cache
-                  # Shared by every run this month; only saved once (see below).
+        -   name: Restore quarterly data cache
+                  # Shared by every run this quarter; only saved once (see below).
             if: steps.cache-key.outputs.restore == 'true'
-            id: restore-monthly-cache
+            id: restore-data-cache
             uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
+                key: data_cache-${{ github.workflow }}_quarter-${{ steps.cache-period.outputs.period }}
 
         -   name: Get data
             run: |
@@ -286,24 +295,24 @@ jobs:
                 BUILD_TYPE=$(cat build.txt)
                 python doc/get_data_examples.py $BUILD_TYPE
 
-        -   name: Save monthly data cache
-                  # Only save from a full build, and only if this month's
+        -   name: Save quarterly data cache
+                  # Only save from a full build, and only if this quarter's
                   # cache did not already exist, so the shared cache always
                   # holds the full dataset superset instead of being frozen
                   # with just the partial-build subset by whichever PR run
-                  # happens to be first each month.
-            if: ${{ steps.restore-monthly-cache.outputs.cache-hit != 'true' && contains(fromJSON('["full", "html", "html-strict"]'), steps.build-type.outputs.build)
+                  # happens to be first each quarter.
+            if: ${{ steps.restore-data-cache.outputs.cache-hit != 'true' && contains(fromJSON('["full", "html", "html-strict"]'), steps.build-type.outputs.build)
                 }}
             uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
+                key: data_cache-${{ github.workflow }}_quarter-${{ steps.cache-period.outputs.period }}
 
         -   name: Upload data for build_docs job
                   # Hand the downloaded data off to the build_docs job via an
                   # artifact (scoped to this run only) rather than a second,
                   # per-run cache entry, so it does not compete with the
-                  # monthly cache above for the shared cache storage quota.
+                  # quarterly cache above for the shared cache storage quota.
             uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
             with:
                 name: nilearn_data
