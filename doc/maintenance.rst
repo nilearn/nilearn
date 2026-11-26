@@ -197,21 +197,6 @@ We usually increase the minimum supported scikit-learn version
 when the maintenance burden becomes too big for us,
 or when we need to make use of some more recent scikit-learn feature.
 
-Numpy and scipy are declared as direct dependencies without a pinned minimum version.
-This is motivated by the fact that some of our other direct dependencies (like scikit-learn)
-already pin a minimum version for numpy and scipy and
-that it is easier to let installers (pip, uv...) resolve the version to install
-and to figure out the minimum version required when doing:
-
-.. code-block:: bash
-
-    pip install --resolution lowest-direct
-
-or
-
-.. code-block:: bash
-
-    uv sync --resolution lowest-direct
 
 Updating vendored dependencies
 ------------------------------
