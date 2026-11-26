@@ -22,6 +22,7 @@ from nilearn.masking import (
     compute_background_mask,
     compute_brain_mask,
     compute_epi_mask,
+    compute_multi_background_mask,
     compute_multi_brain_mask,
     compute_multi_epi_mask,
     extrapolate_out_mask,
@@ -208,6 +209,25 @@ def test_compute_mask_error(fn):
     """Check that an empty list of images creates a meaningful error."""
     with pytest.raises(TypeError, match="Cannot concatenate empty objects"):
         fn([])
+
+
+@pytest.mark.parametrize(
+    "fn",
+    [
+        compute_multi_background_mask,
+        compute_multi_brain_mask,
+        compute_multi_epi_mask,
+    ],
+)
+@pytest.mark.parametrize("imgs", [[], ()])
+def test_compute_multi_mask_empty_input(fn, imgs):
+    """Empty inputs should appear in the intended validation error."""
+    message = (
+        f"An empty object - {imgs!r} - was passed instead of an "
+        "image or a list of images"
+    )
+    with pytest.raises(TypeError, match=re.escape(message)):
+        fn(imgs)
 
 
 def test_compute_epi_mask(affine_eye):

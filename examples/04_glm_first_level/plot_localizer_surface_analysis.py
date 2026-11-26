@@ -42,6 +42,9 @@ than using a subject-tailored mesh.
     - the :ref:`localizer first level dataset <localizer_first_level>`
     - the :ref:`fsaverage template <fsaverage>`
 """
+# %%
+#
+# .. include:: ../../../examples/mni_to_fsaverage.rst
 
 # %%
 # Prepare data and analysis parameters
@@ -285,3 +288,9 @@ report = glm.generate_report(
 # .. include:: ../../../examples/report_note.rst
 #
 report
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::
