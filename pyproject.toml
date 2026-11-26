@@ -122,6 +122,8 @@ dependencies = [
     "scikit-learn>=1.6.0,!=1.7.0,!=1.9.0",
     "jinja2>=3.1.6",
     "numpy>=1.26.0",
+    # last scipy bump needed:
+    # https://github.com/nilearn/nilearn/pull/6626/files#r4207802582
     "scipy>=1.12.0",
     "packaging>=26.0.0"
 ]
