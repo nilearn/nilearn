@@ -1,11 +1,52 @@
 """Fixtures specific for maskers."""
 
+import contextlib
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import assert_almost_equal
 
 from nilearn.conftest import _make_mesh
+from nilearn.maskers import NiftiMapsMasker
 from nilearn.surface import SurfaceImage
+
+
+def _nifti_maps_masker_context(estimator):
+    """Manage warning when fitting NiftiMapsMasker with no data."""
+    # TODO (nilearn>=0.17.0) turn into an error
+    if not isinstance(estimator, NiftiMapsMasker):
+        return contextlib.nullcontext()
+    return pytest.warns(FutureWarning, match="no image was passed at fit time")
+
+
+def check_signal_and_inverse_transform(
+    masker,
+    signal: np.ndarray | list[np.ndarray],
+    expected_length: int | None = None,
+) -> None:
+    """Check signal extracted by a masker is
+    inverse transformable by that same masker.
+    """
+    # multimaskers return signals as list
+    # so let's treat all signals as list
+    signal_list: list[np.ndarray] = (
+        [signal] if not isinstance(signal, list) else signal
+    )
+
+    for s in signal_list:
+        if expected_length is not None:
+            assert s.shape == (expected_length, masker.n_elements_)
+        else:
+            assert s.shape[1] == masker.n_elements_
+
+        img = masker.inverse_transform(s)
+
+        # TODO adapt for other maskers
+        if isinstance(masker, NiftiMapsMasker):
+            ref_img = masker.maps_img_
+            assert_almost_equal(img.affine, ref_img.affine)
+            assert img.shape == ((*ref_img.shape[:3], s.shape[0]))
 
 
 @pytest.fixture
