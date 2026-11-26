@@ -33,7 +33,10 @@ fsaverage / fsaverage7 163842                         https://doi.org/10.5281/ze
 
 For fsaverage3 and fsaverage4,
 the order of vertices was modified to match that of fsaverage5-7.
-Older meshes and data with unsorted vertices are available in zenodo.
+Older meshes and data with unsorted vertices are available in zenodo:
+
+- old fsaverage3: https://doi.org/10.5281/zenodo.24502922
+- old fsaverage4: https://doi.org/10.5281/zenodo.23696247
 
 .. the figures are copied in the folder during doc build
    see doc/Makefile sym_links_datasets
