@@ -92,7 +92,7 @@ Enhancements
 
 - :bdg-secondary:`Maint` Refactor ``math_img`` and ``new_img_like`` to reduce complexity (:gh:`6676` by `Akaash P`_)
 
-- :bdg-secondary:`Maint` Refactor ``threshold_img`` to reduce complexity (:gh:`6629` by `uvcode01-max <https://github.com/uvcode01-max>`_).
+- :bdg-secondary:`Maint` Refactor ``threshold_img`` to reduce complexity (:gh:`6629` by `Yuvraj Lamba`_).
 
 - :bdg-warning:`Test` Give explicit names to the tests in ``nilearn/glm/tests/test_hemodynamic_models.py`` (:gh:`6747` by `Rishit Garg`_).
 
