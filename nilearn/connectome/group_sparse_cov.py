@@ -1230,7 +1230,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         n_alphas = self.alphas
 
         if isinstance(n_alphas, collections.abc.Sequence):
-            alphas = list(self.alphas)
+            alphas = list(n_alphas)
             n_refinements = 1
         else:
             n_refinements = self.n_refinements
