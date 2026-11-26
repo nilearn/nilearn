@@ -686,7 +686,6 @@ def test_threshold_stats_img_surface_output():
     )
 
 
-@pytest.mark.ai_generated
 def test_threshold_stats_img_surface_output_threshold_0():
     """Check output threshold_stats_img height_control=None, threshold=0."""
     stat_img = _surf_img_1d()
