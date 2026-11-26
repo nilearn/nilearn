@@ -13,6 +13,11 @@ checkerboard contrast:
 
 The block-restricted and direct-contrast analyses should give similar results.
 The unrestricted analysis ignores the pairing between each subject's two maps.
+
+.. admonition:: dataset
+
+    This example uses
+    the :ref:`Brainomics Localizer dataset <brainomics_maps>`
 """
 
 # %%
