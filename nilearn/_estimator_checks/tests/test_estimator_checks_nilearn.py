@@ -200,6 +200,6 @@ def test_check_estimator_nilearn(estimator, name, check):  # noqa: ARG001
     cloning here is required to ensure that,
     when the same test is run across several threads
     (parallel with pytest-run-parallel),
-    the different thread do not share the same estimator in memory.
+    the different threads do not share the same estimator in memory.
     """
     check(clone(estimator))
