@@ -616,13 +616,13 @@ def test_threshold_stats_img_surface_output():
 
     Also check the user of cluster_threshold.
     """
-    surf_img_1d = _surf_img_1d()
-    surf_img_1d.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
-    surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 3.0])
+    stat_img = _surf_img_1d()
+    stat_img.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
+    stat_img.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 3.0])
 
     # two sided
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=2.1
+        stat_img, height_control=None, threshold=2.1
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
@@ -631,7 +631,7 @@ def test_threshold_stats_img_surface_output():
     )
 
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=2.1, cluster_threshold=2
+        stat_img, height_control=None, threshold=2.1, cluster_threshold=2
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
@@ -641,7 +641,7 @@ def test_threshold_stats_img_surface_output():
 
     # one sided positive
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, two_sided=False, threshold=3.0
+        stat_img, height_control=None, two_sided=False, threshold=3.0
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
@@ -650,7 +650,7 @@ def test_threshold_stats_img_surface_output():
     )
 
     result, _ = threshold_stats_img(
-        surf_img_1d,
+        stat_img,
         height_control=None,
         two_sided=False,
         cluster_threshold=3,
@@ -664,7 +664,7 @@ def test_threshold_stats_img_surface_output():
 
     # one sided negative
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=-0.5, two_sided=False
+        stat_img, height_control=None, threshold=-0.5, two_sided=False
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, -1.0, 0.0, 0.0]))
@@ -673,7 +673,7 @@ def test_threshold_stats_img_surface_output():
     )
 
     result, _ = threshold_stats_img(
-        surf_img_1d,
+        stat_img,
         height_control=None,
         threshold=-0.5,
         two_sided=False,
@@ -689,13 +689,13 @@ def test_threshold_stats_img_surface_output():
 @pytest.mark.ai_generated
 def test_threshold_stats_img_surface_output_threshold_0():
     """Check output threshold_stats_img height_control=None, threshold=0."""
-    surf_img_1d = _surf_img_1d()
-    surf_img_1d.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
-    surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
+    stat_img = _surf_img_1d()
+    stat_img.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
+    stat_img.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
 
     # one sided, with threshold = 0
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=0, two_sided=False
+        stat_img, height_control=None, threshold=0, two_sided=False
     )
 
     assert_equal(result.data.parts["left"], np.asarray([1.0, 0, 3.0, 4.0]))
@@ -705,7 +705,7 @@ def test_threshold_stats_img_surface_output_threshold_0():
 
     # two sided, with threshold = 0
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=0, two_sided=True
+        stat_img, height_control=None, threshold=0, two_sided=True
     )
 
     assert_equal(result.data.parts["left"], np.asarray([1.0, -1.0, 3.0, 4.0]))

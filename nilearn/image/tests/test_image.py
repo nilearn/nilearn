@@ -5,7 +5,6 @@ import re
 import warnings
 from collections.abc import Generator, Iterable
 from contextlib import nullcontext
-from copy import deepcopy
 from pathlib import Path
 
 import joblib
@@ -480,29 +479,29 @@ def test_smooth_img_surface_nan_do_not_propagate(fwhm):
     the smoothing iterations spread each non-finite vertex over its
     neighbors instead.
     """
-    surf_img_1d = _surf_img_1d()
-    surf_img_1d.data.parts["left"][0] = np.nan
-    surf_img_1d.data.parts["left"][1] = np.inf
-    surf_img_1d.data.parts["right"][0] = -np.inf
+    imgs = _surf_img_1d()
+    imgs.data.parts["left"][0] = np.nan
+    imgs.data.parts["left"][1] = np.inf
+    imgs.data.parts["right"][0] = -np.inf
 
-    smoothed = smooth_img(surf_img_1d, fwhm=fwhm)
+    smoothed = smooth_img(imgs, fwhm=fwhm)
 
     for part in smoothed.data.parts.values():
         assert np.all(np.isfinite(part))
 
 
-def test_smooth_img_surface_does_not_modify_input(surf_img_1d):
+def test_smooth_img_surface_does_not_modify_input():
     """Cleaning non-finite values must not touch the input image."""
-    surf_img_1d = deepcopy(surf_img_1d)
-    surf_img_1d.data.parts["left"][0] = np.nan
+    imgs = _surf_img_1d()
+    imgs.data.parts["left"][0] = np.nan
     expected = {
-        part: values.copy() for part, values in surf_img_1d.data.parts.items()
+        part: values.copy() for part, values in imgs.data.parts.items()
     }
 
-    smooth_img(surf_img_1d, fwhm=4.0)
+    smooth_img(imgs, fwhm=4.0)
 
     for part, values in expected.items():
-        assert_array_equal(surf_img_1d.data.parts[part], values)
+        assert_array_equal(imgs.data.parts[part], values)
 
 
 def test_smooth_img_surface(surf_img_1d):

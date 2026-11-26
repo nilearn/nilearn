@@ -1228,11 +1228,9 @@ def test_load_save_data_1d(rng, tmp_path, surf_mesh):
 )
 def test_save_dtype(tmp_path, dtype):
     """Check saving several data type."""
-    surf_img_1d = _surf_img_1d()
-    surf_img_1d.data.parts["right"] = surf_img_1d.data.parts["right"].astype(
-        dtype
-    )
-    surf_img_1d.data.to_filename(tmp_path / "data.gii")
+    img = _surf_img_1d()
+    img.data.parts["right"] = img.data.parts["right"].astype(dtype)
+    img.data.to_filename(tmp_path / "data.gii")
 
 
 @pytest.mark.thread_unsafe
@@ -1313,18 +1311,16 @@ def test_get_data(surf_img_1d):
 @pytest.mark.parametrize("ensure_finite", [True, False])
 def test_get_data_ensure_finite(ensure_finite):
     """Check get data can deal with non finite values."""
-    surf_img_1d = _surf_img_1d()
-    surf_img_1d.data.parts["left"][1] = np.nan
-    surf_img_1d.data.parts["left"][2] = np.inf
+    img = _surf_img_1d()
+    img.data.parts["left"][1] = np.nan
+    img.data.parts["left"][2] = np.inf
 
     if ensure_finite is True:
         with pytest.warns(UserWarning, match="Non-finite values detected."):
-            data_from_image = get_data(
-                surf_img_1d, ensure_finite=ensure_finite
-            )
+            data_from_image = get_data(img, ensure_finite=ensure_finite)
         assert np.all(np.isfinite(data_from_image))
     else:
-        data_from_image = get_data(surf_img_1d, ensure_finite=ensure_finite)
+        data_from_image = get_data(img, ensure_finite=ensure_finite)
         assert np.logical_not(np.all(np.isfinite(data_from_image)))
 
 

@@ -212,10 +212,9 @@ def test_get_clusters_table_surface(
 
     Also check negative thresholds for one sided.
     """
-    surf_img_1d = _surf_img_1d()
-    surf_img_1d.data.parts["left"] = np.asarray([5.1, 5.2, 5.3, -5])
-    surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5.4, -5.2])
-    stat_img = surf_img_1d
+    stat_img = _surf_img_1d()
+    stat_img.data.parts["left"] = np.asarray([5.1, 5.2, 5.3, -5])
+    stat_img.data.parts["right"] = np.asarray([0, 4, 0, 5.4, -5.2])
 
     clusters_table, label_maps = get_clusters_table(
         stat_img,
@@ -255,10 +254,9 @@ def test_get_clusters_table_surface_two_sided(
     contain_neg_and_pos,
 ):
     """Test n_clusters detected with two sided."""
-    surf_img_1d = _surf_img_1d()
-    surf_img_1d.data.parts["left"] = np.asarray([5.1, 5.2, 5.3, -5])
-    surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5.4, -5.2])
-    stat_img = surf_img_1d
+    stat_img = _surf_img_1d()
+    stat_img.data.parts["left"] = np.asarray([5.1, 5.2, 5.3, -5])
+    stat_img.data.parts["right"] = np.asarray([0, 4, 0, 5.4, -5.2])
 
     clusters_table, label_maps = get_clusters_table(
         stat_img,
