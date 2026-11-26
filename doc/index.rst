@@ -302,6 +302,7 @@ Featured examples
    :titlesonly:
 
    quickstart.md
+   install.rst
    auto_examples/index.rst
    user_guide.rst
    modules/index.rst

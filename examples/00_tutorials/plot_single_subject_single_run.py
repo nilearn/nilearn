@@ -13,7 +13,13 @@ versus periods of rest.
     without any spatial or temporal preprocessing.
     More sensitive results would likely be obtained on the corrected,
     spatially normalized and smoothed images.
+
+.. admonition:: dataset
+
+    This example uses the :ref:`SPM auditory dataset <spm_auditory_dataset>`.
 """
+
+
 # %%
 # Retrieving the data
 # -------------------
@@ -359,8 +365,11 @@ eff_map.to_filename(output_dir / "listening_gt_rest_eff_map.nii.gz")
 #
 from nilearn.reporting import get_clusters_table
 
-table = get_clusters_table(
-    z_map, stat_threshold=threshold, cluster_threshold=20
+table, _ = get_clusters_table(
+    z_map,
+    stat_threshold=threshold,
+    cluster_threshold=20,
+    return_label_maps=True,
 )
 table
 

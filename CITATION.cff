@@ -41,6 +41,9 @@ license: BSD-4-Clause
 
 authors:
   - family-names: Nilearn contributors
+  - given-names: Achintya
+    family-names: Singh
+    website: https://github.com/Achintyasingh412
   - given-names: Ahmad
     family-names: Chamma
     website: https://github.com/achamma723
@@ -52,6 +55,9 @@ authors:
     family-names: Frau-Pascual
     website: https://github.com/ainafp
     orcid: https://orcid.org/0000-0001-6311-8426
+  - given-names: Akaash
+    family-names: P
+    website: https://github.com/theknuckle
   - given-names: Alex
     family-names: Rothberg
     website: https://github.com/cancan101
@@ -172,6 +178,10 @@ authors:
   - given-names: Binh
     family-names: Nguyen
     website: https://tbng.github.io/
+  - given-names: Brent
+    family-names: McPherson
+    website: https://github.com/bcmcpher
+    affiliation: The Neuro, McGill, Canada
   - given-names: Caglar
     family-names: Cakan
     website: https://github.com/caglorithm
@@ -262,6 +272,9 @@ authors:
     website: https://github.com/DimitriPapadopoulos
     affiliation: NeuroSpin, CEA, Université Paris-Saclay, Gif-sur-Yvette, France
     orcid: https://orcid.org/0000-0002-1242-8990
+  - given-names: Donncha
+    family-names: O'Toole
+    website: https://github.com/dnncha
   - given-names: Elizabeth
     family-names: DuPre
     website: https://elizabeth-dupre.com/
@@ -275,6 +288,9 @@ authors:
     family-names: Larson
     website: https://larsoner.com/
     affiliation: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
+  - given-names: Eva
+    family-names: B
+    website: https://github.com/evadiva3
   - given-names: Evan
     family-names: Edmond
     website: https://evan.science/
@@ -380,6 +396,9 @@ authors:
     family-names: Traore
     affiliation: IMT Atlantique, Brest, France
     website: https://github.com/badrinini
+  - given-names: Ishaan
+    family-names: Gupta
+    website: https://github.com/guptaishaan
   - given-names: Jake
     family-names: Vogel
     website: https://github.com/illdopejake
@@ -420,6 +439,9 @@ authors:
     family-names: King
     website: https://github.com/kingjr
     affiliation: Meta AI, CNRS, Paris
+  - given-names: Jeffrey
+    family-names: Cooney
+    website: https://github.com/jdotc1
   - given-names: Jelle Roelof
     family-names: Dalenberg
     website: https://github.com/jrdalenberg
@@ -736,6 +758,9 @@ authors:
     affiliation: Canadian Center for Computational Genomics / Calcul, Québec, Canada
     email: po.quirion@mcgill.ca
     orcid: https://orcid.org/0000-0003-2270-0000
+  - given-names: Plato
+    family-names: Ism
+    website: https://github.com/aplatogg
   - given-names: Pradeep Reddy
     family-names: Raamana
     website: https://github.com/raamana
@@ -753,10 +778,16 @@ authors:
     family-names: Meudec
     website: https://github.com/RaphaelMeudec
     affiliation: Inria, Saclay, France
+  - given-names: Reyyi
+    family-names: Shreyas
+    website: https://github.com/reyyishreyas
   - given-names: Rishika
     family-names: Kapil
     website: https://github.com/RishikaKaps
     affiliation: Thapar Institute of Engineering and Technology
+  - given-names: Rishit
+    family-names: Garg
+    website: https://github.com/Rishit412
   - given-names: Robert
     family-names: Luke
     website: https://github.com/rob-luke
@@ -819,6 +850,9 @@ authors:
     family-names: Soni
     website: https://github.com/isha822
     affiliation: Government Engineering College, Bilaspur, India
+  - given-names: Siddhardha
+    family-names: Nanda
+    website: https://github.com/SID-6921
   - given-names: Simon
     family-names: Steinkamp
     website: https://github.com/SRSteinkamp
@@ -896,6 +930,9 @@ authors:
   - given-names: Vasco
     family-names: Diogo
     website: https://github.com/vascosa
+  - given-names: Venish
+    family-names: Paneliya
+    website: https://github.com/VenishPaneliya
   - given-names: Victoria
     family-names: Shevchenko
     website: https://github.com/victoris93
@@ -913,6 +950,9 @@ authors:
     family-names: Fritsch
     website: https://github.com/VirgileFritsch
     affiliation: Inria, Saclay, France
+  - given-names: Wolfgang
+    family-names: Aura
+    website: https://github.com/wolfgang-aura
   - given-names: Xichun
     family-names: Xu
     website: https://github.com/XichunXu
@@ -932,6 +972,11 @@ authors:
     family-names: Huang
     website: https://github.com/YCHuang0610
     affiliation: Peking University, Beijing, China
+  - given-names: Zachary
+    family-names: Nudelman
+    website: https://github.com/zachnudels
+    orcid: https://orcid.org/0000-0002-5888-7949
+    affiliation: Vrije Universiteit Amsterdam
   - given-names: Zvi
     family-names: Baratz
     website: https://github.com/ZviBaratz

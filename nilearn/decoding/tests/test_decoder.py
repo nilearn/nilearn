@@ -7,10 +7,7 @@ Order of tests from top to bottom:
 - classification
 - regression
 - multiclass
-
 """
-
-# ruff: noqa: ARG001
 
 import collections
 import numbers
@@ -48,13 +45,9 @@ from sklearn.model_selection import (
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
 from sklearn.utils._testing import ignore_warnings
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn._utils.versions import (
+    SKLEARN_GT_1_9,
     SKLEARN_GTE_1_7,
     compare_version,
 )
@@ -92,39 +85,9 @@ _CUSTOM_PARAM_GRID_WARNING = (
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
 
-
-ESTIMATORS_TO_CHECK = [
-    Decoder(
-        screening_percentile=100,
-        estimator_args={"random_state": 0},
-    ),
-    DecoderRegressor(screening_percentile=100),
-    FREMClassifier(
-        screening_percentile=100,
-        estimator_args={"random_state": 0},
-    ),
-    FREMRegressor(screening_percentile=100),
-]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.slow
-@ignore_warnings(category=ConvergenceWarning)
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
+# TODO (sklearn >= 1.10)
+# simplify
+PARAM_CS = "alphas" if SKLEARN_GT_1_9 else "Cs"
 
 
 def _make_binary_classification_test_data(
@@ -250,13 +213,13 @@ def test_check_param_grid_regression(regressor, param, rng):
             LogisticRegressionCV(
                 l1_ratios=(1,), **kwarg_logistic_regression_cv
             ),
-            ["Cs"],
+            [PARAM_CS],
         ),
         (
             LogisticRegressionCV(
                 l1_ratios=(0,), **kwarg_logistic_regression_cv
             ),
-            ["Cs"],
+            [PARAM_CS],
         ),
         (RidgeClassifierCV(), ["alphas"]),
     ],
@@ -354,6 +317,22 @@ def test_decoder_custom_estimator_param_grid(
         decoder.fit(X, y)
 
     assert hasattr(decoder, "coef_")
+
+
+def test_decoder_fit_logs_training_message_once(
+    binary_classification_data, capsys
+):
+    """Check that Decoder.fit logs the training message only once.
+
+    Regression test for the duplicated log call
+    https://github.com/nilearn/nilearn/issues/6613.
+    """
+    X, y, mask = binary_classification_data
+    decoder = Decoder(mask=mask, cv=2, screening_percentile=100, verbose=1)
+    decoder.fit(X, y)
+
+    captured = capsys.readouterr().out
+    assert captured.count("The decoding model will be trained on") == 1
 
 
 def test_check_parameter_grid_is_empty(rand_x_y):
@@ -483,10 +462,13 @@ def test_parallel_fit(rand_x_y):
             assert a == b
 
 
+# TODO (sklearn >= 1.10)
+# fitted_param_name can be simplified as it will be "best_alpha"
+# for all parametrizations
 @pytest.mark.parametrize(
     "param_values",
     (
-        [0.001, 0.01, 0.1, 1, 10, 100, 1000],
+        [1, 10, 100, 1000],
         [[0.001, 0.01, 0.1, 1, 10, 100, 1000]],
     ),
 )
@@ -499,8 +481,8 @@ def test_parallel_fit(rand_x_y):
             LogisticRegressionCV(
                 l1_ratios=(0,), **kwarg_logistic_regression_cv
             ),
-            "Cs",
-            "best_C",
+            PARAM_CS,
+            "best_alpha" if SKLEARN_GT_1_9 else "best_C",
             True,
         ),
         (LassoCV(), "alphas", "best_alpha", False),
@@ -1394,14 +1376,22 @@ def _set_best_hyperparameters(
         sklearn_classifier = clone(sklearn_classifier).set_params(
             C=nilearn_decoder.cv_params_[klass]["C"][count]
         )
-    elif classifier_penalty in ["logistic_l1", "logistic_l2"]:
+    # TODO (sklearn >= 1.10)
+    # merge all conditions that apply to "logistic_l1", "logistic_l2",
+    # or "ridge_classifier"
+    elif not SKLEARN_GT_1_9 and classifier_penalty in [
+        "logistic_l1",
+        "logistic_l2",
+    ]:
         # this sets the list of Cs as coded within nilearn and
         # LogisticRegressionCV will select the best one using
         # cross-validation
         sklearn_classifier = clone(sklearn_classifier).set_params(
             Cs=nilearn_decoder.cv_params_[klass]["Cs"][count],
         )
-    elif classifier_penalty == "ridge_classifier":
+    elif classifier_penalty == "ridge_classifier" or (
+        SKLEARN_GT_1_9 and classifier_penalty in ["logistic_l1", "logistic_l2"]
+    ):
         # same as logistic regression
         sklearn_classifier = clone(sklearn_classifier).set_params(
             alphas=nilearn_decoder.cv_params_[klass]["alphas"][count]

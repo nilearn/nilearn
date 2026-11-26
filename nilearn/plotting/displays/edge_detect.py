@@ -66,7 +66,6 @@ def _edge_detect(image, high_threshold=0.75, low_threshold=0.4):
     keeping only local maximum in each direction, and performs
     hysteresis filtering to keep only edges with high gradient
     magnitude.
-
     """
     # This code is loosely based on code by Stefan van der Waalt
     # Convert to floats to avoid overflows
@@ -132,7 +131,6 @@ def edge_map(image):
         A mask of the edge as a masked array with parts without
         edges masked and the large extents detected with lower
         coefficients.
-
     """
     edge_mask = _edge_detect(image)[-1]
     edge_mask = edge_mask.astype(float)

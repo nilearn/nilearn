@@ -13,7 +13,6 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import datasets, image
 from nilearn._utils import data_gen
-from nilearn._utils.helpers import is_windows_platform
 from nilearn.image import resampling
 from nilearn.surface.surface import (
     FileMesh,
@@ -34,6 +33,7 @@ from nilearn.surface.surface import (
     _sample_locations_between_surfaces,
     _uniform_ball_cloud,
     _vertex_outer_normals,
+    at_least_2d,
     check_mesh_and_data,
     check_mesh_is_fsaverage,
     check_surf_img,
@@ -419,14 +419,35 @@ def test_load_surf_mesh_file_gii_error(tmp_path, in_memory_mesh):
         load_surf_mesh(filename_gii_mesh_no_face)
 
 
+def _write_freesurfer_geometry(filename, mesh):
+    """Write a freesurfer mesh with volume info.
+
+    Avoids nibabel warnings about missing volume information
+    when the mesh is loaded back.
+    """
+    volume_info = {
+        "head": np.array([2, 0, 20], dtype=np.int32),
+        "valid": "1  # volume info valid",
+        "filename": "vol.nii",
+        "volume": np.array([256, 256, 256]),
+        "voxelsize": np.array([1.0, 1.0, 1.0]),
+        "xras": np.array([-1.0, 0.0, 0.0]),
+        "yras": np.array([0.0, 0.0, -1.0]),
+        "zras": np.array([0.0, 1.0, 0.0]),
+        "cras": np.array([0.0, 0.0, 0.0]),
+    }
+    freesurfer.write_geometry(
+        filename, mesh.coordinates, mesh.faces, volume_info=volume_info
+    )
+
+
 @pytest.mark.parametrize(
     "suffix", [".pial", ".inflated", ".white", ".orig", "sphere"]
 )
 def test_load_surf_mesh_file_freesurfer(suffix, tmp_path, in_memory_mesh):
+    """Load freesurfer mesh files with different suffixes."""
     filename_fs_mesh = tmp_path / f"tmp{suffix}"
-    freesurfer.write_geometry(
-        filename_fs_mesh, in_memory_mesh.coordinates, in_memory_mesh.faces
-    )
+    _write_freesurfer_geometry(filename_fs_mesh, in_memory_mesh)
 
     assert hasattr(load_surf_mesh(filename_fs_mesh), "coordinates")
     assert hasattr(load_surf_mesh(filename_fs_mesh), "faces")
@@ -452,15 +473,12 @@ def test_load_surf_mesh_file_error(suffix, tmp_path, in_memory_mesh):
 
 
 def test_load_surf_mesh_file_glob(tmp_path, in_memory_mesh):
+    """Load mesh files from glob patterns."""
     fname1 = tmp_path / "tmp1.pial"
-    freesurfer.write_geometry(
-        fname1, in_memory_mesh.coordinates, in_memory_mesh.faces
-    )
+    _write_freesurfer_geometry(fname1, in_memory_mesh)
 
     fname2 = tmp_path / "tmp2.pial"
-    freesurfer.write_geometry(
-        fname2, in_memory_mesh.coordinates, in_memory_mesh.faces
-    )
+    _write_freesurfer_geometry(fname2, in_memory_mesh)
 
     with pytest.raises(ValueError, match="More than one file matching path"):
         load_surf_mesh(tmp_path / "*.pial")
@@ -565,7 +583,6 @@ def test_load_uniform_ball_cloud_no_warning(n_points):
         assert len(w) == 0
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("n_points", [3, 7])
 def test_load_uniform_ball_cloud(n_points):
     """Test requesting n points with no cached results match computation."""
@@ -860,7 +877,7 @@ def test_choose_kind():
 
 
 def test_validate_mesh(rng):
-    """Ensures that invalid meshes cannot be instantiated."""
+    """Ensure that invalid meshes cannot be instantiated."""
     # valid mesh is fine
     coords = rng.random((20, 3))
     faces = rng.integers(coords.shape[0], size=(30, 3))
@@ -1217,11 +1234,11 @@ def test_save_dtype(surf_img_1d, tmp_path, dtype):
 
 
 @pytest.mark.thread_unsafe
-def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
+def test_load_from_volume_3d_nifti(img_3d_rand_eye, surf_mesh, tmp_path):
     """Instantiate surface image with 3D Niftiimage object or file for data."""
-    SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_3d_mni)
+    SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_3d_rand_eye)
 
-    img_3d_mni.to_filename(tmp_path / "tmp.nii.gz")
+    img_3d_rand_eye.to_filename(tmp_path / "tmp.nii.gz")
 
     SurfaceImage.from_volume(
         mesh=surf_mesh,
@@ -1230,13 +1247,13 @@ def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
 
 
 @pytest.mark.thread_unsafe
-def test_load_from_volume_4d_nifti(img_4d_mni, surf_mesh, tmp_path):
+def test_load_from_volume_4d_nifti(img_4d_rand_eye, surf_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
-    img = SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_4d_mni)
+    img = SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_4d_rand_eye)
     # check that we have the correct number of time points
-    assert img.shape[1] == img_4d_mni.shape[3]
+    assert img.shape[1] == img_4d_rand_eye.shape[3]
 
-    img_4d_mni.to_filename(tmp_path / "tmp.nii.gz")
+    img_4d_rand_eye.to_filename(tmp_path / "tmp.nii.gz")
 
     SurfaceImage.from_volume(
         mesh=surf_mesh,
@@ -1395,3 +1412,23 @@ def test_find_surface_clusters_4_faces(mask, expected_n_clusters, surf_mesh):
 def test_find_surface_clusters_5_faces(mask, expected_n_clusters, surf_mesh):
     clusters, _ = find_surface_clusters(surf_mesh.parts["right"], mask)
     assert len(clusters) == expected_n_clusters
+
+
+def test_at_least_2d_does_not_modify_input(surf_img_1d):
+    """Check at_least_2d returns 2D data and leaves its input unchanged."""
+    n_vertices = surf_img_1d.shape[0]
+    parts_shapes = {k: v.shape for k, v in surf_img_1d.data.parts.items()}
+    assert len(surf_img_1d.shape) == 1
+
+    img_2d = at_least_2d(surf_img_1d)
+
+    assert img_2d.shape == (n_vertices, 1)
+    assert surf_img_1d.shape == (n_vertices,)
+    assert {
+        k: v.shape for k, v in surf_img_1d.data.parts.items()
+    } == parts_shapes
+
+    data_2d = at_least_2d(surf_img_1d.data)
+
+    assert data_2d.shape == (n_vertices, 1)
+    assert surf_img_1d.data.shape == (n_vertices,)

@@ -1,4 +1,4 @@
-"""Tests for the nilearn.interfaces.fsl submodule."""
+"""Test for the nilearn.interfaces.fsl submodule."""
 
 import numpy as np
 

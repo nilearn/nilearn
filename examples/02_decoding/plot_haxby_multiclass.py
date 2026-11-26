@@ -1,6 +1,6 @@
 """
-The Haxby dataset: different multi-class strategies
-===================================================
+Multi-class strategies
+======================
 
 In this example,
 we compare ``one vs all`` and ``one vs one`` multi-class strategies:
@@ -9,6 +9,9 @@ We compare their overall cross-validated accuracy and their confusion matrix.
 See the scikit-learn documentation
 about `multiclass classification <https://scikit-learn.org/stable/modules/multiclass.html>`_.
 
+.. admonition:: dataset
+
+    This example uses the :ref:`Haxby dataset <haxby_dataset>`.
 """
 
 import numpy as np
@@ -112,19 +115,20 @@ svc_ova
 # --------------------------------------
 # The :term:`fMRI` data is acquired by runs,
 # and the noise is autocorrelated in a given run.
-# Hence, it is better to predict across runs when doing cross-validation.
-# Here we do a 5 fold cross-validation.
+# Hence, observations from the same run must not be split between the training
+# and test sets. Here we use a 6-fold group cross-validation, with runs as
+# groups.
 
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import GroupKFold, cross_val_score
 
-cv = 5
+cv = GroupKFold(n_splits=6)
 
 # %%
-cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=cv, verbose=1)
+cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=cv, groups=run, verbose=1)
 cv_scores_ovo
 
 # %%
-cv_scores_ova = cross_val_score(svc_ova, X, y, cv=cv, verbose=1)
+cv_scores_ova = cross_val_score(svc_ova, X, y, cv=cv, groups=run, verbose=1)
 cv_scores_ova
 
 # %%
@@ -158,9 +162,9 @@ show()
 
 from sklearn.model_selection import cross_val_predict
 
-y_pred_ovo = cross_val_predict(svc_ovo, X, y, cv=cv, verbose=1)
+y_pred_ovo = cross_val_predict(svc_ovo, X, y, cv=cv, groups=run, verbose=1)
 
-y_pred_ova = cross_val_predict(svc_ova, X, y, cv=cv, verbose=1)
+y_pred_ova = cross_val_predict(svc_ova, X, y, cv=cv, groups=run, verbose=1)
 
 # %%
 # We get the labels of the numerical conditions represented by the vector y

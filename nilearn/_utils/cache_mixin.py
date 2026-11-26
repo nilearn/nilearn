@@ -29,7 +29,6 @@ def check_memory(memory, verbose=0):
     Returns
     -------
     memory : instance of joblib.Memory.
-
     """
     if memory is None:
         memory = Memory(location=None, verbose=verbose)
@@ -107,14 +106,14 @@ def cache(
     func : function
         The function which output is to be cached.
 
-    memory : instance of joblib.Memory, string or pathlib.Path
+    memory : instance of joblib.Memory, :obj:`str` or pathlib.Path
         Used to cache the function call.
 
-    func_memory_level : int or None, default=None
+    func_memory_level : :obj:`int` or None, default=None
         The memory_level from which caching must be enabled for the wrapped
         function.
 
-    memory_level : int or None, default=None
+    memory_level : :obj:`int` or None, default=None
         The memory_level used to determine if function call must
         be cached or not (if user_memory_level is equal of greater than
         func_memory_level the function is cached).
@@ -133,7 +132,6 @@ def cache(
         This object may be a no-op, if the requested level is lower
         than the value given to _cache()).
         For consistency, a callable object is always returned.
-
     """
     verbose = kwargs.get("verbose", 0)
 
@@ -192,7 +190,6 @@ class CacheMixin:
     defined by this class. Caching is performed only if the user-specified
     cache level (self._memory_level) is greater than the value given as a
     parameter to self._cache(). See _cache() documentation for details.
-
     """
 
     def _fit_cache(self):
@@ -230,7 +227,6 @@ class CacheMixin:
             This object may be a no-op, if the requested level is lower
             than the value given to _cache()).
             For consistency, a callable object is always returned.
-
         """
         if not hasattr(self, "memory_") or self.memory_ is None:
             self._fit_cache()

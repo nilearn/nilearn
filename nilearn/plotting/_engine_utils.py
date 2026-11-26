@@ -91,7 +91,12 @@ def threshold_cmap(
 
 
 def colorscale(
-    cmap, values, threshold=None, symmetric_cmap=True, vmax=None, vmin=None
+    cmap,
+    values,
+    threshold=None,
+    symmetric_cmap: bool = True,
+    vmax=None,
+    vmin=None,
 ):
     """Calculate colorbar ranges, adjust and normalize cmap depending on
     specified vmin, vmax, and threshold values. Return the results as dict to

@@ -7,8 +7,6 @@
 *.swo
 *#
 
-.mypy_cache
-
 # ignore python type annotation stubs for now
 *.pyi
 
@@ -70,6 +68,7 @@ nosetests_coverage/
 
 # documentation
 doc/_build/
+doc/_contents/
 doc/auto_examples/
 doc/building_blocks/generated/
 doc/ci.rst
@@ -106,3 +105,4 @@ uv.lock
 
 # complexipy
 .complexipy_cache
+doc/_contents

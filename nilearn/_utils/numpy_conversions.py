@@ -95,7 +95,7 @@ def as_ndarray(
         return np.asarray(arr, dtype=dtype, order=order)
 
 
-def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
+def csv_to_array(csv_path, delimiters=" \t,;", **kwargs) -> np.ndarray:
     """Read a CSV file by trying to guess its delimiter.
 
     Parameters
@@ -124,7 +124,7 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
         # because the delimiter is wrong.
         # In that case, we try to guess the delimiter.
         try:
-            with Path(csv_path).open() as csv_file:
+            with Path(csv_path).open(encoding="utf-8") as csv_file:
                 dialect = csv.Sniffer().sniff(csv_file.readline(), delimiters)
         except csv.Error as e:
             raise TypeError(

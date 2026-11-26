@@ -1,6 +1,6 @@
 """
-Massively univariate analysis of a visual task from the Haxby dataset
-=====================================================================
+Massively univariate analysis of a visual task
+==============================================
 
 To determine whether or not a voxel responds differently under different
 conditions of a visual task, we use a permuted
@@ -8,8 +8,6 @@ Ordinary Least Squares
 (:sklearn:`OLS <modules/linear_model.html#ordinary-least-squares>`)
 analysis,
 run at each voxel with :func:`~nilearn.mass_univariate.permuted_ols`.
-As in many other examples, we compare two visual categories from the
-Haxby dataset (:footcite:t:`Haxby2001`): "face" and "house" images.
 
 Note that we consider the mean image per condition
 separately for each run;
@@ -28,6 +26,11 @@ following the approach of :footcite:t:`Anderson2001`.
 
 We find that Bonferroni correction is a bit more conservative,
 as revealed by the higher detection rate.
+
+.. admonition:: dataset
+
+    As in many other examples, we compare two visual categories from the
+    the :ref:`Haxby dataset <haxby_dataset>`: "face" and "house" images.
 """
 
 # %%
@@ -36,7 +39,7 @@ as revealed by the higher detection rate.
 from nilearn import datasets, image
 from nilearn.plotting import plot_stat_map, show
 
-haxby_dataset = datasets.fetch_haxby(subjects=[2])
+haxby_dataset = datasets.fetch_haxby(n_subjects=[2])
 
 # print basic information on the dataset
 print(f"Mask nifti image (3D) is located at: {haxby_dataset.mask}")

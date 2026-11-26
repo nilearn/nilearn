@@ -2,14 +2,13 @@
 
 import warnings
 from string import Template
-from typing import Any, Literal
+from typing import Any, Literal, overload
 
 import numpy as np
 
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.tags import is_glm
 from nilearn.maskers import (
     MultiNiftiMasker,
     MultiSurfaceMasker,
@@ -17,6 +16,7 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers._mixin import _MultiMixin
+from nilearn.utils.tags import is_glm
 
 
 def get_params(
@@ -49,7 +49,6 @@ def get_params(
     -------
     params : dict
         The dict of parameters.
-
     """
     _ignore = {"memory", "memory_level", "verbose", "copy", "n_jobs"}
     if ignore is not None:
@@ -65,6 +64,46 @@ def get_params(
             params[param_name] = getattr(instance, param_name)
 
     return params
+
+
+@overload
+def check_embedded_masker(
+    estimator,
+    masker_type: Literal["nii"],
+    ignore: list[str] | None = ...,
+) -> NiftiMasker: ...
+
+
+@overload
+def check_embedded_masker(
+    estimator,
+    masker_type: Literal["surface"],
+    ignore: list[str] | None = ...,
+) -> SurfaceMasker: ...
+
+
+@overload
+def check_embedded_masker(
+    estimator,
+    masker_type: Literal["multi_nii"],
+    ignore: list[str] | None = ...,
+) -> MultiNiftiMasker: ...
+
+
+@overload
+def check_embedded_masker(
+    estimator,
+    masker_type: Literal["multi_surface"],
+    ignore: list[str] | None = ...,
+) -> MultiSurfaceMasker: ...
+
+
+@overload
+def check_embedded_masker(
+    estimator,
+    masker_type: Literal["nii", "surface", "multi_nii", "multi_surface"],
+    ignore: list[str] | None = ...,
+) -> NiftiMasker | SurfaceMasker | MultiNiftiMasker | MultiSurfaceMasker: ...
 
 
 def check_embedded_masker(
@@ -104,8 +143,7 @@ def check_embedded_masker(
     Returns
     -------
     masker : MultiNiftiMasker, NiftiMasker, SurfaceMasker, MultiSurfaceMasker
-        New masker
-
+        New masker.
     """
     masker: type[
         NiftiMasker | SurfaceMasker | MultiNiftiMasker | MultiSurfaceMasker

@@ -1,11 +1,13 @@
 """Functions to compare volume or surface images."""
 
 import warnings
+from pathlib import Path
 from typing import get_args
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import gridspec
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from scipy import stats
 
@@ -15,7 +17,10 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
 from nilearn.image import check_niimg_3d
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.nilearn_typing import ColorBar, NiimgLike, OutputFile, Title
@@ -29,13 +34,15 @@ def plot_img_comparison(
     ref_imgs,
     src_imgs,
     masker=None,
-    plot_hist=True,
-    log=True,
-    ref_label="image set 1",
-    src_label="image set 2",
-    output_dir=None,
-    axes=None,
-    colorbar=True,
+    plot_hist: bool = True,
+    log: bool = True,
+    ref_label: str = "image set 1",
+    src_label: str = "image set 2",
+    output_dir: str | Path | None = None,
+    axes: Axes | None = None,
+    colorbar: ColorBar = True,
+    cmap=DEFAULT_SEQUENTIAL_CMAP,
+    gridsize=100,
 ) -> list[float]:
     """Create plots to compare two lists of images and measure correlation.
 
@@ -81,8 +88,9 @@ def plot_img_comparison(
     src_label : :obj:`str`, default='image set 2'
         Name of source images.
 
-    output_dir : :obj:`str` or None, default=None
+    output_dir : :obj:`str`, :obj:`pathlib.Path` or None, default=None
         Directory where plotted figures will be stored.
+        No figure is saved if ``None`` is passed.
 
     axes : :obj:`list` of two matplotlib Axes objects, or None, default=None
         Can receive a list of the form [ax1, ax2] to render the plots.
@@ -91,11 +99,17 @@ def plot_img_comparison(
     %(colorbar)s
         default=True
 
+    %(cmap)s
+        default="inferno"
+
+    gridsize : :obj:`int`, default=100
+        Number of hexagons along the x axis of the correlation plot,
+        and number of bins of the two histograms.
+
     Returns
     -------
     corrs : :obj:`list` of :obj:`float`
         Pearson correlation between the images.
-
     """
     check_params(locals())
     # Cast to list
@@ -166,8 +180,6 @@ def plot_img_comparison(
         # when plot_hist is False creates two empty axes
         # and doesn't plot anything
         if plot_hist:
-            gridsize = 100
-
             lims = [
                 np.min(ref_data),
                 np.max(ref_data),
@@ -180,7 +192,7 @@ def plot_img_comparison(
                 ref_data,
                 src_data,
                 bins="log",
-                cmap=DEFAULT_SEQUENTIAL_CMAP,
+                cmap=cmap,
                 gridsize=gridsize,
                 extent=lims,
             )
@@ -211,7 +223,7 @@ def plot_img_comparison(
             ax2.legend(loc="best")
 
             output_file = (
-                output_dir / f"{int(i):04}.png" if output_dir else None
+                Path(output_dir) / f"{int(i):04}.png" if output_dir else None
             )
             save_figure_if_needed(ax1.figure, output_file)
 
@@ -320,12 +332,10 @@ def plot_bland_altman(
     from :footcite:t:`Bowring2019`
     and its associated `code base <https://github.com/AlexBowring/Software_Comparison/blob/master/figures/lib/bland_altman.py>`_.
 
-
     References
     ----------
 
     .. footbibliography::
-
     """
     check_params(locals())
     data_ref, data_src = _extract_data_2_images(
@@ -441,7 +451,6 @@ def _extract_data_2_images(ref_img, src_img, masker=None):
         Its type must be compatible with that of the ``ref_img``.
         If None is passed,
         an appropriate masker will be fitted on the reference image.
-
     """
     if isinstance(ref_img, NiimgLike) and isinstance(src_img, NiimgLike):
         image_type = "volume"
@@ -492,6 +501,11 @@ def _sanitize_masker(masker, image_type, ref_img):
         else:
             masker = SurfaceMasker(standardize=None)
 
+    check_is_of_allowed_type(
+        masker,
+        (*get_args(NiimgLike), NiftiMasker, SurfaceImage, SurfaceMasker),
+        "masker",
+    )
     check_compatibility_mask_and_images(masker, ref_img)
 
     if isinstance(masker, NiimgLike):

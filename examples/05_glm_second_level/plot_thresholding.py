@@ -5,20 +5,23 @@ Statistical testing of a second-level analysis
 Perform a one-sample t-test on a bunch of images (a.k.a. second-level analysis
 in fMRI) and threshold the resulting statistical map.
 
-This example is based on the so-called localizer dataset.
-It shows activation related to a mental computation task, as opposed to
-narrative sentence reading/listening.
+.. admonition:: dataset
 
+    This example uses contrasts related to a mental computation task,
+    from the :ref:`Brainomics Localizer dataset <brainomics_maps>`.
 """
 
 # %%
 # Prepare some images for a simple t test
 # ---------------------------------------
 # This is a simple manually performed second level analysis.
+# We fetch the "calculation (auditory and visual cue)" :term:`contrast`
+# maps of 20 subjects from the Localizer dataset.
 from nilearn import datasets
 
 n_samples = 20
-localizer_dataset = datasets.fetch_localizer_calculation_task(
+localizer_dataset = datasets.fetch_localizer_contrasts(
+    ["calculation (auditory and visual cue)"],
     n_subjects=n_samples,
 )
 

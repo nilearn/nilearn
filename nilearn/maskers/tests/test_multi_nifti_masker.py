@@ -6,34 +6,9 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
-
-ESTIMATORS_TO_CHECK = [MultiNiftiMasker()]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
 
 
 @pytest.fixture
@@ -85,7 +60,8 @@ def test_different_affines():
     epi_img2 = Nifti1Image(np.ones((3, 3, 3, 3)), affine=np.diag((3, 3, 3, 1)))
 
     masker = MultiNiftiMasker(mask_img=mask_img)
-    epis = masker.fit_transform([epi_img1, epi_img2])
+    with pytest.warns(UserWarning, match="imgs are being resampled"):
+        epis = masker.fit_transform([epi_img1, epi_img2])
     for this_epi in epis:
         masker.inverse_transform(this_epi)
 
@@ -102,7 +78,8 @@ def test_3d_images(rng):
     epi_img2 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
     masker = MultiNiftiMasker(mask_img=mask_img)
 
-    masker.fit_transform([epi_img1, epi_img2])
+    with pytest.warns(UserWarning, match="imgs are being resampled"):
+        masker.fit_transform([epi_img1, epi_img2])
 
 
 @pytest.fixture

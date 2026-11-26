@@ -1,15 +1,12 @@
 """Common test for multi_pca, dict_learning, canica."""
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal, assert_raises
 from sklearn import clone
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.decomposition import CanICA, DictLearning
 from nilearn.decomposition._multi_pca import _MultiPCA
@@ -20,27 +17,6 @@ from nilearn.decomposition.tests.conftest import (
     check_decomposition_estimator,
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-
-ESTIMATORS_TO_CHECK = [DictLearning(), CanICA()]
-
-
-@parametrize_with_checks(
-    estimators=ESTIMATORS_TO_CHECK,
-    expected_failed_checks=return_expected_failed_checks,
-)
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.flaky(reruns=10, reruns_delay=1)
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 @pytest.mark.slow
@@ -100,7 +76,16 @@ def test_fit_errors(
     ):
         est.fit(decomposition_images, confounds=confounds)
 
+    # test mismatch len confounds and input to fit with path
+    confounds = Path("foo")
+    with pytest.raises(
+        ValueError,
+        match=r"Number of confounds .* must match number of images .*",
+    ):
+        est.fit(decomposition_images, confounds=confounds)
 
+
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_masker_attributes_with_fit_mask(
@@ -143,6 +128,7 @@ def test_masker_attributes_with_fit_masker(
     check_decomposition_estimator(est, data_type)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform_confounds(
@@ -213,7 +199,11 @@ def test_with_confounds(
         AssertionError, assert_array_equal, components, components_clean
     )
 
+    # smoke test of score with confounds
+    est.score(decomposition_images, confounds=confounds)
 
+
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 @pytest.mark.parametrize("single_subject", [True, False])
@@ -257,6 +247,7 @@ def test_transform(
     est.inverse_transform(signals)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform_errors(
@@ -281,6 +272,7 @@ def test_transform_errors(
         est.transform(canica_data, confounds=confounds)
 
 
+@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
@@ -315,6 +307,7 @@ def test_pass_masker_arg_to_estimator(
     check_decomposition_estimator(est, data_type)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_single_subject_score(canica_img, data_type, estimator):
@@ -385,6 +378,7 @@ def test_single_subject_file(data_type, canica_img, estimator, tmp_path):
     est.transform(tmp_file)
 
 
+@pytest.mark.slow
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])

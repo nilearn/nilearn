@@ -23,13 +23,13 @@ from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import readable_time
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import InputTags
 from nilearn.decoding._utils import SUPPORTED_ESTIMATORS, validate_estimator
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 from nilearn.masking import load_mask_img
 from nilearn.nilearn_typing import SupportedClassifiers, SupportedRegressors
+from nilearn.utils.tags import InputTags
 
 
 def _check_searchlight_estimator(estimator, *, scoring, y):
@@ -131,7 +131,7 @@ def search_light(
     Returns
     -------
     scores : array-like of shape (number of rows in A)
-        search_light scores
+        Searchlight scores.
     """
     check_params(locals())
 
@@ -166,7 +166,6 @@ class GroupIterator:
     n_features : :obj:`int`
         Total number of features
     %(n_jobs)s
-
     """
 
     def __init__(self, n_features, n_jobs=1):
@@ -211,7 +210,7 @@ def _group_iter_search_light(
         Target variable to predict. If `y` is provided, it must be
          an array-like object
         with the same length as the number of samples in `X`.
-        When `y` is `None`, a dummy
+        When `y` is ``None``, a dummy
         target is generated internally with half the samples
         labeled as `0` and the other
         half labeled as `1`. This is useful during transformations
@@ -239,7 +238,7 @@ def _group_iter_search_light(
     Returns
     -------
     par_scores : numpy.ndarray
-        score for each voxel. dtype: float64.
+        Score for each voxel. dtype: float64.
     """
     par_scores = np.zeros(len(list_rows))
     t0 = time.time()
@@ -491,11 +490,14 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             check_niimg_3d(self.process_mask_img)
 
         process_mask_img = self.process_mask_img or self.mask_img_
+        if process_mask_img is None:
+            raise TypeError(
+                "At least one of 'mask_img' or 'process_mask_img' "
+                "must be provided."
+            )
 
         # Compute world coordinates of the seeds
-        process_mask, process_mask_affine = load_mask_img(
-            process_mask_img  # type: ignore[arg-type]
-        )
+        process_mask, process_mask_affine = load_mask_img(process_mask_img)
 
         self.process_mask_ = process_mask
 

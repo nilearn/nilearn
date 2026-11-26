@@ -77,7 +77,7 @@ PROJECTORS = [
 
 
 def test_base_axes_exceptions():
-    """Tests for exceptions raised by class ``BaseAxes``."""
+    """Test for exceptions raised by class ``BaseAxes``."""
     axes = BaseAxes(None, "foo", 3)
     # Constructor doesn't raise for invalid direction
     assert axes.direction == "foo"
@@ -93,7 +93,7 @@ def test_base_axes_exceptions():
 
 
 def test_cut_axes_exception(affine_eye):
-    """Tests for exceptions raised by class ``CutAxes``."""
+    """Test for exceptions raised by class ``CutAxes``."""
     from nilearn.plotting.displays import CutAxes
 
     axes = CutAxes(None, "foo", 2)
@@ -104,7 +104,7 @@ def test_cut_axes_exception(affine_eye):
 
 
 def test_glass_brain_axes():
-    """Tests for class ``GlassBrainAxes``."""
+    """Test for class ``GlassBrainAxes``."""
     from nilearn.plotting.displays import GlassBrainAxes
 
     ax = plt.subplot(111)
@@ -126,7 +126,7 @@ def test_glass_brain_axes():
 
 
 def test_get_index_from_direction_exception():
-    """Tests that a ValueError is raised when an invalid direction \
+    """Test that a ValueError is raised when an invalid direction \
        is given to function ``_get_index_from_direction``.
     """
     from nilearn.plotting.displays._utils import _get_index_from_direction
@@ -195,7 +195,7 @@ def test_display_basics_projectors(
     "slicer", [XSlicer, YSlicer, ZSlicer, YXSlicer, YZSlicer, XZSlicer]
 )
 def test_stacked_slicer(slicer, mni152_template_res_2, tmp_path):
-    """Tests for saving to file with stacked slicers."""
+    """Test for saving to file with stacked slicers."""
     cut_coords = 3 if slicer in [XSlicer, YSlicer, ZSlicer] else (3, 3)
     slicer = slicer.init_with_figure(
         img=mni152_template_res_2, cut_coords=cut_coords
@@ -209,7 +209,7 @@ def test_stacked_slicer(slicer, mni152_template_res_2, tmp_path):
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("slicer", [OrthoSlicer, TiledSlicer, MosaicSlicer])
 def test_slicer_save_to_file(slicer, mni152_template_res_2, tmp_path):
-    """Tests for saving to file with Ortho/Tiled/Mosaic slicers."""
+    """Test for saving to file with Ortho/Tiled/Mosaic slicers."""
     cut_coords = None if slicer == MosaicSlicer else (0, 0, 0)
     slicer = slicer.init_with_figure(
         img=mni152_template_res_2, cut_coords=cut_coords, colorbar=True
@@ -237,7 +237,7 @@ def test_slicer_save_to_file(slicer, mni152_template_res_2, tmp_path):
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("cut_coords", [2, 4])
 def test_mosaic_slicer_integer_cut_coords(cut_coords, mni152_template_res_2):
-    """Tests for MosaicSlicer with cut_coords provided as an integer."""
+    """Test for MosaicSlicer with cut_coords provided as an integer."""
     slicer = MosaicSlicer.init_with_figure(
         img=mni152_template_res_2, cut_coords=cut_coords
     )
@@ -252,7 +252,7 @@ def test_mosaic_slicer_integer_cut_coords(cut_coords, mni152_template_res_2):
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("cut_coords", [(4, 5, 2), (1, 1, 1)])
 def test_mosaic_slicer_tuple_cut_coords(cut_coords, mni152_template_res_2):
-    """Tests for MosaicSlicer with cut_coords provided as a tuple."""
+    """Test for MosaicSlicer with cut_coords provided as a tuple."""
     slicer = MosaicSlicer.init_with_figure(
         img=mni152_template_res_2, cut_coords=cut_coords
     )
@@ -266,7 +266,7 @@ def test_mosaic_slicer_tuple_cut_coords(cut_coords, mni152_template_res_2):
 @pytest.mark.thread_unsafe
 @pytest.mark.parametrize("cut_coords", [None, 5, (1, 1, 1)])
 def test_mosaic_slicer_img_none_false(cut_coords, mni152_template_res_2):
-    """Tests for MosaicSlicer when img is ``None`` or ``False`` \
+    """Test for MosaicSlicer when img is ``None`` or ``False`` \
        while initializing the figure.
     """
     slicer = MosaicSlicer.init_with_figure(img=None, cut_coords=cut_coords)
@@ -285,7 +285,7 @@ def test_mosaic_slicer_img_none_false(cut_coords, mni152_template_res_2):
     ],
 )
 def test_mosaic_slicer_wrong_inputs(cut_coords):
-    """Tests that providing wrong inputs raises a ``ValueError``."""
+    """Test that providing wrong inputs raises a ``ValueError``."""
     with pytest.raises(
         ValueError, match="MosaicSlicer plotting expects a number, a list"
     ):
@@ -321,7 +321,7 @@ def expected_cuts(cut_coords) -> dict[str, list[float]]:
     ],
 )
 def test_demo_mosaic_slicer(cut_coords, mni152_template_res_2, expected_cuts):
-    """Tests for MosaicSlicer with different cut_coords in constructor."""
+    """Test for MosaicSlicer with different cut_coords in constructor."""
     slicer = MosaicSlicer(cut_coords=cut_coords)
     slicer.add_overlay(mni152_template_res_2, cmap="gray")
     assert slicer.cut_coords == expected_cuts
@@ -363,7 +363,7 @@ def test_data_complete_mask(affine_eye, display):
 
 
 def test_add_markers_cut_coords_is_none():
-    """Tests a special case for ``add_markers`` when ``cut_coords`` are None.
+    """Test a special case for ``add_markers`` when ``cut_coords`` are None.
 
     This case is used when coords are placed on glass brain.
     """
@@ -374,7 +374,7 @@ def test_add_markers_cut_coords_is_none():
 
 @pytest.mark.thread_unsafe
 def test_annotations():
-    """Tests for ``display.annotate()``.
+    """Test for ``display.annotate()``.
 
     In particular, exercise some of the keyword arguments for scale bars.
     """
@@ -424,7 +424,7 @@ def test_title_kwargs(kwargs):
 
 @pytest.mark.parametrize("node_color", ["red", ["red", "blue"]])
 def test_add_graph_with_node_color_as_string(node_color):
-    """Tests for ``display.add_graph()``."""
+    """Test for ``display.add_graph()``."""
     lzry_projector = LZRYProjector(cut_coords=(0, 0, 0, 0))
     matrix = np.array([[0, 3], [3, 0]])
     node_coords = [[-53.60, -62.80, 36.64], [23.87, 0.31, 69.42]]
@@ -443,7 +443,7 @@ def test_add_graph_with_node_color_as_string(node_color):
     ],
 )
 def test_threshold(threshold, vmin, vmax, expected_results):
-    """Tests for ``OrthoSlicer._threshold``."""
+    """Test for ``OrthoSlicer._threshold``."""
     data = np.array([[-2, -1, 0], [0, 1, 2]], dtype=float)
     assert np.ma.allequal(
         OrthoSlicer._threshold(data, threshold, vmin, vmax),

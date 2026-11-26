@@ -1,10 +1,13 @@
 import warnings
+from typing import Any
 
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
 from sklearn.utils import Bunch
 
+from nilearn.nilearn_typing import TypedBunch
 from nilearn.plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
@@ -15,7 +18,7 @@ from nilearn.reporting.utils import figure_to_png_base64
 
 def generate_design_matrices_figures(
     design_matrices, design_matrices_dict=None, output=None
-) -> Bunch:
+) -> TypedBunch[Any, Any]:
     """Generate plot for design matrices and their correlation matrices.
 
     After generating the figure it can either :
@@ -32,10 +35,10 @@ def generate_design_matrices_figures(
     Returns
     -------
     design_matrices_dict : Bunch
+        Bunch with the following attributes for each run ``i_run``:
 
-        design_matrices_dict[i_run].design_matrix
-        design_matrices_dict[i_run].correlation_matrix
-
+        - ``design_matrices_dict[i_run].design_matrix``
+        - ``design_matrices_dict[i_run].correlation_matrix``
     """
     if design_matrices_dict is None:
         design_matrices_dict = Bunch()
@@ -106,7 +109,7 @@ def generate_design_matrices_figures(
 
 def generate_contrast_matrices_figures(
     design_matrices, contrasts=None, contrasts_dict=None, output=None
-) -> Bunch:
+) -> TypedBunch[Any, Any]:
     """Generate plot for contrasts matrices.
 
     After generating the figure it can either :
@@ -123,10 +126,7 @@ def generate_contrast_matrices_figures(
     Returns
     -------
     contrasts_dict : sklearn Bunch
-
-        contrasts_dict[contrast_name]
-
-
+        Bunch accessed with ``contrasts_dict[contrast_name]``.
     """
     if contrasts_dict is None:
         contrasts_dict = Bunch()
@@ -194,9 +194,8 @@ def resize_plot_inches(plot, width_change=0, height_change=0):
     -------
     plot : matplotlib.Figure() or matplotlib.Axes()
         The matplotlib Figure/Axes object after being resized.
-
     """
-    if not isinstance(plot, (plt.Figure)):
+    if not isinstance(plot, (Figure)):
         orig_size = plot.figure.get_size_inches()
     else:
         orig_size = plot.get_size_inches()
@@ -206,7 +205,7 @@ def resize_plot_inches(plot, width_change=0, height_change=0):
         orig_size[1] + height_change,
     )
 
-    if not isinstance(plot, (plt.Figure)):
+    if not isinstance(plot, (Figure)):
         plot.figure.set_size_inches(new_size, forward=True)
     else:
         plot.set_size_inches(new_size, forward=True)
