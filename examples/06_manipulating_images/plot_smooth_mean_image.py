@@ -19,6 +19,9 @@ depends on the spatial extent of the effects that are expected.
     - a sample motor activation statistical map (`image 10426
       <https://neurovault.org/images/10426/>`_ from Neurovault)
 """
+# %%
+#
+# .. include:: ../../../examples/mni_to_fsaverage.rst
 
 # %%
 # Smoothing a mean EPI image
@@ -95,3 +98,9 @@ for fwhm in [None, 5, 10, 15, 20, 25]:
     )
 
 show()
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::

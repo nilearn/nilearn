@@ -33,6 +33,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix :func:`~nilearn.image.concat_imgs` ignoring ``dtype`` when concatenating a single surface image (:gh:`6745` by `Tanmay Pandor`_).
 
+- :bdg-dark:`Code` Fix error messages for empty inputs to multi-image mask functions and arrays with more than two dimensions in mass-univariate normalization (:gh:`6760` by `Eva B <https://github.com/evadiva3>`_).
+
 - :bdg-dark:`Code` Fix :func:`~nilearn.signal.clean` interpolating the wrong volumes when ``sample_mask`` is combined with ``filter="butterworth"``: the volumes mirrored from the end of the run were filled instead of the censored ones, so censored volumes could keep their raw values, shifting the output (:gh:`6771` by `Brent McPherson <https://github.com/bcmcpher>`_).
 
 - :bdg-dark:`Code` Fix division of a :class:`~nilearn.glm.Contrast` by a scalar on Python 3 (:gh:`6756` by `Eva B <https://github.com/evadiva3>`_).
