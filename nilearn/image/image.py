@@ -1129,7 +1129,7 @@ def index_img(
 
             Added support for polars dataframes and series,
             and for pandas dataframes with surface images.
-            Dataframes with more than one column now raise an error.
+            Dataframes with more than one column now raise a ``ValueError``.
 
     Returns
     -------
