@@ -41,6 +41,7 @@ doc = [
 min = [
     "joblib==1.5.0",
     "nibabel==5.2.0",
+    "numpy==1.26.0",
     "pandas==2.3.0",
     "requests==2.33.0",
     # scikit-learn version 1.7.0 has a bug that prevents _repr_html_ to run
@@ -120,7 +121,7 @@ dependencies = [
     # https://github.com/scikit-learn/scikit-learn/issues/34203
     "scikit-learn>=1.6.0,!=1.7.0,!=1.9.0",
     "jinja2>=3.1.6",
-    "numpy",  # unpinned to let resolution pick the correct one
+    "numpy>=1.26.0",
     "scipy>=1.12.0",
     "packaging>=26.0.0"
 ]
