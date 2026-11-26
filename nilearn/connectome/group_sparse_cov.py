@@ -23,6 +23,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params, sanitize_verbose
+from nilearn.nilearn_typing import Verbose
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -136,7 +137,7 @@ def group_sparse_covariance(
     alpha,
     max_iter=50,
     tol=1e-3,
-    verbose=0,
+    verbose: Verbose = 0,
     probe_function=None,
     precisions_init=None,
     debug=False,
@@ -312,7 +313,7 @@ def _group_sparse_covariance(
     tol: float | None = 1e-3,
     precisions_init: np.ndarray | None = None,
     probe_function: collections.abc.Callable[..., Any] | None = None,
-    verbose: int = 0,
+    verbose: Verbose = 0,
     debug: bool = False,
 ) -> np.ndarray:
     """Implement an internal version of group_sparse_covariance.
@@ -655,7 +656,7 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
         alpha=0.1,
         tol=1e-3,
         max_iter=10,
-        verbose=0,
+        verbose: Verbose = 0,
         memory=None,
         memory_level=0,
     ):
@@ -924,7 +925,7 @@ def group_sparse_covariance_path(
     tol=1e-3,
     max_iter=10,
     precisions_init=None,
-    verbose=0,
+    verbose: Verbose = 0,
     debug=False,
     probe_function=None,
 ):
@@ -1147,7 +1148,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         max_iter_cv=50,
         tol=1e-3,
         max_iter=100,
-        verbose=0,
+        verbose: Verbose = 0,
         n_jobs=1,
         debug=False,
         early_stopping=True,
@@ -1235,7 +1236,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
             n_refinements = self.n_refinements
             alpha_1, _ = compute_alpha_max(emp_covs, n_samples)
             alpha_0 = 1e-2 * alpha_1
-            alphas = np.logspace(  # type: ignore[assignment]
+            alphas = np.logspace(
                 np.log10(alpha_0), np.log10(alpha_1), n_alphas
             )[::-1]
 
