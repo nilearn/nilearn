@@ -193,6 +193,27 @@ def test_group_sparse_covariance_cross_validation(
     assert cv_scores_.shape == (alphas * n_refinements,)
 
 
+@pytest.mark.filterwarnings(
+    "ignore:.*Input signals do not all have unit variance.*:UserWarning"
+)
+def test_group_sparse_covariance_cv_explicit_alphas(rng):
+    """Test GroupSparseCovarianceCV with an explicit sequence of alphas."""
+    signals, _, _ = generate_group_sparse_gaussian_graphs(
+        density=0.1,
+        n_subjects=3,
+        n_features=5,
+        min_n_samples=50,
+        max_n_samples=60,
+        rand_gen=rng,
+    )
+
+    gsc = GroupSparseCovarianceCV(alphas=[0.2, 0.1], cv=3).fit(signals)
+
+    assert gsc.cv_alphas_ == [0.2, 0.1]
+    assert gsc.cv_scores_.shape == (2,)
+    assert np.all(np.isfinite(gsc.precisions_))
+
+
 def test_group_sparse_covariance_alpha_zero(rng):
     """Test group_sparse_covariance and GroupSparseCovariance with alpha=0."""
     signals, _, _ = generate_group_sparse_gaussian_graphs(
