@@ -174,9 +174,32 @@ You can set a new 'baseline' (set of reference images) by running the following:
     pip install tox
     tox run -e test_html_generate
 
+Dependency version policy
+=========================
+
+Currently we do not strictly follow the `SPEC0 <https://scientific-python.org/specs/spec-0000/>`_
+regarding our python dependencies
+to allow for a broader range of supported python and packages versions.
+
+Python
+------
+
+We usually try to keep up with the python release cycle.
+In practice this means that we aim to do a release of Nilearn
+at the end of the year that supports the latest released pythons
+and drops support for the python version that has reached end of life
+in the last quarter of the year.
+
+Python packages
+---------------
+
+We usually increase the minimum supported version of our dependencies
+when the maintenance burden becomes too big for us,
+or when we need to make use of some more recent features of our dependencies.
+
 
 Updating vendored dependencies
-==============================
+------------------------------
 
 Some javascript dependencies are vendored with Nilearn
 and need to be updated manually
