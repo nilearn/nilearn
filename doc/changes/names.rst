@@ -161,6 +161,8 @@
 
 .. _Idrissa Traore: https://github.com/badrinini
 
+.. _Ilyass Emssaad: https://github.com/eliem08
+
 .. _Ishaan Gupta: https://github.com/guptaishaan
 
 .. _Jake Vogel: https://github.com/illdopejake
