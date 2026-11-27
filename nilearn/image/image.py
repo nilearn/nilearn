@@ -1186,7 +1186,7 @@ def _extract_data(img: SurfaceImage, index) -> dict[Any, np.ndarray]:
         last_dim = 1
     elif isinstance(index, slice):
         start, stop, step = index.indices(data._n_samples)
-        last_dim = max(0, (stop - start + (step - 1)) // step)
+        last_dim = len(range(start, stop, step))
     elif all(isinstance(x, bool) for x in index):
         last_dim = sum(index)
     else:
