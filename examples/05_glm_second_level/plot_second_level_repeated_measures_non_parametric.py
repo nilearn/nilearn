@@ -1,18 +1,42 @@
 """
-Non-parametric second-level inference for repeated measures
+Non-parametric group-level inference for repeated measures
 ===========================================================
 
-This example compares three group-level tests of a vertical-versus-horizontal
-checkerboard contrast:
+When doing a group analysis,
+we can often choose between:
 
-1. Permuting condition labels without accounting for repeated observations.
-2. Permuting condition labels within each subject using
+- computing contrast between conditions at the subect level
+  and passing that contrast image at the group level
+  where we end up with one image per subject,
+
+- passing one image per condition from the subject-level
+  to estimate a group-level model
+  and perform the contrast between conditions at the group level.
+
+But in the latter case, we need to take into account for the fact
+that data coming from the same-subject will be correlated.
+When doing non-parametric inference this means that data coming
+from the same subject must be permuted 'together'.
+To do this we rely on defining ``exchangeability_blocks``
+to define the rows of a design matrix that belong together.
+
+So in this example we compare
+three group-level tests of a vertical-versus-horizontal checkerboard contrast:
+
+1. unrestricted:
+   permuting condition labels without accounting for repeated observations.
+
+2. block-restricted: permuting condition labels within each subject using
    ``exchangeability_blocks``.
-3. Testing each subject's vertical-versus-horizontal contrast map with a
-   one-sample sign-flipping test.
+
+3. direct-contrast:
+   testing each subject's vertical-versus-horizontal contrast map
+   with a one-sample sign-flipping test.
 
 The block-restricted and direct-contrast analyses should give similar results.
-The unrestricted analysis ignores the pairing between each subject's two maps.
+The unrestricted analysis ignores the pairing between each subject's two maps
+and should therefore have a higher false positive rate
+as it assumes that each row comes from independent samples.
 
 .. admonition:: dataset
 
@@ -37,9 +61,10 @@ within_subject_contrast = fetch_localizer_contrasts(
 )
 
 # %%
-# Set up the repeated-measures design. The rows are ordered by condition, so
-# each subject label appears once in the horizontal maps and once in the
-# vertical maps.
+# Set up the repeated-measures design.
+# The rows are ordered by condition,
+# so each subject label appears once in the horizontal maps
+# and once in the vertical maps.
 import numpy as np
 import pandas as pd
 
@@ -54,8 +79,8 @@ design_matrix = pd.DataFrame(
 exchangeability_blocks = np.tile(np.arange(n_subjects), 2)
 
 # %%
-# Run the condition-level analysis without exchangeability blocks, then with
-# blocks that keep the two observations from each subject together.
+# Run the condition-level analysis without exchangeability blocks,
+# then with blocks that keep the two observations from each subject together.
 from nilearn.glm.second_level import non_parametric_inference
 
 common_kwargs = {
@@ -78,9 +103,10 @@ blocked_result = non_parametric_inference(
 )
 
 # %%
-# As a reference, run the one-sample test on each subject's directly estimated
-# vertical-versus-horizontal contrast. Each row now represents one subject, so
-# the default sign-flipping test can be used without blocks.
+# As a reference, run the one-sample test
+# on each subject's directly estimated vertical-versus-horizontal contrast.
+# Each row now represents one subject,
+# so the default sign-flipping test can be used without blocks.
 contrast_design_matrix = pd.DataFrame({"intercept": np.ones(n_subjects)})
 reference_result = non_parametric_inference(
     within_subject_contrast.cmaps,
@@ -92,6 +118,10 @@ reference_result = non_parametric_inference(
 )
 
 # %%
+# Visualization
+# -------------
+# First let's have a look at the different design matrix
+# and highlight the exchangeability_blocks.
 from nilearn.plotting import plot_design_matrix, show
 
 plot_design_matrix(design_matrix)
@@ -100,38 +130,57 @@ plot_design_matrix(contrast_design_matrix)
 show()
 
 # %%
-# Display the difference between the results
-# using Bland-Altman plots.
+# Then we can compare the results
+# using :func:`~nilearn.plotting.plot_img_comparison`
+# and :func:`~nilearn.plotting.plot_bland_altman`
+# that allow to compare entire images
+# without thresholding effects
+# or having to select specific cut coordinates.
 from nilearn.plotting import plot_bland_altman, plot_img_comparison
 
-plot_bland_altman(
-    reference_result,
-    unrestricted_result,
-    ref_label="Direct within-subject contrast",
-    src_label="Unrestricted row permutations",
-    cmap="plasma",
-    gridsize=25,
-)
-plot_img_comparison(
-    reference_result,
-    unrestricted_result,
-    ref_label="Direct within-subject contrast",
-    src_label="Unrestricted row permutations",
-)
+common_plotting_params = {
+    "cmap": "plasma",
+    "gridsize": 25,
+}
+
+# %%
+# First we can check that doing non-parametric second-level inference
+# using block-restricted and direct-contrast give the same results.
+#
 plot_bland_altman(
     reference_result,
     blocked_result,
-    ref_label="Direct within-subject contrast",
-    src_label="Permutations within subjects",
-    cmap="plasma",
-    gridsize=25,
+    ref_label="direct-contrast",
+    src_label="block-restricted",
+    **common_plotting_params,
 )
 plot_img_comparison(
     reference_result,
     blocked_result,
-    ref_label="Direct within-subject contrast",
-    src_label="Permutations within subjects",
+    ref_label="direct-contrast",
+    src_label="block-restricted",
+    **common_plotting_params,
 )
 
+show()
+
+# %%
+# Then we can check that doing non-parametric second-level inference
+# using unrestricted and direct-contrast give different results.
+#
+plot_bland_altman(
+    reference_result,
+    unrestricted_result,
+    ref_label="direct-contrast",
+    src_label="unrestricted",
+    **common_plotting_params,
+)
+plot_img_comparison(
+    reference_result,
+    unrestricted_result,
+    ref_label="direct-contrast",
+    src_label="unrestricted",
+    **common_plotting_params,
+)
 
 show()
