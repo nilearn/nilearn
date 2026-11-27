@@ -1645,7 +1645,7 @@ def test_isnan_threshold_img_data(affine_eye, shape_3d_default):
 
     maps_img = Nifti1Image(data, affine_eye)
 
-    with pytest.warns(UserWarning, match="Non-finite values detected"):
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
         threshold_img(maps_img, threshold=0.8)
 
 

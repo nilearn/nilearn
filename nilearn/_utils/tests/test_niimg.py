@@ -379,6 +379,59 @@ def test_ensure_finite_data(img_binary):
     assert np.array_equal(data_returned, expected_data)
 
 
+@pytest.fixture
+def data_with_non_finite():
+    """Return an array of ones with one NaN and one inf."""
+    data = np.ones((3, 3, 3))
+    data[0, 0, 0] = np.nan
+    data[1, 1, 1] = np.inf
+    return data
+
+
+@pytest.mark.parametrize("verbose", [1, 2, True])
+def test_ensure_finite_data_warns(data_with_non_finite, verbose):
+    """Warn when non-finite values are replaced."""
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
+        ensure_finite_data(data_with_non_finite, verbose=verbose)
+
+
+@pytest.mark.parametrize("verbose", [0, False])
+def test_ensure_finite_data_silent(data_with_non_finite, verbose):
+    """Do not warn when verbose is off."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        ensure_finite_data(data_with_non_finite, verbose=verbose)
+
+
+def test_ensure_finite_data_copy_warns(data_with_non_finite):
+    """Warn when non-finite values are replaced in a copy."""
+    with pytest.warns(RuntimeWarning, match="Non-finite values detected"):
+        ensure_finite_data(data_with_non_finite, copy=True)
+
+
+def test_ensure_finite_data_in_place(data_with_non_finite):
+    """Modify the input when copy is False."""
+    cleaned = ensure_finite_data(data_with_non_finite, verbose=0)
+
+    assert cleaned is data_with_non_finite
+    assert np.isfinite(data_with_non_finite).all()
+
+
+def test_ensure_finite_data_copy(data_with_non_finite):
+    """Leave the input untouched when copy is True."""
+    cleaned = ensure_finite_data(data_with_non_finite, verbose=0, copy=True)
+
+    assert np.isfinite(cleaned).all()
+    assert not np.isfinite(data_with_non_finite).all()
+
+
+def test_ensure_finite_data_copy_finite_input():
+    """Return finite data as is, even when copy is True."""
+    data = np.ones((3, 3, 3))
+
+    assert ensure_finite_data(data, copy=True) is data
+
+
 @pytest.mark.parametrize(
     "has_inf,has_nan,non_bin,accept_non_finite,expected",
     [
