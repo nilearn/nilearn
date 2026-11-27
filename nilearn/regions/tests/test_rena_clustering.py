@@ -1,3 +1,5 @@
+from typing import override
+
 import numpy as np
 import pytest
 from joblib import Memory
@@ -13,6 +15,54 @@ from nilearn.regions.rena_clustering import (
     make_edges_surface,
 )
 from nilearn.surface import SurfaceImage
+from nilearn.tests.test_base import (
+    TestNilearnBaseEstimator,
+    sklearn_estimator_checks,
+)
+
+
+@sklearn_estimator_checks
+class TestReNA(TestNilearnBaseEstimator):
+    estimator_list = [ReNA()]
+
+    @classmethod
+    def expected_failed_checks(cls) -> dict[str, str]:
+        return {
+            "check_clustering": "TODO",
+        }
+
+    def create_instance(self) -> ReNA:
+        return ReNA()
+
+    @pytest.fixture()
+    def fit_data(self) -> np.ndarray:
+        data_img, mask_img = generate_fake_fmri(
+            shape=_shape_3d_default(), length=5
+        )
+        data = get_data(data_img)
+        mask = get_data(mask_img)
+
+        X = np.empty((data.shape[3], int(mask.sum())))
+        for i in range(data.shape[3]):
+            X[i, :] = np.copy(data[:, :, :, i])[get_data(mask_img) != 0]
+
+        return X
+
+    @pytest.fixture
+    def fitted_estimator(self, fit_data) -> ReNA:
+        return ReNA().fit(fit_data)
+
+    # @pytest.mark.todo("Fix doc attribute order for ReNA")
+    @override
+    def test_doc_attr_order(self, documented_attributes) -> None:
+        pass
+
+    # @pytest.mark.todo("Fix undocumented attributes after fit for ReNA")
+    @override
+    def test_doc_no_undocumented_attributes_after_fit(
+        self, undocumented_attributes
+    ) -> None:
+        pass
 
 
 def test_mask_error():
