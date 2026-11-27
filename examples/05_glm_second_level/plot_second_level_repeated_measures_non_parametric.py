@@ -14,8 +14,11 @@ we can often choose between:
   and perform the contrast between conditions at the group level.
 
 But in the latter case, we need to take into account for the fact
-that data coming from the same-subject will be correlated.
-When doing non-parametric inference this means that data coming
+that data coming from the same-subject will be correlated:
+when doing parametric inference this is the classic case of
+t-test versus paired t-test or ANOVA versus repeated-measure ANOVA.
+When doing non-parametric inference based on permutation testing
+this means that data coming
 from the same subject must be permuted 'together'.
 To do this we rely on defining ``exchangeability_blocks``
 to define the rows of a design matrix that belong together.
@@ -121,10 +124,34 @@ reference_result = non_parametric_inference(
 # Visualization
 # -------------
 # First let's have a look at the different design matrix
-# and highlight the exchangeability_blocks.
+# and highlight the exchangeability_blocks:
+# the colored column on the left shows which rows belong to the same block,
+# with one color per subject.
+import matplotlib.pyplot as plt
+
 from nilearn.plotting import plot_design_matrix, show
 
-plot_design_matrix(design_matrix)
+fig, (ax_blocks, ax_design) = plt.subplots(
+    1,
+    2,
+    figsize=(6, 6),
+    sharey=True,
+    gridspec_kw={"width_ratios": [1, 17]},
+    layout="constrained",
+)
+ax_blocks.imshow(
+    exchangeability_blocks[:, np.newaxis],
+    cmap="tab20",
+    aspect="auto",
+    interpolation="nearest",
+)
+ax_blocks.xaxis.tick_top()
+ax_blocks.set_xticks([0])
+ax_blocks.set_xticklabels(["blocks"], rotation=60, ha="left")
+plot_design_matrix(design_matrix, axes=ax_design)
+ax_design.set_ylabel("")
+ax_blocks.set_ylabel("scan number")
+
 plot_design_matrix(contrast_design_matrix)
 
 show()
