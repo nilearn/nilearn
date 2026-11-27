@@ -411,7 +411,7 @@ def smooth_array(
         arr = arr.copy()
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
-        ensure_finite_data(arr, raise_warning=False)
+        ensure_finite_data(arr, verbose=0)
     if isinstance(fwhm, str) and (fwhm == "fast"):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
@@ -567,7 +567,7 @@ def _smooth_surface_img(
         # whatever ``fwhm`` is. Left as is, a single non-finite vertex is
         # spread over its neighbors by the smoothing iterations.
         data = np.array(img.data.parts[hemi], copy=True)
-        ensure_finite_data(data, raise_warning=False)
+        ensure_finite_data(data, verbose=0)
 
         if n_iter == 0:
             new_data[hemi] = data
