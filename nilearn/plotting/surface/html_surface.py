@@ -465,5 +465,23 @@ def view_surf(
 
     info["title"] = title
     info["view"] = view
+    info["aspect_ratio"] = _compute_aspect_ratio(surf_mesh)
 
     return _fill_html_template(info, engine=engine)
+
+
+def _compute_aspect_ratio(surf_mesh):
+    """Compute the aspect ratio of a mesh, normalized by its largest extent.
+
+    Normalizing by the largest extent keeps the scene at the same scale
+    as plotly's default (all ratios equal to 1),
+    so the default camera positions do not need to be changed.
+
+    Dimensions with zero extent (for example the depth of a flat map)
+    get a ratio of 1.
+    """
+    surf_mesh = load_surf_mesh(surf_mesh)
+    data_range = np.ptp(surf_mesh.coordinates, axis=0).astype(float)
+    data_range /= data_range.max()
+    data_range[data_range == 0] = 1
+    return {k: float(r) for k, r in zip("xyz", data_range, strict=True)}
