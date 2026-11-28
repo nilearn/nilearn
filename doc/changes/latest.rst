@@ -31,6 +31,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix :func:`~nilearn.connectome.group_sparse_covariance` and :class:`~nilearn.connectome.GroupSparseCovariance` returning divergent, non-positive-definite precision matrices when ``alpha=0`` (:gh:`6681` by `Yuvraj Lamba`_).
+
 - :bdg-dark:`Code` Fix error messages for empty inputs to multi-image mask functions and arrays with more than two dimensions in mass-univariate normalization (:gh:`6760` by `Eva B <https://github.com/evadiva3>`_).
 
 - :bdg-dark:`Code` Fix :func:`~nilearn.signal.clean` interpolating the wrong volumes when ``sample_mask`` is combined with ``filter="butterworth"``: the volumes mirrored from the end of the run were filled instead of the censored ones, so censored volumes could keep their raw values, shifting the output (:gh:`6771` by `Brent McPherson <https://github.com/bcmcpher>`_).
@@ -93,7 +95,7 @@ Enhancements
 
 - :bdg-secondary:`Maint` Refactor ``math_img`` and ``new_img_like`` to reduce complexity (:gh:`6676` by `Akaash P`_)
 
-- :bdg-secondary:`Maint` Refactor ``threshold_img`` to reduce complexity (:gh:`6629` by `uvcode01-max <https://github.com/uvcode01-max>`_).
+- :bdg-secondary:`Maint` Refactor ``threshold_img`` to reduce complexity (:gh:`6629` by `Yuvraj Lamba`_).
 
 - :bdg-warning:`Test` Give explicit names to the tests in ``nilearn/glm/tests/test_hemodynamic_models.py`` (:gh:`6747` by `Rishit Garg`_).
 
