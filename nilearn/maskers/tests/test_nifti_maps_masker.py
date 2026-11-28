@@ -293,7 +293,6 @@ def test_with_nans_and_infs_in_data(length, n_regions, affine_eye):
     assert np.all(np.isfinite(signals))
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("estimator", [NiftiMapsMasker, MultiNiftiMapsMasker])
 def test_resampling_to_mask(
     estimator,
@@ -324,6 +323,9 @@ def test_resampling_to_mask(
     with (
         warnings.catch_warnings(record=True) as warning_list,
     ):
+        # make sure the warning is recorded
+        # even if it was already thrown in another thread
+        warnings.simplefilter("always")
         signals = masker.fit_transform(input_img)
         assert all(
             "consider using nearest interpolation instead" not in str(x)

@@ -213,19 +213,17 @@ def test_view_img_on_surf_clipped_image(tmp_path, mni152_template_res_2):
         get_data(mni152_template_res_2)[:, :, :, np.newaxis],
     )
     assert len(img_4d.shape) == 4
-    np.clip(
-        get_data(mni152_template_res_2),
-        0,
-        None,
-        out=get_data(mni152_template_res_2),
+    clipped_img = new_img_like(
+        mni152_template_res_2,
+        np.clip(get_data(mni152_template_res_2), 0, None),
     )
 
-    html = view_img_on_surf(mni152_template_res_2, symmetric_cmap=False)
+    html = view_img_on_surf(clipped_img, symmetric_cmap=False)
 
     check_html_surface_plots(tmp_path, html)
 
     html = view_img_on_surf(
-        mni152_template_res_2,
+        clipped_img,
         symmetric_cmap=False,
         vol_to_surf_kwargs={
             "n_samples": 1,

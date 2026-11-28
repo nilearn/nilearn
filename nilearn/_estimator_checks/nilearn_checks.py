@@ -291,7 +291,6 @@ def check_set_output_accepts_surface(estimator) -> None:
         estimator.inverse_transform(signal)
 
 
-@xfail_if_not_gil()
 def check_doc_parameters_at_init(estimator) -> None:
     """Check that parameters are documented.
 
@@ -354,7 +353,6 @@ def check_doc_parameters_at_init(estimator) -> None:
     )
 
 
-@xfail_if_not_gil()
 @skip_if(
     (
         lambda e: isinstance(e, (GroupSparseCovarianceCV, ReNA)),
@@ -464,7 +462,6 @@ def _check_mask_img_(estimator):
     load_mask_img(estimator.mask_img_)
 
 
-@xfail_if_not_gil()
 @skip_if_not(lambda e: accepts_image(e))
 def check_img_estimator_verbose(estimator_orig) -> None:
     """Check verbose behavior.
@@ -531,7 +528,6 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     assert len(output_2) >= len(output), f"\n{output=}\n{output_2=}"
 
 
-@xfail_if_not_gil()
 def check_verbosity_embedded_masker(estimator_orig) -> None:
     """Check control of verbosity of embedded maskers / estimators.
 
@@ -833,7 +829,9 @@ def check_img_estimator_cache_warning(estimator_orig) -> None:
                 estimator.compute_contrast(np.asarray([1]))
 
 
-@xfail_if_not_gil(classes=[SearchLight, Decoder])
+# liblinear (used by LinearSVC) relies on a global random state
+# which is not thread safe
+@xfail_if_not_gil(classes=[SearchLight, Decoder, FREMClassifier])
 def check_img_estimator_fit_idempotent(estimator_orig) -> None:
     """Check that est.fit(X) is the same as est.fit(X).fit(X).
 
@@ -1664,7 +1662,6 @@ def check_img_estimator_n_elements(estimator) -> None:
                 getattr(estimator, method)(X)
 
 
-@xfail_if_not_gil()
 @skip_if((lambda e: is_masker(e), "Maskers have their own tests."))
 @skip_if_not(
     (
@@ -2041,7 +2038,6 @@ def check_masker_detrending(estimator) -> None:
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
 
 
-@xfail_if_not_gil()
 def check_masker_standardization(estimator_orig) -> None:
     """Check maskers with several value for standardize.
 
@@ -2810,7 +2806,6 @@ def check_masker_inverse_transform(estimator_orig) -> None:
             assert_surface_image_equal(new_imgs, new_imgs_2)
 
 
-@xfail_if_not_gil()
 @skip_if_not(
     (
         lambda e: hasattr(e, "resampling_target"),
@@ -3857,7 +3852,6 @@ def check_masker_generate_report(estimator) -> None:
         )
 
 
-@xfail_if_not_gil()
 def check_masker_generate_report_constant(estimator) -> None:
     """Check report is constant across calls."""
     input_img: Nifti1Image | SurfaceImage
@@ -3891,7 +3885,6 @@ def check_masker_generate_report_constant(estimator) -> None:
     assert report_str == report_new_str
 
 
-@xfail_if_not_gil()
 def check_nifti_masker_generate_report_after_fit_with_only_mask(
     estimator,
 ) -> None:
@@ -3938,7 +3931,6 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(
     )
 
 
-@xfail_if_not_gil()
 def check_masker_generate_report_false(estimator) -> None:
     """Test with reports set to False."""
     estimator.reports = False
@@ -3956,7 +3948,6 @@ def check_masker_generate_report_false(estimator) -> None:
     generate_and_check_masker_report(estimator)
 
 
-@xfail_if_not_gil()
 def check_multimasker_generate_report(estimator) -> None:
     """Test calling generate report on multiple subjects raises warning."""
     input_img: list[Nifti1Image] | list[SurfaceImage]

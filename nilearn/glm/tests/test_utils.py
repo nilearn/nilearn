@@ -213,7 +213,6 @@ def test_mahalanobis_errors():
         multiple_mahalanobis(effect, cov)
 
 
-@pytest.mark.thread_unsafe
 def test_multiple_fast_inv(rng):
     """Test multiple_fast_inverse against scipy's inv on stacked matrices."""
     shape = (10, 20, 20)

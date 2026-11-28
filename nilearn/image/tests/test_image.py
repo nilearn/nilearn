@@ -42,6 +42,7 @@ from nilearn.conftest import (
     _img_3d_rand,
     _rng,
     _shape_4d_default,
+    _surf_img_1d,
 )
 from nilearn.exceptions import DimensionError
 from nilearn.image.image import (
@@ -469,7 +470,7 @@ def test_smooth_img_warning(img_3d_mni):
 
 
 @pytest.mark.parametrize("fwhm", [None, 0.0, 4.0])
-def test_smooth_img_surface_nan_do_not_propagate(surf_img_1d, fwhm):
+def test_smooth_img_surface_nan_do_not_propagate(fwhm):
     """Non-finite vertices must be zeroed, as they are for volumes.
 
     Regression test for https://github.com/nilearn/nilearn/issues/6487.
@@ -478,27 +479,29 @@ def test_smooth_img_surface_nan_do_not_propagate(surf_img_1d, fwhm):
     the smoothing iterations spread each non-finite vertex over its
     neighbors instead.
     """
-    surf_img_1d.data.parts["left"][0] = np.nan
-    surf_img_1d.data.parts["left"][1] = np.inf
-    surf_img_1d.data.parts["right"][0] = -np.inf
+    imgs = _surf_img_1d()
+    imgs.data.parts["left"][0] = np.nan
+    imgs.data.parts["left"][1] = np.inf
+    imgs.data.parts["right"][0] = -np.inf
 
-    smoothed = smooth_img(surf_img_1d, fwhm=fwhm)
+    smoothed = smooth_img(imgs, fwhm=fwhm)
 
     for part in smoothed.data.parts.values():
         assert np.all(np.isfinite(part))
 
 
-def test_smooth_img_surface_does_not_modify_input(surf_img_1d):
+def test_smooth_img_surface_does_not_modify_input():
     """Cleaning non-finite values must not touch the input image."""
-    surf_img_1d.data.parts["left"][0] = np.nan
+    imgs = _surf_img_1d()
+    imgs.data.parts["left"][0] = np.nan
     expected = {
-        part: values.copy() for part, values in surf_img_1d.data.parts.items()
+        part: values.copy() for part, values in imgs.data.parts.items()
     }
 
-    smooth_img(surf_img_1d, fwhm=4.0)
+    smooth_img(imgs, fwhm=4.0)
 
     for part, values in expected.items():
-        assert_array_equal(surf_img_1d.data.parts[part], values)
+        assert_array_equal(imgs.data.parts[part], values)
 
 
 def test_smooth_img_surface(surf_img_1d):
@@ -1865,15 +1868,17 @@ def test_binarize_img_surface(surf_img_1d):
     assert_array_equal(np.unique(get_surface_data(img2)), np.array([0, 1]))
 
 
-def test_binarize_negative_img(img_4d_rand_eye, rng):
-    # Test option to use original or absolute values
-    img_data = img_4d_rand_eye.dataobj
+def test_binarize_negative_img(rng, affine_eye):
+    """Test option to use original or absolute values."""
+    shape = (7, 8, 9, 5)
+    data = rng.random(shape)
+
     # Create a mask for half of the values and make them negative
-    neg_mask = rng.choice(
-        [True, False], size=img_4d_rand_eye.shape, p=[0.5, 0.5]
-    )
-    img_data[neg_mask] *= -1
-    img = new_img_like(img_4d_rand_eye, img_data)
+    neg_mask = rng.choice([True, False], size=shape, p=[0.5, 0.5])
+    data[neg_mask] *= -1
+
+    img = Nifti1Image(data, affine_eye)
+
     # Binarize using original and absolute values
     img_original = binarize_img(img, threshold=0, two_sided=False)
     img_absolute = binarize_img(img, threshold=0, two_sided=True)

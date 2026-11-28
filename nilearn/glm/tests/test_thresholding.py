@@ -8,6 +8,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_equal
 from scipy.stats import norm
 
+from nilearn.conftest import _surf_img_1d
 from nilearn.datasets import (
     load_fsaverage_data,
     load_sample_motor_activation_image,
@@ -90,10 +91,10 @@ def test_threshold_stats_img_warn_threshold_unused(
 
 
 def test_threshold_stats_img_no_height_control(
-    data_norm_isf, img_3d_ones_eye, affine_eye
+    shape_3d_default, img_3d_ones_eye, affine_eye
 ):
     """Check threshold_stats_img with height_control=None and no map."""
-    data = data_norm_isf
+    data = _data_norm_isf(shape_3d_default)
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
 
@@ -143,10 +144,10 @@ def test_threshold_stats_img_no_height_control(
 
 
 def test_threshold_stats_img_error_height_control(
-    data_norm_isf, img_3d_ones_eye, affine_eye
+    shape_3d_default, img_3d_ones_eye, affine_eye
 ):
     """Raise error for invalid height_control value."""
-    data = data_norm_isf
+    data = _data_norm_isf(shape_3d_default)
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
 
@@ -159,10 +160,10 @@ def test_threshold_stats_img_error_height_control(
 
 
 def test_threshold_stats_img_error_cluster_threshold(
-    data_norm_isf, img_3d_ones_eye, affine_eye
+    shape_3d_default, img_3d_ones_eye, affine_eye
 ):
     """Raise error for invalid cluster_threshold."""
-    data = data_norm_isf
+    data = _data_norm_isf(shape_3d_default)
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
 
@@ -172,9 +173,9 @@ def test_threshold_stats_img_error_cluster_threshold(
         )
 
 
-def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
+def test_threshold_stats_img(shape_3d_default, img_3d_ones_eye, affine_eye):
     """Check threshold_stats_img with various height_control values."""
-    data = data_norm_isf
+    data = _data_norm_isf(shape_3d_default)
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
 
@@ -362,10 +363,10 @@ def test_all_resolution_inference_surface(
 
 
 def test_all_resolution_inference_with_mask(
-    img_3d_ones_eye, affine_eye, data_norm_isf
+    img_3d_ones_eye, affine_eye, shape_3d_default
 ):
     """Check cluster_level_inference with a mask_img."""
-    data = data_norm_isf
+    data = _data_norm_isf(shape_3d_default)
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
 
@@ -428,9 +429,9 @@ def test_all_resolution_inference_surface_mask(surf_img_1d):
     assert np.sum(th_map.data.parts["right"] > 0) == 0
 
 
-def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
+def test_all_resolution_inference_one_voxel(shape_3d_default, affine_eye):
     """Check cluster_level_inference detects a single active voxel."""
-    data = data_norm_isf
+    data = _data_norm_isf(shape_3d_default)
     data[3, 6, 7] = 10
     stat_img = Nifti1Image(data, affine_eye)
 
@@ -441,10 +442,10 @@ def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
 
 
 def test_all_resolution_inference_one_sided(
-    data_norm_isf, img_3d_ones_eye, affine_eye
+    shape_3d_default, img_3d_ones_eye, affine_eye
 ):
     """Check threshold_stats_img with two_sided=False."""
-    data = data_norm_isf
+    data = _data_norm_isf(shape_3d_default)
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
 
@@ -506,10 +507,10 @@ def test_all_resolution_inference_shape_errors(img_4d_rand_eye, surf_img_2d):
 @pytest.mark.parametrize("two_sided", [True, False])
 @pytest.mark.parametrize("control", ["fdr", "bonferroni"])
 def test_all_resolution_inference_height_control(
-    control, affine_eye, img_3d_ones_eye, data_norm_isf, two_sided
+    control, affine_eye, img_3d_ones_eye, shape_3d_default, two_sided
 ):
     """Test FDR threshold/bonferroni with one/two sided."""
-    data = data_norm_isf
+    data = _data_norm_isf(shape_3d_default)
     data[2:4, 5:7, 6:8] = 5.0
     data[0:2, 0:2, 6:8] = -5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -610,17 +611,18 @@ def test_cluster_level_inference_surface_uses_mesh_connectivity():
     assert_equal(result.data.parts["left"][[0, 2, 4]], 2 / 3)
 
 
-def test_threshold_stats_img_surface_output(surf_img_1d):
+def test_threshold_stats_img_surface_output():
     """Check output threshold_stats_img surface with no height_control.
 
     Also check the user of cluster_threshold.
     """
-    surf_img_1d.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
-    surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 3.0])
+    stat_img = _surf_img_1d()
+    stat_img.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
+    stat_img.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 3.0])
 
     # two sided
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=2.1
+        stat_img, height_control=None, threshold=2.1
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
@@ -629,7 +631,7 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     )
 
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=2.1, cluster_threshold=2
+        stat_img, height_control=None, threshold=2.1, cluster_threshold=2
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
@@ -639,7 +641,7 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
 
     # one sided positive
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, two_sided=False, threshold=3.0
+        stat_img, height_control=None, two_sided=False, threshold=3.0
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
@@ -648,7 +650,7 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     )
 
     result, _ = threshold_stats_img(
-        surf_img_1d,
+        stat_img,
         height_control=None,
         two_sided=False,
         cluster_threshold=3,
@@ -662,7 +664,7 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
 
     # one sided negative
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=-0.5, two_sided=False
+        stat_img, height_control=None, threshold=-0.5, two_sided=False
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, -1.0, 0.0, 0.0]))
@@ -671,7 +673,7 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     )
 
     result, _ = threshold_stats_img(
-        surf_img_1d,
+        stat_img,
         height_control=None,
         threshold=-0.5,
         two_sided=False,
@@ -684,14 +686,15 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     )
 
 
-def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
+def test_threshold_stats_img_surface_output_threshold_0():
     """Check output threshold_stats_img height_control=None, threshold=0."""
-    surf_img_1d.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
-    surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
+    stat_img = _surf_img_1d()
+    stat_img.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
+    stat_img.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
 
     # one sided, with threshold = 0
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=0, two_sided=False
+        stat_img, height_control=None, threshold=0, two_sided=False
     )
 
     assert_equal(result.data.parts["left"], np.asarray([1.0, 0, 3.0, 4.0]))
@@ -701,7 +704,7 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
 
     # two sided, with threshold = 0
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=0, two_sided=True
+        stat_img, height_control=None, threshold=0, two_sided=True
     )
 
     assert_equal(result.data.parts["left"], np.asarray([1.0, -1.0, 3.0, 4.0]))

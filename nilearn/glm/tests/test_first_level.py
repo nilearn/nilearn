@@ -4,6 +4,7 @@ import itertools
 import string
 import unittest.mock
 import warnings
+from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
@@ -651,7 +652,6 @@ def test_glm_random_state(rng, random_state):
         )
 
 
-@pytest.mark.thread_unsafe
 def test_scaling(rng):
     """Test the scaling function."""
     shape = (400, 10)
@@ -1854,6 +1854,7 @@ def test_plot_predicted_signal_and_residuals_minimize_memory_error(
     fitted_model,
 ):
     """Test minimize_memory errors."""
+    fitted_model = deepcopy(fitted_model)
     with pytest.raises(ValueError, match="set 'minimize_memory' to 'False'"):
         fitted_model.minimize_memory = True
         fitted_model.plot_predicted_signal_and_residuals(coords=[(1, 1, 1)])

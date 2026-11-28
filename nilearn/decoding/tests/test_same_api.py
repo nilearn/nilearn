@@ -94,7 +94,6 @@ def test_same_energy_calculus_pure_lasso(rng):
     assert_array_equal(g1, g2)
 
 
-@pytest.mark.thread_unsafe
 def test_lipschitz_constant_loss_mse(rng):
     """Test the Lipschitz constant of the squared loss gradient."""
     X, _, _, mask = _make_data(rng=rng, masked=True)
@@ -108,7 +107,6 @@ def test_lipschitz_constant_loss_mse(rng):
     assert_almost_equal(a, b)
 
 
-@pytest.mark.thread_unsafe
 def test_lipschitz_constant_loss_logreg(rng):
     """Test the Lipschitz constant of the logistic loss gradient."""
     X, _, _, mask = _make_data(rng=rng, masked=True)

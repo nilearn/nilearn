@@ -65,13 +65,14 @@ def data(rng, shape) -> np.ndarray:
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_identity_resample(data, force_resample, shape, affine_eye):
+def test_identity_resample(data, force_resample, shape):
     """Test resampling with an identity affine."""
-    affine_eye[:3, -1] = 0.5 * np.array(shape[:3])
+    affine = np.eye(4)
+    affine[:3, -1] = 0.5 * np.array(shape[:3])
 
     rot_img = resample_img(
-        Nifti1Image(data, affine_eye),
-        target_affine=affine_eye,
+        Nifti1Image(data, affine),
+        target_affine=affine,
         interpolation="nearest",
         force_resample=force_resample,
     )
@@ -153,18 +154,19 @@ def test_target_affine_error(data, target_affine, affine_eye):
 @pytest.mark.parametrize("endian_type", [">f8", "<f8"])
 @pytest.mark.parametrize("interpolation", ["nearest", "linear", "continuous"])
 def test_identity_resample_non_native_endians(
-    data, force_resample, shape, affine_eye, endian_type, interpolation
+    data, force_resample, shape, endian_type, interpolation
 ):
     """Test resampling with an identity affine with non native endians.
 
     with big endian data ('>f8')
     with little endian data ('<f8')
     """
-    affine_eye[:3, -1] = 0.5 * np.array(shape[:3])
+    affine = np.eye(4)
+    affine[:3, -1] = 0.5 * np.array(shape[:3])
 
     rot_img = resample_img(
-        Nifti1Image(data.astype(endian_type), affine_eye),
-        target_affine=affine_eye,
+        Nifti1Image(data.astype(endian_type), affine),
+        target_affine=affine,
         interpolation=interpolation,
         force_resample=force_resample,
     )
@@ -445,7 +447,6 @@ def test_resampling_warning_s_form(data, affine_eye, force_resample):
         )
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_resampling_warning_binary_image(affine_eye, rng, force_resample):
     """Warn when resampling binary images with continuous \
@@ -593,7 +594,7 @@ def test_raises_upon_3x3_affine_and_no_shape(affine_eye, force_resample):
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_3x3_affine_bbox(affine_eye, force_resample):
+def test_3x3_affine_bbox(force_resample):
     """Test that the bounding-box is properly computed when \
     transforming with a negative affine component.
 
@@ -605,12 +606,12 @@ def test_3x3_affine_bbox(affine_eye, force_resample):
     # that would count as binary
     # and throw warnings.
     image = np.full((20, 30), 2.0)
-    source_affine = affine_eye
     # Give the affine an offset
-    source_affine[:2, 3] = np.array([96, 64])
+    affine = np.eye(4)
+    affine[:2, 3] = np.array([96, 64])
 
     # We need to turn this data into a nibabel image
-    img = Nifti1Image(image[:, :, np.newaxis], affine=source_affine)
+    img = Nifti1Image(image[:, :, np.newaxis], affine=affine)
 
     target_affine_3x3 = np.eye(3) * 2
     # One negative axes
@@ -625,12 +626,12 @@ def test_3x3_affine_bbox(affine_eye, force_resample):
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_raises_bbox_error_if_data_outside_box(affine_eye, force_resample):
+def test_raises_bbox_error_if_data_outside_box(force_resample):
     """Make some cases which should raise exceptions."""
     # original image
     data = np.zeros([8, 9, 10])
     affine_offset = np.array([1, 1, 1])
-    affine = affine_eye
+    affine = np.eye(4)
     affine[:3, 3] = affine_offset
     img = Nifti1Image(data, affine)
 
@@ -814,11 +815,11 @@ def test_resampling_nan_big(affine_eye, force_resample):
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_resample_to_img(data, affine_eye, force_resample):
-    source_affine = affine_eye
+def test_resample_to_img(data, force_resample):
+    source_affine = np.eye(4)
     source_img = Nifti1Image(data, source_affine)
 
-    target_affine = 2 * affine_eye
+    target_affine = 2 * source_affine
     target_img = Nifti1Image(data, target_affine)
 
     result_img = resample_to_img(
@@ -845,20 +846,17 @@ def test_crop(affine_eye):
     assert_equal(get_data(cropped), data)
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_resample_identify_affine_int_translation(
-    affine_eye, rng, force_resample
-):
+def test_resample_identify_affine_int_translation(rng, force_resample):
     source_shape = (6, 4, 6)
-    source_affine = affine_eye
-    source_affine[:, 3] = np.append(rng.integers(0, 4, 3), 1)
+    affine = np.eye(4)
+    affine[:, 3] = np.append(rng.integers(0, 4, 3), 1)
     source_data = rng.random(source_shape)
-    source_img = Nifti1Image(source_data, source_affine)
+    source_img = Nifti1Image(source_data, affine)
 
     target_shape = (11, 10, 9)
     target_data = np.zeros(target_shape)
-    target_affine = source_affine
+    target_affine = affine
     target_affine[:3, 3] -= 3  # add an offset of 3 in x, y, z
     target_data[3:9, 3:7, 3:9] = (
         source_data  # put the data at the offset location
@@ -943,12 +941,12 @@ def test_resample_clip(affine_eye, force_resample):
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_reorder_img(affine_eye, rng, force_resample):
+def test_reorder_img(rng, force_resample):
     # We need to test on a square array, as rotation does not change
     # shape, whereas reordering does.
     shape = (5, 5, 5, 2, 2)
     data = rng.uniform(size=shape)
-    affine = affine_eye
+    affine = np.eye(4)
     affine[:3, -1] = 0.5 * np.array(shape[:3])
     ref_img = Nifti1Image(data, affine)
 
@@ -975,10 +973,10 @@ def test_reorder_img(affine_eye, rng, force_resample):
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_reorder_img_with_resample_arg(affine_eye, rng, force_resample):
+def test_reorder_img_with_resample_arg(rng, force_resample):
     shape = (5, 5, 5, 2, 2)
     data = rng.uniform(size=shape)
-    affine = affine_eye
+    affine = np.eye(4)
     affine[:3, -1] = 0.5 * np.array(shape[:3])
     ref_img = Nifti1Image(data, affine)
 
@@ -995,13 +993,13 @@ def test_reorder_img_with_resample_arg(affine_eye, rng, force_resample):
     assert_array_equal(get_data(reordered_img), get_data(resampled_img))
 
 
-def test_reorder_img_error_reorder_axis(affine_eye, rng):
+def test_reorder_img_error_reorder_axis(rng):
     shape = (5, 5, 5, 2, 2)
     data = rng.uniform(size=shape)
 
     # Create a non-diagonal affine,
     # and check that we raise a sensible exception
-    non_diagonal_affine = affine_eye
+    non_diagonal_affine = np.eye(4)
     non_diagonal_affine[1, 0] = 0.1
     ref_img = Nifti1Image(data, non_diagonal_affine)
 
@@ -1012,7 +1010,7 @@ def test_reorder_img_error_reorder_axis(affine_eye, rng):
         reorder_img(ref_img)
 
 
-def test_reorder_img_flipping_axis(affine_eye, rng):
+def test_reorder_img_flipping_axis(rng):
     shape = (5, 5, 5, 2, 2)
 
     data = rng.uniform(size=shape)
@@ -1021,7 +1019,7 @@ def test_reorder_img_flipping_axis(affine_eye, rng):
         # Make a diagonal affine with a negative axis, and check that
         # can be reordered, also vary the shape
         shape = (i + 1, i + 2, 3 - i)
-        affine = affine_eye
+        affine = np.eye(4)
         affine[i, i] *= -1
 
         img = Nifti1Image(data, affine)
@@ -1040,10 +1038,10 @@ def test_reorder_img_flipping_axis(affine_eye, rng):
         assert np.all(np.diag(img2.affine) >= 0)
 
 
-def test_reorder_img_error_interpolation(affine_eye, rng):
+def test_reorder_img_error_interpolation(rng):
     shape = (5, 5, 5, 2, 2)
     data = rng.uniform(size=shape)
-    affine = affine_eye
+    affine = np.eye(4)
     affine[1, 0] = 0.1
     ref_img = Nifti1Image(data, affine)
 
@@ -1104,9 +1102,8 @@ def test_reorder_img_copied_header(img_4d_mni_tr2):
     )
 
 
-@pytest.mark.thread_unsafe
-def test_coord_transform_trivial(affine_eye, rng):
-    sform = affine_eye
+def test_coord_transform_trivial(rng):
+    sform = np.eye(4)
     x = rng.random((10,))
     y = rng.random((10,))
     z = rng.random((10,))
@@ -1239,9 +1236,9 @@ def test_resampling_with_int64_types_no_crash(
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_resample_input(affine_eye, shape, rng, tmp_path, force_resample):
+def test_resample_input(shape, rng, tmp_path, force_resample):
     data = rng.integers(0, 10, shape, dtype="int32")
-    affine = affine_eye
+    affine = np.eye(4)
     affine[:3, -1] = 0.5 * np.array(shape[:3])
     img = Nifti1Image(data, affine)
 

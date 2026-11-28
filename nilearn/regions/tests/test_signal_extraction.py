@@ -475,7 +475,6 @@ def test_signals_extraction_with_labels_with_mask(
     assert unique_labels == [0, 1, 2, 5]
 
 
-@pytest.mark.thread_unsafe
 def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
     # Generate signal imgs
     maps_img, mask_img = generate_maps(shape_3d_default, N_REGIONS)

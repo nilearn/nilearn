@@ -84,17 +84,17 @@ def test_sphere_extraction(rng, affine_eye):
     )
 
 
-def test_anisotropic_sphere_extraction(rng, affine_eye):
+def test_anisotropic_sphere_extraction(rng):
     """Test non anisotropic sphere extraction."""
     seed = (2, 1, 2)
 
     data = rng.random((3, 3, 3, 5))
 
-    affine = affine_eye
+    affine = np.eye(4)
     affine[0, 0] = 2
     affine[2, 2] = 2
 
-    img = Nifti1Image(data, affine_eye)
+    img = Nifti1Image(data, affine)
 
     masker = NiftiSpheresMasker([seed], radius=1)
 
@@ -112,7 +112,7 @@ def test_anisotropic_sphere_extraction(rng, affine_eye):
     mask_img = np.zeros((3, 2, 3))
     mask_img[1, 0, 1] = 1
 
-    affine_2 = affine_eye.copy()
+    affine_2 = affine
     affine_2[0, 0] = 4
 
     mask_img = Nifti1Image(mask_img, affine=affine_2)
