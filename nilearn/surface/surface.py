@@ -1538,6 +1538,57 @@ def _stringify(word_list):
 
 
 # function to figure out datatype and load data
+def _load_single_surf_file(surf_data: str) -> np.ndarray:
+    """Load surface data from a single file based on its extension."""
+    # avoid circular import
+    from nilearn.image.image import get_data as get_vol_data
+
+    check_extensions(surf_data, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
+    if surf_data.endswith(("nii", "nii.gz", "mgz")):
+        loaded_img = load(surf_data)
+        if not isinstance(loaded_img, SpatialImage):
+            raise TypeError(
+                "Data given cannot be loaded because it is"
+                " not compatible with nibabel format:\n"
+                f"{surf_data!r}"
+            )
+        return np.squeeze(get_vol_data(loaded_img))
+    if surf_data.endswith(("area", "curv", "sulc", "thickness")):
+        return fs.io.read_morph_data(surf_data)
+    if surf_data.endswith("annot"):
+        return fs.io.read_annot(surf_data)[0]
+    if surf_data.endswith("label"):
+        return fs.io.read_label(surf_data)
+    if surf_data.endswith("gii"):
+        return _gifti_img_to_data(load(surf_data))
+    if surf_data.endswith("gii.gz"):
+        gii = _load_surf_files_gifti_gzip(surf_data)
+        return _gifti_img_to_data(gii)
+    return np.empty(1)
+
+
+def _concat_surf_data_files(file_list: list) -> np.ndarray:
+    """Load and concatenate surface data across multiple files."""
+    data = np.empty(1)
+    for i, file_path in enumerate(file_list):
+        data_part = _load_single_surf_file(str(file_path))
+        if data_part.ndim == 1:
+            data_part = data_part[:, np.newaxis]
+        if i == 0:
+            data = data_part
+        else:
+            try:
+                data = np.concatenate((data, data_part), axis=1)
+            except ValueError as e:
+                raise ValueError(
+                    "When more than one file is input, "
+                    "all files must contain data "
+                    "with the same shape in axis=0."
+                ) from e
+    return data
+
+
 def load_surf_data(surf_data) -> np.ndarray:
     """Load data to be represented on a surface mesh.
 
@@ -1554,13 +1605,14 @@ def load_surf_data(surf_data) -> np.ndarray:
     data : :obj:`numpy.ndarray`
         An array containing surface data.
     """
-    # avoid circular import
-    from nilearn.image.image import get_data as get_vol_data
-
-    # if the input is a filename, load it
     surf_data = stringify_path(surf_data)
 
-    if not isinstance(surf_data, (str, np.ndarray)):
+    if isinstance(surf_data, np.ndarray):
+        data = surf_data
+    elif isinstance(surf_data, str):
+        file_list = resolve_globbing(surf_data)
+        data = _concat_surf_data_files(file_list)
+    else:
         raise ValueError(
             "The input type is not recognized. "
             "Valid inputs are a Numpy array or one of the "
@@ -1569,59 +1621,6 @@ def load_surf_data(surf_data) -> np.ndarray:
             "Freesurfer specific files such as "
             f"{_stringify(FREESURFER_DATA_EXTENSIONS)}."
         )
-
-    if isinstance(surf_data, str):
-        # resolve globbing
-        file_list = resolve_globbing(surf_data)
-        # resolve_globbing handles empty lists
-
-        data = np.empty(1)
-        data_part = np.empty(1)
-        for i, surf_data in enumerate(file_list):
-            surf_data = str(surf_data)
-
-            check_extensions(
-                surf_data, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS
-            )
-
-            if surf_data.endswith(("nii", "nii.gz", "mgz")):
-                loaded_img = load(surf_data)
-                if not isinstance(loaded_img, SpatialImage):
-                    raise TypeError(
-                        "Data given cannot be loaded because it is"
-                        " not compatible with nibabel format:\n"
-                        f"{surf_data!r}"
-                    )
-                data_part = np.squeeze(get_vol_data(loaded_img))
-            elif surf_data.endswith(("area", "curv", "sulc", "thickness")):
-                data_part = fs.io.read_morph_data(surf_data)
-            elif surf_data.endswith("annot"):
-                data_part = fs.io.read_annot(surf_data)[0]
-            elif surf_data.endswith("label"):
-                data_part = fs.io.read_label(surf_data)
-            elif surf_data.endswith("gii"):
-                data_part = _gifti_img_to_data(load(surf_data))
-            elif surf_data.endswith("gii.gz"):
-                gii = _load_surf_files_gifti_gzip(surf_data)
-                data_part = _gifti_img_to_data(gii)
-
-            if len(data_part.shape) == 1:
-                data_part = data_part[:, np.newaxis]
-            if i == 0:
-                data = data_part
-            else:
-                try:
-                    data = np.concatenate((data, data_part), axis=1)
-                except ValueError as e:
-                    raise ValueError(
-                        "When more than one file is input, "
-                        "all files must contain data "
-                        "with the same shape in axis=0."
-                    ) from e
-
-    # if the input is a numpy array
-    elif isinstance(surf_data, np.ndarray):
-        data = surf_data
 
     return np.squeeze(data)
 
