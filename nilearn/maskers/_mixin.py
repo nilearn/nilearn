@@ -314,7 +314,6 @@ class _MultiMixin:
 class _LabelMaskerMixin:
     background_label: int | float
     lut_: pd.DataFrame
-    _lut_: pd.DataFrame
 
     @property
     def n_elements_(self) -> int:
@@ -325,10 +324,7 @@ class _LabelMaskerMixin:
         minus the background value.
         """
         check_is_fitted(self)
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
-        return len(lut[lut["index"] != self.background_label])
+        return len(self.lut_[self.lut_["index"] != self.background_label])
 
     @property
     def labels_(self) -> list[int | float]:
@@ -337,10 +333,7 @@ class _LabelMaskerMixin:
         The background label is included if present in the image.
         """
         check_is_fitted(self)
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
-        return lut["index"].to_list()
+        return self.lut_["index"].to_list()
 
     @property
     def region_names_(self) -> dict[int, str]:
