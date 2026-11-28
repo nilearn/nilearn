@@ -1314,10 +1314,10 @@ def fetch_atlas_aal(  # numpydoc ignore=RT05
     opts = {"uncompress": True}
 
     backup_url = {
-        "3v2": "https://osf.io/6jngh/download",
-        "SPM12": "https://osf.io/s94qg/download",
-        "SPM8": "https://osf.io/rkpeh/download",
-        "SPM5": "https://osf.io/948y2/download",
+        "3v2": zenodo_url(24626598, "AAL3v2_for_SPM12.tar.gz"),
+        "SPM12": zenodo_url(24626595, "aal_for_SPM12.tar.gz"),
+        "SPM8": zenodo_url(24626589, "24626589"),
+        "SPM5": zenodo_url(24626576, "aal_for_SPM5.zip"),
     }
 
     basenames = ()

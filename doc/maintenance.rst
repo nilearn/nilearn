@@ -202,43 +202,49 @@ and some of those are 'maintained' by the Nilearn developers.
 Here is a quick description of the different OSF projects
 that the developers have access to:
 
-- `nilearn_data <https://osf.io/hxctv>`_
+-   `nilearn_data <https://osf.io/hxctv>`_
 
-  Old project hosting the data for ``fetch_atlas_allen_2011``
-  now moved to Zenodo: https://doi.org/10.5281/zenodo.24503288
+    Old project hosting the data for ``fetch_atlas_allen_2011``
+    now moved to Zenodo: https://doi.org/10.5281/zenodo.24503288
 
-- `Nilearn_datasets <https://osf.io/mk53n>`_
+-   `Nilearn_datasets <https://osf.io/mk53n>`_
 
-  Old project hosting the data for ``fetch_surf_fsaverage``.
-  now moved to Zenodo.
+    Old project (now moved to Zenodo) hosting data for:
 
-  - ``fsaverage3``: https://doi.org/10.5281/zenodo.23242165
-  - ``fsaverage4``: https://doi.org/10.5281/zenodo.23696246
-  - ``fsaverage6``: https://doi.org/10.5281/zenodo.24502511
-  - ``fsaverage7``: https://doi.org/10.5281/zenodo.24502702
+    - ``fetch_surf_fsaverage``:
 
-- `nistats <https://osf.io/v7hsw>`_
+        - ``fsaverage3``: https://doi.org/10.5281/zenodo.23242165
+        - ``fsaverage4``: https://doi.org/10.5281/zenodo.23696246
+        - ``fsaverage6``: https://doi.org/10.5281/zenodo.24502511
+        - ``fsaverage7``: https://doi.org/10.5281/zenodo.24502702
 
-  Old project hosting the data for ``fetch_localizer_first_level``.
-  now moved to Zenodo: https://doi.org/10.5281/zenodo.24504516
+    - ``fetch_atlas_aal``: https://doi.org/10.5281/zenodo.24626575
 
-- `NiLearn's Quick Files <https://osf.io/hr36b>`_
+        Contains back up data in case the primary URL fails.
 
-  Old project hosting data now moved to zenodo:
 
-  - ``fetch_ds000030_urls``: https://doi.org/10.5281/zenodo.24504834
+-   `nistats <https://osf.io/v7hsw>`_
 
-  - ``fetch_icbm152_2009``: https://doi.org/10.5281/zenodo.24508386
+    Old project hosting the data for ``fetch_localizer_first_level``.
+    now moved to Zenodo: https://doi.org/10.5281/zenodo.24504516
 
-- `temporary space to store dataset for nilearn example gallery <https://osf.io/5dr8p>`_
+-   `NiLearn's Quick Files <https://osf.io/hr36b>`_
 
-  Old project hosting the data for ``fetch_language_localizer_demo_dataset``
-  acts as fall-back URL in case https://osf.io/k4jp8 fails.
-  The data was moved to Zenodo: https://doi.org/10.5281/zenodo.24525273
+    Old project hosting data now moved to zenodo:
 
-- `nilearn_data_backup_archive <https://osf.io/59wxs>`_
+    - ``fetch_ds000030_urls``: https://doi.org/10.5281/zenodo.24504834
 
-  This is an old project used for back up Nilearn's data.
+    - ``fetch_icbm152_2009``: https://doi.org/10.5281/zenodo.24508386
+
+-   `temporary space to store dataset for nilearn example gallery <https://osf.io/5dr8p>`_
+
+    Old project hosting the data for ``fetch_language_localizer_demo_dataset``
+    acts as fall-back URL in case https://osf.io/k4jp8 fails.
+    The data was moved to Zenodo: https://doi.org/10.5281/zenodo.24525273
+
+-   `nilearn_data_backup_archive <https://osf.io/59wxs>`_
+
+    This is an old project used for back up Nilearn's data.
 
 .. TODO
    `Allen and MIALAB ICA atlas 2011 <https://osf.io/vp4dk>`_
