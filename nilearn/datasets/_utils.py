@@ -18,12 +18,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import requests
+from requests.adapters import HTTPAdapter, Retry
 
 from nilearn._utils import logger
 from nilearn._utils.docs import (
     fill_doc,
     render_description_directives,
 )
+from nilearn._utils.helpers import is_notebook
 from nilearn._utils.logger import _has_rich, find_stack_level, readable_time
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
@@ -34,6 +36,15 @@ from nilearn.datasets.utils import get_data_dirs
 from nilearn.nilearn_typing import NSubject, Verbose
 
 _REQUESTS_TIMEOUT = (15.1, 61)
+
+# Retry policy for HTTP(S) downloads.
+# Some servers hosting datasets (e.g. OSF)
+# occasionally time out or return server errors:
+# retry a few times with an exponential backoff
+# (2, 4, 8 seconds between attempts) before giving up.
+_DOWNLOAD_RETRIES = 3
+_DOWNLOAD_BACKOFF_FACTOR = 2
+_RETRY_STATUS_CODES = (429, 500, 502, 503, 504)
 PACKAGE_DIRECTORY = Path(__file__).absolute().parent
 
 
@@ -166,6 +177,36 @@ def _chunk_report_(
         )
 
 
+def _use_rich_progress() -> bool:
+    """Check whether a rich progress bar should be used for downloads.
+
+    The progress bar redraws itself in place
+    using terminal control sequences.
+    When the output is not an interactive terminal
+    (for example in continuous integration or when redirected to a file),
+    those sequences end up as stray characters in the logs
+    and each redraw becomes a new line.
+
+    So a rich progress bar is only used if rich is installed
+    and the output is an interactive terminal
+    or a notebook (Jupyter or marimo).
+    """
+    if not _has_rich():
+        return False
+
+    if is_notebook():
+        return True
+
+    isatty = getattr(sys.stdout, "isatty", None)
+    if isatty is None:
+        return False
+    try:
+        return bool(isatty())
+    except ValueError:
+        # stdout is closed
+        return False
+
+
 @fill_doc
 def _chunk_read_(
     response,
@@ -178,7 +219,8 @@ def _chunk_read_(
 ) -> None:
     """Download a file chunk by chunk and show advancement.
 
-    If ``rich`` is installed, a :class:`rich.progress.Progress` bar is
+    If ``rich`` is installed and the output is an interactive terminal
+    or a notebook (Jupyter or marimo), a :class:`rich.progress.Progress` bar is
     used to display advancement. Otherwise, a fallback text-based report
     is printed instead (see :func:`_chunk_report_`).
 
@@ -227,7 +269,7 @@ def _chunk_read_(
         total_size = None
 
     task_id = None
-    use_rich = report_hook and _has_rich()
+    use_rich = report_hook and _use_rich_progress()
     if use_rich:
         from rich.progress import (
             BarColumn,
@@ -615,6 +657,33 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
         pass
 
 
+def _new_session() -> requests.Session:
+    """Create a requests session to download datasets.
+
+    HTTP(S) requests are retried on connection errors, read timeouts
+    and transient server errors (see ``_RETRY_STATUS_CODES``),
+    with an exponential backoff between attempts.
+    ``Retry-After`` headers (e.g. sent with a 429 response) are respected.
+
+    If all retries fail on a server error,
+    the last response is returned
+    so that it can be handled with ``raise_for_status``.
+    """
+    session = requests.Session()
+    retries = Retry(
+        total=_DOWNLOAD_RETRIES,
+        backoff_factor=_DOWNLOAD_BACKOFF_FACTOR,
+        status_forcelist=_RETRY_STATUS_CODES,
+        respect_retry_after_header=True,
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(max_retries=retries)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    session.mount("ftp:", _NaiveFTPAdapter())
+    return session
+
+
 @fill_doc
 def fetch_single_file(
     url,
@@ -665,8 +734,7 @@ def fetch_single_file(
     removed.
     """
     if session is None:
-        with requests.Session() as sess:
-            sess.mount("ftp:", _NaiveFTPAdapter())
+        with _new_session() as sess:
             return fetch_single_file(
                 url,
                 data_dir,
@@ -898,8 +966,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     check_params(locals())
 
     if session is None:
-        with requests.Session() as sess:
-            sess.mount("ftp:", _NaiveFTPAdapter())
+        with _new_session() as sess:
             return fetch_files(
                 data_dir,
                 files,
@@ -1049,3 +1116,8 @@ def tree(path, pattern=None, dictionary=False):
     if len(files) > 0:
         dirs["."] = files
     return dirs
+
+
+def zenodo_url(record: int, file: str) -> str:
+    """Build a url for a file on zenodo."""
+    return f"https://zenodo.org/api/records/{record}/files/{file}/content"

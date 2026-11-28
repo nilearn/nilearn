@@ -140,8 +140,8 @@ design_matrix = get_design_from_fslmat(
 
 # %%
 # We identify the columns of the Go and StopSuccess conditions of the
-# design matrix inferred from the FSL file, to use them later for contrast
-# definition.
+# design matrix inferred from the FSL file,
+# to use them later for contrast definition.
 design_columns = [
     f"cond_{int(i):02}" for i in range(len(design_matrix.columns))
 ]
@@ -156,8 +156,8 @@ design_matrix.columns = design_columns
 model.fit(imgs, design_matrices=[design_matrix])
 
 # %%
-# Then we compute the StopSuccess - Go contrast. We can use the column names
-# of the design matrix.
+# Then we compute the StopSuccess - Go contrast.
+# We can use the column names of the design matrix.
 z_map = model.compute_contrast("StopSuccess - Go")
 
 # %%

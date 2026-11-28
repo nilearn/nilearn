@@ -28,8 +28,9 @@ More specifically, this example will be divided into three sections:
 # Fetch example :term:`BIDS` dataset
 # ----------------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative
-# purposes. It contains only the necessary
-# information for each subject to run a statistical analysis using Nilearn.
+# purposes.
+# It contains only the necessary information for each subject
+# to run a statistical analysis using Nilearn.
 # Each of the raw data folders  contain ``bold.json`` and ``events.tsv`` files,
 # indicating :term:`fMRI` metadata and the timing of the task events,
 # respectively.
@@ -196,15 +197,15 @@ second_level_model = second_level_model.fit(second_level_input)
 # Computing contrasts at the second-level is as simple as at the first-level.
 # Since we are not providing confounders,
 # we are performing a one-sample test
-# at the second-level with the images determined by the specified first-level
-# contrast.
+# at the second-level with the images determined
+# by the specified first-level contrast.
 zmap = second_level_model.compute_contrast(
     first_level_contrast="language - string"
 )
 
 # %%
-# The second-level :term:`contrast` reveals a left lateralized fronto-temporal
-# language network.
+# The second-level :term:`contrast`
+# reveals a left lateralized fronto-temporal language network.
 plotting.plot_glass_brain(
     zmap,
     threshold=p001_unc,

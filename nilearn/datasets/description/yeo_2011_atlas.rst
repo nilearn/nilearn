@@ -15,7 +15,7 @@ Four versions of the atlas are available,
 according to the cortical model (``thick`` or ``thin`` cortical surface)
 and to the number of networks considered (``7`` or ``17``).
 
-Direct download link: ``ftp://surfer.nmr.mgh.harvard.edu/pub/data/Yeo_JNeurophysiol11_MNI152``
+Direct download link from Zenodo: https://doi.org/10.5281/zenodo.24531233
 
 For more information on this dataset's structure,
 see :footcite:t:`CorticalParcellation_Yeo2011`,

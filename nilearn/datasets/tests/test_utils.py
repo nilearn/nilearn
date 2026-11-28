@@ -5,7 +5,10 @@ import os
 import re
 import shutil
 import tarfile
+import threading
+import time
 import urllib
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import MagicMock
 from zipfile import ZipFile
@@ -664,9 +667,10 @@ def test_naive_ftp_adapter():
 
 
 @pytest.mark.parametrize("headers", [{}, {"Content-Length": "13"}])
-def test_chunk_read_rich(tmp_path, headers):
+def test_chunk_read_rich(tmp_path, headers, monkeypatch):
     """Check download with a rich progress bar with known or unknown size."""
     pytest.importorskip("rich")
+    monkeypatch.setattr(_utils, "_use_rich_progress", lambda: True)
 
     resp = Response(b"dummy content", "http://foo")
     resp.headers = headers
@@ -687,6 +691,7 @@ def test_chunk_read_progress_stopped_if_start_fails(tmp_path, monkeypatch):
     and all subsequent downloads fail with a rich.errors.LiveError.
     """
     progress = pytest.importorskip("rich.progress")
+    monkeypatch.setattr(_utils, "_use_rich_progress", lambda: True)
     original_start = progress.Progress.start
     original_stop = progress.Progress.stop
     stop_calls = []
@@ -711,3 +716,162 @@ def test_chunk_read_progress_stopped_if_start_fails(tmp_path, monkeypatch):
         _utils._chunk_read_(resp, f, report_hook=True)
 
     assert len(stop_calls) == 1
+
+
+def test_chunk_read_no_rich_when_not_a_terminal(tmp_path, monkeypatch):
+    """Check that no rich progress bar is used when not in a terminal.
+
+    Otherwise terminal control sequences (like hide / show cursor)
+    end up as stray characters in non-interactive logs (e.g. in CI)
+    and every refresh of the bar becomes a new line.
+    """
+    progress = pytest.importorskip("rich.progress")
+
+    def fail_start(_):
+        raise AssertionError("rich progress bar should not be used")
+
+    monkeypatch.setattr(progress.Progress, "start", fail_start)
+    monkeypatch.setattr(_utils.sys.stdout, "isatty", lambda: False)
+    monkeypatch.setattr(_utils, "is_notebook", lambda: False)
+
+    assert not _utils._use_rich_progress()
+
+    resp = Response(b"dummy content", "http://foo")
+    resp.headers = {"Content-Length": "13"}
+    with (tmp_path / "foo.txt").open("wb") as f:
+        _utils._chunk_read_(resp, f, report_hook=True)
+
+    assert (tmp_path / "foo.txt").read_bytes() == b"dummy content"
+
+
+def test_use_rich_progress_in_terminal(monkeypatch):
+    """Check that rich progress bar is used in an interactive terminal."""
+    pytest.importorskip("rich")
+    monkeypatch.setattr(_utils.sys.stdout, "isatty", lambda: True)
+
+    assert _utils._use_rich_progress()
+
+
+def test_use_rich_progress_in_notebook(monkeypatch):
+    """Check that rich progress bar is used in notebooks.
+
+    In Jupyter or marimo notebooks stdout is not a terminal.
+    """
+    pytest.importorskip("rich")
+    monkeypatch.setattr(_utils.sys.stdout, "isatty", lambda: False)
+    monkeypatch.setattr(_utils, "is_notebook", lambda: True)
+
+    assert _utils._use_rich_progress()
+
+
+def test_use_rich_progress_without_rich(monkeypatch):
+    """Check that no rich progress bar is used if rich is not installed."""
+    monkeypatch.setattr(_utils, "_has_rich", lambda: False)
+    monkeypatch.setattr(_utils.sys.stdout, "isatty", lambda: True)
+
+    assert not _utils._use_rich_progress()
+
+
+def test_new_session_retry_config():
+    """Check HTTP(S) requests of download sessions are retried."""
+    with _utils._new_session() as session:
+        for url in ["http://example.com", "https://example.com"]:
+            retries = session.get_adapter(url).max_retries
+            assert retries.total == _utils._DOWNLOAD_RETRIES
+            assert retries.backoff_factor == _utils._DOWNLOAD_BACKOFF_FACTOR
+            assert set(retries.status_forcelist) == set(
+                _utils._RETRY_STATUS_CODES
+            )
+            assert retries.respect_retry_after_header
+        assert isinstance(
+            session.get_adapter("ftp://example.com"), _utils._NaiveFTPAdapter
+        )
+
+
+def _serve(statuses, n_slow=0, delay=0):
+    """Start a local HTTP server returning the given status codes in order.
+
+    The last status code is returned for any extra request.
+
+    The first ``n_slow`` requests wait ``delay`` seconds before responding.
+    """
+    calls = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            status = statuses[min(len(calls), len(statuses) - 1)]
+            calls.append(status)
+            if len(calls) <= n_slow:
+                time.sleep(delay)
+            body = b"dummy content"
+            self.send_response(status)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *args):
+            pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    return server, calls
+
+
+@pytest.mark.parametrize(
+    "statuses, expected_status, expected_calls",
+    [
+        # transient errors are retried until success
+        ([500, 503, 200], 200, 3),
+        ([429, 200], 200, 2),
+        # client errors are not retried
+        ([404, 200], 404, 1),
+        # give up after all retries:
+        # the last response is returned
+        # and can be handled with raise_for_status
+        ([500], 500, _utils._DOWNLOAD_RETRIES + 1),
+    ],
+)
+def test_new_session_retries(
+    monkeypatch, statuses, expected_status, expected_calls
+):
+    """Check transient server errors are retried by download sessions.
+
+    Session.send is mocked for all tests,
+    so the transport adapter of the session is used directly.
+    """
+    # no need to wait between retries during tests
+    monkeypatch.setattr(_utils, "_DOWNLOAD_BACKOFF_FACTOR", 0)
+
+    server, calls = _serve(statuses)
+    try:
+        url = f"http://127.0.0.1:{server.server_port}/file"
+        with _utils._new_session() as session:
+            prepped = session.prepare_request(requests.Request("GET", url))
+            resp = session.get_adapter(url).send(prepped, timeout=5)
+            assert resp.status_code == expected_status
+            resp.close()
+    finally:
+        server.shutdown()
+        server.server_close()
+
+    assert len(calls) == expected_calls
+
+
+def test_new_session_retries_read_timeout(monkeypatch):
+    """Check requests are retried when the server is too slow to respond."""
+    monkeypatch.setattr(_utils, "_DOWNLOAD_BACKOFF_FACTOR", 0)
+
+    server, calls = _serve([200], n_slow=1, delay=0.5)
+    try:
+        url = f"http://127.0.0.1:{server.server_port}/file"
+        with _utils._new_session() as session:
+            prepped = session.prepare_request(requests.Request("GET", url))
+            resp = session.get_adapter(url).send(prepped, timeout=(5, 0.2))
+            assert resp.status_code == 200
+            resp.close()
+    finally:
+        server.shutdown()
+        server.server_close()
+
+    assert len(calls) == 2

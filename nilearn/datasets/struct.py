@@ -25,6 +25,7 @@ from nilearn.datasets._utils import (
     fetch_files,
     get_dataset_descr,
     get_dataset_dir,
+    zenodo_url,
 )
 from nilearn.image import check_niimg, get_data, new_img_like, resampling
 from nilearn.nilearn_typing import (
@@ -124,10 +125,7 @@ def fetch_icbm152_2009(  # numpydoc ignore=RT05
     check_params(locals())
 
     if url is None:
-        # The URL can be retrieved from the nilearn account on OSF (Open
-        # Science Framework), https://osf.io/4r3jt/quickfiles/
-        # Clicking on the "share" button gives the root of the URL.
-        url = "https://osf.io/7pj92/download"
+        url = zenodo_url(24508387, "mni_icbm152_nlin_sym_09a_nifti.zip")
     opts = {"uncompress": True}
 
     keys = (
@@ -1091,12 +1089,15 @@ def _fetch_surf_fsaverage(
     dataset_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
     opts = {"uncompress": True}
 
-    url = {
-        "fsaverage3": "https://osf.io/329dq/download",
-        "fsaverage4": "https://osf.io/gkqd5/download",
-        "fsaverage6": "https://osf.io/jzxyr/download",
-        "fsaverage": "https://osf.io/svf8k/download",  # fsaverage7
-    }[dataset_name]
+    datasets = {
+        "fsaverage3": zenodo_url(23242166, "fsaverage3.tar.gz"),
+        "fsaverage4": zenodo_url(23696293, "fsaverage4.tar.gz"),
+        "fsaverage6": zenodo_url(24533968, "fsaverage6.tar.gz"),
+        # fsaverage and fsaverage7 are the same
+        "fsaverage": zenodo_url(24534012, "fsaverage7.tar.gz"),
+    }
+
+    url = datasets[dataset_name]
 
     # List of attributes exposed by the dataset
     dataset_attributes = [

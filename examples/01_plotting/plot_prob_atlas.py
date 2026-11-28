@@ -69,8 +69,9 @@ plotting.show()
 # Other probabilistic atlases accessible with nilearn
 # ---------------------------------------------------
 #
-# To save build time, the following code is not executed. Try running it
-# locally to get the same plots as above for each of the listed atlases.
+# To save build time, the following code is not executed.
+# Try running it locally to get the same plots
+# as above for each of the listed atlases.
 #
 # .. code-block:: default
 #

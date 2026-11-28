@@ -106,6 +106,11 @@ Enhancements
 Changes
 -------
 
+- :bdg-secondary:`Maint` The data downloaded by the following fetchers is now hosted on `Zenodo <https://zenodo.org/>`_ instead of OSF or FTP servers: :func:`~datasets.fetch_atlas_allen_2011`, :func:`~datasets.fetch_atlas_yeo_2011`, :func:`~datasets.fetch_ds000030_urls`, :func:`~datasets.fetch_icbm152_2009`, :func:`~datasets.fetch_language_localizer_demo_dataset`, :func:`~datasets.fetch_localizer_first_level` and :func:`~datasets.fetch_surf_fsaverage` (for ``fsaverage3``, ``fsaverage4``, ``fsaverage6`` and ``fsaverage7``). The Yeo 2011 atlas is now stored in a ``yeo_2011_atlas`` folder in the nilearn data directory, so it will be downloaded again (:gh:`6641` by `Rémi Gau`_).
+
+- :bdg-secondary:`Maint` Dataset fetchers now retry downloads up to 3 times, with an increasing pause between attempts, when a server times out or returns a transient error (``429``, ``500``, ``502``, ``503`` or ``504``). This makes fetching data from occasionally unreliable servers (like OSF) more robust (:gh:`6641` by `Rémi Gau`_).
+
+- :bdg-secondary:`Maint` Dataset fetchers now only display a ``rich`` download progress bar when the output is an interactive terminal or a notebook (Jupyter or marimo). Otherwise (for example in continuous integration or when the output is redirected to a file) a simpler text report is used, to avoid stray terminal control characters and repeated progress lines in logs (:gh:`6641` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The ``return_label_maps`` parameter of :func:`~reporting.get_clusters_table` is deprecated and will be removed in version 0.17.0, when cluster label maps will always be returned together with the table (:gh:`6376` by `Mohammad Sadeghi Hardengi`_).
 

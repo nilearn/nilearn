@@ -41,6 +41,7 @@ from nilearn.datasets._utils import (
     read_md5_sum_file,
     tree,
     uncompress_file,
+    zenodo_url,
 )
 from nilearn.datasets.struct import load_fsaverage
 from nilearn.image import check_niimg, get_data
@@ -2431,9 +2432,9 @@ def fetch_language_localizer_demo_dataset(  # numpydoc ignore=RT05
     """
     check_params(locals())
 
-    url = "https://osf.io/nh987/download"
+    url = zenodo_url(24525274, "language_localizer.zip")
     # back up URL in case the one above fails
-    backup_url = "https://osf.io/3dj2a/download"
+    backup_url = "https://osf.io/nh987/download"
 
     main_folder = "fMRI-language-localizer-demo-dataset"
 
@@ -2441,7 +2442,9 @@ def fetch_language_localizer_demo_dataset(  # numpydoc ignore=RT05
         main_folder, data_dir=data_dir, verbose=verbose
     )
 
-    try:
+    def fetch_and_uncompress(
+        main_folder: str, url: str, dataset_dir: Path, verbose: Verbose
+    ) -> None:
         # The files_spec needed for fetch_files
         files_spec = [
             (f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})
@@ -2453,28 +2456,20 @@ def fetch_language_localizer_demo_dataset(  # numpydoc ignore=RT05
                 dataset_dir, files_spec, resume=True, verbose=verbose
             )
             uncompress_file(downloaded_files[0])
+
+    try:
+        fetch_and_uncompress(main_folder, url, dataset_dir, verbose)
     except Exception:
-        # The files_spec needed for fetch_files
-        files_spec = [
-            (f"{main_folder}.zip", backup_url, {"move": f"{main_folder}.zip"})
-        ]
-        # Only download if directory is empty
-        # Directory will have been created by the call to get_dataset_dir above
-        if not list(dataset_dir.iterdir()):
-            downloaded_files = fetch_files(
-                dataset_dir, files_spec, resume=True, verbose=verbose
-            )
-            uncompress_file(downloaded_files[0])
+        fetch_and_uncompress(main_folder, backup_url, dataset_dir, verbose)
 
     file_list = [
         str(path) for path in dataset_dir.rglob("*") if path.is_file()
     ]
 
-    description = Description.from_registry("language_localizer_demo")
     return Bunch(
         data_dir=str(dataset_dir),
         func=sorted(file_list),
-        description=description,
+        description=Description.from_registry("language_localizer_demo"),
     )
 
 
@@ -2530,7 +2525,9 @@ def fetch_ds000030_urls(
     check_params(locals())
 
     DATA_PREFIX = "ds000030/ds000030_R1.0.4/uncompressed"
-    FILE_URL = "https://osf.io/86xj7/download"
+    FILE_URL = zenodo_url(
+        24504835, "nilearn_fetcher_openneuro_dataset_urls.json"
+    )
 
     dataset_dir = get_dataset_dir(
         DATA_PREFIX,
@@ -2852,7 +2849,7 @@ def fetch_localizer_first_level(  # numpydoc ignore=RT05
     """
     check_params(locals())
 
-    url = "https://osf.io/2bqxn/download"
+    url = zenodo_url(24504517, "localizer_first_level.zip")
     epi_img = "sub-12069_task-localizer_space-MNI305.nii.gz"
     events = "sub-12069_task-localizer_events.tsv"
     opts = {"uncompress": True}

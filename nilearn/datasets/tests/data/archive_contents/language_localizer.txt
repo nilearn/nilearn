@@ -1,4 +1,4 @@
-https://osf.io/nh987/download
+https://zenodo.org/api/records/24525274/files/language_localizer.zip/content
 sub-09/func/sub-09_task-languagelocalizer_events.tsv
 access_data.py
 sub-05/func/sub-05_task-languagelocalizer_events.tsv

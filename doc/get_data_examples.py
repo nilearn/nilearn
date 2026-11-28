@@ -1,6 +1,9 @@
 """Downloads the data for building the reports and the examples."""
 
 import sys
+import time
+
+import requests
 
 from nilearn import datasets
 from nilearn._utils.docs import Description, check_content_types
@@ -9,13 +12,34 @@ from nilearn._utils.docs import Description, check_content_types
 # and their description
 DESCRIPTION_ERRORS: list[str] = []
 
+# Number of times a fetcher is run again if a download fails,
+# and pause (in seconds) before each new attempt.
+# Files already downloaded are not downloaded again,
+# so a new attempt resumes where the previous one failed.
+N_ATTEMPTS = 3
+PAUSE_BETWEEN_ATTEMPTS = 60
+
 
 def _fetch(fn, *args, **kwargs):
     """Run a fetcher and check its data match their description.
 
+    The fetcher is run again if a download fails
+    (some servers hosting datasets are sometimes unreliable).
+
     Mismatches are appended to DESCRIPTION_ERRORS.
     """
-    data = fn(*args, **kwargs)
+    for attempt in range(1, N_ATTEMPTS + 1):
+        try:
+            data = fn(*args, **kwargs)
+            break
+        except (requests.RequestException, OSError) as e:
+            if attempt == N_ATTEMPTS:
+                raise
+            print(
+                f"{fn.__name__} failed (attempt {attempt}/{N_ATTEMPTS}): "
+                f"{e!r}\nTrying again in {PAUSE_BETWEEN_ATTEMPTS} seconds."
+            )
+            time.sleep(PAUSE_BETWEEN_ATTEMPTS)
     description = getattr(data, "description", None)
     if isinstance(description, Description):
         DESCRIPTION_ERRORS.extend(

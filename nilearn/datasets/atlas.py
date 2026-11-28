@@ -30,6 +30,7 @@ from nilearn.datasets._utils import (
     fetch_files,
     fetch_single_file,
     get_dataset_dir,
+    zenodo_url,
 )
 from nilearn.image import check_niimg, new_img_like, reorder_img
 from nilearn.nilearn_typing import DataDir, Resume, TypedBunch, Url, Verbose
@@ -1163,13 +1164,10 @@ def fetch_atlas_yeo_2011(  # numpydoc ignore=RT05
     check_parameter_in_allowed(thickness, ("thin", "thick"), "thickness")
 
     if url is None:
-        url = (
-            "ftp://surfer.nmr.mgh.harvard.edu/pub/data/"
-            "Yeo_JNeurophysiol11_MNI152.zip"
-        )
+        url = zenodo_url(24531234, "yeo_2011.zip")
     opts = {"uncompress": True}
 
-    dataset_name = "yeo_2011"
+    dataset_name = "yeo_2011_atlas"
     keys = (
         "thin_7",
         "thick_7",
@@ -1190,7 +1188,8 @@ def fetch_atlas_yeo_2011(  # numpydoc ignore=RT05
     )
 
     filenames = [
-        (Path("Yeo_JNeurophysiol11_MNI152", f), url, opts) for f in basenames
+        (Path("yeo_2011", "Yeo_JNeurophysiol11_MNI152", f), url, opts)
+        for f in basenames
     ]
 
     data_dir = get_dataset_dir(
@@ -1200,7 +1199,7 @@ def fetch_atlas_yeo_2011(  # numpydoc ignore=RT05
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = Description.from_registry("yeo_2011_atlas")
+    fdescr = Description.from_registry(dataset_name)
 
     params = dict(
         [
@@ -1315,10 +1314,10 @@ def fetch_atlas_aal(  # numpydoc ignore=RT05
     opts = {"uncompress": True}
 
     backup_url = {
-        "3v2": "https://osf.io/6jngh/download",
-        "SPM12": "https://osf.io/s94qg/download",
-        "SPM8": "https://osf.io/rkpeh/download",
-        "SPM5": "https://osf.io/948y2/download",
+        "3v2": zenodo_url(24626598, "AAL3v2_for_SPM12.tar.gz"),
+        "SPM12": zenodo_url(24626595, "aal_for_SPM12.tar.gz"),
+        "SPM8": zenodo_url(24626589, "24626589"),
+        "SPM5": zenodo_url(24626576, "aal_for_SPM5.zip"),
     }
 
     basenames = ()
@@ -1676,7 +1675,7 @@ def fetch_atlas_allen_2011(  # numpydoc ignore=RT05
     atlas_type = "probabilistic"
 
     if url is None:
-        url = "https://osf.io/hrcku/download"
+        url = zenodo_url(24503289, "allen_rsn_2011.zip")
 
     keys = ("maps", "rsn28", "comps")
 
@@ -1890,9 +1889,10 @@ def _download_talairach(talairach_dir, verbose) -> None:
         )[0]
     except SSLError:
         # See https://github.com/nilearn/nilearn/issues/5896
+        # See https://github.com/nilearn/nilearn/issues/6640
         # A copy of the atlas was hence added
-        # to Nilearn OSF
-        backup_url = "https://osf.io/x4b2w/download"
+        # to Nilearn OSF and then moved Zenodo
+        backup_url = zenodo_url(24628197, "talairach.nii")
         temp_file = fetch_single_file(
             backup_url, Path(temp_dir), verbose=verbose
         )

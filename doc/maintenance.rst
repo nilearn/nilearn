@@ -216,57 +216,80 @@ tox run -e update_js
 Datasets
 ========
 
-Several datasets are on `OSF <https://osf.io>`_ and some of those are 'maintained' by the Nilearn developers.
+Open Science Framework
+----------------------
+
+Several datasets are on `OSF <https://osf.io>`_
+and some of those are 'maintained' by the Nilearn developers.
 
 Here is a quick description of the different OSF projects
-that the dev have access to:
+that the developers have access to:
 
-- `nilearn_data <https://osf.io/hxctv>`_
+-   `nilearn_data <https://osf.io/hxctv>`_
 
-  Project hosting the data for:
+    Old project hosting the data for ``fetch_atlas_allen_2011``
+    now moved to Zenodo: https://doi.org/10.5281/zenodo.24503288
 
-  - ``fetch_atlas_allen_2011``: https://osf.io/hrcku
+-   `Nilearn_datasets <https://osf.io/mk53n>`_
 
-- `Nilearn_datasets <https://osf.io/mk53n>`_
+    Old project (now moved to Zenodo) hosting data for:
 
-  Project hosting the data for
+    - ``fetch_surf_fsaverage``:
 
-  - ``fetch_surf_fsaverage``:
+        - ``fsaverage3``: https://doi.org/10.5281/zenodo.23242165
+        - ``fsaverage4``: https://doi.org/10.5281/zenodo.23696246
+        - ``fsaverage6``: https://doi.org/10.5281/zenodo.24502511
+        - ``fsaverage7``: https://doi.org/10.5281/zenodo.24502702
 
-    - ``fsaverage3``: https://osf.io/329dq
-    - ``fsaverage4``: https://osf.io/28uma
-    - ``fsaverage6``: https://osf.io/jzxyr
-    - ``fsaverage7``: https://osf.io/svf8k
+    - ``fetch_atlas_aal``: https://doi.org/10.5281/zenodo.24626575
 
-- `nistats <https://osf.io/v7hsw>`_
+        Contains back up data in case the primary URL fails.
 
-  Project hosting the data for:
+    - ``fetch_atlas_talairach``: https://doi.org/10.5281/zenodo.24628196
 
-  - ``fetch_localizer_first_level``: https://osf.io/2bqxn
+        Contains back up data in case the primary URL fails.
 
-- `NiLearn's Quick Files <https://osf.io/hr36b>`_
+-   `nistats <https://osf.io/v7hsw>`_
 
-  Project hosting some of the data for:
+    Old project hosting the data for ``fetch_localizer_first_level``.
+    now moved to Zenodo: https://doi.org/10.5281/zenodo.24504516
 
-  - ``fetch_ds000030_urls``: https://osf.io/86xj7
+-   `NiLearn's Quick Files <https://osf.io/hr36b>`_
 
-  - ``fetch_icbm152_2009``: https://osf.io/7pj92
+    Old project hosting data now moved to zenodo:
 
-- `temporary space to store dataset for nilearn example gallery <https://osf.io/5dr8p>`_
+    - ``fetch_ds000030_urls``: https://doi.org/10.5281/zenodo.24504834
 
-  Project hosting the data for
+    - ``fetch_icbm152_2009``: https://doi.org/10.5281/zenodo.24508386
 
-  - ``fetch_language_localizer_demo_dataset``
-    ``https://osf.io/3dj2a`` (from https://osf.io/5dr8p/overview) acts as fall-back URL in case
-    ``https://osf.io/nh987`` (from https://osf.io/k4jp8/overview) fails
+-   `temporary space to store dataset for nilearn example gallery <https://osf.io/5dr8p>`_
 
-- `nilearn_data_backup_archive <https://osf.io/59wxs>`_
+    Old project hosting the data for ``fetch_language_localizer_demo_dataset``
+    acts as fall-back URL in case https://osf.io/k4jp8 fails.
+    The data was moved to Zenodo: https://doi.org/10.5281/zenodo.24525273
 
-  This is an old project used for back up Nilearn's data.
+-   `nilearn_data_backup_archive <https://osf.io/59wxs>`_
+
+    This is an old project used for back up Nilearn's data.
 
 .. TODO
    `Allen and MIALAB ICA atlas 2011 <https://osf.io/vp4dk>`_
    Unrelated project under the Nilearn OSF user account
+
+Zenodo
+------
+
+Several datasets are accessed from Zenodo.
+They are published under `nilearn_devs community <https://zenodo.org/communities/nilearn_devs/>`_.
+If you are a Nilearn developer, request to be added this community.
+
+Some datasets were moved to Zenodo,
+because their original server was unreliable:
+
+- ``fetch_atlas_yeo_2011``: https://doi.org/10.5281/zenodo.24531233
+
+  Originally downloaded from the FreeSurfer FTP server:
+  ``ftp://surfer.nmr.mgh.harvard.edu/pub/data/Yeo_JNeurophysiol11_MNI152.zip``
 
 .. admonition:: Important
 

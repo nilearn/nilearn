@@ -37,8 +37,8 @@ data = func.fetch_localizer_first_level()
 fmri_img = data.epi_img
 
 # %%
-# Define the paradigm that will be used. Here, we just need to get the provided
-# file.
+# Define the paradigm that will be used.
+# Here, we just need to get the provided file.
 #
 # This task, described in Pinel et al., BMC neuroscience 2007 probes basic
 # functions, such as button presses with the left or right hand, viewing
@@ -48,9 +48,11 @@ fmri_img = data.epi_img
 # Visual stimuli were displayed in four 250-ms epochs, separated by 100ms
 # intervals (i.e., 1.3s in total). Auditory stimuli were drawn from a recorded
 # male voice (i.e., a total of 1.6s for motor instructions, 1.2-1.7s for
-# sentences, and 1.2-1.3s for subtractions). The auditory or visual stimuli
+# sentences, and 1.2-1.3s for subtractions).
+# The auditory or visual stimuli
 # were shown to the participants for passive listening or viewing or responses
-# via button presses in event-related paradigms.  Post-scan questions verified
+# via button presses in event-related paradigms.
+# Post-scan questions verified
 # that the experimental tasks were understood and followed correctly.
 #
 # This task comprises 10 conditions:
@@ -95,9 +97,10 @@ first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 
 # %%
-# Let us take a look at the design matrix: it has 10 main columns corresponding
-# to 10 experimental conditions, followed by 3 columns describing low-frequency
-# signals (drifts) and a constant regressor.
+# Let us take a look at the design matrix:
+# it has 10 main columns corresponding to 10 experimental conditions,
+# followed by 3 columns describing low-frequency signals (drifts)
+# and a constant regressor.
 from nilearn.plotting import plot_design_matrix
 
 plot_design_matrix(design_matrix)
@@ -108,9 +111,10 @@ plt.show()
 # %%
 # Specification of the contrasts.
 #
-# For this, let's create a function that, given the design matrix, generates
-# the corresponding contrasts.  This will be useful to repeat contrast
-# specification when we change the design matrix.
+# For this, let's create a function that, given the design matrix,
+# generates the corresponding contrasts.
+# This will be useful to repeat contrast specification
+# when we change the design matrix.
 import numpy as np
 
 
@@ -196,8 +200,9 @@ plt.show()
 # A first contrast estimation and plotting
 # ----------------------------------------
 #
-# As this script will be repeated several times, we encapsulate model
-# fitting and plotting in a function that we call when needed.
+# As this script will be repeated several times,
+# we encapsulate model fitting and plotting
+# in a function that we call when needed.
 #
 from nilearn import plotting
 
@@ -246,16 +251,18 @@ plt.show()
 # ------------------------
 #
 # The drift model is a set of slow oscillating functions
-# (Discrete Cosine transform) with a cut-off frequency. To remove
-# spurious low-frequency effects related to heart rate, breathing and
+# (Discrete Cosine transform) with a cut-off frequency.
+# To remove spurious low-frequency effects related to heart rate, breathing and
 # slow drifts in the scanner signal, the standard cutoff frequency
-# is 1/128 Hz ~ 0.01Hz. This is the default value set in the FirstLevelModel
-# function. Depending on the design of the experiment, the user may want to
-# change this value. The cutoff period (1/high_pass) should be set as the
-# longest period between two trials of the same condition multiplied by 2.
-# For instance, if the longest period is 32s, the high_pass frequency shall be
-# 1/64 Hz ~ 0.016 Hz. Note that the design matrix has more columns to model
-# drifts in the data.
+# is 1/128 Hz ~ 0.01Hz.
+# This is the default value set in the FirstLevelModel function.
+# Depending on the design of the experiment,
+# the user may want to change this value.
+# The cutoff period (1/high_pass) should be set as the longest period
+# between two trials of the same condition multiplied by 2.
+# For instance, if the longest period is 32s,
+# the high_pass frequency shall be 1/64 Hz ~ 0.016 Hz.
+# Note that the design matrix has more columns to model drifts in the data.
 
 first_level_model = FirstLevelModel(
     t_r, high_pass=0.016, minimize_memory=False
@@ -273,8 +280,9 @@ plt.show()
 # %%
 # We notice however that this model performs rather poorly.
 #
-# Another solution is to remove these drift terms. Maybe they're simply
-# useless. This is done by setting drift_model to None.
+# Another solution is to remove these drift terms.
+# Maybe they're simply useless.
+# This is done by setting drift_model to None.
 
 first_level_model = FirstLevelModel(
     t_r, drift_model=None, minimize_memory=False
@@ -289,7 +297,7 @@ plt.show()
 # Is it better than the original? No!
 #
 # Note that the design matrix has changed with no drift columns.
-# the event columns, on the other hand, haven't changed.
+# The event columns, on the other hand, haven't changed.
 #
 # Another alternative to get a drift model is to specify a set of polynomials.
 # Let's take a basis of 5 polynomials.
@@ -310,8 +318,8 @@ plt.show()
 # Changing the hemodynamic response model
 # ---------------------------------------
 #
-# This is the filter used to convert the event sequence into a
-# reference :term:`BOLD` signal for the design matrix.
+# This is the filter used to convert the event sequence
+# into a reference :term:`BOLD` signal for the design matrix.
 #
 # The first thing that we can do is to change the default model (the
 # so-called Glover hrf) for the so-called canonical model of SPM
@@ -333,14 +341,17 @@ plt.show()
 # Adding a time derivative to the design
 # ......................................
 #
-# There seems to be something here. Maybe we could try to go one step further:
+# There seems to be something here.
+# Maybe we could try to go one step further:
 # using not only the so-called canonical hrf, but also its time derivative.
 # Note that in that case, we still perform the contrasts and obtain statistical
-# significance for the main effect --- not the time derivative. This means that
-# the inclusion of a time derivative in the design matrix has the sole effect
-# of discounting timing misspecification from the error term, which would
-# decrease the estimated variance and enhance the statistical significance of
-# the effect. Is that the case?
+# significance for the main effect --- not the time derivative.
+# This means that the inclusion of a time derivative in the design matrix
+# has the sole effect of discounting
+# timing misspecification from the error term,
+# which would decrease the estimated variance
+# and enhance the statistical significance of the effect.
+# Is that the case?
 
 first_level_model = FirstLevelModel(
     t_r, hrf_model="spm + derivative", minimize_memory=False
@@ -355,9 +366,9 @@ plt.show()
 # Not a huge effect, but rather positive overall. We could keep that one.
 #
 # Note that a benefit of this approach is that we can test which voxels are
-# well explained by the derivative term, hinting at misfit regions, a
-# possibly valuable information. This is implemented by an F-test on
-# the time derivative regressors.
+# well explained by the derivative term, hinting at misfit regions,
+# a possibly valuable information.
+# This is implemented by an F-test on the time derivative regressors.
 
 contrast_val = np.eye(design_matrix.shape[1])[1:21:2]
 plot_contrast_matrix(contrast_val, design_matrix)
@@ -369,10 +380,11 @@ plotting.plot_stat_map(
 plt.show()
 
 # %%
-# There seems to be something here. Maybe we could adjust the
-# timing, by increasing the slice_time_ref parameter from 0 to 0.5. Now the
-# reference for model sampling is not the beginning of the volume
-# acquisition, but the middle of it.
+# There seems to be something here.
+# Maybe we could adjust the timing,
+# by increasing the slice_time_ref parameter from 0 to 0.5.
+# Now the reference for model sampling is not
+# the beginning of the volume acquisition, but the middle of it.
 
 first_level_model = FirstLevelModel(
     t_r,
@@ -394,8 +406,8 @@ plt.show()
 # The time derivatives regressors capture less signal: it's better like that.
 
 # %%
-# We can also consider adding the so-called dispersion derivative to
-# capture some mis-specification in the shape of the hrf.
+# We can also consider adding the so-called dispersion derivative
+# to capture some mis-specification in the shape of the hrf.
 #
 # This is done by specifying `hrf_model='spm + derivative + dispersion'`.
 #
@@ -413,17 +425,17 @@ plot_contrast(first_level_model)
 plt.show()
 
 # %%
-# Not a huge effect. For the sake of simplicity and readability, we
-# can drop that one.
+# Not a huge effect.
+# For the sake of simplicity and readability, we can drop that one.
 
 # %%
 # The noise model: ar(1), ols, or higher order ar?
 # ------------------------------------------------
 #
 # So far,we have implicitly used a lag-1 autoregressive model---aka
-# ar(1)---for the temporal structure of the noise. An alternative
-# choice is to use an ordinary least squares model (ols) that assumes
-# no temporal structure (time-independent noise) or
+# ar(1)---for the temporal structure of the noise.
+# An alternative choice is to use an ordinary least squares model (ols)
+# that assumes no temporal structure (time-independent noise) or
 # to use an autoregressive model with a higher order,
 # for example a third order autoregressive model---aka ar(3).
 #
@@ -459,11 +471,11 @@ plot_contrast(first_level_model)
 plt.show()
 
 # %%
-# While the difference is not obvious you should rather stick to the
-# ar(1) model, which is arguably more accurate.
+# While the difference is not obvious you should rather stick
+# to the ar(1) model, which is arguably more accurate.
 #
-# Alternatively we can include more terms in the autoregressive model to
-# account for greater temporal complexity in the noise structure.
+# Alternatively we can include more terms in the autoregressive model
+# to account for greater temporal complexity in the noise structure.
 
 first_level_model = FirstLevelModel(
     t_r,
@@ -478,21 +490,22 @@ plt.show()
 
 # %%
 # This noise model arguably reduces the amount of spurious activity.
-# However, as the difference is not obvious you may wish to stick to the
-# ar(1) model, which is computationally more efficient.
+# However, as the difference is not obvious you may wish to stick
+# to the ar(1) model, which is computationally more efficient.
 
 # %%
 # Removing confounds
 # ------------------
 #
 # A problematic feature of :term:`fMRI` is the presence of uncontrolled
-# confounds in the data, due to scanner instabilities (spikes) or
-# physiological phenomena, such as motion, heart and
-# respiration-related blood oxygenation fluctuations.  Side
-# measurements are sometimes acquired to characterize these
-# effects. Here we don't have access to those.  What we can do instead
-# is to estimate confounding effects from the data themselves, using
-# the CompCor approach, and take those into account in the model.
+# confounds in the data, due to scanner instabilities (spikes)
+# or physiological phenomena, such as motion, heart and
+# respiration-related blood oxygenation fluctuations.
+# Side measurements are sometimes acquired to characterize these effects.
+# Here we don't have access to those.
+# What we can do instead is to estimate confounding effects
+# from the data themselves, using the CompCor approach,
+# and take those into account in the model.
 #
 # For this we rely on the so-called
 # :func:`~nilearn.image.high_variance_confounds` routine of Nilearn.
@@ -516,24 +529,25 @@ plt.show()
 # %%
 #  Note the five additional columns in the design matrix.
 #
-# The effect on the activation maps is complex: auditory/visual effects are
-# killed, probably because they were somewhat collinear to the confounds. On
-# the other hand, some of the maps become cleaner (horizontal-vertical,
-# computation) after this addition.
+# The effect on the activation maps is complex: auditory/visual effects
+# are killed, probably because they were somewhat collinear to the confounds.
+# On the other hand, some of the maps become cleaner
+# (horizontal-vertical, computation) after this addition.
 
 # %%
 # Volume censoring
 # ----------------
 #
 # Volume censoring is a common way to remove non-steady state volumes, or
-# high-motion volumes in scrubbing based noise removal strategies. In this
-# scenario, we can apply a sample mask along the time dimension to exclude
-# unwanted volumes. When using :term:`fMRIPrep` outputs from 1.4.x series or
-# above, we can use the :func:`~nilearn.interfaces.fmriprep.load_confounds`
-# function of Nilearn to retrieve sample masks based on the given scrubbing
-# threshold and the non-steady state columns.
-# For non-fMRIPrep output, we can still define a sample mask. Here we apply a
-# sample mask that removes the first 50 volumes.
+# high-motion volumes in scrubbing based noise removal strategies.
+# In this scenario, we can apply a sample mask
+# along the time dimension to exclude unwanted volumes.
+# When using :term:`fMRIPrep` outputs from 1.4.x series or above,
+# we can use the :func:`~nilearn.interfaces.fmriprep.load_confounds`
+# function of Nilearn to retrieve sample masks
+# based on the given scrubbing threshold and the non-steady state columns.
+# For non-fMRIPrep output, we can still define a sample mask.
+# Here we apply a sample mask that removes the first 50 volumes.
 #
 
 sample_masks = np.arange(events.shape[0])[50:]
@@ -551,18 +565,20 @@ plot_design_matrix(design_matrix)
 plt.show()
 
 # %%
-# Note the significantly shorter design matrix compared to the previous
-# examples.
+# Note the significantly shorter design matrix
+# compared to the previous examples.
 
 # %%
 # Smoothing
 # ---------
 #
-# Smoothing is a regularization of the model. It has two benefits:
+# Smoothing is a regularization of the model.
+# It has two benefits:
 # decrease the noise level in images, and reduce the discrepancy
-# between individuals. The drawback is that it biases the shape and
-# position of activation. Here, we simply illustrate the statistical
-# gains.  We use a mild smoothing of 5mm
+# between individuals.
+# The drawback is that it biases the shape and position of activation.
+# Here, we simply illustrate the statistical gains.
+# We use a mild smoothing of 5mm
 # :term:`full-width at half maximum<FWHM>` (:term:`FWHM`).
 
 first_level_model = FirstLevelModel(
@@ -589,11 +605,12 @@ plt.show()
 # model is run: it is useless to run it outside of the brain.
 #
 # The approach taken by FirstLevelModel is to estimate it from the :term:`fMRI`
-# data itself when no mask is explicitly provided.  Since the data
-# have been resampled into :term:`MNI` space, we can use instead a mask of the
-# gray matter in :term:`MNI` space. The benefit is that it makes voxel-level
-# comparisons easier across subjects and datasets, and removes
-# non-grey matter regions, in which no :term:`BOLD` signal is expected.
+# data itself when no mask is explicitly provided.
+# Since the data have been resampled into :term:`MNI` space,
+# we can use instead a mask of the gray matter in :term:`MNI` space.
+# The benefit is that it makes voxel-level comparisons easier across subjects
+# and datasets, and removes non-grey matter regions,
+# in which no :term:`BOLD` signal is expected.
 # The downside is that the mask may not fit very well this particular data.
 from nilearn.datasets import fetch_icbm152_brain_gm_mask
 from nilearn.plotting import plot_roi
@@ -644,7 +661,9 @@ plt.show()
 # ----------
 #
 # Interestingly, the model used here seems quite resilient to
-# manipulation of modeling parameters: this is reassuring. It shows
-# that Nilearn defaults ('cosine' drift, cutoff=128s, 'glover' hrf,
-# ar(1) model) are actually reasonable.  Note that these conclusions
-# are specific to this dataset and may vary with other ones.
+# manipulation of modeling parameters: this is reassuring.
+# It shows that Nilearn defaults
+# ('cosine' drift, cutoff=128s, 'glover' hrf, ar(1) model)
+# are actually reasonable.
+# Note that these conclusions are specific
+# to this dataset and may vary with other ones.

@@ -73,14 +73,19 @@ jobs:
             with:
                 python-version: '3.11'
 
-        -   name: Key for cache based on month number
-            run: date +%m > month_num;
+        -   name: Key for cache based on year and quarter
+            id: cache-period
+                  # Must match the key used in build-docs.yml (e.g. 2026-q4)
+            run: |
+                month=$(date +%m)
+                quarter=$(( (10#${month} - 1) / 3 + 1 ))
+                echo "period=$(date +%Y)-q${quarter}" | tee -a $GITHUB_OUTPUT
 
         -   name: Get cache from a previous doc build
             uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
             with:
                 path: nilearn_data
-                key: data_cache-DocumentationBuilder_month-${{ hashFiles('month_num') }}
+                key: data_cache-DocumentationBuilder_quarter-${{ steps.cache-period.outputs.period }}
 
         -   name: Install tox
             run: uv tool install tox --with=tox-uv

@@ -30,7 +30,7 @@ The protocol described is the so-called “ARCHI Standard” functional localize
 
 For details on the task, please see :footcite:t:`Pinel2007`.
 
-Direct download link from OSF: https://osf.io/2bqxn
+Direct download link from Zenodo: https://doi.org/10.5281/zenodo.24504516
 
 Content
 -------
