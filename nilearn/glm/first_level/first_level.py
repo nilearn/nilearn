@@ -2533,7 +2533,45 @@ def _get_confounds(
             c.iloc[0] = c.iloc[0].fillna(0.0)
         return confounds
 
-    return load_confounds(img_files=imgs, **kwargs_load_confounds)[0]
+    confounds, sample_masks = load_confounds(
+        img_files=imgs, **kwargs_load_confounds
+    )
+
+    # load_confounds unwraps its (confounds, sample_mask) output when a
+    # single image was passed in, instead of returning one-element lists.
+    confounds_list = confounds if isinstance(confounds, list) else [confounds]
+    sample_masks_list = (
+        sample_masks if isinstance(sample_masks, list) else [sample_masks]
+    )
+
+    # load_confounds does not drop the censored rows from the confounds
+    # it returns: the sample_mask is the only record of which volumes the
+    # "scrub" strategy flagged, and first_level_from_bids has no return
+    # value to carry it, so a caller requesting scrubbing through
+    # confounds_strategy would otherwise never find out that the flagged
+    # volumes were never excluded from the model. Non-steady-state volumes
+    # are always reflected in sample_mask regardless of strategy, so this
+    # only warns when "scrub" was actually requested.
+    if "scrub" in kwargs_load_confounds.get("strategy", ()) and any(
+        sample_mask is not None and len(sample_mask) < len(confound)
+        for sample_mask, confound in zip(
+            sample_masks_list, confounds_list, strict=True
+        )
+    ):
+        warn(
+            "Scrubbing (motion censoring) was requested via "
+            "'confounds_strategy' and some volumes were flagged for "
+            "removal, but first_level_from_bids() does not apply or "
+            "return this sample_mask: the flagged volumes remain in "
+            "the confounds and are not excluded from the model. Call "
+            "nilearn.interfaces.fmriprep.load_confounds() directly and "
+            "pass the resulting sample_mask to FirstLevelModel.fit() "
+            "if you need scrubbing applied.",
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
+
+    return confounds
 
 
 def _check_confounds_list(confounds, imgs) -> None:

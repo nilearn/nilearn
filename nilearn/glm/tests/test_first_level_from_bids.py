@@ -1043,6 +1043,92 @@ def test_load_confounds_warnings(tmp_path):
         )
 
 
+def _inject_motion_outlier(
+    bids_path, row, value=5.0, column="framewise_displacement"
+):
+    """Flip one row of every confounds.tsv file to a high-motion outlier."""
+    confounds_files = (bids_path / "derivatives").glob(
+        "**/*desc-confounds_timeseries.tsv"
+    )
+    for confounds_file in confounds_files:
+        confounds = pd.read_csv(confounds_file, sep="\t")
+        if "non_steady_state_outlier00" in confounds.columns:
+            confounds["non_steady_state_outlier00"] = 0
+        confounds.loc[row, column] = value
+        confounds.to_csv(confounds_file, sep="\t", index=False)
+
+
+def test_load_confounds_scrub_warning(tmp_path):
+    """Warn when a requested scrub strategy flags volumes \
+    that first_level_from_bids never excludes from the model.
+    """
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=1, n_ses=0, tasks=["main"], n_runs=[1]
+    )
+    _inject_motion_outlier(bids_path, row=15)
+
+    with pytest.warns(UserWarning, match="Scrubbing"):
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=("motion", "scrub", "wm_csf"),
+            confounds_scrub=5,
+            confounds_fd_threshold=0.5,
+            slice_time_ref=0.0,
+            drift_model=None,
+        )
+
+
+def test_load_confounds_no_scrub_warning_when_not_requested(tmp_path):
+    """Do not warn about scrubbing when "scrub" is not part of the \
+    requested confounds_strategy, even if volumes were flagged.
+    """
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=1, n_ses=0, tasks=["main"], n_runs=[1]
+    )
+    _inject_motion_outlier(bids_path, row=15)
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=("motion", "wm_csf"),
+            slice_time_ref=0.0,
+            drift_model=None,
+        )
+    assert not any("Scrubbing" in str(w.message) for w in caught)
+
+
+def test_load_confounds_no_scrub_warning_when_nothing_censored(tmp_path):
+    """Do not warn about scrubbing when "scrub" is requested \
+    but no volume actually exceeds the censoring thresholds.
+    """
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=1, n_ses=0, tasks=["main"], n_runs=[1]
+    )
+    _inject_motion_outlier(bids_path, row=15)
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=("motion", "scrub", "wm_csf"),
+            confounds_scrub=5,
+            confounds_fd_threshold=50.0,
+            slice_time_ref=0.0,
+            drift_model=None,
+        )
+    assert not any("Scrubbing" in str(w.message) for w in caught)
+
+
 def test_no_subject(tmp_path):
     """Throw error when no subject found."""
     bids_path = create_fake_bids_dataset(
