@@ -67,6 +67,8 @@
 
 .. _Binh Nguyen: https://tbng.github.io/
 
+.. _Brent McPherson: https://github.com/bcmcpher
+
 .. _Caglar Cakan: https://github.com/caglorithm
 
 .. _Cedric Conday: https://github.com/CedricConday
@@ -422,6 +424,8 @@
 .. _Yasmin Mzayek: https://github.com/ymzayek
 
 .. _Yichun Huang: https://github.com/YCHuang0610
+
+.. _Yuvraj Lamba: https://github.com/uvcode01-max
 
 .. _Zachary Nudelman: https://github.com/zachnudels
 

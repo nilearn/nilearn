@@ -31,8 +31,16 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix :func:`~nilearn.connectome.group_sparse_covariance` and :class:`~nilearn.connectome.GroupSparseCovariance` returning divergent, non-positive-definite precision matrices when ``alpha=0`` (:gh:`6681` by `Yuvraj Lamba`_).
+
+- :bdg-dark:`Code` Fix error messages for empty inputs to multi-image mask functions and arrays with more than two dimensions in mass-univariate normalization (:gh:`6760` by `Eva B <https://github.com/evadiva3>`_).
+
+- :bdg-dark:`Code` Fix :func:`~nilearn.signal.clean` interpolating the wrong volumes when ``sample_mask`` is combined with ``filter="butterworth"``: the volumes mirrored from the end of the run were filled instead of the censored ones, so censored volumes could keep their raw values, shifting the output (:gh:`6771` by `Brent McPherson <https://github.com/bcmcpher>`_).
+
 - :bdg-dark:`Code` Fix division of a :class:`~nilearn.glm.Contrast` by a scalar on Python 3 (:gh:`6756` by `Eva B <https://github.com/evadiva3>`_).
+
 - :bdg-dark:`Code` Fix :class:`~nilearn.maskers.MultiNiftiMasker` and other multi-image maskers raising a ``ValueError`` or ``AttributeError`` when ``high_variance_confounds=True`` was combined with a per-image ``confounds`` entry that was itself a list or tuple of several confound sources (:gh:`6726` by `Siddhardha Nanda`_).
+
 - :bdg-dark:`Code` Fix functions like :func:`~nilearn.image.concat_imgs` or :func:`~nilearn.glm.second_level.non_parametric_inference` reshaping in place the data of the 1D :class:`~nilearn.surface.SurfaceImage` passed as input. As a consequence, ``transform`` of :class:`~nilearn.maskers.SurfaceLabelsMasker` and :class:`~nilearn.maskers.SurfaceMapsMasker` now returns a 1D array for a single 1D surface image, and ``inverse_transform`` returns a 1D surface image for a 1D array, like other surface maskers (:gh:`6772` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix :func:`~nilearn.image.clean_img` reshaping its output using the raw ``sample_mask`` shape instead of the actual cleaned-signal shape, which raised a ``ValueError`` whenever ``sample_mask`` was passed as a boolean array (:gh:`6709` by `Siddhardha Nanda`_).
@@ -87,7 +95,7 @@ Enhancements
 
 - :bdg-secondary:`Maint` Refactor ``math_img`` and ``new_img_like`` to reduce complexity (:gh:`6676` by `Akaash P`_)
 
-- :bdg-secondary:`Maint` Refactor ``threshold_img`` to reduce complexity (:gh:`6629` by `uvcode01-max <https://github.com/uvcode01-max>`_).
+- :bdg-secondary:`Maint` Refactor ``threshold_img`` to reduce complexity (:gh:`6629` by `Yuvraj Lamba`_).
 
 - :bdg-warning:`Test` Give explicit names to the tests in ``nilearn/glm/tests/test_hemodynamic_models.py`` (:gh:`6747` by `Rishit Garg`_).
 

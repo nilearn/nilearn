@@ -6,7 +6,7 @@ import collections.abc
 import itertools
 import operator
 import warnings
-from typing import Self
+from typing import Any, Self
 
 import numpy as np
 import scipy.linalg
@@ -23,6 +23,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params, sanitize_verbose
+from nilearn.nilearn_typing import Verbose
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -136,7 +137,7 @@ def group_sparse_covariance(
     alpha,
     max_iter=50,
     tol=1e-3,
-    verbose=0,
+    verbose: Verbose = 0,
     probe_function=None,
     precisions_init=None,
     debug=False,
@@ -230,30 +231,108 @@ def group_sparse_covariance(
     return emp_covs, precisions
 
 
-def _group_sparse_covariance(
-    emp_covs,
-    n_samples,
-    alpha,
-    max_iter=10,
-    tol=1e-3,
-    precisions_init=None,
-    probe_function=None,
-    verbose=0,
-    debug=False,
-):
-    """Implement an internal version of group_sparse_covariance.
+def _group_sparse_covariance_zero_alpha(
+    emp_covs: np.ndarray,
+    n_samples: np.ndarray,
+    alpha: float,
+    max_iter: int,
+    tol: float | None,
+    probe_function: collections.abc.Callable[..., Any] | None = None,
+) -> np.ndarray:
+    """Compute precision matrices for unregularized case alpha=0."""
+    n_subjects = emp_covs.shape[-1]
+    omega = np.empty_like(emp_covs, order="F")
+    for k in range(n_subjects):
+        omega[..., k] = scipy.linalg.pinv(emp_covs[..., k])
 
-    See its docstring for details.
-    """
+    if probe_function is not None:
+        probe_function(
+            emp_covs, n_samples, alpha, max_iter, tol, 0, omega, None
+        )
+
+    return omega
+
+
+def _setup_group_sparse_covariance(
+    emp_covs: np.ndarray,
+    n_samples: collections.abc.Sequence[int] | np.ndarray,
+    alpha: float,
+    tol: float | None,
+) -> tuple[np.ndarray, float | None, int, int]:
+    """Validate parameters and normalize sample weights."""
     if tol == -1:
         tol = None
 
     _check_alpha(alpha)
 
+    n_samples_arr = np.asarray(n_samples, dtype=np.float64)
+    n_samples_arr /= n_samples_arr.sum()  # essential for numerical stability
+
     n_subjects = emp_covs.shape[-1]
     n_features = emp_covs[0].shape[0]
-    n_samples = np.asarray(n_samples)
-    n_samples /= n_samples.sum()  # essential for numerical stability
+
+    return n_samples_arr, tol, n_subjects, n_features
+
+
+def _update_submatrix_w_state(
+    omega: np.ndarray,
+    debug: bool,
+    W: np.ndarray,
+    W_inv: np.ndarray,
+    n_subjects: int,
+    p: int,
+    h: np.ndarray,
+    v: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Initialize or update submatrix W and its inverse for coordinate p."""
+    if p == 0:
+        return _set_initial_state_w_and_w_inv(omega, debug, p)
+
+    if debug:
+        omega_orig = omega.copy()
+        _update_w_and_w_inv(omega, debug, W, W_inv, n_subjects, p, h, v)
+        np.testing.assert_almost_equal(omega_orig, omega)
+    else:
+        _update_w_and_w_inv(omega, debug, W, W_inv, n_subjects, p, h, v)
+
+    return W, W_inv
+
+
+def _format_iteration_suffix(max_norm: float | None) -> str:
+    """Format the variation suffix for iteration logging."""
+    if max_norm is not None:
+        return f" variation (max norm): {max_norm:.3e} "
+    return ""
+
+
+def _group_sparse_covariance(
+    emp_covs: np.ndarray,
+    n_samples: collections.abc.Sequence[int] | np.ndarray,
+    alpha: float,
+    max_iter: int = 10,
+    tol: float | None = 1e-3,
+    precisions_init: np.ndarray | None = None,
+    probe_function: collections.abc.Callable[..., Any] | None = None,
+    verbose: Verbose = 0,
+    debug: bool = False,
+) -> np.ndarray:
+    """Implement an internal version of group_sparse_covariance.
+
+    See its docstring for details.
+    """
+    n_samples, tol, n_subjects, n_features = _setup_group_sparse_covariance(
+        emp_covs, n_samples, alpha, tol
+    )
+
+    if alpha == 0:
+        return _group_sparse_covariance_zero_alpha(
+            emp_covs,
+            n_samples,
+            alpha,
+            max_iter,
+            tol,
+            probe_function=probe_function,
+        )
 
     _check_diagonal_normalization(emp_covs, n_subjects)
 
@@ -299,11 +378,7 @@ def _group_sparse_covariance(
     alpha2 = alpha**2
 
     for n in range(max_iter):
-        suffix = (
-            f" variation (max norm): {max_norm:.3e} "
-            if max_norm is not None
-            else ""
-        )
+        suffix = _format_iteration_suffix(max_norm)
 
         logger.log(
             f"* iteration {n:d} ({100.0 * n / max_iter:.0f} %){suffix} ...",
@@ -312,20 +387,9 @@ def _group_sparse_covariance(
 
         omega_old[...] = omega
         for p in range(n_features):
-            if p == 0:
-                W, W_inv = _set_initial_state_w_and_w_inv(omega, debug, p)
-
-            else:
-                if debug:
-                    omega_orig = omega.copy()
-
-                _update_w_and_w_inv(
-                    omega, debug, W, W_inv, n_subjects, p, h, v
-                )
-
-                if debug:
-                    # Check that omega has not been modified.
-                    np.testing.assert_almost_equal(omega_orig, omega)
+            W, W_inv = _update_submatrix_w_state(
+                omega, debug, W, W_inv, n_subjects, p, h, v
+            )
 
             # In the following lines, implicit loop on k (subjects)
             # Extract y and u
@@ -372,6 +436,7 @@ def _group_sparse_covariance(
                     # overall convergence rate (the tighter the better.)
 
                     gamma = 0.0  # initial value
+                    fval = 0.0
                     # Precompute some quantities
                     cc = c * c
                     two_ccq = 2.0 * cc * q
@@ -591,7 +656,7 @@ class GroupSparseCovariance(CacheMixin, NilearnBaseEstimator):
         alpha=0.1,
         tol=1e-3,
         max_iter=10,
-        verbose=0,
+        verbose: Verbose = 0,
         memory=None,
         memory_level=0,
     ):
@@ -860,7 +925,7 @@ def group_sparse_covariance_path(
     tol=1e-3,
     max_iter=10,
     precisions_init=None,
-    verbose=0,
+    verbose: Verbose = 0,
     debug=False,
     probe_function=None,
 ):
@@ -1083,7 +1148,7 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         max_iter_cv=50,
         tol=1e-3,
         max_iter=100,
-        verbose=0,
+        verbose: Verbose = 0,
         n_jobs=1,
         debug=False,
         early_stopping=True,
@@ -1165,13 +1230,13 @@ class GroupSparseCovarianceCV(NilearnBaseEstimator):
         n_alphas = self.alphas
 
         if isinstance(n_alphas, collections.abc.Sequence):
-            alphas = list(self.alphas)
+            alphas = list(n_alphas)
             n_refinements = 1
         else:
             n_refinements = self.n_refinements
             alpha_1, _ = compute_alpha_max(emp_covs, n_samples)
             alpha_0 = 1e-2 * alpha_1
-            alphas = np.logspace(  # type: ignore[assignment]
+            alphas = np.logspace(
                 np.log10(alpha_0), np.log10(alpha_1), n_alphas
             )[::-1]
 
