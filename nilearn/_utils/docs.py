@@ -526,6 +526,14 @@ dtype : dtype like, "auto" or None, default=None
     ``dtype=bool`` will raise an Exception.
 """
 
+# ensure_finite
+docdict["ensure_finite"] = """
+ensure_finite : :obj:`bool`, default=True
+    If True, non-finite values (NaNs and infs) are replaced by zeros
+    and a warning is emitted when any value was replaced.
+    If False, non-finite values are left untouched.
+"""
+
 # estimator_args
 docdict["estimator_args"] = """
 estimator_args : dict[str, Any] or None, default=None
