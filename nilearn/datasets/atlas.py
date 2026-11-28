@@ -1889,9 +1889,10 @@ def _download_talairach(talairach_dir, verbose) -> None:
         )[0]
     except SSLError:
         # See https://github.com/nilearn/nilearn/issues/5896
+        # See https://github.com/nilearn/nilearn/issues/6640
         # A copy of the atlas was hence added
-        # to Nilearn OSF
-        backup_url = "https://osf.io/x4b2w/download"
+        # to Nilearn OSF and then moved Zenodo
+        backup_url = zenodo_url(24628197, "talairach.nii")
         temp_file = fetch_single_file(
             backup_url, Path(temp_dir), verbose=verbose
         )

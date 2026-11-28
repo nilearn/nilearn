@@ -222,6 +222,9 @@ that the developers have access to:
 
         Contains back up data in case the primary URL fails.
 
+    - ``fetch_atlas_talairach``: https://doi.org/10.5281/zenodo.24628196
+
+        Contains back up data in case the primary URL fails.
 
 -   `nistats <https://osf.io/v7hsw>`_
 
