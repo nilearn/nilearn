@@ -228,6 +228,102 @@ def _transform_cut_coords(cut_coords, direction, affine):
     return np.atleast_1d(cut_coords)
 
 
+def _ensure_diagonal_affine(img):
+    """Ensure image has a diagonal affine to avoid duplicated slice cuts."""
+    affine = img.affine
+    if not np.all(np.diag(affine)[:3]):
+        warnings.warn(
+            "A non-diagonal affine is found in the given "
+            "image. Reordering the image to get diagonal affine "
+            "for finding cuts in the slices.",
+            stacklevel=find_stack_level(),
+        )
+        img = reorder_img(img, resample="nearest")
+        affine = img.affine
+    return img, affine
+
+
+def _validate_n_cuts(n_cuts, this_shape: int, direction: str) -> int:
+    """Validate requested n_cuts against real and slice shape bounds."""
+    epsilon = np.finfo(np.float32).eps
+    n_cuts_as_float = float(n_cuts)
+    difference = abs(round(n_cuts_as_float) - n_cuts_as_float)
+    if round(n_cuts_as_float) < 1.0 or difference > epsilon:
+        raise ValueError(
+            f"Image has {this_shape} slices in direction {direction}. "
+            "Therefore, the number of cuts "
+            f"must be between 1 and {this_shape}. "
+            f"You provided n_cuts={n_cuts}."
+        )
+    return round(n_cuts_as_float)
+
+
+def _find_peak_cuts(
+    data: np.ndarray, axis: int, n_cuts: int, spacing: int
+) -> list[int]:
+    """Locate peak activations separated by spacing iteratively."""
+    slices = [slice(None, None), slice(None, None), slice(None, None)]
+    cut_coords = []
+    for _ in range(n_cuts):
+        max_along_axis = np.unravel_index(np.abs(data).argmax(), data.shape)[
+            axis
+        ]
+        start = max(0, max_along_axis - spacing)
+        stop = max_along_axis + spacing
+        slices[axis] = slice(start, stop)
+        data[tuple(slices)] *= 1.0e-3
+        cut_coords.append(max_along_axis)
+    return cut_coords
+
+
+def _pick_best_candidate(
+    candidates: list[int], orig_data: np.ndarray, axis: int, this_shape: int
+) -> int:
+    """Choose candidate slice with the highest summed activation weight."""
+    best_candidate = 0
+    best_weight = -10
+    rolled = np.rollaxis(orig_data, axis)
+    for candidate in candidates:
+        this_weight = (
+            0 if candidate >= this_shape else np.sum(rolled[candidate])
+        )
+        if this_weight > best_weight:
+            best_candidate = candidate
+            best_weight = this_weight
+    return best_candidate
+
+
+def _fill_missing_cuts(
+    cut_coords: list[int],
+    n_cuts: int,
+    orig_data: np.ndarray,
+    axis: int,
+    this_shape: int,
+) -> list[int]:
+    """Supplement duplicated or insufficient cuts until n_cuts is reached."""
+    cut_coords = np.unique(cut_coords).tolist()
+    while len(cut_coords) < n_cuts:
+        slice_below = min(cut_coords) - 2
+        slice_above = max(cut_coords) + 2
+        candidates = [slice_above]
+        if len(cut_coords) > 1:
+            middle_idx = np.argmax(np.diff(cut_coords))
+            slice_middle = int(
+                0.5 * (cut_coords[middle_idx] + cut_coords[middle_idx + 1])
+            )
+            if slice_middle not in cut_coords:
+                candidates.append(slice_middle)
+        if slice_below >= 0:
+            candidates.append(slice_below)
+
+        best_candidate = _pick_best_candidate(
+            candidates, orig_data, axis, this_shape
+        )
+        cut_coords.append(best_candidate)
+        cut_coords = np.unique(cut_coords).tolist()
+    return cut_coords
+
+
 def find_cut_slices(
     img, direction="z", n_cuts=7, spacing="auto"
 ) -> np.ndarray:
@@ -267,23 +363,10 @@ def find_cut_slices(
     large and all the activated regions are covered, cuts with a spacing
     less than 'spacing' will be returned.
     """
-    # misc
     check_parameter_in_allowed(direction, ("x", "y", "z"), "direction")
     axis = "xyz".index(direction)
     img = check_niimg_3d(img)
-    affine = img.affine
-    if not np.all(np.diag(affine)[:3]):
-        warnings.warn(
-            "A non-diagonal affine is found in the given "
-            "image. Reordering the image to get diagonal affine "
-            "for finding cuts in the slices.",
-            stacklevel=find_stack_level(),
-        )
-        # resample is set to avoid issues with an image having a non-diagonal
-        # affine and rotation.
-        img = reorder_img(img, resample="nearest")
-        affine = img.affine
-    # note: orig_data is a copy of img._data_cache thanks to np.abs
+    img, affine = _ensure_diagonal_affine(img)
     orig_data = np.abs(safe_get_data(img))
     this_shape = orig_data.shape[axis]
 
@@ -305,6 +388,8 @@ def find_cut_slices(
         )
         return _transform_cut_coords(np.arange(this_shape), direction, affine)
 
+    n_cuts = _validate_n_cuts(n_cuts, this_shape, direction)
+
     # To smooth data that might be np.int or np.uint,
     # first convert it to float.
     data = orig_data.copy()
@@ -313,80 +398,15 @@ def find_cut_slices(
 
     data = smooth_array(data, affine, fwhm="fast")
 
-    # to control floating point error problems
-    # during given input value "n_cuts"
-    epsilon = np.finfo(np.float32).eps
-    n_cuts_as_float = float(n_cuts)
-    difference = abs(round(n_cuts_as_float) - n_cuts_as_float)
-    if round(n_cuts_as_float) < 1.0 or difference > epsilon:
-        message = (
-            f"Image has {this_shape} slices in direction {direction}. "
-            "Therefore, the number of cuts "
-            f"must be between 1 and {this_shape}. "
-            f"You provided n_cuts={n_cuts}."
-        )
-        raise ValueError(message)
-    else:
-        n_cuts = round(n_cuts_as_float)
-
     if spacing == "auto":
-        spacing = max(int(0.5 / n_cuts * data.shape[axis]), 1)
+        spacing_int = max(int(0.5 / n_cuts * data.shape[axis]), 1)
+    else:
+        spacing_int = int(spacing)
 
-    slices = [slice(None, None), slice(None, None), slice(None, None)]
-
-    cut_coords = []
-
-    for _ in range(n_cuts):
-        # Find a peak
-        max_along_axis = np.unravel_index(np.abs(data).argmax(), data.shape)[
-            axis
-        ]
-
-        # cancel out the surroundings of the peak
-        start = max(0, max_along_axis - spacing)
-        stop = max_along_axis + spacing
-        slices[axis] = slice(start, stop)
-        # We don't actually fully zero the neighborhood, to avoid ending
-        # up with fully zeros if n_cuts is too big: we can do multiple
-        # passes on the data
-        data[tuple(slices)] *= 1.0e-3
-
-        cut_coords.append(max_along_axis)
-
-    # We sometimes get duplicated cuts, so we add cuts at the beginning
-    # and the end
-    cut_coords = np.unique(cut_coords).tolist()
-    while len(cut_coords) < n_cuts:
-        # Candidates for new cuts:
-        slice_below = min(cut_coords) - 2
-        slice_above = max(cut_coords) + 2
-        candidates = [slice_above]
-        best_candidate = 0
-        # One slice where there is the biggest gap in the existing
-        # cut_coords
-        if len(cut_coords) > 1:
-            middle_idx = np.argmax(np.diff(cut_coords))
-            slice_middle = int(
-                0.5 * (cut_coords[middle_idx] + cut_coords[middle_idx + 1])
-            )
-            if slice_middle not in cut_coords:
-                candidates.append(slice_middle)
-        if slice_below >= 0:
-            # We need positive slice to avoid having negative
-            # indices, which would work, but not the way we think of them
-            candidates.append(slice_below)
-        best_weight = -10
-        for candidate in candidates:
-            if candidate >= this_shape:
-                this_weight = 0
-            else:
-                this_weight = np.sum(np.rollaxis(orig_data, axis)[candidate])
-            if this_weight > best_weight:
-                best_candidate = candidate
-                best_weight = this_weight
-
-        cut_coords.append(best_candidate)
-        cut_coords = np.unique(cut_coords).tolist()
+    cut_coords = _find_peak_cuts(data, axis, n_cuts, spacing_int)
+    cut_coords = _fill_missing_cuts(
+        cut_coords, n_cuts, orig_data, axis, this_shape
+    )
 
     cut_coords_array = np.array(cut_coords)
     cut_coords_array.sort()
