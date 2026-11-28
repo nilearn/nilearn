@@ -112,7 +112,7 @@ def test_anisotropic_sphere_extraction(rng):
     mask_img = np.zeros((3, 2, 3))
     mask_img[1, 0, 1] = 1
 
-    affine_2 = np.eye(4)
+    affine_2 = affine
     affine_2[0, 0] = 4
 
     mask_img = Nifti1Image(mask_img, affine=affine_2)
