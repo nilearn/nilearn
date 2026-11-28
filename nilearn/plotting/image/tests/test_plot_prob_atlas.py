@@ -3,6 +3,7 @@
 # ruff: noqa: ARG001
 
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn.plotting import plot_prob_atlas
 
@@ -42,3 +43,12 @@ def test_plot_prob_atlas_radiological_view(matplotlib_pyplot, img_4d_rand_eye):
     """Smoke test for radiological view."""
     result = plot_prob_atlas(img_4d_rand_eye, radiological=True)
     assert result.axes.get("y").radiological is True
+
+
+def test_plot_prob_atlas_negative_values(
+    matplotlib_pyplot, rng, affine_eye, shape_4d_default
+):
+    """Smoke test for radiological view."""
+    data = rng.random(shape_4d_default) * -1
+    img_neg_values = Nifti1Image(data, affine_eye)
+    plot_prob_atlas(img_neg_values)
