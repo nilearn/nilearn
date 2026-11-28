@@ -246,7 +246,7 @@ def run_glm(
             raise ValueError(err_msg) from e
 
         # compute the AR coefficients
-        ar_coef_ = _yule_walker(ols_result.residuals.T, ar_order)
+        ar_coef_ = _yule_walker(ols_result.residuals(Y).T, ar_order)
         del ols_result
         if len(ar_coef_[0]) == 1:
             ar_coef_ = ar_coef_[:, 0]
@@ -462,6 +462,16 @@ class FirstLevelModel(BaseGLM):
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption.
+        If ``False``, the (masked) input data is stored
+        and the voxelwise attributes ``residuals_``, ``predicted_``
+        and ``r_square_`` are available.
+        If ``True``, those attributes are not available,
+        but residuals can still be computed
+        by passing the input data to the ``residuals`` method.
+
+        .. nilearn_versionchanged:: 0.15.0
+            When ``True``, residuals can be computed
+            with the ``residuals`` method.
 
     subject_label : :obj:`str` or None, default=None
         This id will be used to identify a `FirstLevelModel` when passed to
@@ -813,6 +823,10 @@ class FirstLevelModel(BaseGLM):
             results = {
                 k: SimpleRegressionResults(v) for k, v in results.items()
             }
+        else:
+            # keep the data so that residuals can be computed later
+            for k, v in results.items():
+                v.Y = Y[:, labels == k]
         self.results_.append(results)
         del Y
 
@@ -1052,6 +1066,9 @@ class FirstLevelModel(BaseGLM):
                 design_matrices,
             )
         )
+        # needed to mask data passed to compute residuals
+        # when minimize_memory is True
+        self._sample_masks = sample_masks
 
         self._reset_report()
 
@@ -1096,6 +1113,7 @@ class FirstLevelModel(BaseGLM):
         # For each run fit the model and keep only the regression results.
         self.labels_ = []
         self.results_ = []
+        self._clear_voxelwise_attributes_cache()
         self._reporting_data["run_imgs"] = {}
         n_runs = len(run_imgs)
         t0 = time.time()
@@ -1288,6 +1306,7 @@ class FirstLevelModel(BaseGLM):
             "MSE",
         ],
         result_as_time_series: bool,
+        Y=None,
     ):
         """Transform RegressionResults instances within a dictionary \
         (whose keys represent the autoregressive coefficient under the 'ar1' \
@@ -1304,6 +1323,14 @@ class FirstLevelModel(BaseGLM):
             whether the RegressionResult attribute has a value
             per timepoint of the input nifti image.
 
+        Y : Niimg-like object, :class:`~nilearn.surface.SurfaceImage`, \
+            :obj:`list` of those, or None, default=None
+            The data the model was fitted on (one image per run).
+            Only used for 'residuals' and 'normalized_residuals'.
+            Required for those if ``minimize_memory=True``.
+            If ``minimize_memory=False`` and ``Y`` is None,
+            the data stored at fit time is used.
+
         Returns
         -------
         output : :obj:`list`
@@ -1312,29 +1339,58 @@ class FirstLevelModel(BaseGLM):
         # check if valid attribute is being accessed.
         check_is_fitted(self)
 
-        all_attributes = dict(vars(RegressionResults)).keys()
         possible_attributes = [
-            prop for prop in all_attributes if "__" not in prop
+            prop for prop in dict(vars(RegressionResults)) if "__" not in prop
         ]
+        possible_attributes += RegressionResults.__static_attributes__
         check_parameter_in_allowed(attribute, possible_attributes, "attribute")
 
-        if self.minimize_memory:
-            raise AttributeError(
+        needs_data = attribute in ["residuals", "normalized_residuals"]
+
+        if self.minimize_memory and attribute in [
+            "SSE",
+            "r_square",
+            "MSE",
+        ]:
+            raise ValueError(
                 "To access voxelwise attributes like "
-                "R-squared, residuals, and predictions, "
+                "R-squared, SSE or MSE, "
                 "the `FirstLevelModel`-object needs to store "
                 "there attributes. "
                 "To do so, set `minimize_memory` to `False` "
                 "when initializing the `FirstLevelModel`-object."
             )
-
-        output = []
+        if self.minimize_memory and needs_data and Y is None:
+            raise ValueError(
+                f"To access '{attribute}' "
+                "when 'minimize_memory=True', "
+                "the data used to fit the model must be passed as 'Y'. "
+                "Alternatively, set `minimize_memory` to `False` "
+                "when initializing the `FirstLevelModel`-object."
+            )
 
         assert self.masker_ is not None
         assert self.labels_ is not None
         assert self.results_ is not None
-        for design_matrix, labels, results in zip(
-            self.design_matrices_, self.labels_, self.results_, strict=False
+
+        if Y is not None:
+            if not isinstance(Y, (list, tuple)):
+                Y = [Y]
+            if len(Y) != len(self.results_):
+                raise ValueError(
+                    f"'Y' must contain one image per run: "
+                    f"got {len(Y)} images "
+                    f"for {len(self.results_)} fitted runs."
+                )
+
+        output = []
+        for run_idx, (design_matrix, labels, results) in enumerate(
+            zip(
+                self.design_matrices_,
+                self.labels_,
+                self.results_,
+                strict=True,
+            )
         ):
             if result_as_time_series:
                 voxelwise_attribute = np.zeros(
@@ -1343,15 +1399,45 @@ class FirstLevelModel(BaseGLM):
             else:
                 voxelwise_attribute = np.zeros((1, len(labels)))
 
-            for label_ in results:
+            Y_matrix = None
+            if needs_data and Y is not None:
+                Y_matrix = self._mask_run_data(Y[run_idx], run_idx)
+
+            for label_, result in results.items():
                 label_mask = labels == label_
-                voxelwise_attribute[:, label_mask] = getattr(
-                    results[label_], attribute
-                )
+                if needs_data:
+                    data = (
+                        None if Y_matrix is None else Y_matrix[:, label_mask]
+                    )
+                    val = getattr(result, attribute)(data)
+                elif attribute == "predicted":
+                    val = result.predicted()
+                else:
+                    val = getattr(result, attribute)
+
+                voxelwise_attribute[:, label_mask] = val
 
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
         return output
+
+    def _mask_run_data(self, run_img, run_idx: int) -> np.ndarray:
+        """Mask and scale the data of a run the same way as during fit."""
+        assert self.masker_ is not None
+        sample_mask = None
+        sample_masks = getattr(self, "_sample_masks", None)
+        if sample_masks is not None:
+            sample_mask = sample_masks[run_idx]
+        Y = self.masker_.transform(run_img, sample_mask=sample_mask)
+        if self.signal_scaling is not False:
+            Y, _ = mean_scaling(Y, self.signal_scaling)
+        n_samples = self.design_matrices_[run_idx].shape[0]
+        if Y.shape[0] != n_samples:
+            raise ValueError(
+                f"The data passed for run {run_idx} has {Y.shape[0]} samples "
+                f"but the model was fitted on {n_samples} samples."
+            )
+        return Y
 
     def _prepare_mask(self, run_imgs):
         """Set up the masker.

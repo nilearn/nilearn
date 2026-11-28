@@ -4,8 +4,10 @@ Predicted time series and residuals
 
 Here we fit a First Level :term:`GLM` with the `minimize_memory`-argument
 set to `False`.
-By doing so, the `FirstLevelModel`-object stores the residuals,
-which we can then inspect.
+By doing so, the `FirstLevelModel`-object stores the data it was fitted on,
+so that residuals can be computed and inspected
+(with ``fmri_glm.residuals_``)
+without having to pass the data again.
 Also, the predicted time series can be extracted,
 which is useful to assess the quality of the model fit.
 

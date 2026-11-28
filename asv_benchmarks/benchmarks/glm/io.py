@@ -16,7 +16,7 @@ class BenchMarkFirstLevelModelSave(BaseBenchMarkFLM):
 
     def setup(self, memory, n_runs):
         """Set up for all benchmarks."""
-        super().setup(memory, n_runs)
+        self._generate_data(n_runs=n_runs)
 
         # save_glm_to_bids is permanently moving to nilearn.glm.io in
         # nilearn 0.15.0: nilearn.interfaces.bids.save_glm_to_bids (its

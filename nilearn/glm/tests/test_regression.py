@@ -28,8 +28,8 @@ def test_ols(X, Y):
     model = OLSModel(design=X)
     results = model.fit(Y)
     assert results.df_residuals == 30
-    assert results.residuals.shape[0] == 40
-    assert results.predicted.shape[0] == 40
+    assert results.residuals(Y).shape[0] == 40
+    assert results.predicted().shape[0] == 40
 
 
 def test_ar(X, Y):
@@ -38,8 +38,8 @@ def test_ar(X, Y):
     results = model.fit(Y)
 
     assert results.df_residuals == 30
-    assert results.residuals.shape[0] == 40
-    assert results.predicted.shape[0] == 40
+    assert results.residuals(Y).shape[0] == 40
+    assert results.predicted().shape[0] == 40
 
 
 def test_residuals(X, Y):
@@ -50,9 +50,8 @@ def test_residuals(X, Y):
     X[:, 0] = 1
     model = OLSModel(design=X)
     results = model.fit(Y)
-
-    assert_almost_equal(results.residuals.mean(), 0)
-    assert len(results.whitened_residuals) == 40
+    assert_almost_equal(results.residuals(Y).mean(), 0)
+    assert len(results.residuals(Y)) == 40
 
 
 def test_predicted_r_square(X, Y):
@@ -69,8 +68,8 @@ def test_predicted_r_square(X, Y):
     with pytest.warns(RuntimeWarning, match="divide by zero"):
         results = model.fit(Yshort)
 
-    assert_almost_equal(results.residuals.sum(), 0)
-    assert_array_almost_equal(results.predicted, Yshort)
+    assert_almost_equal(results.residuals(Yshort).sum(), 0)
+    assert_array_almost_equal(results.predicted(), Yshort)
     assert_almost_equal(results.r_square, 1.0)
 
 
@@ -117,9 +116,37 @@ def test_simple_results(X, Y):
     results = model.fit(Y)
 
     simple_results = SimpleRegressionResults(results)
-
-    assert_array_equal(results.predicted, simple_results.predicted(X))
-    assert_array_equal(results.residuals, simple_results.residuals(Y, X))
+    assert_array_equal(results.predicted(), simple_results.predicted(X))
+    assert_array_equal(results.residuals(Y), simple_results.residuals(Y, X))
     assert_array_equal(
-        results.normalized_residuals, simple_results.normalized_residuals(Y, X)
+        results.normalized_residuals(Y),
+        simple_results.normalized_residuals(Y, X),
     )
+
+
+@pytest.mark.ai_generated
+def test_residuals_stored_data(X, Y):
+    """Check residuals can use data stored in RegressionResults."""
+    model = OLSModel(design=X)
+    results = model.fit(Y)
+
+    with pytest.raises(ValueError, match="'Y' must be passed"):
+        results.residuals()
+
+    results.Y = Y
+    assert_array_equal(results.residuals(), results.residuals(Y))
+    assert_array_equal(
+        results.normalized_residuals(), results.normalized_residuals(Y)
+    )
+
+
+@pytest.mark.ai_generated
+def test_simple_results_default_design(X, Y):
+    """Check SimpleRegressionResults uses the whitened design by default."""
+    model = ARModel(design=X, rho=0.4)
+    results = model.fit(Y)
+
+    simple_results = SimpleRegressionResults(results)
+
+    assert_array_equal(results.predicted(), simple_results.predicted())
+    assert_array_equal(results.residuals(Y), simple_results.residuals(Y))

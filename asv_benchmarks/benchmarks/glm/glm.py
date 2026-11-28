@@ -1,5 +1,4 @@
 """Benchmarks for GLM."""
-# ruff: noqa: ARG002
 
 import string
 
@@ -10,20 +9,27 @@ from .._utils import _rng, generate_fake_fmri
 
 
 class BaseBenchMarkFLM:
-    """Base benchmark class for GLM."""
+    """Base benchmark class for GLM.
+
+    Subclasses must define their own ``setup`` method
+    whose signature matches their ``params``
+    (asv passes parameters positionally),
+    and call ``_generate_data`` from it.
+    """
 
     timeout: int = 2400  # 40 mins
 
-    def setup(
-        self,
-        minimize_memory,
-        memory=None,
-        shape=(64, 64, 64),
-        length_n_runs=(100, 1),
-    ):
-        """Set up for all benchmarks."""
-        (length, n_runs) = length_n_runs
+    def _generate_data(self, length: int = 100, n_runs: int = 1) -> None:
+        """Generate fake fMRI runs, a mask, and design matrices.
 
+        Parameters
+        ----------
+        length : :obj:`int`, default=100
+            Number of time points per run.
+
+        n_runs : :obj:`int`, default=1
+            Number of runs.
+        """
         shape = (100, 115, 85)
 
         affine = np.asarray(
