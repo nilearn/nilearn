@@ -557,7 +557,7 @@ def compute_multi_epi_mask(
     check_params(locals())
     if len(epi_imgs) == 0:
         raise TypeError(
-            f"An empty object - {epi_imgs:r} - was passed instead of an "
+            f"An empty object - {epi_imgs!r} - was passed instead of an "
             "image or a list of images"
         )
     masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
@@ -764,7 +764,7 @@ def compute_multi_background_mask(
     check_params(locals())
     if len(data_imgs) == 0:
         raise TypeError(
-            f"An empty object - {data_imgs:r} - was passed instead of an "
+            f"An empty object - {data_imgs!r} - was passed instead of an "
             "image or a list of images"
         )
     masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
@@ -916,7 +916,7 @@ def compute_multi_brain_mask(
     check_params(locals())
     if len(target_imgs) == 0:
         raise TypeError(
-            f"An empty object - {target_imgs:r} - was passed instead of an "
+            f"An empty object - {target_imgs!r} - was passed instead of an "
             "image or a list of images"
         )
 

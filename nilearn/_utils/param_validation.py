@@ -10,6 +10,7 @@ import numpy as np
 from nilearn import nilearn_typing
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn.nilearn_typing import Integer, Verbose
 
 
 def check_threshold(
@@ -337,7 +338,7 @@ def check_parameter_in_allowed(
         )
 
 
-def sanitize_verbose(verbose: int | bool) -> int:
+def sanitize_verbose(verbose: Verbose) -> Integer:
     """Ensure that verbose is an int."""
     if verbose is True:
         verbose = 1

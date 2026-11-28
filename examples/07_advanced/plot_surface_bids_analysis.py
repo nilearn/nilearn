@@ -29,6 +29,9 @@ were already normalized to the same :term:`MNI` space.
    - the :ref:`language localizer demo dataset <language_localizer_demo>`
    - the :ref:`fsaverage template <fsaverage>`
 """
+# %%
+#
+# .. include:: ../../../examples/mni_to_fsaverage.rst
 
 # %%
 # Fetch example :term:`BIDS` dataset
@@ -198,3 +201,9 @@ report_slm = second_level_glm.generate_report(
 # .. include:: ../../../examples/report_note.rst
 #
 report_slm
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::
