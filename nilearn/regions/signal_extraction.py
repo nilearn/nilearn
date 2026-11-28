@@ -431,6 +431,13 @@ def signals_to_img_labels(
 
     signals = np.asarray(signals)
 
+    if not np.all(np.isfinite(signals)):
+        warnings.warn(
+            "Input signals contain non-finite values (NaN or infinity). "
+            "These non-finite values will be propagated to the output image.",
+            stacklevel=find_stack_level(),
+        )
+
     target_shape: tuple[int, ...] = labels_img.shape[:3]
     # TODO use nditer
     # nditer is not available in numpy 1.3: using multiple loops.
@@ -582,6 +589,14 @@ def signals_to_img_maps(
     nilearn.regions.img_to_signals_maps
     nilearn.maskers.NiftiMapsMasker
     """
+    region_signals = np.asarray(region_signals)
+    if not np.all(np.isfinite(region_signals)):
+        warnings.warn(
+            "Input region_signals contain non-finite values (NaN or infinity). "
+            "These non-finite values will be propagated to the output image.",
+            stacklevel=find_stack_level(),
+        )
+
     maps_img = check_niimg_4d(maps_img)
     maps_data = safe_get_data(maps_img, ensure_finite=True)
 
