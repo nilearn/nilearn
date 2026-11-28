@@ -91,6 +91,8 @@ Enhancements
 
 - :bdg-dark:`Code` Name columns of signals extracted as dataframes by :meth:`~maskers.NiftiSpheresMasker.transform` (:gh:`6599` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` :class:`~nilearn.surface.SurfaceImage`, :class:`~nilearn.surface.PolyMesh`, :class:`~nilearn.surface.PolyData`, :func:`~nilearn.surface.load_surf_mesh` and :func:`~nilearn.surface.load_surf_data` now accept in-memory :obj:`nibabel.gifti.GiftiImage` objects as surface meshes and data (:gh:`XXXX` by `Rémi Gau`_).
+
 - :bdg-info:`Plotting` add a ``plot_predicted_signal_and_residuals`` method to :class:`~glm.first_level.FirstLevelModel` and :class:`~glm.second_level.SecondLevelModel` to easily visualize predicted VS observed time series as well as residuals time series and distribution at given coordinates or for some regions (:gh:`5761` by `Fernanda Ponce`_).
 
 - :bdg-secondary:`Maint` Refactor ``math_img`` and ``new_img_like`` to reduce complexity (:gh:`6676` by `Akaash P`_)

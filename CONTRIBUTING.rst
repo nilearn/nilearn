@@ -198,7 +198,7 @@ The following projects are dedicated to host atlases and accept contributions:
 
 * `templateflow <https://www.templateflow.org>`_ : the example :ref:`sphx_glr_auto_examples_01_plotting_plot_templateflow.py` shows how to use templateflow with nilearn.
 
-* `neuromaps <https://netneurolab.github.io/neuromaps>`_
+* `neuromaps <https://netneurolab.github.io/neuromaps>`_ : the example :ref:`sphx_glr_auto_examples_07_plot_projecting_to_fsaverage.py` shows how to use neuromaps with nilearn.
 
 * `neuroparc <https://github.com/neurodata/neuroparc>`_
 
